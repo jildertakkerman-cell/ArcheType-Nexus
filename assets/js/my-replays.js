@@ -279,14 +279,30 @@
             : name;
     }
 
-    // Win/loss chip lives in the card header line, next to the date
-    function buildResultChip(m) {
+    // Bold leading result badge (WIN/LOSS) in the card header
+    function buildResultBadge(m) {
         if (!m.winner) return '';
         const isWin = m.winner.player === 0;
-        const turns = m.winner.turnsToWin ? ` · ${m.winner.turnsToWin}T` : '';
-        const otk = m.winner.isOTK ? ' · OTK' : '';
-        const cls = isWin ? 'badge-win' : 'badge-loss';
-        return `<span class="replay-badge ${cls}">${isWin ? 'WIN' : 'LOSS'}${turns}${otk}</span>`;
+        return `<div class="replay-result-badge ${isWin ? 'result-win' : 'result-loss'}">${isWin ? 'WIN' : 'LOSS'}</div>`;
+    }
+
+    // Date/turns detail block on the right of the header, label-over-value
+    function buildDetailsBlock(replay, m) {
+        const date = formatDate(replay.createdon);
+        const items = [`
+            <div class="replay-detail-item">
+                <span class="replay-detail-label">Date</span>
+                <span class="replay-detail-value">${date}</span>
+            </div>`];
+        if (m.winner?.turnsToWin) {
+            const otk = m.winner.isOTK ? '<span class="otk-flag">OTK</span>' : '';
+            items.push(`
+            <div class="replay-detail-item">
+                <span class="replay-detail-label">Turns</span>
+                <span class="replay-detail-value">${m.winner.turnsToWin}${otk}</span>
+            </div>`);
+        }
+        return `<div class="replay-side">${items.join('')}</div>`;
     }
 
     // Meta strip is tags-only now — cards without tags stay two rows tall
@@ -358,7 +374,6 @@
     function replayCard(replay, combo) {
         const m = replay.metadata || {};
         const names = playerNames(replay);
-        const date = formatDate(replay.createdon);
         const hasJson = !!replay.gcsjsonpath;
         const hasRaw  = !!replay.gcsrawpath;
 
@@ -388,32 +403,28 @@
         return `
             <div class="replay-card ${resultClass} ${clickable}" data-id="${replay.replayid}">
                 <div class="replay-card-header">
+                    ${buildResultBadge(m)}
                     ${iconHtml}
                     <div class="replay-card-header-content">
                         <div class="replay-arc">${arcDisplay}</div>
                         <div class="replay-names">${names}</div>
                     </div>
-                    <div class="replay-side">
-                        ${buildResultChip(m)}
-                        <span class="replay-date">${date}</span>
-                    </div>
+                    ${buildDetailsBlock(replay, m)}
                 </div>
                 ${metaStrip}
                 <div class="replay-card-footer">
-                    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
                     ${hasJson
-                        ? `<button class="btn-reanalyze" data-path="${replay.gcsjsonpath}" onclick="reAnalyze(this)">
-                               <i class="fas fa-chart-line"></i> Re-analyze
+                        ? `<button class="btn-watch-replay" data-path="${replay.gcsjsonpath}" onclick="reAnalyze(this)">
+                               <i class="fas fa-play"></i> Watch Replay
                            </button>`
-                        : `<span style="color:var(--text-muted);font-size:0.8rem;">Analysis not stored</span>`}
+                        : `<span class="replay-noanalysis">Analysis not stored</span>`}
+                    <div class="replay-footer-actions">
                     ${hasRaw
                         ? `<button class="btn-pdf" data-path="${replay.gcsrawpath}" onclick="createPdf(this)">
                                <i class="fas fa-file-pdf"></i> Create PDF
                            </button>`
                         : ''}
                     ${buildComboSection(replay, combo, hasJson)}
-                    </div>
-                    <div style="display:flex;align-items:center;gap:0.75rem;">
                         <select class="vis-select" data-id="${replay.replayid}"
                                 onchange="updateVisibility(this)"
                                 title="Who can see this replay"
@@ -1606,6 +1617,7 @@
         renderProfile(session);
         initProfileSettings();
         initAccountNav();
+        window.CardLoader && window.CardLoader.initAmbientBackdropForCards('my-replays');
 
         // Show the section bar and wire up the file input
         const listHeader = document.getElementById('list-header');

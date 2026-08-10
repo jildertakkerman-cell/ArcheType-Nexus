@@ -600,6 +600,7 @@
         }
 
         document.getElementById('admin-content').style.display = '';
+        window.CardLoader && window.CardLoader.initAmbientBackdropForCards('admin');
 
         groups.combos = createModerationTabGroup({
             group: 'combos', table: 'combos', pkColumn: 'comboid',

@@ -738,10 +738,10 @@ window.CardLoader = (function () {
      */
     async function loadSuggestionForm() {
         // Non-content utility pages ("suggest an edit to THIS page" doesn't
-        // make sense on a directory listing or the moderator-only admin
-        // panel) — same opt-out convention as the pre-existing index skip,
-        // just extended to cover admin.html too.
-        if (['index', 'admin'].includes(document.body.dataset.page)) {
+        // make sense on a directory listing, the moderator-only admin panel,
+        // or a user's own replay library) — same opt-out convention as the
+        // pre-existing index skip, extended to admin.html and My-Replays.html.
+        if (['index', 'admin', 'my-replays'].includes(document.body.dataset.page)) {
             console.log(`Skipping suggestion form on ${document.body.dataset.page} page`);
             return;
         }
@@ -1072,6 +1072,39 @@ window.CardLoader = (function () {
     // so repeated calls (e.g. from multiple sections on the same page) are no-ops.
     let ambientBackdropInitializedFor = null;
 
+    // Card art is immutable once uploaded, so a resolved ambient pair is cached
+    // (by archetype name / page key) far longer than typical HTTP caching would
+    // allow — this is what makes repeat visits show the backdrop instantly,
+    // synchronously, with zero network round trips.
+    const AMBIENT_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+    function readAmbientCache(key) {
+        try {
+            const raw = localStorage.getItem(`cl-ambient:${key}`);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (!parsed || !Array.isArray(parsed.urls) || !parsed.urls.length) return null;
+            if (Date.now() - parsed.ts > AMBIENT_CACHE_TTL_MS) return null;
+            return parsed.urls;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function writeAmbientCache(key, urls) {
+        try {
+            localStorage.setItem(`cl-ambient:${key}`, JSON.stringify({ urls, ts: Date.now() }));
+        } catch (error) {
+            // Quota exceeded or storage disabled (e.g. private browsing) — the
+            // backdrop still works, it just re-fetches every visit.
+        }
+    }
+
+    function applyAmbientUrls(urls) {
+        document.documentElement.style.setProperty('--art-ambient-1', `url("${urls[0]}")`);
+        document.documentElement.style.setProperty('--art-ambient-2', `url("${urls[1] || urls[0]}")`);
+    }
+
     /**
      * Injects a subtle two-corner card-art glow fixed behind the whole page for the
      * given archetype. Self-contained: creates its own DOM nodes and pulls in the
@@ -1084,6 +1117,15 @@ window.CardLoader = (function () {
         ensureBackdropStylesheet();
         ensureBackdropElements();
         applyBackdropThemeTint();
+
+        // Cache hit: apply synchronously, no network round trip at all — this is
+        // the common case for anyone who has visited this archetype's pages before.
+        const cacheKey = `archetype:${archetypeName}`;
+        const cached = readAmbientCache(cacheKey);
+        if (cached) {
+            applyAmbientUrls(cached);
+            return;
+        }
 
         try {
             // Prefer Supabase (same source as the archetype cards browser) so the
@@ -1138,10 +1180,72 @@ window.CardLoader = (function () {
             const picks = [candidates[0], candidates.length > 1 ? candidates[1] : candidates[0]];
             const urls = await Promise.all(picks.map(c => resolveCroppedImageUrl(c.id)));
 
-            document.documentElement.style.setProperty('--art-ambient-1', `url("${urls[0]}")`);
-            document.documentElement.style.setProperty('--art-ambient-2', `url("${urls[1] || urls[0]}")`);
+            applyAmbientUrls(urls);
+            writeAmbientCache(cacheKey, urls);
         } catch (error) {
             console.error(`[CardLoader] Failed to init ambient backdrop for "${archetypeName}":`, error);
+        }
+    }
+
+    // Curated pool of instantly-recognizable cards for pages that aren't scoped to a
+    // single archetype (My Replays, Admin) — initAmbientBackdrop needs an archetype
+    // to pull card art from, and these pages have none, so they draw from a fixed
+    // pool instead. IDs are hardcoded (rather than looked up by name through
+    // fetchCardData) so the backdrop needs zero metadata round trips before it can
+    // start resolving images — the whole point of this pool is to be fast.
+    const ICONIC_CARD_POOL = [
+        { name: 'Blue-Eyes White Dragon', id: 89631139 },
+        { name: 'Dark Magician', id: 46986414 },
+        { name: 'Red-Eyes Black Dragon', id: 74677422 },
+        { name: 'Dark Magician Girl', id: 38033121 },
+        { name: 'Exodia the Forbidden One', id: 33396948 },
+        { name: 'Slifer the Sky Dragon', id: 10000000 },
+        { name: 'Obelisk the Tormentor', id: 10000020 },
+        { name: 'Black Luster Soldier - Envoy of the Beginning', id: 72989439 },
+        { name: 'Elemental Hero Neos', id: 89943723 },
+        { name: 'Stardust Dragon', id: 44508094 },
+        { name: 'Number 39: Utopia', id: 84013994 },
+        { name: 'Ash Blossom & Joyous Spring', id: 14558127 },
+        { name: 'Ancient Gear Golem', id: 83104731 },
+        { name: 'Cyber Dragon', id: 70095154 },
+    ];
+
+    let ambientBackdropForCardsInitializedFor = null;
+
+    /**
+     * Same ambient two-corner card-art glow as initAmbientBackdrop, for pages that
+     * aren't scoped to one archetype (My Replays, Admin). Picks 2 random cards from
+     * the given pool (defaults to a curated "iconic cards" list, with IDs already
+     * known) instead of querying an archetype's card list.
+     */
+    async function initAmbientBackdropForCards(pageKey, cardPool = ICONIC_CARD_POOL) {
+        if (!pageKey || ambientBackdropForCardsInitializedFor === pageKey) return;
+        ambientBackdropForCardsInitializedFor = pageKey;
+
+        ensureBackdropStylesheet();
+        ensureBackdropElements();
+        applyBackdropThemeTint();
+
+        const cacheKey = `cards:${pageKey}`;
+        const cached = readAmbientCache(cacheKey);
+        if (cached) {
+            applyAmbientUrls(cached);
+            return;
+        }
+
+        try {
+            const pool = [...cardPool];
+            const picks = [];
+            for (let i = 0; i < 2 && pool.length; i++) {
+                picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+            }
+            const urls = await Promise.all(picks.map(c => resolveCroppedImageUrl(c.id)));
+            if (!urls.length) return;
+
+            applyAmbientUrls(urls);
+            writeAmbientCache(cacheKey, urls);
+        } catch (error) {
+            console.error('[CardLoader] Failed to init ambient backdrop for cards:', error);
         }
     }
 
@@ -1196,8 +1300,8 @@ window.CardLoader = (function () {
 
         const root = document.documentElement.style;
         root.setProperty('--backdrop-scrim-color', bg);
-        root.setProperty('--backdrop-scrim-opacity', isLight ? '0.48' : '0.35');
-        root.setProperty('--ambient-opacity', isLight ? '0.13' : '0.16');
+        root.setProperty('--backdrop-scrim-opacity', isLight ? '0.40' : '0.35');
+        root.setProperty('--ambient-opacity', isLight ? '0.22' : '0.16');
     }
 
     /**
@@ -3344,6 +3448,14 @@ window.CardLoader = (function () {
      * @param {Object} options - Configuration options
      */
     async function renderBanlistSectionByArchetype(containerId, archetypeName, options = {}) {
+        // Fire-and-forget, as early as possible — on most archetype pages this is
+        // the first CardLoader call awaited in the page's own init script, and it
+        // was blocking initAmbientBackdrop (invoked later, inside
+        // renderDeckResourcesCompact) from even starting until this whole banlist
+        // fetch resolved. Idempotent per archetype, so this is a no-op wherever
+        // renderDeckResourcesCompact/renderArchetypeCardsBrowser end up firing it too.
+        initAmbientBackdrop(archetypeName);
+
         const container = document.getElementById(containerId);
 
         if (!container) {
@@ -4245,6 +4357,7 @@ window.CardLoader = (function () {
         getCardImageUrl,
         getCardCroppedImageUrl,
         initAmbientBackdrop,
+        initAmbientBackdropForCards,
         preloadCards,
         getCachedCard,
         clearCache,
