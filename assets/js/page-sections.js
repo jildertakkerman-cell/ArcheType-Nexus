@@ -730,27 +730,51 @@ async function initPageSections(archetypeName) {
 // cards it was meant for. Copying it onto the holder means the step cards
 // get it back once the holder is reinserted into contentSlot.
 //
-// That class copy is also why a page like Abyss Actor's Extras/Director/
-// Shifter combo tabs needs an extra safeguard: those combo containers are
+// That class copy is also why pages with their own native combo-switcher —
+// Abyss Actor's Extras/Director/Shifter tabs (".combo-container", hidden by
+// default, shown via ".combo-container.active"), Azamina's Snake-Eye/White
+// Forest/Saint Azamina tabs (".combo-content"/".active", same shape, own
+// class names) — need an extra safeguard. Those combo containers are
 // exactly the "reused in place" host described above, and the page's own
-// switchCombo() shows/hides them by toggling a plain "active" class on
-// `host` itself (looked up fresh by id every click). Once holder inherits
-// host's full class list, it carries that SAME "active"-gated visibility
-// class — but frozen at whatever state host happened to be in at extraction
-// time, and never updated again once holder is a nested descendant (nothing
-// re-applies "active" to it; switchCombo only ever touches elements it can
-// find by id). Tabs that weren't active at setup end up with their content
-// stuck invisible forever, regardless of which tab is actually selected. An
-// inline style always wins over a class-based rule, so pin holder's display
-// straight from host's own unconditional Tailwind "flex" utility (never
-// itself a state class) — that neutralizes whatever the copied toggle class
-// says, while an inactive ANCESTOR (the outer host, still hidden via that
-// same class) correctly keeps the whole thing hidden regardless.
+// switchCombo() shows/hides them by toggling "active" on `host` itself
+// (looked up fresh by id every click, never on anything nested inside it).
+// Once holder inherits host's full class list, it carries that SAME
+// default-hidden class — but frozen at whatever state host happened to be
+// in at extraction time, and never updated again once holder is a nested
+// descendant. Tabs that weren't active at setup end up with their content
+// stuck invisible forever, regardless of which tab is actually selected —
+// an ancestor being shown again can't override a descendant's own
+// independent "display: none".
+//
+// Fixed generically rather than by hardcoding either page's class names:
+// scan the page's own stylesheets for which of host's classes, alone,
+// carry a bare "display: none" rule (that's the default-hidden half of
+// whatever pair the page's tab switcher uses) and leave exactly that class
+// off the holder. Everything else — including "active" if it happens to
+// still be riding along, and any real layout classes like Tailwind's
+// "flex" — is harmless to keep: with the hiding class gone, no rule is left
+// to hide the holder, so it just renders per its remaining classes.
+function _pcsHidingClasses(el) {
+    const hiding = new Set();
+    for (const sheet of document.styleSheets) {
+        let rules;
+        try { rules = sheet.cssRules; } catch (e) { continue; } // cross-origin sheet — can't read it, skip
+        for (const rule of rules) {
+            if (!(rule instanceof CSSStyleRule) || rule.style.display !== 'none') continue;
+            for (const selector of rule.selectorText.split(',')) {
+                const m = selector.trim().match(/^\.([-\w]+)$/); // bare single-class selectors only, e.g. ".combo-container" — not ".combo-container.active", which hides only in combination with something else
+                if (m && el.classList.contains(m[1])) hiding.add(m[1]);
+            }
+        }
+    }
+    return hiding;
+}
+
 function _pcsExtractNodes(host) {
     if (!host.firstChild) return null;
     const holder = document.createElement('div');
-    holder.className = host.className.replace(/\bcms-section\b/, '').trim();
-    if (host.classList.contains('flex')) holder.style.display = 'flex';
+    const hiding = _pcsHidingClasses(host);
+    holder.className = host.className.split(/\s+/).filter(c => c && c !== 'cms-section' && !hiding.has(c)).join(' ');
     while (host.firstChild) holder.appendChild(host.firstChild);
     return holder;
 }
