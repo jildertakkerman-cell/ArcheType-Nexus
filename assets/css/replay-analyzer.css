@@ -1966,13 +1966,39 @@ h1 {
 @media (max-width: 768px) {
     .replay-fullscreen-overlay .replay-dashboard {
         grid-template-columns: 1fr;
+        /* height:auto here would never actually overflow (a box sized to
+           its own content can't exceed itself), which silently defeated
+           this overflow-y:auto and let oversized content spill past the
+           bottom of the screen with no way to scroll to it. A definite
+           height is required for the scrollport to do anything. */
+        height: 100vh;
         overflow-y: auto;
-        height: auto;
     }
 
     .replay-fullscreen-overlay .replay-sidebar {
         height: auto;
         max-height: 50vh;
+        /* Base rule sets overflow:hidden, which would silently crop the
+           controls row off the bottom of this 50vh box instead of just
+           requiring a scroll to reach it. Let the sidebar scroll itself. */
+        overflow-y: auto;
+    }
+
+    /* Play/pause and step controls float above the scrolling log so they
+       stay in view instead of ending up below the fold under the board. */
+    .replay-fullscreen-overlay .replay-settings {
+        order: 1;
+    }
+    .replay-fullscreen-overlay .replay-controls-grid {
+        order: 2;
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        background: rgba(10, 15, 30, 0.97);
+        -webkit-backdrop-filter: blur(8px);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.45);
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
     }
 }
 

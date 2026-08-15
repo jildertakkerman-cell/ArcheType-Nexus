@@ -99,6 +99,8 @@ class ReplayBrowser {
         this.resizeObserver = null;
         this._lastEffectName = null;
         this._lastEffectDesc = null;
+        this._mobileActivePlayer = 1;
+        this._showMobilePlayer = null;
     }
 
     _injectReplayCSS() {
@@ -222,8 +224,10 @@ class ReplayBrowser {
             btnP2.classList.toggle('active', showP2);
             this._repositionAll();
         };
-        btnP1.onclick = () => show(false);
-        btnP2.onclick = () => show(true);
+        // Manual taps override the auto-follow until the active player changes again.
+        btnP1.onclick = () => { this._mobileActivePlayer = 1; show(false); };
+        btnP2.onclick = () => { this._mobileActivePlayer = 2; show(true); };
+        this._showMobilePlayer = show;
     }
 
     _boardHTML(prefix) {
@@ -820,10 +824,20 @@ class ReplayBrowser {
     _applyStep(step, silent = false) {
         const { type, turn, phase, label, effectText, actions } = step;
 
+        // Auto-follow the board of whichever player this step belongs to,
+        // so the mobile single-board view doesn't need a manual tap to see
+        // what's actually happening. Skipped once the user has manually
+        // picked a side and this step doesn't say otherwise.
+        const stepPlayer = step.player ?? actions?.[0]?.player;
+        if ((stepPlayer === 1 || stepPlayer === 2) && stepPlayer !== this._mobileActivePlayer) {
+            this._mobileActivePlayer = stepPlayer;
+            if (this._showMobilePlayer) this._showMobilePlayer(stepPlayer === 2);
+        }
+
         if (turn !== undefined) {
             const turnEl = document.getElementById('rb-turn-label');
             if (turnEl) turnEl.textContent = `Turn ${turn} · ${phase || ''}`;
-            
+
             if (typeof updateChartHighlight === 'function') {
                 updateChartHighlight(turn, phase);
             }
