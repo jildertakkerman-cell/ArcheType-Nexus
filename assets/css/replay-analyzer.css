@@ -1730,39 +1730,8 @@ h1 {
 }
 
 @media (max-width: 768px) {
-    /* Mirror Player 2's mobile grid */
-    .replay-board-half.p2-half .field-grid {
-        grid-template-areas:
-            "field          extra-deck     gy             deck"
-            "spell-traps    spell-traps    spell-traps    spell-traps"
-            "main-monsters  main-monsters  main-monsters  main-monsters"
-            "extra-monsters extra-monsters extra-monsters banished";
-        /* Mirrored mobile row heights: 70px for utility, 80px for spells, 80px for monsters, 75px for EMZ */
-        grid-template-rows: 70px 80px 80px 75px;
-    }
-    
     .p2-half .extra-monster-zones {
         align-items: flex-start;
-    }
-
-    /* Compact mobile board */
-    .replay-board-half .duel-board {
-        min-height: 440px;
-    }
-
-    .replay-board-half .field-grid {
-        grid-template-rows: 75px 80px 80px 70px;
-        gap: 4px;
-        padding: 5px;
-    }
-
-    .replay-board-half .extra-monster-zone {
-        width: 50px;
-        height: 74px;
-    }
-
-    .replay-board-half .hand-area {
-        height: 80px;
     }
 
     .replay-dashboard {
@@ -1784,14 +1753,6 @@ h1 {
 
     .replay-log-container {
         max-height: 250px;
-    }
-
-    .replay-controls-grid .sim-btn {
-        padding: 0.5rem;
-    }
-
-    .replay-controls-grid .sim-btn-play {
-        padding: 0.5rem 1rem;
     }
 }
 
@@ -2207,5 +2168,204 @@ h1 {
 @media (max-width: 560px) {
     .stats-grid--two-col {
         grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   Replay Browser — Mobile Single-Board Rework
+   Mobile shows one player's board at a time (toggle below) instead of both
+   boards stacked, so zones/cards can be sized far more generously than the
+   old always-both-visible compact layout. Appended at the end of the file
+   on purpose: every selector below shares specificity with an earlier
+   desktop/base rule, and in a tie the rule that comes LAST in the file wins
+   — not the one inside the narrower media query. Placing everything after
+   every rule it needs to beat is what actually makes these overrides apply.
+   ========================================================================== */
+
+.replay-mobile-toggle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* .replay-board-column is a flex ROW by default (board + sidebar sit
+       side by side on desktop widths above the dashboard's own stacking
+       point) — switch it to a column here so the toggle sits above the
+       board instead of beside it, stretched to the board's full height. */
+    .replay-board-column {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    /* --- P1 / P2 toggle --- */
+    .replay-mobile-toggle {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .replay-mobile-toggle-btn {
+        flex: 1;
+        padding: 0.65rem 0.5rem;
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.85rem;
+        font-family: inherit;
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .replay-mobile-toggle-btn.p1.active {
+        color: var(--player1-color);
+        border-color: var(--player1-color);
+        background: rgba(239, 68, 68, 0.12);
+    }
+
+    .replay-mobile-toggle-btn.p2.active {
+        color: var(--player2-color);
+        border-color: var(--player2-color);
+        background: rgba(245, 158, 11, 0.12);
+    }
+
+    /* --- Show one board at a time (default: Player 1) --- */
+    .replay-board-divider,
+    .replay-board-half.p2-half,
+    .replay-player-strip.p2-strip {
+        display: none;
+    }
+
+    .replay-board-outer.showing-p2 .replay-board-half.p1-half,
+    .replay-board-outer.showing-p2 .replay-player-strip.p1-strip {
+        display: none;
+    }
+
+    .replay-board-outer.showing-p2 .replay-board-half.p2-half {
+        display: block;
+    }
+
+    .replay-board-outer.showing-p2 .replay-player-strip.p2-strip {
+        display: flex;
+    }
+
+    /* --- Board sizing (single board now gets the full viewport width) --- */
+    .replay-board-half .duel-board {
+        min-height: 520px;
+    }
+
+    .replay-board-half .field-grid {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-areas:
+            "extra-monsters extra-monsters extra-monsters banished"
+            "main-monsters  main-monsters  main-monsters  main-monsters"
+            "spell-traps    spell-traps    spell-traps    spell-traps"
+            "field          extra-deck     gy             deck";
+        grid-template-rows: 104px 104px 104px 88px;
+        gap: 6px;
+        padding: 8px 6px;
+    }
+
+    .replay-board-half.p2-half .field-grid {
+        grid-template-areas:
+            "field          extra-deck     gy             deck"
+            "spell-traps    spell-traps    spell-traps    spell-traps"
+            "main-monsters  main-monsters  main-monsters  main-monsters"
+            "extra-monsters extra-monsters extra-monsters banished";
+        grid-template-rows: 88px 104px 104px 104px;
+    }
+
+    .replay-board-half .main-monster-zone,
+    .replay-board-half .spell-trap-zone {
+        min-height: 0;
+    }
+
+    .replay-board-half .extra-monster-zone {
+        width: 84px;
+        height: 118px;
+    }
+
+    .replay-board-half .hand-area {
+        height: 128px;
+    }
+
+    /* --- Same single-board layout inside fullscreen mode --- */
+    .replay-fullscreen-overlay .replay-board-outer {
+        height: auto;
+    }
+
+    .replay-fullscreen-overlay .replay-board-half {
+        flex: none;
+    }
+
+    .replay-fullscreen-overlay .replay-board-half .duel-board {
+        height: auto;
+        flex: none;
+        min-height: 520px;
+    }
+
+    .replay-fullscreen-overlay .replay-board-half .field-grid {
+        flex: none;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-areas:
+            "extra-monsters extra-monsters extra-monsters banished"
+            "main-monsters  main-monsters  main-monsters  main-monsters"
+            "spell-traps    spell-traps    spell-traps    spell-traps"
+            "field          extra-deck     gy             deck";
+        grid-template-rows: 104px 104px 104px 88px;
+        gap: 6px;
+        padding: 8px 6px;
+    }
+
+    .replay-fullscreen-overlay .replay-board-half.p2-half .field-grid {
+        grid-template-areas:
+            "field          extra-deck     gy             deck"
+            "spell-traps    spell-traps    spell-traps    spell-traps"
+            "main-monsters  main-monsters  main-monsters  main-monsters"
+            "extra-monsters extra-monsters extra-monsters banished";
+        grid-template-rows: 88px 104px 104px 104px;
+    }
+
+    .replay-fullscreen-overlay .replay-board-half .hand-area {
+        flex-shrink: 0;
+        height: 128px;
+    }
+
+    .replay-fullscreen-overlay .replay-board-half .extra-monster-zone {
+        width: 84px;
+        height: 118px;
+        aspect-ratio: auto;
+    }
+
+    /* --- Touch targets --- */
+    .replay-controls-grid .sim-btn {
+        min-width: 42px;
+        min-height: 42px;
+        padding: 0.6rem;
+    }
+
+    .replay-controls-grid .sim-btn-play {
+        min-height: 42px;
+        padding: 0.6rem 1.15rem;
+    }
+
+    .log-item {
+        padding: 0.65rem 1rem;
+    }
+
+    .replay-fullscreen-close {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .replay-sidebar-header .replay-fullscreen-close {
+        width: 36px;
+        height: 36px;
+    }
+
+    .rb-last-effect-close {
+        padding: 0.35rem;
+        font-size: 1.1rem;
     }
 }

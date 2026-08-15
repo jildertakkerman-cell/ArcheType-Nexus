@@ -122,6 +122,10 @@ class ReplayBrowser {
             <div class="replay-dashboard">
                 <!-- Left Column: The Board -->
                 <div class="replay-board-column">
+                    <div class="replay-mobile-toggle">
+                        <button class="replay-mobile-toggle-btn p1 active" id="rb-toggle-p1">${this.playerNames[0]}</button>
+                        <button class="replay-mobile-toggle-btn p2" id="rb-toggle-p2">${this.playerNames[1]}</button>
+                    </div>
                     <div class="replay-board-outer">
                         <div class="replay-player-strip p2-strip">
                             <span>${this.playerNames[1]}</span>
@@ -202,8 +206,24 @@ class ReplayBrowser {
 
         this._populateLogList();
         this._wireControls();
+        this._wireMobileToggle();
         this._setupResizeObserver();
         setTimeout(() => this._repositionAll(), 100);
+    }
+
+    _wireMobileToggle() {
+        const outer = document.querySelector('.replay-board-outer');
+        const btnP1 = document.getElementById('rb-toggle-p1');
+        const btnP2 = document.getElementById('rb-toggle-p2');
+        if (!outer || !btnP1 || !btnP2) return;
+        const show = (showP2) => {
+            outer.classList.toggle('showing-p2', showP2);
+            btnP1.classList.toggle('active', !showP2);
+            btnP2.classList.toggle('active', showP2);
+            this._repositionAll();
+        };
+        btnP1.onclick = () => show(false);
+        btnP2.onclick = () => show(true);
     }
 
     _boardHTML(prefix) {
@@ -581,8 +601,11 @@ class ReplayBrowser {
         const zoneRect = zone.getBoundingClientRect();
 
         const isMobile = window.matchMedia('(max-width: 768px)').matches;
-        let w = isMobile ? 48 : 90;
-        let h = isMobile ? 70 : 100;
+        // Mobile shows one board at a time (see .replay-mobile-toggle), so zones
+        // get the full viewport width — size tokens to fit a 5-wide monster/spell
+        // row at ~375-390px while keeping the real 59:86 card aspect ratio.
+        let w = isMobile ? 58 : 90;
+        let h = isMobile ? 84 : 100;
 
         if (this.isFullscreen && !isMobile) {
             // Scale cards to fit their actual rendered zone, maintaining YGO aspect ratio (59:86).
