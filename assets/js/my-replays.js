@@ -472,15 +472,17 @@
         btns.forEach(b => { b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading…'; });
         try {
             const token = await window.Auth.getToken();
+            if (!token) throw new Error('Your session has expired — please sign in again before uploading.');
             const headers = {
                 'Content-Type': 'application/octet-stream',
                 'x-save-replay': 'true',
-                'x-filename': file.name
+                'x-filename': file.name,
+                'Authorization': `Bearer ${token}`
             };
-            if (token) headers['Authorization'] = `Bearer ${token}`;
             const res = await fetch(ANALYZER_API, { method: 'POST', headers, body: file });
             if (!res.ok) throw new Error(await res.text().catch(() => 'Upload failed'));
             const data = await res.json();
+            if (!data.replayid) throw new Error('Replay was analyzed but could not be saved to your account. Please try again.');
             sessionStorage.setItem('replayPreload', JSON.stringify(data));
             window.location.href = ANALYZER_URL;
         } catch (e) {

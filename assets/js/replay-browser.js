@@ -707,8 +707,8 @@ class ReplayBrowser {
             const step = this.moveLog[i];
             if (!step) continue;
             if (step.type && step.type.startsWith('lp-')) {
-                const amountStr = step.label.replace(/\D/g, '');
-                const amount = amountStr ? parseInt(amountStr) : 0;
+                const amountMatch = step.label.match(/(\d+)\s*LP/i);
+                const amount = amountMatch ? parseInt(amountMatch[1], 10) : 0;
                 if (isNaN(amount)) continue; // Skip malformed labels
                 if (step.type === 'lp-damage' || step.type === 'lp-cost') {
                     if (step.player === 0) p1LP = Math.max(0, p1LP - amount);
@@ -816,8 +816,8 @@ class ReplayBrowser {
         this._updateLifePoints();
         
         if (!silent && type.startsWith('lp-')) {
-            const amountStr = label.replace(/\D/g, '');
-            const amount = amountStr ? parseInt(amountStr) : 0;
+            const amountMatch = label.match(/(\d+)\s*LP/i);
+            const amount = amountMatch ? parseInt(amountMatch[1], 10) : 0;
             let floatText = '';
             if (type === 'lp-damage' || type === 'lp-cost') floatText = `-${amount}`;
             else if (type === 'lp-recover') floatText = `+${amount}`;
