@@ -25384,6 +25384,56 @@ const archetypes = [
 
     },
     {
+        name: 'Performapal',
+        description: 'A circus-themed Pendulum archetype of animal entertainers that stacks scales, floods the Extra Deck and swings out full boards through mass Pendulum Summons alongside Odd-Eyes and Magician support.',
+        filepath: 'pages/Performapal Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="performapalBg" cx="50%" cy="45%" r="65%">
+                                <stop offset="0%" stop-color="#7c1d5c"/>
+                                <stop offset="100%" stop-color="#2b0033"/>
+                            </radialGradient>
+                            <linearGradient id="performapalTent" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#ff69b4"/>
+                                <stop offset="50%" stop-color="#fbbf24"/>
+                                <stop offset="100%" stop-color="#ff69b4"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- Big top stage -->
+                        <circle cx="50" cy="50" r="45" fill="url(#performapalBg)" stroke="#ff69b4" stroke-width="3"/>
+                        <!-- Pendulum scale pillars -->
+                        <rect x="10" y="32" width="9" height="38" rx="3" fill="#1d4ed8" stroke="#93c5fd" stroke-width="1.5"/>
+                        <rect x="81" y="32" width="9" height="38" rx="3" fill="#b91c1c" stroke="#fca5a5" stroke-width="1.5"/>
+                        <text x="14.5" y="55" font-family="Roboto, sans-serif" font-size="11" font-weight="bold" fill="#dbeafe" text-anchor="middle">1</text>
+                        <text x="85.5" y="55" font-family="Roboto, sans-serif" font-size="11" font-weight="bold" fill="#fee2e2" text-anchor="middle">8</text>
+                        <!-- Swinging pendulum -->
+                        <path d="M39 34 Q50 39 61 34" stroke="#fbbf24" stroke-width="1.2" fill="none" opacity="0.6" stroke-dasharray="3 3"/>
+                        <circle cx="50" cy="20" r="2" fill="#fbbf24"/>
+                        <g>
+                            <animateTransform attributeName="transform" type="rotate" values="-22 50 20;22 50 20;-22 50 20" dur="2.6s" repeatCount="indefinite"/>
+                            <line x1="50" y1="20" x2="50" y2="32" stroke="#fbbf24" stroke-width="1.4"/>
+                            <circle cx="50" cy="33" r="3.5" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+                        </g>
+                        <!-- Circus tent canopy -->
+                        <path d="M26 64 Q50 20 74 64 Z" fill="url(#performapalTent)" stroke="#f472b6" stroke-width="2"/>
+                        <path d="M50 42 L50 64" stroke="#7c1d5c" stroke-width="1.4" opacity="0.55"/>
+                        <path d="M38 48 L36 64" stroke="#7c1d5c" stroke-width="1.4" opacity="0.55"/>
+                        <path d="M62 48 L64 64" stroke="#7c1d5c" stroke-width="1.4" opacity="0.55"/>
+                        <!-- Juggling spotlights -->
+                        <circle cx="31" cy="77" r="5" fill="#22c55e" stroke="#15803d" stroke-width="1">
+                            <animate attributeName="cy" values="77;72;77" dur="0.9s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="50" cy="80" r="5" fill="#38bdf8" stroke="#0369a1" stroke-width="1">
+                            <animate attributeName="cy" values="80;75;80" dur="0.9s" begin="0.3s" repeatCount="indefinite"/>
+                        </circle>
+                        <circle cx="69" cy="77" r="5" fill="#f97316" stroke="#c2410c" stroke-width="1">
+                            <animate attributeName="cy" values="77;72;77" dur="0.9s" begin="0.6s" repeatCount="indefinite"/>
+                        </circle>
+                    </svg>`,
+        firstReleaseDate: '2014-08-16',
+        latestReleaseDate: '2026-02-28'
+    },
+    {
         name: 'Mega Phantom Beast',
         description: 'A Machine archetype focused on summoning and equipping phantom beasts for powerful attacks.',
         filepath: 'pages/Mega Phantom Beast Deck Analysis.html',
