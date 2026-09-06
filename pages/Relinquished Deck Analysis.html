@@ -167,6 +167,45 @@
             text-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
         }
 
+        /* ===== Tab Navigation (Core vs. 2026 Support) ===== */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #4338ca;
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: #a5b4fc;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+        .tab-btn:hover { color: #ffffff; }
+        .tab-btn.active {
+            color: #fbbf24;
+            border-bottom-color: #fbbf24;
+        }
+        .tab-new-badge {
+            background: #fbbf24;
+            color: #1e1b4b;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 9999px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .tab-panel.hidden { display: none !important; }
+
         /* ===== Nightmare-Eyes Restrict impact report (2026) ===== */
         .ner-anchor { scroll-margin-top: 1.5rem; }
 
@@ -185,6 +224,7 @@
             text-decoration: none;
             transition: background 0.25s, border-color 0.25s;
         }
+        button.ner-jump { width: 100%; text-align: left; font: inherit; cursor: pointer; }
         .ner-jump:hover { background: rgba(251, 191, 36, 0.15); border-color: #fbbf24; }
         .ner-jump > i:first-child { color: #fbbf24; font-size: 1.1rem; }
         .ner-jump .ner-jump-arrow { margin-left: auto; color: #fbbf24; }
@@ -446,15 +486,14 @@
         }
         .ner-pill-warn { background: rgba(248, 113, 113, 0.18); color: #fca5a5; }
 
-        /* Material trio: the art container inherits height:100% from
-           .card-placeholder, which fills a stretched grid item and pushes the
-           title and body text out below the card border. Pin it to its own
-           height and let the text sit under it in normal flow. */
+        /* Card art inherits height:100% from .card-placeholder. Inside a
+           stretched grid item that resolves to the full card height, which
+           centres the image and shoves the title and body text out below the
+           border and onto whatever follows. Scoped to this section so any art
+           added here sizes to its own content, whatever markup it carries. */
+        #nightmare-eyes .card-placeholder { height: auto; }
         .ner-mat { display: flex; flex-direction: column; }
-        .ner-mat-art.card-placeholder {
-            height: auto;
-            align-self: center;
-        }
+        .ner-mat-art { align-self: center; }
 
         /* Host decks */
         .ner-hosts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.85rem; }
@@ -547,6 +586,19 @@
             </div>
         </section>
 
+        <!-- TAB NAVIGATION -->
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="tab-classic" onclick="switchTab('tab-classic')">
+                Core Analysis
+            </button>
+            <button class="tab-btn" data-tab="tab-2026" onclick="switchTab('tab-2026')">
+                2026 Support <span class="tab-new-badge">New</span>
+            </button>
+        </div>
+
+        <!-- ===== CORE ANALYSIS TAB ===== -->
+        <div id="tab-classic" class="tab-panel">
+
                 <!-- Executive Summary -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
             <div class="card p-6">
@@ -554,11 +606,11 @@
                 <p class="text-blue-200">
                     The <strong class="text-accent font-bold">Relinquished</strong> archetype is a classic control strategy focused on a unique parasitic mechanic: absorbing an opponent's monsters and turning their power against them. This playstyle is executed through a small but potent lineup of <a href="https://ygoprodeck.com/archetype/relinquished-255" target="_blank" class="lore-link">strange and powerful entities</a>, primarily Ritual and Fusion monsters known as "Eyes Restrict". The deck excels at non-destructive removal, bypassing many forms of protection, and thrives in a "go-second" environment where it can dismantle established boards.
                 </p>
-                <a href="#nightmare-eyes" class="ner-jump">
+                <button type="button" class="ner-jump" onclick="switchTab('tab-2026')">
                     <i class="fas fa-eye"></i>
-                    <span><strong>New for 2026.</strong> Nightmare-Eyes Restrict is the first "Eyes Restrict" Fusion that does not name Relinquished as a material. Read the impact report.</span>
-                    <i class="fas fa-arrow-down ner-jump-arrow"></i>
-                </a>
+                    <span><strong>New for 2026.</strong> Nightmare-Eyes Restrict is the first "Eyes Restrict" Fusion that does not name Relinquished as a material. Open the 2026 Support tab.</span>
+                    <i class="fas fa-arrow-right ner-jump-arrow"></i>
+                </button>
             </div>
         </section>
 
@@ -728,10 +780,14 @@
             </div>
         </section>
 
+        </div>
+        <!-- ===== END CORE ANALYSIS TAB ===== -->
+
         <!-- ===================================================================
-             2026 IMPACT REPORT: NIGHTMARE-EYES RESTRICT
+             2026 SUPPORT TAB: NIGHTMARE-EYES RESTRICT
              Added alongside the original guide. Nothing above is replaced.
              =================================================================== -->
+        <div id="tab-2026" class="tab-panel hidden">
         <section id="nightmare-eyes" class="ner-anchor mb-10 md:mb-16 animate-fadeIn">
 
             <!-- Hero -->
@@ -1187,7 +1243,9 @@
             </div>
 
         </section>
-        <!-- ===== END 2026 IMPACT REPORT ===== -->
+
+        </div>
+        <!-- ===== END 2026 SUPPORT TAB ===== -->
 
         <!-- TCG Banlist Status -->
         <section class="animate-fadeIn" style="animation-delay: 1.0s;">
@@ -1207,6 +1265,15 @@
     </div>
 
     <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const panel = document.getElementById(tabId);
+            if (panel) panel.classList.remove('hidden');
+            const btn = document.querySelector(`[data-tab="${tabId}"]`);
+            if (btn) btn.classList.add('active');
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             // --- Relinquished Vortex Banner Animation ---
             const canvas = document.getElementById('reliquished-vortex');
@@ -1356,6 +1423,8 @@
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
+    <!-- Tab deep links (#tab-2026 and friends) -->
+    <script src="../assets/js/tab-deeplink.js"></script>
 </body>
 </html>
 
