@@ -23807,7 +23807,7 @@ const archetypes = [
     },
     {
         name: 'Mitsurugi',
-        description: 'A samurai-themed archetype focused on quick attacks, chainable negation, and field control through sword techniques.',
+        description: 'A TCG-original DARK Reptile Ritual archetype where Tributing your own monsters searches, revives the Level 8 serpent blades, and layers soft and hard negation.',
         filepath: 'pages/Mitsurugi Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
