@@ -18,6 +18,30 @@
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    /**
+     * Start an OAuth redirect. `queryParams` is passed through to the provider
+     * so we can force its own login/consent screen — see the sign-in methods.
+     */
+    function _oauth(provider, redirectTo, queryParams) {
+        const c = _getClient();
+        if (!c) return;
+        const dest = redirectTo || (window.location.origin + window.location.pathname);
+        return c.auth.signInWithOAuth({
+            provider,
+            options: { redirectTo: dest, queryParams }
+        });
+    }
+
+    // signOut() clears this itself; purge defensively so a failed network call
+    // can't leave a token behind that silently restores the session on reload.
+    function _purgeStoredSession() {
+        try {
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('sb-') && k.includes('-auth-token'))
+                .forEach(k => localStorage.removeItem(k));
+        } catch (_) { /* storage unavailable */ }
+    }
+
     function _getClient() {
         if (!_client && window.supabase && window.SUPABASE_CONFIG) {
             _client = window.supabase.createClient(
@@ -86,30 +110,31 @@
             return p?.role === 'moderator' || p?.role === 'admin';
         },
 
+        /**
+         * Discord re-approves an already-authorised app without showing
+         * anything, so a logged-out user clicking "Discord" lands straight
+         * back in the same account. prompt=consent forces the authorise screen.
+         */
         async signInWithDiscord(redirectTo) {
-            const c = _getClient();
-            if (!c) return;
-            const dest = redirectTo || (window.location.origin + window.location.pathname);
-            return c.auth.signInWithOAuth({
-                provider: 'discord',
-                options: { redirectTo: dest }
-            });
+            return _oauth('discord', redirectTo, { prompt: 'consent' });
         },
 
+        /**
+         * Same for Google: without prompt=select_account it silently picks the
+         * one signed-in Google account instead of offering the chooser.
+         */
         async signInWithGoogle(redirectTo) {
-            const c = _getClient();
-            if (!c) return;
-            const dest = redirectTo || (window.location.origin + window.location.pathname);
-            return c.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: dest }
-            });
+            return _oauth('google', redirectTo, { prompt: 'select_account' });
         },
 
         async signOut() {
             const c = _getClient();
             if (!c) return;
-            await c.auth.signOut();
+            // 'global' revokes the refresh token server-side too, so another
+            // open tab can't quietly refresh the session back into existence.
+            await c.auth.signOut({ scope: 'global' }).catch(() => {});
+            _profileCache = null;
+            _purgeStoredSession();
             location.reload();
         },
 
