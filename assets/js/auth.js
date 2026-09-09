@@ -158,35 +158,49 @@
     }
 
     function userChip(name, avatar, avatarSvg, isIndex) {
-        // #replays lands directly on the replay-list panel of the account page
-        const myReplaysHref = (isIndex ? 'pages/My-Replays.html' : '../pages/My-Replays.html') + '#replays';
+        // The whole chip is the entry point to the account page (Home panel:
+        // profile, stats, replays, synergy activity and contributions).
+        const accountHref = isIndex ? 'pages/My-Replays.html' : '../pages/My-Replays.html';
         let avatarHtml;
         if (avatarSvg) {
             // Favorite-archetype icon avatar (curated inline SVG from our own DB)
-            avatarHtml = `<span class="auth-avatar-svg" style="display:inline-flex;width:26px;height:26px;border-radius:50%;
+            avatarHtml = `<span class="auth-avatar-svg" style="display:inline-flex;width:30px;height:30px;border-radius:50%;
                                 overflow:hidden;background:#111827;border:1px solid rgba(255,255,255,0.25);
-                                align-items:center;justify-content:center;">${avatarSvg}</span>`;
+                                align-items:center;justify-content:center;flex-shrink:0;">${avatarSvg}</span>`;
         } else if (avatar) {
-            avatarHtml = `<img src="${_esc(avatar)}" alt="" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">`;
+            avatarHtml = `<img src="${_esc(avatar)}" alt="" style="width:30px;height:30px;border-radius:50%;
+                                object-fit:cover;border:1px solid rgba(255,255,255,0.25);flex-shrink:0;">`;
         } else {
-            avatarHtml = `<i class="fas fa-user-circle" style="color:#a3a3a3;font-size:1.2rem;"></i>`;
+            avatarHtml = `<i class="fas fa-user-circle" style="color:#a3a3a3;font-size:1.6rem;"></i>`;
         }
         return `
-            <div style="display:inline-flex;align-items:center;gap:0.625rem;
+            <div style="display:inline-flex;align-items:center;
                         background:rgba(23,23,23,0.88);
                         border:1px solid rgba(255,255,255,0.12);border-radius:0.75rem;
-                        padding:0.4rem 0.875rem;backdrop-filter:blur(10px);">
-                ${avatarHtml}
-                <span style="color:#f5f5f5;font-size:0.82rem;font-weight:600;">${_esc(name)}</span>
-                <a href="${myReplaysHref}"
-                   style="color:#f59e0b;font-size:0.78rem;font-weight:600;text-decoration:none;"
-                   onmouseover="this.style.opacity='0.75'"
-                   onmouseout="this.style.opacity='1'">My Replays</a>
-                <button onclick="window.Auth.signOut()"
-                        style="color:#a3a3a3;font-size:0.75rem;background:none;border:none;
-                               cursor:pointer;padding:0;font-family:inherit;"
-                        onmouseover="this.style.color='#f5f5f5'"
-                        onmouseout="this.style.color='#a3a3a3'">Logout</button>
+                        padding:0.3rem 0.4rem;backdrop-filter:blur(10px);">
+                <a href="${accountHref}" title="Go to your account"
+                   style="display:inline-flex;align-items:center;gap:0.55rem;text-decoration:none;
+                          padding:0.2rem 0.45rem;border-radius:0.55rem;transition:background 0.15s;"
+                   onmouseover="this.style.background='rgba(255,255,255,0.08)'"
+                   onmouseout="this.style.background='transparent'">
+                    ${avatarHtml}
+                    <span style="display:flex;flex-direction:column;line-height:1.2;text-align:left;">
+                        <span style="color:#f5f5f5;font-size:0.82rem;font-weight:600;">${_esc(name)}</span>
+                        <span style="color:#f59e0b;font-size:0.62rem;font-weight:700;
+                                     letter-spacing:0.06em;text-transform:uppercase;">My Account</span>
+                    </span>
+                    <i class="fas fa-chevron-right" style="color:#737373;font-size:0.6rem;"></i>
+                </a>
+                <span style="width:1px;height:24px;background:rgba(255,255,255,0.12);margin:0 0.3rem;"></span>
+                <button onclick="window.Auth.signOut()" title="Log out" aria-label="Log out"
+                        style="display:inline-flex;align-items:center;justify-content:center;
+                               color:#a3a3a3;font-size:0.8rem;background:none;border:none;
+                               cursor:pointer;padding:0.35rem 0.45rem;border-radius:0.55rem;
+                               font-family:inherit;transition:color 0.15s,background 0.15s;"
+                        onmouseover="this.style.color='#fda4af';this.style.background='rgba(255,255,255,0.08)'"
+                        onmouseout="this.style.color='#a3a3a3';this.style.background='transparent'">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </div>`;
     }
 
