@@ -1108,25 +1108,32 @@
         archetypes.forEach(a => {
             if (a.name && a.filepath) {
                 const lower = a.name.toLowerCase();
-                pageEntries.push({ lower, norm: lower.replace(/[^a-z0-9]/g, ''), filepath: a.filepath });
+                pageEntries.push({
+                    lower, norm: lower.replace(/[^a-z0-9]/g, ''),
+                    filepath: a.filepath, latestReleaseDate: a.latestReleaseDate || null
+                });
             }
         });
     }
 
-    function findPage(name) {
+    function findEntry(name) {
         const lower = name.toLowerCase();
         let hit = pageEntries.find(p => p.lower === lower);
-        if (hit) return hit.filepath;
+        if (hit) return hit;
         const norm = lower.replace(/[^a-z0-9]/g, '');
         if (norm.length < 3) return null;
         hit = pageEntries.find(p => p.norm === norm);
-        if (hit) return hit.filepath;
+        if (hit) return hit;
         // Containment tier: guard against tiny norms producing false
         // positives (e.g. "Fairy Tail" must not match page "F.A." via "fa")
         const candidates = pageEntries.filter(p =>
             p.norm.startsWith(norm) || p.norm.endsWith(norm) ||
             (p.norm.length >= 5 && norm.startsWith(p.norm)));
-        return candidates.length === 1 ? candidates[0].filepath : null;
+        return candidates.length === 1 ? candidates[0] : null;
+    }
+
+    function findPage(name) {
+        return findEntry(name)?.filepath || null;
     }
 
     function archHtml(side) {
@@ -1563,6 +1570,84 @@
     }
 
     // ------------------------------------------------------------------
+    // Followed Archetypes panel — window.FollowArchetypes (follow-archetype.js)
+    // holds the identity of who's followed; archetypes-data.js (already
+    // loaded on this page) supplies latestReleaseDate so "new since you
+    // followed" can be computed entirely client-side.
+    // ------------------------------------------------------------------
+
+    let _followedActivityLoaded = false;
+
+    async function loadFollowedArchetypes() {
+        if (_followedActivityLoaded) return;
+        _followedActivityLoaded = true;
+
+        const container = document.getElementById('followed-groups');
+        if (!container || !window.FollowArchetypes) return;
+
+        let follows;
+        try {
+            follows = await window.FollowArchetypes.listFollowed();
+        } catch (e) {
+            container.innerHTML = '<div class="activity-empty">Could not load your followed archetypes.</div>';
+            return;
+        }
+
+        if (!follows.length) {
+            container.innerHTML = `<div class="activity-empty">
+                You're not following any archetypes yet — open an archetype page and hit the
+                <strong>☆ Follow</strong> button to get notified here about new support.</div>`;
+            return;
+        }
+
+        const rows = follows.map(f => {
+            const entry = f.archetypename ? findEntry(f.archetypename) : null;
+            const filepath = entry?.filepath || null;
+            const latest = entry?.latestReleaseDate ? Date.parse(entry.latestReleaseDate) : NaN;
+            const since = Date.parse(f.createdat);
+            const isNew = !isNaN(latest) && !isNaN(since) && latest > since;
+
+            const icon = f.iconsvg
+                ? `<span class="activity-arch-icon">${f.iconsvg}</span>`
+                : '';
+            const name = esc(f.archetypename || '?');
+            const nameHtml = filepath
+                ? `<a class="activity-arch" href="../${esc(filepath)}" title="Open the ${name} page">${icon}${name}</a>`
+                : `<span class="activity-arch">${icon}${name}</span>`;
+
+            return `
+                <div class="followed-row" data-archetypeid="${esc(String(f.archetypeid))}">
+                    ${nameHtml}
+                    ${isNew ? '<span class="followed-new-badge">New support</span>' : ''}
+                    <span class="followed-row-meta">Following since ${formatDateShort(f.createdat)}</span>
+                    <div class="followed-row-actions">
+                        <button type="button" class="btn-unfollow" data-archetypeid="${esc(String(f.archetypeid))}">Unfollow</button>
+                    </div>
+                </div>`;
+        }).join('');
+
+        container.innerHTML = rows;
+
+        container.addEventListener('click', async e => {
+            const btn = e.target.closest('.btn-unfollow');
+            if (!btn) return;
+            const archetypeid = btn.dataset.archetypeid;
+            btn.disabled = true;
+            try {
+                await window.FollowArchetypes.unfollow(isNaN(Number(archetypeid)) ? archetypeid : Number(archetypeid));
+                btn.closest('.followed-row')?.remove();
+                if (!container.querySelector('.followed-row')) {
+                    container.innerHTML = `<div class="activity-empty">
+                        You're not following any archetypes yet — open an archetype page and hit the
+                        <strong>☆ Follow</strong> button to get notified here about new support.</div>`;
+                }
+            } catch (err) {
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------
     // Account sidebar navigation (Google-Account style panels)
     // ------------------------------------------------------------------
 
@@ -1570,7 +1655,7 @@
         const nav = document.getElementById('account-nav');
         if (!nav) return;
 
-        const panels = { home: 'panel-home', settings: 'panel-settings', replays: 'panel-replays', synergies: 'panel-synergies', contributions: 'panel-contributions' };
+        const panels = { home: 'panel-home', settings: 'panel-settings', replays: 'panel-replays', synergies: 'panel-synergies', contributions: 'panel-contributions', followed: 'panel-followed' };
 
         function show(name) {
             if (!panels[name]) name = 'home';
@@ -1584,6 +1669,7 @@
             if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
             if (name === 'synergies') loadSynergyActivity();
             if (name === 'contributions') loadContributionActivity();
+            if (name === 'followed') loadFollowedArchetypes();
         }
 
         nav.querySelectorAll('.account-nav-item[data-panel]').forEach(btn => {
