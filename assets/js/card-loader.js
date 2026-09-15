@@ -3383,12 +3383,29 @@ window.CardLoader = (function () {
         contentContainer.innerHTML = html;
     }
 
+    // Archetype pages ask for the same archetype from the banlist, the deck dock
+    // (often twice) and elsewhere — share one request per archetype instead of
+    // re-downloading the full YGOProDeck payload for each caller.
+    const archetypeCardsPromises = {};
+
     /**
      * Fetch all cards from an archetype using the YGOProDeck API
      * @param {string} archetypeName - The archetype name (e.g., "Blue-Eyes", "Dark Magician")
      * @returns {Promise<Array<string>>} Array of card names in the archetype
      */
-    async function fetchArchetypeCards(archetypeName) {
+    function fetchArchetypeCards(archetypeName) {
+        const key = String(archetypeName).toLowerCase();
+        if (!archetypeCardsPromises[key]) {
+            archetypeCardsPromises[key] = fetchArchetypeCardsUncached(archetypeName).then(result => {
+                // Don't pin a transient failure for the rest of the page's life.
+                if (result === null) delete archetypeCardsPromises[key];
+                return result || [];
+            });
+        }
+        return archetypeCardsPromises[key].then(names => names.slice());
+    }
+
+    async function fetchArchetypeCardsUncached(archetypeName) {
         try {
             const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=${encodeURIComponent(archetypeName)}`;
             console.log(`[CardLoader] Fetching archetype cards for: ${archetypeName}`);
@@ -3418,7 +3435,7 @@ window.CardLoader = (function () {
             return cardNames;
         } catch (error) {
             console.error(`[CardLoader] Failed to fetch archetype cards for ${archetypeName}:`, error);
-            return [];
+            return null;
         }
     }
 
@@ -3726,16 +3743,32 @@ window.CardLoader = (function () {
 
         const showAllDecks = options.showAllDecks !== false;
 
-        const communityBtnGradient = options.communityButtonGradient || 'linear-gradient(to right, #64748b, #475569)';
+        // Render straight away assuming the archetype exists (the common case), so
+        // the bar doesn't sit empty while the YGOProDeck archetype lookup and the
+        // Discord links load. Those resolve in the background and re-render the
+        // buttons only if they change something. Pages await this call before
+        // rendering the rest of the bar, so it must not wait on the network.
+        // Skipped on a repeat call for the same archetype so the bar doesn't flicker.
+        if (container._deckResourcesArchetype !== archetypeName) {
+            container._deckResourcesArchetype = archetypeName;
+            container._deckResourcesHtml = buildDeckResourcesCompactHtml(archetypeName, true, null, showAllDecks);
+            container.innerHTML = container._deckResourcesHtml;
+        }
 
-        // Check if archetype exists by fetching cards
-        const archetypeCards = await fetchArchetypeCards(archetypeName);
-        const archetypeExists = archetypeCards.length > 0;
+        Promise.all([fetchArchetypeCards(archetypeName), fetchDiscordLinks()])
+            .then(([archetypeCards, discordLinks]) => {
+                if (container._deckResourcesArchetype !== archetypeName) return;
+                const discordUrl = discordLinks[archetypeName.toLowerCase()] || null;
+                const html = buildDeckResourcesCompactHtml(archetypeName, archetypeCards.length > 0, discordUrl, showAllDecks);
+                if (html !== container._deckResourcesHtml) {
+                    container.innerHTML = html;
+                    container._deckResourcesHtml = html;
+                }
+            })
+            .catch(error => console.error('[CardLoader] Failed to finish deck resources:', error));
+    }
 
-        // Fetch Discord links
-        const discordLinks = await fetchDiscordLinks();
-        const discordUrl = discordLinks[archetypeName.toLowerCase()] || null;
-
+    function buildDeckResourcesCompactHtml(archetypeName, archetypeExists, discordUrl, showAllDecks) {
         let competitiveUrl, casualUrl;
 
         if (archetypeExists) {
@@ -3793,8 +3826,7 @@ window.CardLoader = (function () {
             ` : ''}
         `;
 
-
-        container.innerHTML = html;
+        return html;
     }
 
     // ========================================
@@ -4346,6 +4378,18 @@ window.CardLoader = (function () {
         if (panel) panel.classList.remove('visible');
     }
 
+    // Archetype pages `await` the banlist render first and only then render the
+    // deck dock (Meta Decks / Cards buttons). The banlist does several slow
+    // network fetches and nothing on the pages depends on it having finished, so
+    // the public versions start it and resolve right away instead of stalling the
+    // rest of the page's init chain behind it.
+    function inBackground(render) {
+        return (...args) => {
+            render(...args).catch(error => console.error('[CardLoader] Banlist render failed:', error));
+            return Promise.resolve();
+        };
+    }
+
     // Public API
     console.log('[CardLoader] IIFE about to return public API');
     return {
@@ -4370,9 +4414,9 @@ window.CardLoader = (function () {
         // Banlist methods
         fetchBanlistData,
         checkBanlistStatus,
-        renderBanlistSection,
+        renderBanlistSection: inBackground(renderBanlistSection),
         fetchArchetypeCards: fetchArchetypeCardsFromSupabase,
-        renderBanlistSectionByArchetype,
+        renderBanlistSectionByArchetype: inBackground(renderBanlistSectionByArchetype),
         extractRelatedCardsFromCache,
         // Expose a couple of helpers for testing
         extractSummoningMaterials,

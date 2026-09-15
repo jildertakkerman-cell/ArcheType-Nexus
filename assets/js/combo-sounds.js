@@ -174,6 +174,8 @@ class ComboSounds {
         dry.connect(master);
         wet.connect(this._getReverbIn(ctx));
 
+        if (typeof ComboMusic !== 'undefined') ComboMusic._duckFor(ctx, t0, tier);
+
         this._t0 = t0;
         this._wet = wet;
         this[method](ctx, this.BASE, dry);
@@ -825,3 +827,182 @@ class ComboSounds {
 }
 
 window.ComboSounds = ComboSounds;
+
+/**
+ * ComboMusic — generative ambient background loop, synthesized on ComboSounds' audio graph.
+ * A minor (relative of the C-major SFX palette): slow low-passed pad chords, a soft root note and
+ * the occasional pentatonic bell. Ducks under every ComboSounds.play() and follows its mute/volume.
+ *
+ * Usage: ComboMusic.start() / ComboMusic.stop()
+ *
+ * Signal flow:  layers ───────→ fade → duck → ComboSounds master
+ *               layer sends ──→ fade → duck → ComboSounds reverb
+ */
+class ComboMusic {
+    static _dry = null;     // { fade, duck }
+    static _wet = null;     // { fade, duck }
+    static _timer = null;
+    static _nextBar = 0;
+    static _bar = 0;
+
+    // ~-30 dB short-term — roughly 6 dB under the quietest regular SFX tier
+    static LEVEL = 0.53;
+    static BAR_S = 8;
+    static LOOKAHEAD_S = 2.5;
+
+    // Am9 → Fmaj7 → Cmaj9 → Em7(add11); pad voicings stay under ~500Hz so they sit below the SFX
+    static CHORDS = [
+        { root: 110.00, pad: [220.00, 261.63, 329.63, 493.88] },
+        { root: 87.31,  pad: [174.61, 220.00, 261.63, 329.63] },
+        { root: 130.81, pad: [164.81, 196.00, 246.94, 293.66] },
+        { root: 82.41,  pad: [196.00, 246.94, 293.66, 440.00] },
+    ];
+    static BELLS = [440.00, 523.25, 587.33, 659.25, 783.99, 880.00];
+
+    static get isPlaying() {
+        return this._timer !== null;
+    }
+
+    static start() {
+        if (this._timer) return;
+        const ctx = ComboSounds.ctx;
+        if (!ctx) return;
+        // Fresh buses per start so notes still queued from a previous stop() stay silent
+        const bus = (dest) => {
+            const fade = ctx.createGain();
+            const duck = ctx.createGain();
+            fade.gain.value = 0;
+            fade.gain.setTargetAtTime(this.LEVEL, ctx.currentTime, 1.2);
+            fade.connect(duck); duck.connect(dest);
+            return { fade, duck };
+        };
+        this._dry = bus(ComboSounds._getMaster(ctx));
+        this._wet = bus(ComboSounds._getReverbIn(ctx));
+        this._nextBar = ctx.currentTime + 0.1;
+        this._bar = 0;
+        this._tick();
+        this._timer = setInterval(() => this._tick(), 500);
+        this._resumeOnGesture(ctx);
+    }
+
+    // start() may run outside a user gesture (e.g. after an async load), where autoplay policy keeps
+    // the context suspended — resume it on the first interaction instead
+    static _resumeOnGesture(ctx) {
+        if (ctx.state === 'running') return;
+        const resume = () => {
+            ctx.resume().catch(() => {});
+            ['pointerdown', 'keydown'].forEach(type => document.removeEventListener(type, resume, true));
+        };
+        ['pointerdown', 'keydown'].forEach(type => document.addEventListener(type, resume, true));
+    }
+
+    static stop() {
+        if (!this._timer) return;
+        clearInterval(this._timer);
+        this._timer = null;
+        const buses = [this._dry, this._wet];
+        const t = this._dry.fade.context.currentTime;
+        buses.forEach(({ fade }) => {
+            fade.gain.cancelScheduledValues(t);
+            fade.gain.setTargetAtTime(0, t, 0.4);
+        });
+        setTimeout(() => buses.forEach(({ duck }) => duck.disconnect()), (this.LOOKAHEAD_S + 3) * 1000);
+        this._dry = null;
+        this._wet = null;
+    }
+
+    // Sidechain-style dip under sound effects, deeper and longer for bigger events
+    static _duckFor(ctx, t, tier) {
+        if (!this._dry || this._dry.duck.context !== ctx) return;
+        const [depth, hold] = { major: [0.3, 1.2], mid: [0.5, 0.5], minor: [0.7, 0.2] }[tier];
+        [this._dry.duck.gain, this._wet.duck.gain].forEach(p => {
+            p.cancelScheduledValues(t);
+            p.setTargetAtTime(depth, t, 0.03);
+            p.setTargetAtTime(1, t + hold, 0.6);
+        });
+    }
+
+    static _tick() {
+        const ctx = this._dry.fade.context;
+        // Throttled timers (background tab) — skip missed bars instead of bursting them all at once
+        if (this._nextBar < ctx.currentTime - 0.5) this._nextBar = ctx.currentTime + 0.1;
+        while (this._nextBar < ctx.currentTime + this.LOOKAHEAD_S) {
+            this._scheduleBar(ctx, this._nextBar, this.CHORDS[this._bar % this.CHORDS.length]);
+            this._nextBar += this.BAR_S;
+            this._bar++;
+        }
+    }
+
+    static _send(ctx, node, amount) {
+        const s = ctx.createGain();
+        s.gain.value = amount;
+        node.connect(s); s.connect(this._wet.fade);
+    }
+
+    // Gain with a slow fade-in, sustain and fade-out over [t, end]
+    static _swell(ctx, t, end, level, attack, release) {
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(level, t + attack);
+        g.gain.setValueAtTime(level, end - release);
+        g.gain.linearRampToValueAtTime(0, end);
+        return g;
+    }
+
+    static _scheduleBar(ctx, t, chord) {
+        const out = this._dry.fade;
+        const end = t + this.BAR_S + 3; // overlaps the next chord for a crossfade
+
+        // Pad — two detuned saws per note through a slowly breathing low-pass
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.Q.value = 0.4;
+        lp.frequency.value = 700;
+        const lfo = ctx.createOscillator();
+        const lfoG = ctx.createGain();
+        lfo.frequency.value = 0.06 + Math.random() * 0.04;
+        lfoG.gain.value = 220;
+        lfo.connect(lfoG); lfoG.connect(lp.frequency);
+        const pg = this._swell(ctx, t, end, 0.028, 3, 3);
+        lp.connect(pg); pg.connect(out);
+        this._send(ctx, pg, 0.35);
+        lfo.start(t); lfo.stop(end);
+        chord.pad.forEach((freq, i) => {
+            const pan = ctx.createStereoPanner();
+            pan.pan.value = (i / (chord.pad.length - 1)) * 1.1 - 0.55;
+            pan.connect(lp);
+            [-7, 7].forEach(cents => {
+                const o = ctx.createOscillator();
+                o.type = 'sawtooth';
+                o.frequency.value = freq;
+                o.detune.value = cents;
+                o.connect(pan);
+                o.start(t); o.stop(end);
+            });
+        });
+
+        // Root — soft sine with an octave layer so it's felt without booming
+        [[1, 0.05], [2, 0.015]].forEach(([mult, lvl]) => {
+            const o = ctx.createOscillator();
+            o.frequency.value = chord.root * mult;
+            const g = this._swell(ctx, t, end, lvl, 2.5, 3);
+            o.connect(g); g.connect(out);
+            o.start(t); o.stop(end);
+        });
+
+        // Bells — 0–2 sparse pentatonic notes per bar, mostly heard through the reverb
+        const count = Math.random() < 0.25 ? 0 : (Math.random() < 0.6 ? 1 : 2);
+        for (let i = 0; i < count; i++) {
+            const tb = t + 1 + Math.random() * (this.BAR_S - 2);
+            const freq = this.BELLS[Math.floor(Math.random() * this.BELLS.length)];
+            const bell = ComboSounds._fm(ctx, freq, 2, 0.25, tb, 2.6, 'sine');
+            const g = ComboSounds._env(ctx, tb, 0.02, 0.01, 2.6);
+            bell.connect(g); g.connect(out);
+            this._send(ctx, g, 0.8);
+            bell.start(tb); bell.stop(tb + 2.7);
+        }
+    }
+}
+
+window.ComboMusic = ComboMusic;

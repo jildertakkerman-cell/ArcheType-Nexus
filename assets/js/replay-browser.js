@@ -213,6 +213,7 @@ class ReplayBrowser {
                             <i class="fas fa-tachometer-alt" style="color:var(--text-muted); font-size: 0.8rem;"></i>
                             <input type="range" id="rb-speed" min="400" max="2400" step="200" value="1600" style="flex:1;">
                         </div>
+                        <button class="sim-btn sim-btn-sound${this._musicEnabled() ? '' : ' sound-muted'}" id="rb-music" title="Background music"><i class="fas fa-music"></i></button>
                         <button class="sim-btn sim-btn-sound" id="rb-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
                     </div>
                 </div>
@@ -228,6 +229,7 @@ class ReplayBrowser {
         this._wireControls();
         this._wireMobileToggle();
         this._setupResizeObserver();
+        this._syncMusic();
         setTimeout(() => this._repositionAll(), 100);
     }
 
@@ -383,6 +385,24 @@ class ReplayBrowser {
             btn.innerHTML = muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
             btn.classList.toggle('sound-muted', muted);
         };
+        document.getElementById('rb-music').onclick = () => {
+            const enabled = !this._musicEnabled();
+            try { localStorage.setItem('rb-music', enabled ? 'on' : 'off'); } catch (e) {}
+            document.getElementById('rb-music').classList.toggle('sound-muted', !enabled);
+            this._syncMusic();
+        };
+    }
+
+    // Background music preference — on by default, remembered per browser
+    _musicEnabled() {
+        try { return localStorage.getItem('rb-music') !== 'off'; } catch (e) { return true; }
+    }
+
+    // Music plays for as long as this browser is alive, unless the viewer switched it off
+    _syncMusic() {
+        if (typeof ComboMusic === 'undefined') return;
+        if (!this._destroyed && this._musicEnabled()) ComboMusic.start();
+        else ComboMusic.stop();
     }
 
     _setupResizeObserver() {
@@ -1096,6 +1116,8 @@ class ReplayBrowser {
     }
 
     destroy() {
+        this._destroyed = true;
+        this._syncMusic();
         this._stopPlay();
         this.exitFullscreen();
         if (this._escHandler) {
