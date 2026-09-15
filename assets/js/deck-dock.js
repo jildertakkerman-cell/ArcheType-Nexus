@@ -16,6 +16,10 @@
  * CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', ...) and
  * initSynergyTags(...) — finds the same ids it always did.
  *
+ * Optional colour theme (see DOCK_THEMES below), e.g. Speedroid's green bar:
+ *
+ *   <div id="deck-dock" data-dock-theme="emerald"></div>
+ *
  * Pages that still carry the pasted markup are left alone: if
  * #synergy-dock-wrap already exists, placeholders are just removed, so the
  * bar is never rendered twice.
@@ -57,6 +61,31 @@
             </div>
         </nav>`;
 
+    // Per-theme Tailwind class swaps (default class -> themed class). Full class
+    // names only, so Tailwind's content scan of this file generates them. On
+    // desktop synergy-tags.css restyles the bar itself, so the bar colours
+    // mostly show on the mobile dock; the Synergies chip is themed on both.
+    const DOCK_THEMES = {
+        emerald: {
+            'bg-[#0d121c]/95': 'bg-[#0d1712]/95',
+            'border-indigo-500/20': 'border-emerald-500/20',
+            'lg:border-indigo-500/30': 'lg:border-emerald-500/30',
+            'lg:bg-[#0f172a]/90': 'lg:bg-[#0f1f17]/90',
+            'bg-[#1e293b]': 'bg-[#12261c]',
+            'border-indigo-500/30': 'border-emerald-500/30'
+        }
+    };
+
+    function themed(html, themeName) {
+        const swaps = DOCK_THEMES[themeName];
+        if (!swaps) {
+            if (themeName) console.warn(`[DeckDock] unknown data-dock-theme "${themeName}" — using the default bar.`);
+            return html;
+        }
+        return html.replace(/class="([^"]*)"/g, (_, classes) =>
+            `class="${classes.split(' ').map(c => swaps[c] || c).join(' ')}"`);
+    }
+
     function mount() {
         const placeholders = document.querySelectorAll('#deck-dock');
         if (!placeholders.length) return;
@@ -69,10 +98,16 @@
         }
 
         const tpl = document.createElement('template');
-        tpl.innerHTML = DOCK_HTML.trim();
+        tpl.innerHTML = themed(DOCK_HTML.trim(), placeholders[0].dataset.dockTheme);
         placeholders[0].replaceWith(tpl.content);
         for (let i = 1; i < placeholders.length; i++) placeholders[i].remove();
     }
+
+    // Read by scripts/convert-to-deck-dock.js to recognise pasted copies of this markup.
+    window.DeckDock = {
+        markup: themeName => themed(DOCK_HTML.trim(), themeName),
+        themes: Object.keys(DOCK_THEMES)
+    };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', mount);

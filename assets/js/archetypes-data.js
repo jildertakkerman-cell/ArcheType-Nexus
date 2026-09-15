@@ -297,7 +297,7 @@ const archetypes = [
     {
         name: 'Mythical beast',
         description: 'A Spellcaster archetype themed around magical beasts and spell counters, focusing on powerful effects and field control.',
-        filepath: 'pages/Mythical beast Deck Analysis.html',
+        filepath: 'pages/Mythical beast Deck analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <radialGradient id="beastAura" cx="50%" cy="50%" r="60%">
@@ -27333,7 +27333,7 @@ const archetypes = [
     {
         name: 'X-Saber',
         description: 'A Warrior and Beast-Warrior archetype that specializes in Synchro Summoning, featuring swarming capabilities, hand destruction effects, and powerful boss monsters like XX-Saber Gottoms and XX-Saber Hyunlei.',
-        filepath: 'pages/X-Saber Deck Analysis.html',
+        filepath: 'pages/X-saber Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="xSaberBg" cx="50%" cy="50%" r="50%">
@@ -31660,7 +31660,7 @@ const archetypes = [
     {
         name: "Cocoon of Evolution",
         description: "An archetype focused on insect evolution and summoning powerful monsters through cocoon stages.",
-        filepath: "pages/Cocoon of Evolution Deck Analysis.html",
+        filepath: "pages/Cocoon of evolution Deck Analysis.html",
         icon: `<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <radialGradient id="cocoonGrad" cx="50%" cy="50%" r="50%">
