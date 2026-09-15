@@ -1264,10 +1264,115 @@ h1 {
 }
 
 /* Divider between the two halves */
-.replay-board-divider {
-    height: 4px;
-    background: linear-gradient(90deg, transparent, #2563eb 30%, #ef4444 70%, transparent);
+/* Turn player + phase tracker — sits between the two boards.
+   .replay-dashboard[data-turn-player] is set by ReplayBrowser._updateTurnIndicator. */
+.replay-dashboard {
+    --turn-color: #64748b;
+    --turn-tint: rgba(100, 116, 139, 0.15);
+}
+
+.replay-dashboard[data-turn-player="0"] {
+    --turn-color: var(--player1-color);
+    --turn-tint: rgba(239, 68, 68, 0.18);
+}
+
+.replay-dashboard[data-turn-player="1"] {
+    --turn-color: var(--player2-color);
+    --turn-tint: rgba(245, 158, 11, 0.18);
+}
+
+.replay-phase-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    padding: 0.35rem 1rem;
     flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border-top: 2px solid var(--turn-color);
+    border-bottom: 2px solid var(--turn-color);
+    transition: border-color 0.3s ease;
+}
+
+.rb-turn-owner {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--turn-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.3s ease;
+}
+
+.rb-turn-owner::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--turn-color);
+    box-shadow: 0 0 0.5rem var(--turn-color);
+}
+
+.rb-phase-track {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.rb-phase {
+    min-width: 2.1rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.35);
+    cursor: default;
+    transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.rb-phase.done {
+    color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.rb-phase.current {
+    color: #fff;
+    background: var(--turn-color);
+    border-color: var(--turn-color);
+    box-shadow: 0 0 0.6rem var(--turn-tint);
+}
+
+/* Turn player's name strip */
+.rb-turn-chip {
+    display: none;
+    padding: 0.05rem 0.45rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    color: #0a1520;
+    background: var(--turn-color);
+}
+
+.replay-dashboard[data-turn-player="0"] .p1-strip,
+.replay-dashboard[data-turn-player="1"] .p2-strip {
+    background: var(--turn-tint);
+    box-shadow: inset 4px 0 0 var(--turn-color);
+}
+
+.replay-dashboard[data-turn-player="0"] .p1-strip .rb-turn-chip,
+.replay-dashboard[data-turn-player="1"] .p2-strip .rb-turn-chip {
+    display: inline-block;
 }
 
 /* Dashboard Layout */
@@ -1827,7 +1932,7 @@ h1 {
     flex-shrink: 0;
 }
 
-.replay-fullscreen-overlay .replay-board-divider {
+.replay-fullscreen-overlay .replay-phase-bar {
     flex-shrink: 0;
 }
 
@@ -2255,8 +2360,27 @@ h1 {
         background: rgba(245, 158, 11, 0.12);
     }
 
+    /* Dot on the toggle for whoever's turn it is */
+    .replay-dashboard[data-turn-player="0"] .replay-mobile-toggle-btn.p1::after,
+    .replay-dashboard[data-turn-player="1"] .replay-mobile-toggle-btn.p2::after {
+        content: '';
+        display: inline-block;
+        width: 0.45rem;
+        height: 0.45rem;
+        margin-left: 0.4rem;
+        vertical-align: middle;
+        border-radius: 50%;
+        background: var(--turn-color);
+    }
+
+    /* Only one board is visible, so the phase bar goes above it instead of between boards */
+    .replay-phase-bar {
+        order: -1;
+        padding: 0.4rem 0.75rem;
+        border-top: none;
+    }
+
     /* --- Show one board at a time (default: Player 1) --- */
-    .replay-board-divider,
     .replay-board-half.p2-half,
     .replay-player-strip.p2-strip {
         display: none;

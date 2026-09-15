@@ -32629,7 +32629,7 @@ const archetypes = [
     },
     {
         name: "Salamangreat",
-        description: "A deck analysis for the Salamangreat archetype.",
+        description: "Salamangreat is a resilient FIRE Cyberse mid-range strategy built around Reincarnation Link Summoning, where Salamangreat Sanctuary lets a Link monster use its own copy as material to unlock powerful bonus effects, while Gazelle, Sunlight Wolf, and Raging Phoenix search and recycle resources into a self-sustaining engine that out-grinds opponents over multiple turns.",
         filepath: "pages/Salamangreat Deck Analysis.html",
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>

@@ -6,15 +6,15 @@
    {
      type: string,     // maps to ComboSounds event (see SOUND_MAP below)
      turn: number,
-     player: 1|2,
-     phase: string,
+     player: 0|1,      // on turn-change steps this is the turn player
+     phase: string,    // draw | standby | main1 | battle | main2 | end
      label: string,    // human-readable description shown in the log
      actions: [
        {
          id: string,   // stable unique instance ID assigned by backend
          code: number, // YGOPro passcode (used for card image lookup)
          name: string, // card name (used for CardLoader image + popup)
-         player: 1|2,  // which player's board the card belongs to
+         player: 0|1,  // which player's board the card belongs to
          from: string, // source zone (canonical name, see ZONE_MAP)
          to: string    // destination zone (canonical name, see ZONE_MAP)
        }
@@ -52,13 +52,23 @@ const REPLAY_SOUND_MAP = {
     'equip':                  'equip',
     'set':                    'normal-summon',
     'set-monster':            'normal-summon',
-    'return-to-hand':         'step',
+    'return-to-hand':         'to-hand',
     'position-change':        'step',
     'stat-change':            'effect',
     'phase-change':           'step',
     'turn-change':            'step',
     'game-over':              'combo-complete',
 };
+
+// Phase ids as emitted by the backend's move_log_builder (all battle steps collapse to 'battle').
+const REPLAY_PHASES = [
+    { id: 'draw',    short: 'DP', name: 'Draw Phase' },
+    { id: 'standby', short: 'SP', name: 'Standby Phase' },
+    { id: 'main1',   short: 'M1', name: 'Main Phase 1' },
+    { id: 'battle',  short: 'BP', name: 'Battle Phase' },
+    { id: 'main2',   short: 'M2', name: 'Main Phase 2' },
+    { id: 'end',     short: 'EP', name: 'End Phase' },
+];
 
 const ZONE_MAP = {
     'hand':                      'hand',
@@ -99,8 +109,9 @@ class ReplayBrowser {
         this.resizeObserver = null;
         this._lastEffectName = null;
         this._lastEffectDesc = null;
-        this._mobileActivePlayer = 1;
+        this._mobileActivePlayer = 0;
         this._showMobilePlayer = null;
+        this._turnPlayer = null;    // 0|1, taken from the latest turn-change step
     }
 
     _injectReplayCSS() {
@@ -131,17 +142,24 @@ class ReplayBrowser {
                     <div class="replay-board-outer">
                         <div class="replay-player-strip p2-strip">
                             <span>${this.playerNames[1]}</span>
+                            <span class="rb-turn-chip">Turn</span>
                             <span id="rb-p2-lp" style="margin-left:auto;opacity:0.7;">8000 LP</span>
                         </div>
                         <div class="replay-board-half p2-half" id="rb-p2-half">
                             ${this._boardHTML('p2')}
                         </div>
-                        <div class="replay-board-divider"></div>
+                        <div class="replay-phase-bar">
+                            <div class="rb-turn-owner" id="rb-turn-owner">Pre-game</div>
+                            <ol class="rb-phase-track" id="rb-phase-track">
+                                ${REPLAY_PHASES.map(p => `<li class="rb-phase" title="${p.name}">${p.short}</li>`).join('')}
+                            </ol>
+                        </div>
                         <div class="replay-board-half p1-half" id="rb-p1-half">
                             ${this._boardHTML('p1')}
                         </div>
                         <div class="replay-player-strip p1-strip">
                             <span>${this.playerNames[0]}</span>
+                            <span class="rb-turn-chip">Turn</span>
                             <span id="rb-p1-lp" style="margin-left:auto;opacity:0.7;">8000 LP</span>
                         </div>
                     </div>
@@ -225,8 +243,8 @@ class ReplayBrowser {
             this._repositionAll();
         };
         // Manual taps override the auto-follow until the active player changes again.
-        btnP1.onclick = () => { this._mobileActivePlayer = 1; show(false); };
-        btnP2.onclick = () => { this._mobileActivePlayer = 2; show(true); };
+        btnP1.onclick = () => { this._mobileActivePlayer = 0; show(false); };
+        btnP2.onclick = () => { this._mobileActivePlayer = 1; show(true); };
         this._showMobilePlayer = show;
     }
 
@@ -829,14 +847,19 @@ class ReplayBrowser {
         // what's actually happening. Skipped once the user has manually
         // picked a side and this step doesn't say otherwise.
         const stepPlayer = step.player ?? actions?.[0]?.player;
-        if ((stepPlayer === 1 || stepPlayer === 2) && stepPlayer !== this._mobileActivePlayer) {
+        if ((stepPlayer === 0 || stepPlayer === 1) && stepPlayer !== this._mobileActivePlayer) {
             this._mobileActivePlayer = stepPlayer;
-            if (this._showMobilePlayer) this._showMobilePlayer(stepPlayer === 2);
+            if (this._showMobilePlayer) this._showMobilePlayer(stepPlayer === 1);
+        }
+
+        // Only turn-change steps say whose turn it is; other steps' player is
+        // the card's controller, which can be the non-turn player.
+        if (type === 'turn-change' && (step.player === 0 || step.player === 1)) {
+            this._turnPlayer = step.player;
         }
 
         if (turn !== undefined) {
-            const turnEl = document.getElementById('rb-turn-label');
-            if (turnEl) turnEl.textContent = `Turn ${turn} · ${phase || ''}`;
+            this._updateTurnIndicator(turn, phase);
 
             if (typeof updateChartHighlight === 'function') {
                 updateChartHighlight(turn, phase);
@@ -894,6 +917,38 @@ class ReplayBrowser {
             const soundType = (type === 'effect-activate' && step._isNegated) ? 'effect-negate' : type;
             const soundEvent = REPLAY_SOUND_MAP[soundType];
             if (soundEvent) ComboSounds.play(soundEvent);
+        }
+    }
+
+    _updateTurnIndicator(turn, phase) {
+        const started = turn > 0;
+        const player = started ? this._turnPlayer : null;
+        const current = started ? REPLAY_PHASES.findIndex(p => p.id === phase) : -1;
+
+        // Player colors on the strips, toggle buttons and phase bar key off this attribute.
+        const dashboard = document.querySelector('.replay-dashboard');
+        if (dashboard) {
+            if (player === 0 || player === 1) dashboard.dataset.turnPlayer = player;
+            else delete dashboard.dataset.turnPlayer;
+        }
+
+        const owner = document.getElementById('rb-turn-owner');
+        if (owner) {
+            owner.textContent = !started ? 'Pre-game'
+                : (player === 0 || player === 1) ? `Turn ${turn} · ${this.playerNames[player]}`
+                : `Turn ${turn}`;
+        }
+
+        document.querySelectorAll('#rb-phase-track .rb-phase').forEach((el, i) => {
+            el.classList.toggle('done', i < current);
+            el.classList.toggle('current', i === current);
+        });
+
+        const turnEl = document.getElementById('rb-turn-label');
+        if (turnEl) {
+            turnEl.textContent = started
+                ? `Turn ${turn} · ${REPLAY_PHASES[current]?.short ?? phase ?? ''}`
+                : 'Turn —';
         }
     }
 
@@ -982,8 +1037,8 @@ class ReplayBrowser {
             const lp = document.getElementById(`rb-${p}-lp`);
             if (lp) lp.textContent = '8000 LP';
         });
-        const turnEl = document.getElementById('rb-turn-label');
-        if (turnEl) turnEl.textContent = 'Turn —';
+        this._turnPlayer = null;
+        this._updateTurnIndicator(0);
 
         for (let i = 0; i <= targetIndex; i++) {
             this._applyStep(this.moveLog[i], true);
