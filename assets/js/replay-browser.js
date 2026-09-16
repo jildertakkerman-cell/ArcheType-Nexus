@@ -565,7 +565,8 @@ class ReplayBrowser {
         try { return localStorage.getItem('rb-music') !== 'off'; } catch (e) { return true; }
     }
 
-    // Music plays for as long as this browser is alive, unless the viewer switched it off
+    // Music plays for as long as this browser is alive, unless the viewer switched it off.
+    // ComboMusic draws the track itself, so which one plays is its business, not ours.
     _syncMusic() {
         if (typeof ComboMusic === 'undefined') return;
         if (!this._destroyed && this._musicEnabled()) ComboMusic.start();

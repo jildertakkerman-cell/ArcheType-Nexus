@@ -829,11 +829,11 @@ class ComboSounds {
 window.ComboSounds = ComboSounds;
 
 /**
- * ComboMusic — generative ambient background loop, synthesized on ComboSounds' audio graph.
- * A minor (relative of the C-major SFX palette): slow low-passed pad chords, a soft root note and
- * the occasional pentatonic bell. Ducks under every ComboSounds.play() and follows its mute/volume.
+ * ComboMusic — generative ambient background loops, synthesized on ComboSounds' audio graph.
+ * One of the tracks in TRACKS is picked at random per start; all of them are mixed to sit under the
+ * SFX: they duck beneath every ComboSounds.play() and follow its mute/volume.
  *
- * Usage: ComboMusic.start() / ComboMusic.stop()
+ * Usage: ComboMusic.start() / ComboMusic.stop() — start(i) forces a track, for auditioning
  *
  * Signal flow:  layers ───────→ fade → duck → ComboSounds master
  *               layer sends ──→ fade → duck → ComboSounds reverb
@@ -844,35 +844,78 @@ class ComboMusic {
     static _timer = null;
     static _nextBar = 0;
     static _bar = 0;
+    static _track = 0;
 
     // ~-30 dB short-term — roughly 6 dB under the quietest regular SFX tier
     static LEVEL = 0.53;
-    static BAR_S = 8;
     static LOOKAHEAD_S = 2.5;
 
-    // Am9 → Fmaj7 → Cmaj9 → Em7(add11); pad voicings stay under ~500Hz so they sit below the SFX
-    static CHORDS = [
-        { root: 110.00, pad: [220.00, 261.63, 329.63, 493.88] },
-        { root: 87.31,  pad: [174.61, 220.00, 261.63, 329.63] },
-        { root: 130.81, pad: [164.81, 196.00, 246.94, 293.66] },
-        { root: 82.41,  pad: [196.00, 246.94, 293.66, 440.00] },
+    /**
+     * Each track is { id, name, bar (seconds), gain (x LEVEL), chords, notes, build }.
+     * `chords` cycle one per bar; `notes` is the scale the track's struck layer draws from.
+     * Voicings stay under ~600Hz so the pads sit below the SFX.
+     */
+    static TRACKS = [
+        {
+            id: 'drift',
+            name: 'Aether Drift',
+            bar: 8,
+            gain: 1,
+            // A minor (relative of the C-major SFX palette): Am9 -> Fmaj7 -> Cmaj9 -> Em7(add11)
+            chords: [
+                { root: 110.00, pad: [220.00, 261.63, 329.63, 493.88] },
+                { root: 87.31,  pad: [174.61, 220.00, 261.63, 329.63] },
+                { root: 130.81, pad: [164.81, 196.00, 246.94, 293.66] },
+                { root: 82.41,  pad: [196.00, 246.94, 293.66, 440.00] },
+            ],
+            notes: [440.00, 523.25, 587.33, 659.25, 783.99, 880.00],
+            build: (ctx, t, track, out) => ComboMusic._buildDrift(ctx, t, track, out),
+        },
+        {
+            id: 'undertow',
+            name: 'Undertow',
+            bar: 6.4,   // eight 0.8s beats — 75 BPM
+            gain: 0.95,
+            // D minor, darker and a step down: Dm9 -> Bbmaj7 -> Gm7 -> A7sus4
+            chords: [
+                { root: 73.42,  pad: [146.83, 174.61, 220.00, 329.63] },
+                { root: 116.54, pad: [174.61, 233.08, 293.66, 349.23] },
+                { root: 98.00,  pad: [146.83, 174.61, 233.08, 293.66] },
+                { root: 110.00, pad: [164.81, 220.00, 293.66, 329.63] },
+            ],
+            notes: [293.66, 349.23, 392.00, 440.00, 523.25, 587.33],
+            build: (ctx, t, track, out) => ComboMusic._buildUndertow(ctx, t, track, out),
+        },
     ];
-    static BELLS = [440.00, 523.25, 587.33, 659.25, 783.99, 880.00];
 
     static get isPlaying() {
         return this._timer !== null;
     }
 
-    static start() {
+    static get track() {
+        return this._track;
+    }
+
+    static get trackName() {
+        return this.TRACKS[this._track].name;
+    }
+
+    // A track is drawn at random per start, so repeat visits don't always open on the same one.
+    // Pass an index to force a particular track instead.
+    static start(track) {
         if (this._timer) return;
         const ctx = ComboSounds.ctx;
         if (!ctx) return;
+        this._track = Number.isInteger(track)
+            ? ((track % this.TRACKS.length) + this.TRACKS.length) % this.TRACKS.length
+            : Math.floor(Math.random() * this.TRACKS.length);
         // Fresh buses per start so notes still queued from a previous stop() stay silent
+        const level = this.LEVEL * this.TRACKS[this._track].gain;
         const bus = (dest) => {
             const fade = ctx.createGain();
             const duck = ctx.createGain();
             fade.gain.value = 0;
-            fade.gain.setTargetAtTime(this.LEVEL, ctx.currentTime, 1.2);
+            fade.gain.setTargetAtTime(level, ctx.currentTime, 1.2);
             fade.connect(duck); duck.connect(dest);
             return { fade, duck };
         };
@@ -924,13 +967,19 @@ class ComboMusic {
 
     static _tick() {
         const ctx = this._dry.fade.context;
+        const track = this.TRACKS[this._track];
         // Throttled timers (background tab) — skip missed bars instead of bursting them all at once
         if (this._nextBar < ctx.currentTime - 0.5) this._nextBar = ctx.currentTime + 0.1;
         while (this._nextBar < ctx.currentTime + this.LOOKAHEAD_S) {
-            this._scheduleBar(ctx, this._nextBar, this.CHORDS[this._bar % this.CHORDS.length]);
-            this._nextBar += this.BAR_S;
+            track.build(ctx, this._nextBar, track, this._dry.fade);
+            this._nextBar += track.bar;
             this._bar++;
         }
+    }
+
+    // The chord this bar lands on
+    static _chord(track) {
+        return track.chords[this._bar % track.chords.length];
     }
 
     static _send(ctx, node, amount) {
@@ -950,37 +999,53 @@ class ComboMusic {
         return g;
     }
 
-    static _scheduleBar(ctx, t, chord) {
-        const out = this._dry.fade;
-        const end = t + this.BAR_S + 3; // overlaps the next chord for a crossfade
-
-        // Pad — two detuned saws per note through a slowly breathing low-pass
+    // Sustained pad — a detuned oscillator pair per note, spread across the stereo field and shared
+    // through one slowly breathing low-pass
+    static _pad(ctx, t, end, notes, out, { wave, cutoff, sweep, detune, level, attack, wet }) {
         const lp = ctx.createBiquadFilter();
         lp.type = 'lowpass';
         lp.Q.value = 0.4;
-        lp.frequency.value = 700;
+        lp.frequency.value = cutoff;
         const lfo = ctx.createOscillator();
         const lfoG = ctx.createGain();
         lfo.frequency.value = 0.06 + Math.random() * 0.04;
-        lfoG.gain.value = 220;
+        lfoG.gain.value = sweep;
         lfo.connect(lfoG); lfoG.connect(lp.frequency);
-        const pg = this._swell(ctx, t, end, 0.028, 3, 3);
+        const pg = this._swell(ctx, t, end, level, attack, 3);
         lp.connect(pg); pg.connect(out);
-        this._send(ctx, pg, 0.35);
+        this._send(ctx, pg, wet);
         lfo.start(t); lfo.stop(end);
-        chord.pad.forEach((freq, i) => {
+        notes.forEach((freq, i) => {
             const pan = ctx.createStereoPanner();
-            pan.pan.value = (i / (chord.pad.length - 1)) * 1.1 - 0.55;
+            pan.pan.value = (i / (notes.length - 1)) * 1.1 - 0.55;
             pan.connect(lp);
-            [-7, 7].forEach(cents => {
+            [-detune, detune].forEach(cents => {
                 const o = ctx.createOscillator();
-                o.type = 'sawtooth';
+                o.type = wave;
                 o.frequency.value = freq;
                 o.detune.value = cents;
                 o.connect(pan);
                 o.start(t); o.stop(end);
             });
         });
+    }
+
+    // Single struck note — FM carrier under a fast attack, mostly heard through the reverb
+    static _pluck(ctx, t, freq, out, { level, decay, ratio, index, attack, wet }) {
+        const carrier = ComboSounds._fm(ctx, freq, ratio, index, t, decay, 'sine');
+        const g = ComboSounds._env(ctx, t, level, attack, decay);
+        carrier.connect(g); g.connect(out);
+        this._send(ctx, g, wet);
+        carrier.start(t); carrier.stop(t + decay + 0.1);
+    }
+
+    // Aether Drift — slow low-passed saw pad, a soft root note and the occasional pentatonic bell
+    static _buildDrift(ctx, t, track, out) {
+        const chord = this._chord(track);
+        const end = t + track.bar + 3; // overlaps the next chord for a crossfade
+
+        this._pad(ctx, t, end, chord.pad, out,
+            { wave: 'sawtooth', cutoff: 700, sweep: 220, detune: 7, level: 0.028, attack: 3, wet: 0.35 });
 
         // Root — soft sine with an octave layer so it's felt without booming
         [[1, 0.05], [2, 0.015]].forEach(([mult, lvl]) => {
@@ -991,16 +1056,51 @@ class ComboMusic {
             o.start(t); o.stop(end);
         });
 
-        // Bells — 0–2 sparse pentatonic notes per bar, mostly heard through the reverb
+        // Bells — 0–2 sparse pentatonic notes per bar, landing anywhere in the bar
         const count = Math.random() < 0.25 ? 0 : (Math.random() < 0.6 ? 1 : 2);
         for (let i = 0; i < count; i++) {
-            const tb = t + 1 + Math.random() * (this.BAR_S - 2);
-            const freq = this.BELLS[Math.floor(Math.random() * this.BELLS.length)];
-            const bell = ComboSounds._fm(ctx, freq, 2, 0.25, tb, 2.6, 'sine');
-            const g = ComboSounds._env(ctx, tb, 0.02, 0.01, 2.6);
-            bell.connect(g); g.connect(out);
-            this._send(ctx, g, 0.8);
-            bell.start(tb); bell.stop(tb + 2.7);
+            const tb = t + 1 + Math.random() * (track.bar - 2);
+            const freq = track.notes[Math.floor(Math.random() * track.notes.length)];
+            this._pluck(ctx, tb, freq, out,
+                { level: 0.02, decay: 2.6, ratio: 2, index: 0.25, attack: 0.01, wet: 0.8 });
+        }
+    }
+
+    // Undertow — darker triangle pad over a pulsing root heartbeat, with a glassy motif on the beat
+    static _buildUndertow(ctx, t, track, out) {
+        const chord = this._chord(track);
+        const beat = track.bar / 8;
+        const end = t + track.bar + 2.5;
+
+        this._pad(ctx, t, end, chord.pad, out,
+            { wave: 'triangle', cutoff: 430, sweep: 140, detune: 11, level: 0.042, attack: 2.2, wet: 0.45 });
+
+        // Sustained root, kept low — the pulse below carries the weight
+        const sub = ctx.createOscillator();
+        sub.frequency.value = chord.root;
+        const subG = this._swell(ctx, t, end, 0.022, 2, 2.5);
+        sub.connect(subG); subG.connect(out);
+        sub.start(t); sub.stop(end);
+
+        // Heartbeat — a root octave swell on every other beat, accented on 1 and 5
+        for (let i = 0; i < 8; i += 2) {
+            const tb = t + i * beat;
+            const o = ctx.createOscillator();
+            o.frequency.value = chord.root * 2;
+            const g = ComboSounds._env(ctx, tb, i % 4 ? 0.026 : 0.046, 0.06, beat * 1.6);
+            o.connect(g); g.connect(out);
+            this._send(ctx, g, 0.25);
+            o.start(tb); o.stop(tb + beat * 1.7);
+        }
+
+        // Motif — 1–3 plucks quantised to the beat, so it reads as rhythm rather than drift
+        const beats = [1, 2, 3, 4, 5, 6, 7];
+        const count = 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < count; i++) {
+            const b = beats.splice(Math.floor(Math.random() * beats.length), 1)[0];
+            const freq = track.notes[Math.floor(Math.random() * track.notes.length)];
+            this._pluck(ctx, t + b * beat, freq, out,
+                { level: 0.024, decay: 1.6, ratio: 3, index: 0.4, attack: 0.006, wet: 0.9 });
         }
     }
 }
