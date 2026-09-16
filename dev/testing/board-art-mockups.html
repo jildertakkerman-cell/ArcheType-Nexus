@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Board &amp; Combo Guide — Art Mockups</title>
+
+<!-- The REAL stylesheets. Every variant below is a pure override layered on top,
+     rendered against the real markup from replay-browser.js / combo-system.js.
+     Nothing here is a redraw — what you see is what a CSS-only change would give. -->
+<link rel="stylesheet" href="../../assets/css/Visualizer_Styles.css">
+<link rel="stylesheet" href="../../assets/css/replay-analyzer.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+/* ==========================================================================
+   Mockup chrome (not shipping code)
+   ========================================================================== */
+body { padding: 0 0 6rem; }
+.mock-wrap { max-width: 1180px; margin: 0 auto; padding: 2rem 1.25rem; }
+.mock-h1 { font-size: 1.5rem; margin: 0 0 .35rem; font-weight: 800; letter-spacing: -.01em; }
+.mock-lede { color: var(--text-muted); margin: 0 0 1.75rem; font-size: .92rem; line-height: 1.65; max-width: 62ch; }
+.mock-tabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .9rem; }
+.mock-tab {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+  color: var(--text-muted); padding: .45rem .85rem; border-radius: .5rem;
+  font: 600 .8rem/1 'Inter', sans-serif; cursor: pointer; transition: all .18s ease;
+}
+.mock-tab:hover { color: #fff; border-color: rgba(255,255,255,.25); }
+.mock-tab[aria-selected="true"] { background: var(--accent-color); border-color: var(--accent-color); color: #fff; }
+.mock-note {
+  border-left: 2px solid var(--accent-color); padding: .1rem 0 .1rem .8rem;
+  margin: 0 0 1.25rem; color: var(--text-muted); font-size: .85rem; line-height: 1.6; max-width: 70ch;
+}
+.mock-note b { color: var(--text-color); font-weight: 600; }
+.mock-panel { display: none; }
+.mock-panel.is-on { display: block; }
+.mock-section-head {
+  display: flex; align-items: baseline; gap: .7rem; margin: 2.75rem 0 1rem;
+  padding-top: 1.75rem; border-top: 1px solid rgba(255,255,255,.08);
+}
+.mock-section-head h2 { font-size: 1.05rem; margin: 0; font-weight: 700; }
+.mock-section-head span { color: var(--text-muted); font-size: .8rem; }
+
+/* Shrink the board so a whole two-player field fits on screen. Set on
+   .replay-dashboard itself — replay-analyzer.css declares the --rb-* defaults
+   on that same element, so anything set on an ancestor is overridden there. */
+.mock-board-stage .replay-dashboard {
+  --rb-row: 92px; --rb-side: 76px; --rb-gap: 5px;
+  --rb-pad: 7px; --rb-pad-x: 7px; --rb-hand: 86px;
+}
+.mock-board-stage .replay-board-outer { width: 100%; min-width: 0; max-width: 100%; }
+
+/* Static stand-in for a JS-positioned .card-token. Same art, no engine. */
+.mock-card {
+  height: calc(100% - 12px); aspect-ratio: 59/86; border-radius: 3px;
+  background-size: cover; background-position: center; background-color: #1e293b;
+  box-shadow: 0 3px 8px rgba(0,0,0,.55); position: relative; z-index: 5;
+}
+.mock-card.def { transform: rotate(90deg) scale(.72); }
+.mock-card.pile { box-shadow: 0 3px 8px rgba(0,0,0,.55), 3px 3px 0 -1px rgba(255,255,255,.12), 6px 6px 0 -2px rgba(255,255,255,.07); }
+.hand-area .mock-card { height: calc(100% - 16px); margin: 0 -10px; }
+.zone .mock-card { pointer-events: none; }
+
+/* ==========================================================================
+   VARIANT A — "Obsidian Etch"
+   Graphite mat, engraved hatch, zones as recessed wells. Colour is demoted to
+   a 2px tab on each special zone instead of a full fill, so card art is the
+   only saturated thing on screen.
+   ========================================================================== */
+.mock--obsidian .replay-board-outer {
+  background: #0b0b0c; border: 1px solid #242427;
+  box-shadow: 0 24px 60px rgba(0,0,0,.55);
+}
+.mock--obsidian .replay-board-half .duel-board {
+  border: none; border-bottom: 1px solid #1c1c1f;
+  background:
+    repeating-linear-gradient(135deg, rgba(255,255,255,.014) 0 2px, transparent 2px 8px),
+    radial-gradient(130% 95% at 50% 0%, #18181c 0%, #101014 55%, #0a0a0c 100%);
+  box-shadow: inset 0 0 90px rgba(0,0,0,.8);
+}
+.mock--obsidian .zone,
+.mock--obsidian .banished-zone {
+  border: 1px solid rgba(255,255,255,.07); border-radius: 6px;
+  background: rgba(255,255,255,.016);
+  box-shadow: inset 0 3px 12px rgba(0,0,0,.7);
+}
+.mock--obsidian .zone:hover,
+.mock--obsidian .banished-zone:hover {
+  background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.22);
+}
+.mock--obsidian .zone::after,
+.mock--obsidian .banished-zone::after {
+  color: rgba(255,255,255,.3); letter-spacing: .14em; font-size: .42rem;
+}
+.mock--obsidian .zone::before {
+  content: ''; position: absolute; top: -1px; left: 26%; right: 26%; height: 2px;
+  border-radius: 0 0 2px 2px; background: var(--z, transparent);
+  box-shadow: 0 0 8px var(--z, transparent);
+}
+.mock--obsidian .field-zone      { --z: #10b981; }
+.mock--obsidian .gy-zone         { --z: #a78bfa; }
+.mock--obsidian .banished-zone   { --z: #fb923c; }
+.mock--obsidian .extra-deck-zone { --z: #60a5fa; }
+.mock--obsidian .deck-zone       { --z: #fbbf24; }
+.mock--obsidian .extra-monster-zone { --z: #38bdf8; border: 1px solid rgba(56,189,248,.3); }
+.mock--obsidian .spell-trap-zone { --z: #14b8a6; }
+.mock--obsidian .hand-area {
+  background: linear-gradient(180deg, rgba(0,0,0,.5), rgba(0,0,0,.82));
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.mock--obsidian .replay-player-strip.p2-strip { background: rgba(245,158,11,.07); border-bottom: 1px solid rgba(255,255,255,.06); }
+.mock--obsidian .replay-player-strip.p1-strip { background: rgba(239,68,68,.07); border-top: 1px solid rgba(255,255,255,.06); }
+.mock--obsidian .replay-phase-bar { background: #0e0e11; }
+
+/* ==========================================================================
+   VARIANT B — "Arena Felt"
+   A physical playmat: felt-dark teal, a centre spotlight, and a ghosted seal
+   under the monster zones. Zones are hairline gold rules with no fill; only
+   the pile zones (GY / Banish / Extra / Deck) carry a coloured inner glow.
+   ========================================================================== */
+.mock--arena .replay-board-outer {
+  border: 1px solid rgba(214,182,110,.35); background: #061716;
+  box-shadow: 0 24px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(0,0,0,.6);
+}
+.mock--arena .replay-board-half .duel-board {
+  border: none; border-bottom: 1px solid rgba(214,182,110,.22);
+  background:
+    radial-gradient(62% 58% at 50% 50%, rgba(255,241,204,.10) 0%, transparent 72%),
+    conic-gradient(from 210deg at 50% 50%, rgba(255,255,255,.028), transparent 25%, rgba(255,255,255,.028) 50%, transparent 75%, rgba(255,255,255,.028)),
+    linear-gradient(160deg, #123c34 0%, #0c2a27 45%, #07191a 100%);
+  box-shadow: inset 0 0 120px rgba(0,0,0,.55);
+}
+/* Ghosted seal, centred on the monster row. */
+.mock--arena .replay-board-half .duel-board::before {
+  content: ''; position: absolute; left: 50%; top: 42%; transform: translate(-50%,-50%);
+  width: 340px; height: 340px; pointer-events: none; opacity: .13; z-index: 0;
+  background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none' stroke='%23e8d9a8' stroke-width='1.1'%3E%3Ccircle cx='100' cy='100' r='92'/%3E%3Ccircle cx='100' cy='100' r='74'/%3E%3Ccircle cx='100' cy='100' r='40'/%3E%3Cpath d='M100 26 L164 63 L164 137 L100 174 L36 137 L36 63 Z'/%3E%3Cpath d='M100 60 L134 80 L134 120 L100 140 L66 120 L66 80 Z' stroke-width='.7'/%3E%3Cg stroke-width='2'%3E%3Cpath d='M100 8v12M100 180v12M8 100h12M180 100h12'/%3E%3C/g%3E%3C/svg%3E");
+}
+.mock--arena .field-grid, .mock--arena .hand-area { position: relative; z-index: 1; }
+.mock--arena .zone,
+.mock--arena .banished-zone {
+  border: 1px solid rgba(214,182,110,.34); border-radius: 4px;
+  background: rgba(0,0,0,.2); box-shadow: inset 0 0 26px rgba(0,0,0,.4);
+}
+.mock--arena .zone:hover,
+.mock--arena .banished-zone:hover { background: rgba(255,241,204,.06); border-color: rgba(214,182,110,.7); }
+.mock--arena .zone::after,
+.mock--arena .banished-zone::after { color: rgba(232,217,168,.55); letter-spacing: .12em; }
+.mock--arena .field-zone      { border-color: rgba(16,185,129,.45);  box-shadow: inset 0 0 26px rgba(16,185,129,.18); }
+.mock--arena .gy-zone         { border-color: rgba(167,139,250,.5);  box-shadow: inset 0 0 26px rgba(167,139,250,.2); }
+.mock--arena .banished-zone   { border-color: rgba(251,146,60,.5);   box-shadow: inset 0 0 26px rgba(251,146,60,.2); }
+.mock--arena .extra-deck-zone { border-color: rgba(96,165,250,.5);   box-shadow: inset 0 0 26px rgba(96,165,250,.2); }
+.mock--arena .deck-zone       { border-color: rgba(251,191,36,.5);   box-shadow: inset 0 0 26px rgba(251,191,36,.2); }
+.mock--arena .extra-monster-zone { border: 2px solid rgba(232,217,168,.5); box-shadow: inset 0 0 22px rgba(232,217,168,.12); }
+.mock--arena .hand-area {
+  background: linear-gradient(180deg, rgba(3,14,14,.5), rgba(3,14,14,.88));
+  border-top: 1px solid rgba(214,182,110,.3);
+}
+.mock--arena .replay-player-strip.p2-strip,
+.mock--arena .replay-player-strip.p1-strip { background: rgba(0,0,0,.35); }
+.mock--arena .replay-phase-bar { background: rgba(3,14,14,.75); }
+
+/* ==========================================================================
+   COMBO GUIDE — shared scaffolding
+   Same shape the combo-system.js guide renders (header / description / step
+   cards), hand-rolled here because the mockup has no Tailwind.
+   --cg-accent stands in for the per-archetype accent the theme detector picks.
+   ========================================================================== */
+.cg-stage { --cg-accent: #a855f7; --cg-text: #f3e8ff; max-width: 860px; }
+.cg { border-radius: 1rem; overflow: hidden; border: 1px solid; position: relative; }
+.cg-header { padding: 1.15rem 1.35rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid; position: relative; }
+.cg-header-left { display: flex; align-items: center; gap: 1rem; }
+.cg-icon { width: 44px; height: 44px; border-radius: .6rem; display: grid; place-items: center; font-size: 1.15rem; flex-shrink: 0; }
+.cg-title { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--cg-text); line-height: 1.2; }
+.cg-sub { margin: .3rem 0 0; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--cg-accent); }
+.cg-chevron { opacity: .55; font-size: 1.1rem; color: var(--cg-text); }
+.cg-body { padding: 1.4rem 1.6rem 1.8rem; display: flex; flex-direction: column; gap: 1.5rem; position: relative; }
+.cg-desc { font-style: italic; font-size: .92rem; line-height: 1.7; color: var(--cg-text); opacity: .9; margin: 0; }
+.cg-credit { margin: .7rem 0 0; font-size: .72rem; color: var(--cg-accent); opacity: .8; display: flex; gap: 1.2rem; }
+.cg-steps { position: relative; display: flex; flex-direction: column; gap: 1.1rem; }
+.cg-step { display: flex; align-items: center; gap: 1.25rem; padding: 1.1rem 1.25rem; border-radius: .75rem; position: relative; }
+.cg-art { width: 78px; height: 112px; flex-shrink: 0; border-radius: .4rem; background-size: cover; background-position: center; background-color: #111; box-shadow: 0 4px 12px rgba(0,0,0,.45); position: relative; }
+.cg-text { font-size: .96rem; line-height: 1.65; color: var(--cg-text); margin: 0; }
+.cg-text b { color: var(--cg-accent); font-weight: 700; }
+.cg-badge { position: absolute; top: 0; left: 0; padding: .2rem .65rem; border-radius: 0 0 .5rem 0; font-size: .58rem; font-weight: 800; letter-spacing: .14em; }
+
+/* --- Guide 1: CURRENT (flat theme fill, hard-edged step cards) --- */
+.cg--current { background: rgba(88,28,135,.5); border-color: rgba(168,85,247,.38); backdrop-filter: blur(4px); }
+.cg--current .cg-header { border-color: rgba(168,85,247,.19); }
+.cg--current .cg-icon { background: rgba(168,85,247,.15); color: var(--cg-accent); }
+.cg--current .cg-body { background: rgba(0,0,0,.1); }
+.cg--current .cg-step { background: rgba(30,41,59,.6); border: 1px solid rgba(168,85,247,.25); }
+.cg--current .cg-badge { background: var(--cg-accent); color: #000; }
+.cg--current .cg-art { border: 1px solid var(--cg-accent); }
+
+/* --- Guide 2: "Conduit" ------------------------------------------------
+   A lit spine runs down the steps and each step hangs off it as a node, so
+   the sequence reads as one chain instead of five detached boxes. Step number
+   moves onto the spine; the card art gets a soft accent halo. -------------- */
+.cg--conduit { background: linear-gradient(180deg, #17102b 0%, #120c22 100%); border-color: rgba(168,85,247,.3); }
+.cg--conduit .cg-header {
+  border-color: rgba(168,85,247,.22);
+  background:
+    radial-gradient(80% 300% at 0% 50%, rgba(168,85,247,.22), transparent 70%),
+    linear-gradient(90deg, rgba(168,85,247,.10), transparent 60%);
+}
+.cg--conduit .cg-header::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cg-accent), transparent 65%);
+}
+.cg--conduit .cg-icon { background: rgba(168,85,247,.18); color: var(--cg-accent); box-shadow: inset 0 0 0 1px rgba(168,85,247,.35), 0 0 18px rgba(168,85,247,.2); }
+.cg--conduit .cg-body { padding-left: 3.4rem; }
+/* the spine */
+.cg--conduit .cg-steps::before {
+  content: ''; position: absolute; left: -1.55rem; top: .4rem; bottom: .4rem; width: 2px;
+  background: linear-gradient(180deg, var(--cg-accent), rgba(168,85,247,.15));
+  box-shadow: 0 0 14px rgba(168,85,247,.45);
+}
+.cg--conduit .cg-step {
+  background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07);
+  box-shadow: inset 1px 0 0 rgba(168,85,247,.5);
+}
+/* node on the spine, carrying the step number */
+.cg--conduit .cg-step::before {
+  content: attr(data-step); position: absolute; left: -2.35rem; top: 50%; transform: translateY(-50%);
+  width: 1.6rem; height: 1.6rem; border-radius: 50%; display: grid; place-items: center;
+  font-size: .7rem; font-weight: 800; color: #17102b; background: var(--cg-accent);
+  box-shadow: 0 0 0 4px #150e28, 0 0 16px rgba(168,85,247,.55);
+}
+.cg--conduit .cg-badge { display: none; }
+.cg--conduit .cg-art { box-shadow: 0 0 0 1px rgba(168,85,247,.5), 0 6px 22px rgba(168,85,247,.28); }
+
+/* --- Guide 3: "Blueprint" ----------------------------------------------
+   Reads as a technical diagram: grid paper, monospaced step tags, crop marks
+   on the card art. Quietest of the three — colour only where it means
+   something. --------------------------------------------------------------- */
+.cg--blueprint { background: #0c1322; border-color: rgba(125,211,252,.28); --cg-accent: #38bdf8; --cg-text: #dbeafe; }
+.cg--blueprint .cg-header { border-color: rgba(125,211,252,.2); background: rgba(56,189,248,.06); }
+.cg--blueprint .cg-icon { background: transparent; color: var(--cg-accent); border: 1px solid rgba(56,189,248,.45); border-radius: .3rem; }
+.cg--blueprint .cg-title { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; letter-spacing: -.02em; }
+.cg--blueprint .cg-body {
+  background:
+    repeating-linear-gradient(0deg,  rgba(56,189,248,.055) 0 1px, transparent 1px 22px),
+    repeating-linear-gradient(90deg, rgba(56,189,248,.055) 0 1px, transparent 1px 22px),
+    #0a1020;
+}
+.cg--blueprint .cg-step {
+  background: rgba(10,16,32,.85); border: 1px solid rgba(56,189,248,.3); border-radius: .35rem;
+}
+/* dashed flow connector between consecutive steps */
+.cg--blueprint .cg-step + .cg-step::before {
+  content: ''; position: absolute; left: 2.6rem; top: -1.1rem; height: 1.1rem; width: 0;
+  border-left: 2px dashed rgba(56,189,248,.45);
+}
+.cg--blueprint .cg-badge {
+  background: transparent; color: var(--cg-accent); border: 1px solid rgba(56,189,248,.4);
+  border-top: 0; border-left: 0; font-family: ui-monospace, Consolas, monospace; letter-spacing: .1em;
+}
+.cg--blueprint .cg-art { border-radius: 0; box-shadow: 0 0 0 1px rgba(56,189,248,.45); }
+.cg--blueprint .cg-art::after {
+  content: ''; position: absolute; inset: -5px; pointer-events: none;
+  background:
+    linear-gradient(#38bdf8,#38bdf8) left top/8px 1px no-repeat,
+    linear-gradient(#38bdf8,#38bdf8) left top/1px 8px no-repeat,
+    linear-gradient(#38bdf8,#38bdf8) right bottom/8px 1px no-repeat,
+    linear-gradient(#38bdf8,#38bdf8) right bottom/1px 8px no-repeat;
+}
+.cg--blueprint .cg-text { font-size: .92rem; }
+
+/* --- Guide 4: "Aurora Glass" -------------------------------------------
+   Two soft accent blooms behind a frosted panel — the same language as the
+   archetype ambient backdrop, so the guide sits in the page instead of on
+   it. Step cards are glass with a large ghost numeral. --------------------- */
+.cg--aurora { background: rgba(18,12,32,.55); border-color: rgba(255,255,255,.1); backdrop-filter: blur(18px); isolation: isolate; }
+.cg-aurora-bed { position: relative; border-radius: 1rem; }
+.cg-aurora-bed::before, .cg-aurora-bed::after {
+  content: ''; position: absolute; width: 380px; height: 380px; border-radius: 50%;
+  filter: blur(80px); z-index: -1; pointer-events: none;
+}
+.cg-aurora-bed::before { background: rgba(168,85,247,.5);  top: -110px; left: -90px; }
+.cg-aurora-bed::after  { background: rgba(236,72,153,.35); bottom: -120px; right: -70px; }
+.cg--aurora .cg-header { border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.04); }
+.cg--aurora .cg-icon { background: rgba(255,255,255,.08); color: #f5d0fe; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); }
+.cg--aurora .cg-body { background: rgba(10,6,20,.35); }
+.cg--aurora .cg-step {
+  background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 1rem; overflow: hidden; backdrop-filter: blur(6px);
+}
+.cg--aurora .cg-step::after {
+  content: attr(data-step); position: absolute; right: .9rem; bottom: -1.6rem;
+  font-size: 5.5rem; font-weight: 900; line-height: 1; color: rgba(255,255,255,.055);
+  pointer-events: none; font-family: 'Inter', sans-serif;
+}
+.cg--aurora .cg-badge { display: none; }
+.cg--aurora .cg-art { border-radius: .6rem; box-shadow: 0 8px 28px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.12); }
+</style>
+</head>
+<body>
+<div class="mock-wrap">
+  <h1 class="mock-h1">Board &amp; combo-guide art — mockups</h1>
+  <p class="mock-lede">
+    Real markup, real stylesheets, variants layered on as CSS-only overrides. Nothing is redrawn,
+    so whatever you pick can be lifted into <code>Visualizer_Styles.css</code> /
+    <code>combo-system.js</code> as-is. Card art loads from the live CDN.
+  </p>
+  <p class="mock-lede" style="color:#f5f5f5">
+    <b>Status:</b> the field went with <b>Solid Vision</b> and is shipped — its tab renders the live
+    stylesheet with no overrides. No combo-guide variant has been picked yet.
+  </p>
+
+  <div class="mock-section-head" style="margin-top:0;padding-top:0;border:0;">
+    <h2>1 — Replay browser field</h2>
+    <span>shared with the combo simulator (<code>.duel-board</code>)</span>
+  </div>
+  <div class="mock-tabs" id="board-tabs"></div>
+  <div id="board-panels"></div>
+
+  <div class="mock-section-head">
+    <h2>2 — Combo guide panel</h2>
+    <span><code>ComboSystem</code> guide container + step cards</span>
+  </div>
+  <div class="mock-tabs" id="guide-tabs"></div>
+  <div id="guide-panels"></div>
+</div>
+
+<script>
+/* ---------- shared fixtures ---------------------------------------------- */
+const IMG = id => `https://images.ygoprodeck.com/images/cards/${id}.jpg`;
+const CARDS = {
+  ash:        14558127,  // Ash Blossom & Joyous Spring
+  snakeEye:   9674034,   // Snake-Eye Ash
+  diabell:    72270339,  // Diabellstar the Black Witch
+  imperm:     10045474,  // Infinite Impermanence
+  accesscode: 86066372,  // Accesscode Talker
+  ip:         65741786,  // I:P Masquerena
+  apollousa:  4280258,   // Apollousa, Bow of the Goddess
+  spLittle:   29301450,  // S:P Little Knight
+  fenrir:     48800175,  // Kashtira Fenrir
+  bonfire:    85106525,  // Bonfire
+  veiler:     97268402,  // Effect Veiler
+  original:   30439101   // Original Sinful Spoils - Snake-Eye
+};
+const card = (id, cls = '') => `<div class="mock-card ${cls}" style="background-image:url('${IMG(id)}')"></div>`;
+
+/* ---------- board: the exact markup replay-browser.js emits --------------- */
+function boardHTML(fill) {
+  return `
+  <div class="duel-board">
+    <div class="field-grid">
+      <div class="empty-corner"></div>
+      <div class="extra-monster-zones">
+        <div class="zone extra-monster-zone" data-label="EM">${fill.emLeft || ''}</div>
+        <div class="zone extra-monster-zone" data-label="EM">${fill.emRight || ''}</div>
+      </div>
+      <div class="zone field-zone" data-label="Field">${fill.field || ''}</div>
+      <div class="main-monster-zones">
+        ${[1,2,3,4,5].map(i => `<div class="zone main-monster-zone" data-label="M${i}">${fill['m'+i] || ''}</div>`).join('')}
+      </div>
+      <div class="zone banished-zone" data-label="Banished">${fill.banish || ''}</div>
+      <div class="zone gy-zone" data-label="GY">${fill.gy || ''}</div>
+      <div class="zone extra-deck-zone" data-label="Extra">${fill.extra || ''}</div>
+      <div class="spell-trap-zones">
+        ${[1,2,3,4,5].map(i => `<div class="zone spell-trap-zone" data-label="S${i}">${fill['s'+i] || ''}</div>`).join('')}
+      </div>
+      <div class="zone deck-zone" data-label="Deck">${fill.deck || ''}</div>
+    </div>
+    <div class="hand-area">${fill.hand || ''}</div>
+  </div>`;
+}
+
+const P2_FILL = {
+  m3: card(CARDS.fenrir), m4: card(CARDS.ash, 'def'),
+  s2: card(CARDS.imperm), gy: card(CARDS.veiler, 'pile'),
+  hand: [CARDS.bonfire, CARDS.veiler, CARDS.ash].map(c => card(c)).join('')
+};
+const P1_FILL = {
+  emLeft: card(CARDS.accesscode), m2: card(CARDS.apollousa), m3: card(CARDS.spLittle),
+  m4: card(CARDS.ip), s1: card(CARDS.original), gy: card(CARDS.snakeEye, 'pile'),
+  banish: card(CARDS.diabell, 'pile'),
+  hand: [CARDS.imperm, CARDS.diabell].map(c => card(c)).join('')
+};
+
+const PHASES = [['DP','done'],['SP','done'],['M1','current'],['BP',''],['M2',''],['EP','']];
+
+function boardStage(variantClass) {
+  return `
+  <div class="mock-board-stage ${variantClass}">
+    <div class="replay-dashboard" data-turn-player="0" style="display:block">
+      <div class="replay-board-outer">
+        <div class="replay-player-strip p2-strip">
+          <span>Opponent</span><span class="rb-turn-chip">Turn</span>
+          <span style="margin-left:auto;opacity:.7;">6400 LP</span>
+        </div>
+        <div class="replay-board-half p2-half">${boardHTML(P2_FILL)}</div>
+        <div class="replay-phase-bar">
+          <div class="rb-turn-owner">You — Turn 3</div>
+          <ol class="rb-phase-track">
+            ${PHASES.map(([s, st]) => `<li class="rb-phase ${st}">${s}</li>`).join('')}
+          </ol>
+        </div>
+        <div class="replay-board-half p1-half">${boardHTML(P1_FILL)}</div>
+        <div class="replay-player-strip p1-strip">
+          <span>You</span><span class="rb-turn-chip">Turn</span>
+          <span style="margin-left:auto;opacity:.7;">8000 LP</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+const BOARDS = [
+  { id: 'current',  label: 'C · Solid Vision (shipped)', cls: '',
+    note: '<b>Shipped — this tab carries no overrides at all.</b> It is the live <code>.duel-board</code> paint out of <code>Visualizer_Styles.css</code>: projection grid, horizon bloom, neon corner brackets. The horizon sits at the far edge by default and flips per half in the replay browser, so both projections light toward the phase bar. The old saturated-blue mat it replaced is gone from the codebase — the two tabs below are the alternatives that lost, kept for comparison.' },
+  { id: 'obsidian', label: 'A · Obsidian Etch', cls: 'mock--obsidian',
+    note: '<b>Quiet mat, loud cards.</b> Graphite surface with an engraved hatch; zones become recessed wells. Colour is demoted to a 2px tab on the special zones only, so the art is the brightest thing on the board. Sits closest to the analyzer’s existing crimson/obsidian theme.' },
+  { id: 'arena',    label: 'B · Arena Felt',    cls: 'mock--arena',
+    note: '<b>Physical playmat.</b> Felt teal with a centre spotlight and a ghosted seal under the monster row. Hairline gold rules everywhere; only the four pile zones keep a coloured inner glow. Warmest option — reads as a table, not a UI.' },
+];
+
+/* ---------- combo guide -------------------------------------------------- */
+const STEPS = [
+  { art: CARDS.diabell,  t: 'Activate <b>Original Sinful Spoils - Snake-Eye</b> — send a card from your hand to the GY to Special Summon <b>Diabellstar the Black Witch</b>.' },
+  { art: CARDS.snakeEye, t: 'Normal Summon <b>Snake-Eye Ash</b>. Use its effect to place itself in the Spell &amp; Trap Zone as a Continuous Spell.' },
+  { art: CARDS.bonfire,  t: 'Activate <b>Bonfire</b> to add a Level 4 or lower FIRE monster from your Deck to your hand.' },
+  { art: CARDS.ip,       t: 'Link Summon <b>I:P Masquerena</b> with two of the summoned monsters, keeping an interruption up for your opponent’s turn.' }
+];
+
+function guideHTML(variant) {
+  const steps = STEPS.map((s, i) => `
+    <div class="cg-step" data-step="${i + 1}">
+      <span class="cg-badge">STEP ${i + 1}</span>
+      <div class="cg-art" style="background-image:url('${IMG(s.art)}')"></div>
+      <p class="cg-text">${s.t}</p>
+    </div>`).join('');
+
+  const panel = `
+    <div class="cg cg--${variant}">
+      <div class="cg-header">
+        <div class="cg-header-left">
+          <div class="cg-icon"><i class="fas fa-book-open"></i></div>
+          <div>
+            <h3 class="cg-title">Snake-Eye Standard Opener</h3>
+            <p class="cg-sub"><i class="fas fa-info-circle"></i> Beginner Guide Available</p>
+          </div>
+        </div>
+        <div class="cg-chevron"><i class="fas fa-chevron-up"></i></div>
+      </div>
+      <div class="cg-body">
+        <div>
+          <p class="cg-desc"><i class="fas fa-quote-left" style="opacity:.5;margin-right:.4rem"></i>The line every Snake-Eye deck wants on turn one — ends on two interruptions and leaves Ash live in hand.<i class="fas fa-quote-right" style="opacity:.5;margin-left:.4rem"></i></p>
+          <p class="cg-credit"><span><i class="fas fa-user-circle"></i> Jildert</span><span><i class="fas fa-calendar-alt"></i> March 2026</span></p>
+        </div>
+        <div class="cg-steps">${steps}</div>
+      </div>
+    </div>`;
+
+  return variant === 'aurora' ? `<div class="cg-aurora-bed">${panel}</div>` : panel;
+}
+
+const GUIDES = [
+  { id: 'current',   label: 'Current',
+    note: '<b>Baseline.</b> One flat theme fill behind everything; the step cards are four detached boxes at equal weight, so nothing signals that they run in order.' },
+  { id: 'conduit',   label: 'D · Conduit',
+    note: '<b>Sequence made visible.</b> A lit spine runs down the steps and each one hangs off it as a numbered node. Smallest change for the biggest readability gain — the guide finally looks like a chain of plays. Keeps using the per-archetype accent.' },
+  { id: 'blueprint', label: 'E · Blueprint',
+    note: '<b>Technical diagram.</b> Grid paper, monospaced tags, crop marks on the art, dashed connectors between steps. The most restrained; it ignores the per-archetype accent, which is either the point or the dealbreaker.' },
+  { id: 'aurora',    label: 'F · Aurora Glass',
+    note: '<b>Matches the ambient backdrop.</b> Two accent blooms behind a frosted panel — the same language as <code>archetype-backdrop.css</code>, so the guide sits inside the page theme rather than on top of it. Ghost numerals carry the ordering. Costs a <code>backdrop-filter</code> on a large surface.' }
+];
+
+/* ---------- wire up tabs ------------------------------------------------- */
+function mount(tabsEl, panelsEl, items, render) {
+  items.forEach((it, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'mock-tab';
+    tab.textContent = it.label;
+    tab.setAttribute('aria-selected', i === 0);
+    tab.onclick = () => {
+      tabsEl.querySelectorAll('.mock-tab').forEach(t => t.setAttribute('aria-selected', 'false'));
+      tab.setAttribute('aria-selected', 'true');
+      panelsEl.querySelectorAll('.mock-panel').forEach(p => p.classList.remove('is-on'));
+      panelsEl.querySelector(`[data-p="${it.id}"]`).classList.add('is-on');
+    };
+    tabsEl.appendChild(tab);
+
+    const panel = document.createElement('div');
+    panel.className = 'mock-panel' + (i === 0 ? ' is-on' : '');
+    panel.dataset.p = it.id;
+    panel.innerHTML = `<p class="mock-note">${it.note}</p>` + render(it);
+    panelsEl.appendChild(panel);
+  });
+}
+
+mount(document.getElementById('board-tabs'), document.getElementById('board-panels'),
+      BOARDS, it => boardStage(it.cls));
+mount(document.getElementById('guide-tabs'), document.getElementById('guide-panels'),
+      GUIDES, it => `<div class="cg-stage">${guideHTML(it.id)}</div>`);
+</script>
+</body>
+</html>

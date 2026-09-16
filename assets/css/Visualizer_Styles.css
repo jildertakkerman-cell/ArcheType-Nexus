@@ -4,21 +4,76 @@
     margin-bottom: 2rem;
 }
 
+/* Field paint — "Solid Vision"
+   -------------------------------------------------------------------------
+   The mat reads as a projected field rather than a printed playmat: a faint
+   square projection grid over a dark indigo void, a bloom along one edge for
+   a horizon, and zones drawn as neon corner brackets instead of filled boxes.
+   The grid is flat, not in true perspective — the bloom is what sells depth,
+   and it costs nothing to paint.
+
+   Everything tunable lives in the custom properties below so a page (or a
+   future per-archetype theme) can retint the whole field without touching
+   any zone rule. --zone-accent is the one each zone overrides for itself.
+
+   Mockups for the alternatives that lost: dev/testing/board-art-mockups.html */
 .duel-board {
+    --field-line: rgba(56, 189, 248, 0.055);
+    --field-bloom: rgba(99, 102, 241, 0.4);
+    /* Where the horizon bloom sits, as a position down the board. The default
+       is the far edge — past the top, above the opponent's side — because the
+       near edge is covered by .hand-area, which would waste the glow entirely.
+       The replay browser overrides it for P2 so both halves light toward the
+       phase bar between them. */
+    --field-horizon: -12%;
+    --field-edge: rgba(99, 102, 241, 0.45);
+
+    --zone-edge: rgba(56, 189, 248, 0.18);
+    --zone-fill: rgba(56, 189, 248, 0.045);
+    --zone-fill-hover: rgba(56, 189, 248, 0.12);
+    --zone-accent: #38bdf8;
+    --zone-label: rgba(186, 230, 253, 0.55);
+    /* Corner-bracket arm length. Scales with the board, not with the viewport:
+       the full-size simulator board has 160px zone rows, the replay browser's
+       compact board has ~126px and mobile ~100px, and a single fixed length
+       looks twice as heavy on one as on the other. Overridden for both of
+       those below / in replay-analyzer.css. */
+    --bracket: 18px;
+
+
     position: relative;
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
     height: 680px;
-    background: linear-gradient(135deg, #1a4d6d 0%, #0d2838 100%);
-    border: 3px solid #2563eb;
+    background:
+        linear-gradient(180deg, rgba(56, 189, 248, 0.1), transparent 32%),
+        repeating-linear-gradient(0deg, var(--field-line) 0 1px, transparent 1px 34px),
+        repeating-linear-gradient(90deg, var(--field-line) 0 1px, transparent 1px 34px),
+        radial-gradient(95% 75% at 50% var(--field-horizon), var(--field-bloom), transparent 62%),
+        linear-gradient(180deg, #070a1e 0%, #0a0f2a 100%);
+    border: 3px solid var(--field-edge);
     border-radius: 1rem;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     user-select: none;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 80px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65), inset 0 0 80px rgba(2, 6, 23, 0.9);
     font-family: 'Inter', sans-serif;
+}
+
+/* Scanlines. Deliberately UNDER the tokens (which sit at z-index 10+) — laid
+   over them it veils the card art, and reading the art is the whole job here.
+   z-index 2 clears .pendulum-icon at 1 and leaves the token layers alone. */
+.duel-board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
+    mix-blend-mode: overlay;
+    opacity: 0.5;
 }
 
 /* Grid Layout - Matching Official Yu-Gi-Oh! Field */
@@ -40,11 +95,64 @@
     background: transparent;
 }
 
-/* Zone Styling */
+/* Zone Styling
+   The visible edge stays a real `border`, not an inset box-shadow, for two
+   reasons: .rb-stacked (replay-analyzer.css) owns box-shadow to fake pile
+   depth, and .rb-browsable:hover only has border-color to work with. Both
+   would have been silently killed by moving the outline into box-shadow.
+   background-COLOR rather than the shorthand, so the card-back image
+   .deck-zone.rb-stacked paints still survives. */
 .zone {
-    border: 2px solid #3b82f6;
-    border-radius: 8px;
-    background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(17, 24, 39, 0.6) 100%);
+    /* The corner brackets, as three parallel background lists.
+       They live on the zone's own background rather than on a pseudo-element
+       because BOTH pseudos are already spoken for: ::after is the zone label,
+       and ::before is the replay browser's pile-count badge
+       (.zone[data-count]::before in replay-analyzer.css). Sharing ::before
+       with that badge merged the two rules property-by-property — the badge
+       kept its own border-radius but picked up `inset: 0` from the brackets
+       and ballooned into a circle the size of the zone.
+
+       These are declared HERE, on .zone, and not on .duel-board with the rest
+       of the field tokens. A custom property's var() references are substituted
+       at computed-value time against the element that DECLARES it, not the one
+       that uses it — so listing these on the board would bake in the board's
+       default --zone-accent and every zone would come out the same cyan. On
+       .zone they resolve against each zone's own accent. (--bracket itself is
+       a board-level knob and inherits down, which is why it stays up there.)
+
+       Split across image/size/position rather than one `background` shorthand
+       so a rule that must restate background-image — the deck's card-back stack
+       in replay-analyzer.css — can put them back with `var(--bracket-img),
+       <its own layers>`.
+
+       The last two layers are the bloom each corner used to get from a
+       drop-shadow filter, which a background layer cannot have. They sit at the
+       END of the list so the solid arms paint over them. */
+    --bracket-glow: color-mix(in srgb, var(--zone-accent) 32%, transparent);
+    --bracket-img:
+        linear-gradient(var(--zone-accent), var(--zone-accent)),
+        linear-gradient(var(--zone-accent), var(--zone-accent)),
+        linear-gradient(var(--zone-accent), var(--zone-accent)),
+        linear-gradient(var(--zone-accent), var(--zone-accent)),
+        radial-gradient(circle at left top, var(--bracket-glow), transparent 70%),
+        radial-gradient(circle at right bottom, var(--bracket-glow), transparent 70%);
+    --bracket-size:
+        var(--bracket) 2px, 2px var(--bracket),
+        var(--bracket) 2px, 2px var(--bracket),
+        calc(var(--bracket) * 2.2) calc(var(--bracket) * 2.2),
+        calc(var(--bracket) * 2.2) calc(var(--bracket) * 2.2);
+    --bracket-pos:
+        left top, left top,
+        right bottom, right bottom,
+        left top, right bottom;
+
+    border: 1px solid var(--zone-edge);
+    border-radius: 2px;
+    background-color: var(--zone-fill);
+    background-image: var(--bracket-img);
+    background-size: var(--bracket-size);
+    background-position: var(--bracket-pos);
+    background-repeat: no-repeat;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -54,8 +162,8 @@
 }
 
 .zone:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(30, 64, 175, 0.4) 100%);
-    border-color: #60a5fa;
+    background-color: var(--zone-fill-hover);
+    border-color: var(--zone-accent);
 }
 
 .zone::after {
@@ -65,11 +173,11 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.45rem;
-    color: rgba(191, 219, 254, 0.6);
+    color: var(--zone-label);
     font-weight: 700;
     text-transform: uppercase;
     pointer-events: none;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.16em;
     text-align: center;
     white-space: nowrap;
 }
@@ -83,11 +191,14 @@
     gap: 80px;
 }
 
+/* The one zone that keeps a fill — the extra monster zones are shared ground
+   and need to read as special even while empty. */
 .extra-monster-zone {
     width: 100px;
     height: 115px;
-    border: 3px solid #60a5fa;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(29, 78, 216, 0.5) 100%);
+    --zone-accent: #818cf8;
+    border-color: rgba(129, 140, 248, 0.35);
+    background-color: rgba(129, 140, 248, 0.1);
 }
 
 .extra-monster-zone::after {
@@ -97,12 +208,8 @@
 /* Middle Row - Field, Main Monster Zones, GY */
 .field-zone {
     grid-area: field;
-    border-color: #10b981;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%);
-}
-
-.field-zone::after {
-    color: rgba(167, 243, 208, 0.7);
+    --zone-accent: #34d399;
+    --zone-label: rgba(167, 243, 208, 0.7);
 }
 
 .main-monster-zones {
@@ -114,8 +221,6 @@
 
 .main-monster-zone {
     min-height: 140px;
-    border: 2px solid #60a5fa;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.3) 100%);
 }
 
 .main-monster-zone::after {
@@ -124,31 +229,21 @@
 
 .gy-zone {
     grid-area: gy;
-    border-color: #8b5cf6;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(109, 40, 217, 0.3) 100%);
+    --zone-accent: #c084fc;
+    --zone-label: rgba(221, 214, 254, 0.7);
 }
 
-.gy-zone::after {
-    color: rgba(221, 214, 254, 0.7);
-}
-
+/* Always rendered as `class="zone banished-zone"`, so the layout, hover and
+   bracket rules all come from .zone — this only picks the accent. It used to
+   restate every .zone declaration verbatim. */
 .banished-zone {
     grid-area: banished;
-    border: 2px solid #f97316;
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(194, 65, 12, 0.3) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    transition: all 0.3s;
-    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+    --zone-accent: #fb923c;
+    --zone-label: rgba(253, 186, 116, 0.7);
 }
 
-.banished-zone:hover {
-    background: linear-gradient(135deg, rgba(249, 115, 22, 0.3) 0%, rgba(194, 65, 12, 0.4) 100%);
-    border-color: #fb923c;
-}
-
+/* Hard-coded rather than attr(data-label): the combo simulator's board markup
+   ships no data-label attributes, and this zone is the one that needs naming. */
 .banished-zone::after {
     content: 'BANISHED';
     position: absolute;
@@ -156,11 +251,11 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.45rem;
-    color: rgba(253, 186, 116, 0.7);
+    color: var(--zone-label);
     font-weight: 700;
     text-transform: uppercase;
     pointer-events: none;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.16em;
     text-align: center;
     white-space: nowrap;
 }
@@ -168,12 +263,8 @@
 /* Bottom Row - Extra Deck, Spell/Trap Zones, Deck */
 .extra-deck-zone {
     grid-area: extra-deck;
-    border-color: #3b82f6;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.35) 100%);
-}
-
-.extra-deck-zone::after {
-    color: rgba(147, 197, 253, 0.7);
+    --zone-accent: #60a5fa;
+    --zone-label: rgba(147, 197, 253, 0.7);
 }
 
 .spell-trap-zones {
@@ -185,14 +276,13 @@
 
 .spell-trap-zone {
     min-height: 140px;
-    border: 2px solid #14b8a6;
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.2) 0%, rgba(13, 148, 136, 0.3) 100%);
+    --zone-accent: #2dd4bf;
+    --zone-label: rgba(153, 246, 228, 0.7);
     position: relative;
 }
 
 .spell-trap-zone::after {
     font-size: 0.4rem;
-    color: rgba(153, 246, 228, 0.7);
 }
 
 .pendulum-icon {
@@ -217,19 +307,15 @@
 
 .deck-zone {
     grid-area: deck;
-    border-color: #f59e0b;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.3) 100%);
-}
-
-.deck-zone::after {
-    color: rgba(253, 230, 138, 0.7);
+    --zone-accent: #fbbf24;
+    --zone-label: rgba(253, 230, 138, 0.7);
 }
 
 /* Hand Area */
 .hand-area {
     height: 155px;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%);
-    border-top: 2px solid #2563eb;
+    background: linear-gradient(180deg, rgba(5, 7, 26, 0.4) 0%, rgba(5, 7, 26, 0.9) 100%);
+    border-top: 2px solid var(--field-edge);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -956,6 +1042,7 @@
         max-width: 900px;
         height: 520px;
         /* Slightly taller to accommodate cards */
+        --bracket: 14px;
     }
 
     .field-grid {
@@ -980,6 +1067,7 @@
         /* Allow board to grow vertically */
         min-height: 550px;
         /* Remove fixed aspect ratio, let it be a tall container */
+        --bracket: 9px;
     }
 
     /* COMPLETE GRID RE-ARRANGEMENT */
@@ -1075,7 +1163,7 @@
     /* --- 4. Hand Area (Fixed at bottom) --- */
     .hand-area {
         height: 100px;
-        border-top: 1px solid #3b82f6;
+        border-top: 1px solid var(--field-edge);
     }
 
     /* --- 5. Card Tokens (Resized for 5-column layout) --- */
