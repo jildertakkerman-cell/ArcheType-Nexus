@@ -1,0 +1,565 @@
+/*
+ * card-popup.css — the shared card tooltip (#shared-card-popup), built by
+ * assets/js/card-loader.js and injected by its createPopup().
+ *
+ * Everything here is scoped under #shared-card-popup and written as plain CSS on
+ * purpose. Two reasons:
+ *
+ *  1. Thirteen pages load card-loader.js but not output.css (Archfiend, Clown
+ *     Crew, Dragon Link, Fairy Tale, Hecahands, Junk, Mermail, Mimighoul,
+ *     My-Replays, Pendulum Pile, Replay-Analyzer, Topologic, Wake CUP). On those
+ *     every Tailwind class in the popup — layout utilities included — resolves to
+ *     nothing, so the popup has to be able to stand on its own.
+ *  2. Netlify publishes the repo root with no build command and package.json has
+ *     no build script, so output.css is only ever whatever is committed. A new
+ *     Tailwind class would not reliably exist in production.
+ *
+ * The popup is appended to document.body, so it also inherits whatever font the
+ * host page sets. Across the pages that load card-loader.js that is Inter 461
+ * times but Lora, Roboto Mono, Rajdhani, Kalam, Montserrat and others the rest of
+ * the time — hence the explicit font-family below.
+ */
+
+#shared-card-popup {
+    /* Surfaces */
+    --cp-bg: #0f172a;
+    --cp-raised: #1e293b;
+    --cp-sunken: #0b1220;
+    --cp-line: rgba(148, 163, 184, 0.18);
+    --cp-line-soft: rgba(148, 163, 184, 0.10);
+
+    /* One grey ramp. Slate only — mixing Tailwind's warm gray-* into a slate-900
+       panel was a large part of why this never looked like one component. */
+    --cp-title: #e2e8f0;
+    --cp-body: #cbd5e1;
+    --cp-muted: #94a3b8;
+    --cp-faint: #64748b;
+
+    /* The single chrome accent. Saturated colour elsewhere has to mean something:
+       attribute, Level/Rank, banlist status, ATK/DEF, tag category. */
+    --cp-accent: #60a5fa;
+    --cp-accent-dim: rgba(96, 165, 250, 0.16);
+
+    --cp-r: 6px;
+    --cp-pad: 14px;
+
+    box-sizing: border-box;
+    /* Base visibility state. showPopup()/hidePopup() drive opacity and
+       pointer-events inline from here. */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--cp-body);
+    background-color: var(--cp-bg);
+    border: 1px solid rgba(96, 165, 250, 0.45);
+    border-radius: 10px;
+    padding: var(--cp-pad);
+    box-shadow:
+        0 24px 48px -12px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(2, 6, 23, 0.9),
+        inset 0 1px 0 rgba(148, 163, 184, 0.08);
+    -webkit-font-smoothing: antialiased;
+}
+
+#shared-card-popup *,
+#shared-card-popup *::before,
+#shared-card-popup *::after {
+    box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------------------
+   Layout primitives. These duplicate the handful of Tailwind utilities the
+   markup used to rely on, so the popup renders correctly without output.css.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-root {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#shared-card-popup .cp-head-area {
+    flex: 0 0 auto;
+}
+
+#shared-card-popup .cp-body-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 10px;
+}
+
+#shared-card-popup .cp-hidden {
+    display: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Type scale — four steps, replacing the eight sizes this panel used to mix.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-title {
+    margin: 0 8px 0 0;
+    font-size: 17px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--cp-title);
+}
+
+#shared-card-popup .cp-body-text {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--cp-body);
+}
+
+#shared-card-popup .cp-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 5px;
+    font-size: 10.5px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--cp-muted);
+}
+
+#shared-card-popup .cp-label {
+    font-size: 9.5px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cp-faint);
+}
+
+#shared-card-popup .cp-note {
+    font-size: 11.5px;
+    font-style: italic;
+    color: var(--cp-faint);
+}
+
+/* ---------------------------------------------------------------------------
+   Header: name, release chip, full-art button.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-titlebar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+#shared-card-popup .cp-chip {
+    flex: 0 0 auto;
+    padding: 3px 7px;
+    border: 1px solid var(--cp-line);
+    border-radius: var(--cp-r);
+    background: var(--cp-raised);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: var(--cp-faint);
+}
+
+#shared-card-popup .cp-artbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 4px 11px;
+    border: 1px solid var(--cp-line);
+    border-radius: 9999px;
+    background: var(--cp-raised);
+    font-family: inherit;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cp-muted);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+#shared-card-popup .cp-artbtn:hover {
+    background: #263449;
+    border-color: rgba(148, 163, 184, 0.4);
+    color: var(--cp-title);
+}
+
+#shared-card-popup .cp-artbtn i {
+    font-size: 10px;
+    color: var(--cp-faint);
+    transition: color 0.15s ease;
+}
+
+#shared-card-popup .cp-artbtn:hover i {
+    color: var(--cp-accent);
+}
+
+/* ---------------------------------------------------------------------------
+   Badge pills: attribute, Level/Rank, Pendulum scale. Geometry lives here; the
+   per-attribute colours come in as custom properties from card-loader.js.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+#shared-card-popup .cp-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    border: 1px solid var(--pill-border, var(--cp-line));
+    background: var(--pill-bg, var(--cp-raised));
+    color: var(--pill-fg, var(--cp-body));
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+#shared-card-popup .cp-pill i {
+    font-size: 9px;
+    opacity: 0.9;
+}
+
+#shared-card-popup .cp-stars {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    color: #fcd34d;
+}
+
+/* ---------------------------------------------------------------------------
+   Tabs.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--cp-line);
+}
+
+#shared-card-popup .cp-tab {
+    flex: 1 1 0;
+    padding: 6px 4px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cp-faint);
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+#shared-card-popup .cp-tab:hover {
+    color: var(--cp-body);
+}
+
+#shared-card-popup .cp-tab.is-active {
+    color: var(--cp-accent);
+    border-bottom-color: var(--cp-accent);
+    background: var(--cp-accent-dim);
+}
+
+/* ---------------------------------------------------------------------------
+   Card type line.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-typeline {
+    display: inline-block;
+    margin-top: 9px;
+    padding: 3px 9px;
+    border: 1px solid var(--cp-line-soft);
+    border-radius: var(--cp-r);
+    background: rgba(30, 41, 59, 0.6);
+    font-size: 11px;
+    color: var(--cp-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   Description sections. The heading is a muted uppercase label; the section's
+   identity is carried by the coloured rule beside the text, not by colouring the
+   heading itself.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-section {
+    margin-bottom: 12px;
+}
+
+#shared-card-popup .cp-section:last-child {
+    margin-bottom: 0;
+}
+
+#shared-card-popup .cp-head .cp-head-icon {
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.85;
+}
+
+#shared-card-popup .cp-ruled {
+    padding-left: 10px;
+    border-left: 3px solid var(--cp-rule, var(--cp-line));
+}
+
+/* Paragraph rhythm inside card text. */
+#shared-card-popup .cp-p {
+    margin: 0 0 0.5em;
+}
+
+#shared-card-popup .cp-p:last-child {
+    margin-bottom: 0;
+}
+
+/* Bulleted sub-effects ("● Once per turn: ...") get a hanging indent so the
+   wrapped lines align under the text rather than under the bullet. */
+#shared-card-popup .cp-p-bullet {
+    padding-left: 1.05em;
+    text-indent: -1.05em;
+}
+
+#shared-card-popup .cp-body-text strong {
+    font-weight: 700;
+    color: var(--cp-title);
+}
+
+/* ---------------------------------------------------------------------------
+   ATK / DEF / Link tiles.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-tiles {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+#shared-card-popup .cp-tile {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 5px 10px;
+    border: 1px solid var(--cp-line-soft);
+    border-radius: var(--cp-r);
+    background: linear-gradient(160deg, var(--cp-raised) 0%, var(--cp-bg) 100%);
+}
+
+#shared-card-popup .cp-tile-value {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+    color: var(--tile-fg, var(--cp-title));
+}
+
+/* ---------------------------------------------------------------------------
+   Tags, sets, prices.
+   --------------------------------------------------------------------------- */
+#shared-card-popup .cp-divider {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--cp-line-soft);
+}
+
+/* The category rows are sub-items of the "Gameplay Tags" heading, so they need
+   clearly more air above them than the 5px a .cp-head normally leaves. */
+#shared-card-popup #card-tags-container {
+    margin-top: 10px;
+}
+
+#shared-card-popup .cp-taggroup {
+    margin-bottom: 10px;
+}
+
+#shared-card-popup .cp-taggroup:last-child {
+    margin-bottom: 0;
+}
+
+#shared-card-popup .cp-tagtoggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    /* Category colour, matching the pills that expand underneath it. Tag category
+       is one of the few things in this panel where hue carries meaning. */
+    color: var(--tag-fg, var(--cp-muted));
+    opacity: 0.85;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+#shared-card-popup .cp-tagtoggle:hover {
+    opacity: 1;
+}
+
+/* The chevron and the count stay neutral so only the category name is coloured. */
+#shared-card-popup .cp-tagtoggle .toggle-icon {
+    width: 8px;
+    font-size: 8px;
+    color: var(--cp-faint);
+    transition: transform 0.15s ease;
+}
+
+#shared-card-popup .cp-tagtoggle .cp-count {
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--cp-faint);
+}
+
+#shared-card-popup .cp-taglist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+}
+
+#shared-card-popup .cp-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border: 1px solid var(--cp-line-soft);
+    border-radius: var(--cp-r);
+    background: rgba(30, 41, 59, 0.7);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--tag-fg, var(--cp-body));
+}
+
+#shared-card-popup button.cp-tag {
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#shared-card-popup button.cp-tag:hover {
+    background: #263449;
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+#shared-card-popup .cp-tag i {
+    font-size: 8px;
+    color: var(--cp-faint);
+}
+
+#shared-card-popup .cp-handtrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+    padding: 3px 9px;
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    border-radius: 9999px;
+    background: rgba(251, 191, 36, 0.16);
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #fcd34d;
+}
+
+#shared-card-popup .cp-setrow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--cp-line-soft);
+}
+
+#shared-card-popup .cp-setrow:last-child {
+    border-bottom: 0;
+}
+
+#shared-card-popup .cp-setname {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11.5px;
+    color: var(--cp-body);
+}
+
+#shared-card-popup .cp-setmeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+#shared-card-popup .cp-setcode {
+    font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 9.5px;
+    color: var(--cp-faint);
+}
+
+#shared-card-popup .cp-price {
+    flex: 0 0 auto;
+    font-size: 10.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: #4ade80;
+}
+
+#shared-card-popup .cp-bar-row {
+    display: block;
+    margin-bottom: 9px;
+    text-decoration: none;
+    color: inherit;
+}
+
+#shared-card-popup .cp-bar-row:last-child {
+    margin-bottom: 0;
+}
+
+#shared-card-popup .cp-bar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    font-size: 10.5px;
+    color: var(--cp-muted);
+}
+
+#shared-card-popup .cp-bar-row:hover .cp-bar-head {
+    color: var(--cp-title);
+}
+
+#shared-card-popup .cp-bar-track {
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--cp-sunken);
+    overflow: hidden;
+}
+
+#shared-card-popup .cp-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--bar-bg, linear-gradient(90deg, #3b82f6, #60a5fa));
+}
+
+/* ---------------------------------------------------------------------------
+   Narrow screens. The popup is centred and 90vw on mobile (set from JS).
+   --------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+    #shared-card-popup {
+        --cp-pad: 12px;
+    }
+
+    #shared-card-popup .cp-title {
+        font-size: 16px;
+    }
+}

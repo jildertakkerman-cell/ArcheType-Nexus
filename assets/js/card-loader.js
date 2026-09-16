@@ -30,6 +30,26 @@ window.CardLoader = (function () {
         SUPABASE_ANON_KEY: window.SUPABASE_CONFIG?.anonKey || ''
     };
 
+    // Data files live next to this script under /assets, so their URLs are resolved
+    // from the script's own src. Page-relative paths used to be hard-coded for a
+    // /pages/*.html depth, which silently 404'd (and fell back to the slower API)
+    // anywhere else, e.g. the root index.html.
+    const SCRIPT_URL = (document.currentScript && document.currentScript.src) || '';
+
+    function resolveAssetUrl(relativeToScript, fallback) {
+        if (SCRIPT_URL) {
+            try {
+                return new URL(relativeToScript, SCRIPT_URL).href;
+            } catch (error) {
+                // Malformed script src — fall through to the hard-coded path.
+            }
+        }
+        return fallback;
+    }
+
+    const BANLIST_JSON_URL = resolveAssetUrl('../data/banlist.json', '../assets/data/banlist.json');
+    const DISCORD_LINKS_URL = resolveAssetUrl('../data/discord_links.json', '/assets/data/discord_links.json');
+
     // Banlist format display names and icons
     // NOTE: Full class names must be spelled out for Tailwind to detect them at build time
     const BANLIST_FORMATS = {
@@ -77,31 +97,50 @@ window.CardLoader = (function () {
     let debugMaterials = false;
     let initialized = false;
 
+    // In-flight request registries, keyed the same way as their caches.
+    // Card data and banlists are requested from many entry points at once
+    // (loadCards fans out one call per card, popups, ambient backdrops), and every
+    // cache here is only written *after* an await — so without these a 100-card
+    // page fired 100 identical banlist.json requests and re-fetched the same card
+    // once per caller that raced the cache write.
+    const cardDataPromises = {};
+    const cardIdPromises = {};
+    const banlistPromises = {};
+    // format -> { lowercased card name: status }. Card names on pages don't always
+    // match the banlist's casing, and the fallback used to be a full scan of the
+    // banlist per card — O(cards x banlist) on every render.
+    const banlistLowerIndex = {};
+
     // Tag category color mapping for visual styling
     // Categories: Combat, Consistency, Disruption, Mechanics, Protection, Removal
+    //
+    // `fg` is the same colour as `text` but as a literal hex. The card popup needs
+    // it because thirteen pages load card-loader.js without output.css, where a
+    // Tailwind class resolves to nothing. Do not remove `bg`/`text`/`border` —
+    // card-browser.js and replay-analyzer.js read them through _getUtils().
     const TAG_CATEGORY_COLORS = {
         // Combat (Red/Orange)
-        combat: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+        combat: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20', fg: '#f87171' },
         // Consistency (Blue)
-        consistency: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+        consistency: { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20', fg: '#60a5fa' },
         // Disruption (Rose/Pink)
-        disruption: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+        disruption: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20', fg: '#fb7185' },
         // Mechanics (Indigo)
-        mechanics: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
+        mechanics: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20', fg: '#818cf8' },
         // Protection (Teal)
-        protection: { bg: 'bg-teal-500/10', text: 'text-teal-400', border: 'border-teal-500/20' },
+        protection: { bg: 'bg-teal-500/10', text: 'text-teal-400', border: 'border-teal-500/20', fg: '#2dd4bf' },
         // Removal (Amber)
-        removal: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+        removal: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20', fg: '#fbbf24' },
         // Timing (Purple) - For Quick Effect, etc.
-        timing: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+        timing: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20', fg: '#c084fc' },
         // Cost (Cyan) - For discard/send costs
-        cost: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20' },
+        cost: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/20', fg: '#22d3ee' },
         // Economy (Emerald)
-        economy: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+        economy: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20', fg: '#34d399' },
         // Interaction (Fuchsia)
-        interaction: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400', border: 'border-fuchsia-500/20' },
+        interaction: { bg: 'bg-fuchsia-500/10', text: 'text-fuchsia-400', border: 'border-fuchsia-500/20', fg: '#e879f9' },
         // Default
-        default: { bg: 'bg-slate-700/50', text: 'text-slate-400', border: 'border-slate-600/30' }
+        default: { bg: 'bg-slate-700/50', text: 'text-slate-400', border: 'border-slate-600/30', fg: '#94a3b8' }
     };
 
     /**
@@ -205,6 +244,56 @@ window.CardLoader = (function () {
         cost: 10,
         default: 99
     };
+
+    /**
+     * Escape a string for interpolation into innerHTML. Defers to the shared
+     * window.escapeHtml (text-utils.js) when present, with an identical inline
+     * fallback for the handful of pages that don't load it.
+     */
+    function esc(str) {
+        if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /**
+     * Render card text as real paragraphs rather than one run of <br>s, so the
+     * separate effects on a card get vertical rhythm instead of running together.
+     * Lines beginning with a bullet glyph get a hanging indent.
+     *
+     * Splits on CRLF and bare LF alike: card text arrives with CRLF from the
+     * YGOProDeck API but bare LF from Supabase.
+     */
+    function formatCardText(str) {
+        const lines = String(str == null ? '' : str).split(/\r?\n/);
+        const paras = [];
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+            const isBullet = /^[●•‣▪]/.test(trimmed);
+            paras.push(`<p class="cp-p${isBullet ? ' cp-p-bullet' : ''}">${esc(trimmed)}</p>`);
+        });
+        return paras.join('') || `<p class="cp-p">${esc(str)}</p>`;
+    }
+
+    /**
+     * A description section: muted uppercase heading plus a coloured rule beside
+     * the text. The rule is what distinguishes Pendulum from Monster from
+     * Materials — the heading itself stays neutral, so the panel doesn't carry
+     * three differently-coloured headlines.
+     */
+    function cpSection(icon, heading, bodyHtml, ruleColor) {
+        return `
+            <div class="cp-section">
+                <div class="cp-head"><span class="cp-head-icon">${icon}</span>${esc(heading)}</div>
+                <div class="cp-body-text cp-ruled" style="--cp-rule:${ruleColor};">${bodyHtml}</div>
+            </div>`;
+    }
 
     /**
      * Helper to group tags by their category
@@ -332,9 +421,11 @@ window.CardLoader = (function () {
      * @param {Event} event - Click event
      * @param {number} passcode - Card passcode
      * @param {string} tagName - Tag name
+     * @param {Element} [anchor] - Element to position against; defaults to event.target
      */
-    async function showTagActionsPopup(event, passcode, tagName) {
+    async function showTagActionsPopup(event, passcode, tagName, anchor) {
         event.stopPropagation();
+        const anchorEl = anchor || event.target;
 
         // Create popup if not exists
         if (!tagActionsPopup) {
@@ -368,7 +459,7 @@ window.CardLoader = (function () {
         tagActionsPopup.style.display = 'block';
 
         // Position near clicked element
-        const rect = event.target.getBoundingClientRect();
+        const rect = anchorEl.getBoundingClientRect();
         const popupX = Math.min(rect.left, window.innerWidth - 300);
         const popupY = rect.bottom + 8;
         tagActionsPopup.style.left = `${Math.max(10, popupX)}px`;
@@ -388,13 +479,13 @@ window.CardLoader = (function () {
         } else {
             tagActionsPopup.innerHTML = `
                 <div class="mb-1.5 pb-1.5 border-b border-slate-600/30">
-                    <span style="font-size: 9px;" class="uppercase font-bold ${colors.text} tracking-wider opacity-80">${tagName}</span>
+                    <span style="font-size: 9px;" class="uppercase font-bold ${colors.text} tracking-wider opacity-80">${esc(tagName)}</span>
                 </div>
                 <ul class="space-y-1.5">
                     ${actions.map(action => `
                         <li class="flex items-start gap-2.5">
                             <div class="w-1 h-1 rounded-full bg-blue-500/50 mt-[6px] shrink-0"></div>
-                            <span class="text-slate-300 leading-tight">${action}</span>
+                            <span class="text-slate-300 leading-tight">${esc(action)}</span>
                         </li>
                     `).join('')}
                 </ul>
@@ -420,14 +511,42 @@ window.CardLoader = (function () {
         }
     }
 
-    // Global click listener to close tag popup
+    // Monotonic counter behind the tag-group element ids. Date.now() collided
+    // whenever two tag sections rendered in the same millisecond, which produced
+    // duplicate element ids and made the wrong group expand.
+    let tagSectionInstanceCounter = 0;
+
+    // One delegated listener drives the whole tags section: category toggles, tag
+    // action popups, and dismissing the popup on an outside click.
     document.addEventListener('click', (e) => {
-        if (tagActionsPopup && !tagActionsPopup.contains(e.target) && !e.target.classList.contains('tag-action-trigger')) {
+        const target = e.target instanceof Element ? e.target : null;
+
+        const toggle = target && target.closest('[data-tag-group-toggle]');
+        if (toggle) {
+            const content = document.getElementById(toggle.dataset.tagGroupToggle);
+            const icon = toggle.querySelector('.toggle-icon');
+            if (content) {
+                const collapsed = content.classList.toggle('cp-hidden');
+                if (icon) {
+                    icon.classList.toggle('fa-chevron-down', !collapsed);
+                    icon.classList.toggle('fa-chevron-right', collapsed);
+                }
+            }
+            return;
+        }
+
+        const trigger = target && target.closest('.tag-action-trigger');
+        if (trigger) {
+            showTagActionsPopup(e, trigger.dataset.tagPasscode, trigger.dataset.tagName, trigger);
+            return;
+        }
+
+        if (tagActionsPopup && !tagActionsPopup.contains(e.target)) {
             hideTagActionsPopup();
         }
     });
 
-    // Expose function globally for onclick handlers
+    // Still exposed for any page-level markup that calls it directly.
     window.showTagActionsPopup = showTagActionsPopup;
 
     /**
@@ -435,10 +554,14 @@ window.CardLoader = (function () {
      * @param {Array} tags - Array of {tag_name, tag_category} objects
      * @param {string} cardType - Optional card type string to check for Extra Deck exclusion
      * @param {number} passcode - Optional card passcode for action lookups
+     * @param {Object} [options]
+     * @param {boolean} [options.bare=false] - true omits the divider and heading,
+     *        for callers that already render their own (the popup's Details tab).
      * @returns {string} HTML string for tags section
      */
-    function formatTagsSection(tags, cardType = '', passcode = null, cardName = '', hasDiscardAction = false) {
+    function formatTagsSection(tags, cardType = '', passcode = null, cardName = '', hasDiscardAction = false, options = {}) {
         if (!tags || tags.length === 0) return '';
+        const bare = options.bare === true;
 
         // Extract tag names for hand trap detection
         const tagNames = tags.map(t => t.tag_name);
@@ -463,48 +586,49 @@ window.CardLoader = (function () {
         });
 
         // Generate unique IDs for this popup instance
-        const instanceId = Date.now();
+        const instanceId = ++tagSectionInstanceCounter;
 
         const tagGroupsHtml = sortedKeys.map((key, index) => {
             const group = groups[key];
             const colors = TAG_CATEGORY_COLORS[group.key] || TAG_CATEGORY_COLORS.default;
             const groupId = `tag-group-${instanceId}-${index}`;
 
-            // Join tags with a subtle bullet - make clickable if passcode provided
+            // Category colour rides in as a custom property so the pill still
+            // colours correctly on the pages that don't load output.css.
             const tagsList = group.tags.map(t => {
-                // Escape single quotes for the onclick handler
-                const escapedTag = t.replace(/'/g, "\\'");
+                const tagHtml = esc(t);
 
                 if (passcode) {
-                    // Clickable pill style
+                    // Clickable pill — the delegated listener reads the passcode and
+                    // tag name back off the dataset.
                     return `
-                        <button 
-                            class="tag-action-trigger inline-flex items-center px-2.5 py-1 rounded text-[10px] font-medium bg-slate-800/80 border border-slate-700/60 transition-all cursor-pointer hover:bg-slate-700 hover:border-slate-500 hover:text-white group relative"
-                            onclick="window.showTagActionsPopup(event, ${passcode}, '${escapedTag}')"
-                            title="Click to view actions for ${t}"
-                        >
-                            <span class="${colors.text} opacity-90 group-hover:opacity-100 group-hover:text-white transition-opacity text-shadow-sm">${t}</span>
-                            <span class="ml-1.5 text-slate-500 group-hover:text-slate-300 text-[8px]"><i class="fas fa-search"></i></span>
-                        </button>`;
+                        <button
+                            type="button"
+                            class="tag-action-trigger cp-tag"
+                            style="--tag-fg:${colors.fg};"
+                            data-tag-passcode="${esc(passcode)}"
+                            data-tag-name="${tagHtml}"
+                            title="Click to view actions for ${tagHtml}"
+                        >${tagHtml}<i class="fas fa-search"></i></button>`;
                 }
-                // Non-clickable pill style
-                return `<span class="inline-flex items-center px-2 py-1 rounded text-[10px] font-medium bg-slate-800/40 border border-slate-700/20 text-slate-500 cursor-default">${t}</span>`;
+                // Non-clickable pill
+                return `<span class="cp-tag" style="--tag-fg:${colors.fg};">${tagHtml}</span>`;
             }).join('');
 
             return `
-                <div class="mb-2 last:mb-0">
-                    <button 
+                <div class="cp-taggroup">
+                    <button
                         type="button"
-                        class="w-full text-left uppercase font-bold ${colors.text} opacity-80 hover:opacity-100 flex items-center gap-1.5 ml-1 cursor-pointer transition-opacity"
-                        style="font-size: 9px; letter-spacing: 0.05em;"
-                        onclick="const content = document.getElementById('${groupId}'); const icon = this.querySelector('.toggle-icon'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); icon.classList.remove('fa-chevron-right'); icon.classList.add('fa-chevron-down'); } else { content.classList.add('hidden'); icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-right'); }"
-                        title="Click to expand ${group.display}"
+                        class="cp-tagtoggle"
+                        style="--tag-fg:${colors.fg};"
+                        data-tag-group-toggle="${groupId}"
+                        title="Click to expand ${esc(group.display)}"
                     >
-                        <i class="fas fa-chevron-right toggle-icon text-[8px] opacity-60" style="width: 8px;"></i>
-                        ${group.display}
-                        <span class="text-slate-500 font-normal ml-1">(${group.tags.length})</span>
+                        <i class="fas fa-chevron-right toggle-icon"></i>
+                        ${esc(group.display)}
+                        <span class="cp-count">(${group.tags.length})</span>
                     </button>
-                    <div id="${groupId}" class="flex flex-wrap gap-1.5 mt-1 hidden">
+                    <div id="${groupId}" class="cp-taglist cp-hidden">
                         ${tagsList}
                     </div>
                 </div>`;
@@ -512,20 +636,18 @@ window.CardLoader = (function () {
 
         // Add special Hand Trap indicator if detected
         const handTrapBadge = isHandTrap
-            ? `<div class="mb-2">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-500/90 text-yellow-900 border border-yellow-400 shadow-sm shadow-yellow-500/30">
-                ✋ Hand Trap
-                </span>
-               </div>`
+            ? '<div><span class="cp-handtrap">✋ Hand Trap</span></div>'
             : '';
 
         if (!tagGroupsHtml && !handTrapBadge) return '';
 
+        const inner = `${handTrapBadge}<div>${tagGroupsHtml}</div>`;
+        if (bare) return inner;
+
         return `
-            <div class="mt-3 pt-2 border-t border-gray-700">
-                <div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags</div>
-                ${handTrapBadge}
-                <div class="flex flex-col gap-1">${tagGroupsHtml}</div>
+            <div class="cp-divider">
+                <div class="cp-head">🏷️ Gameplay Tags</div>
+                ${inner}
             </div>
         `;
     }
@@ -547,9 +669,24 @@ window.CardLoader = (function () {
     }
 
     /**
+     * Pull in the popup's stylesheet. Resolved from this script's own URL so it
+     * works at any page depth, unlike ensureBackdropStylesheet's hardcoded
+     * '../assets/css/' path.
+     */
+    function ensurePopupStylesheet() {
+        if (document.querySelector('link[data-card-popup-styles]')) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = resolveAssetUrl('../css/card-popup.css', '../assets/css/card-popup.css');
+        link.dataset.cardPopupStyles = 'true';
+        document.head.appendChild(link);
+    }
+
+    /**
      * Creates the popup element if it doesn't exist
      */
     function createPopup() {
+        ensurePopupStylesheet();
         popup = document.getElementById('shared-card-popup');
 
         // Helper to apply responsive constraints
@@ -578,12 +715,13 @@ window.CardLoader = (function () {
 
         popup = document.createElement('div');
         popup.id = 'shared-card-popup';
-        popup.className = 'z-50 text-white p-4 rounded-lg shadow-2xl opacity-0 transition-opacity duration-200 pointer-events-none';
+        // Surface, type, colour and the fade transition all come from
+        // card-popup.css. In particular the old 'text-white' class here was what
+        // made every description render in pure #fff — the one element brighter
+        // than anything around it. Nothing Tailwind-dependent is left, so the
+        // popup also renders correctly on the pages that don't load output.css.
         popup.style.position = 'fixed';
-        popup.style.backgroundColor = '#0f172a'; // Solid dark slate background
-        popup.style.border = '2px solid #3b82f6'; // Blue border
-        popup.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 0, 0, 0.5)'; // Strong shadow for depth
-        popup.style.position = 'fixed';
+        popup.style.zIndex = '10000';
         popup.style.display = 'none';
         applyConstraints(popup);
 
@@ -607,6 +745,9 @@ window.CardLoader = (function () {
      * Large Image Modal (Lightbox)
      */
     let largeImageModal = null;
+    // Handle for the fade-out timer, so reopening the modal within the 300ms
+    // transition doesn't get hidden again by the previous close's pending timeout.
+    let largeImageHideTimer = null;
 
     function createLargeImageModal() {
         if (largeImageModal) return;
@@ -633,6 +774,11 @@ window.CardLoader = (function () {
 
     function displayLargeImage(imgUrl) {
         if (!largeImageModal) createLargeImageModal();
+
+        if (largeImageHideTimer) {
+            clearTimeout(largeImageHideTimer);
+            largeImageHideTimer = null;
+        }
 
         const img = largeImageModal.querySelector('img');
         img.src = imgUrl;
@@ -695,8 +841,10 @@ window.CardLoader = (function () {
             img.classList.add('scale-95');
         }
 
-        setTimeout(() => {
+        if (largeImageHideTimer) clearTimeout(largeImageHideTimer);
+        largeImageHideTimer = setTimeout(() => {
             largeImageModal.style.display = 'none';
+            largeImageHideTimer = null;
         }, 300);
     }
 
@@ -814,14 +962,66 @@ window.CardLoader = (function () {
         }
 
         // Return cached data if available
-        if (Object.keys(banlistCache[format]).length > 0) {
+        if (banlistCache[format] && Object.keys(banlistCache[format]).length > 0) {
             return banlistCache[format];
         }
 
+        // Share one request across every concurrent caller for this format.
+        if (!banlistPromises[format]) {
+            banlistPromises[format] = loadBanlistData(format)
+                .then(banlistMap => {
+                    // Don't pin a transient failure (empty map) for the page's life.
+                    if (Object.keys(banlistMap).length > 0) cacheBanlist(format, banlistMap);
+                    return banlistMap;
+                })
+                .finally(() => { delete banlistPromises[format]; });
+        }
+
+        return banlistPromises[format];
+    }
+
+    /**
+     * Store a resolved banlist plus its lowercase lookup index.
+     */
+    function cacheBanlist(format, banlistMap) {
+        banlistCache[format] = banlistMap;
+        const index = {};
+        for (const [name, status] of Object.entries(banlistMap)) {
+            index[name.toLowerCase()] = status;
+        }
+        banlistLowerIndex[format] = index;
+    }
+
+    /**
+     * Case-insensitive banlist lookup against the cached index.
+     * @param {string} cardName
+     * @param {string} format - Banlist format the map came from
+     * @param {Object} banlistMap - The map returned by fetchBanlistData
+     * @returns {string|null} 'Forbidden' | 'Limited' | 'Semi-Limited' | null
+     */
+    function lookupBanlistStatus(cardName, format, banlistMap) {
+        if (!cardName || !banlistMap) return null;
+        if (banlistMap[cardName]) return banlistMap[cardName];
+        const index = banlistLowerIndex[format];
+        if (index) return index[cardName.toLowerCase()] || null;
+        // Map was passed in without having been cached (shouldn't happen) — scan.
+        const lowerName = cardName.toLowerCase();
+        for (const [key, status] of Object.entries(banlistMap)) {
+            if (key.toLowerCase() === lowerName) return status;
+        }
+        return null;
+    }
+
+    /**
+     * Load a format's banlist from the local JSON file, falling back to the API.
+     * Callers should go through fetchBanlistData, which caches and dedupes.
+     * @returns {Promise<Object>} name -> status map; empty object on failure
+     */
+    async function loadBanlistData(format) {
         try {
             // First, try to load from local banlist.json (primary source - manually maintained)
             console.log(`[CardLoader] Fetching ${format.toUpperCase()} banlist from local JSON...`);
-            const localResponse = await fetch('../assets/data/banlist.json');
+            const localResponse = await fetch(BANLIST_JSON_URL);
 
             if (localResponse.ok) {
                 const localData = await localResponse.json();
@@ -870,7 +1070,6 @@ window.CardLoader = (function () {
                         });
                     }
 
-                    banlistCache[format] = banlistMap;
                     console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded (${banlistVersion}). Total restricted cards:`, Object.keys(banlistMap).length);
                     return banlistMap;
                 }
@@ -911,7 +1110,6 @@ window.CardLoader = (function () {
                 }
             });
 
-            banlistCache[format] = banlistMap;
             console.log(`[CardLoader] ${format.toUpperCase()} banlist loaded from API. Total restricted cards:`, Object.keys(banlistMap).length);
             return banlistMap;
         } catch (error) {
@@ -919,6 +1117,26 @@ window.CardLoader = (function () {
             // Return empty object on error
             return {};
         }
+    }
+
+    /**
+     * Attach the popup click handler once per container. Containers are re-rendered
+     * on format/tab switches; without the guard the handlers stack and showPopup's
+     * toggle behaviour makes the popup open and immediately close again.
+     * @param {Element} container
+     * @param {string} cardName - Kept on the container, not captured in the closure,
+     *        so a container reused for a different card opens the right popup.
+     * @param {boolean} preventDefault - Desktop suppresses link navigation.
+     */
+    function attachPopupHandler(container, cardName, preventDefault) {
+        container.dataset.clCardName = cardName;
+        if (container.dataset.clPopupBound === 'true') return;
+        container.dataset.clPopupBound = 'true';
+        container.addEventListener('click', (event) => {
+            if (preventDefault) event.preventDefault();
+            event.stopPropagation();
+            showPopup(event, container.dataset.clCardName);
+        });
     }
 
     /**
@@ -949,31 +1167,16 @@ window.CardLoader = (function () {
             cardDataCache[cardName] = dummyInfo;
 
             // Allow popup on dummy cards so users can see the name they clicked
-            container.addEventListener('click', (event) => {
-                event.stopPropagation();
-                showPopup(event, cardName);
-            });
+            attachPopupHandler(container, cardName, false);
 
             displayCardImage(dummyInfo, container);
             return;
         }
 
+        // Mobile taps to show the popup; desktop clicks, and additionally suppresses
+        // link navigation on the way.
         const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
-
-        if (isMobile) {
-            // Mobile: Tap to show popup
-            container.addEventListener('click', (event) => {
-                event.stopPropagation();
-                showPopup(event, cardName);
-            });
-        } else {
-            // Desktop: Click for Popup (changed from Hover)
-            container.addEventListener('click', (event) => {
-                event.preventDefault(); // Stop link navigation if applicable
-                event.stopPropagation();
-                showPopup(event, cardName);
-            });
-        }
+        attachPopupHandler(container, cardName, !isMobile);
 
         try {
             if (cardDataCache[cardName]) {
@@ -1326,10 +1529,7 @@ window.CardLoader = (function () {
                 cardDataCache[cardInfo.name] = cardInfo;
 
                 // Add click listener for popup (uses name)
-                container.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    showPopup(event, cardInfo.name);
-                });
+                attachPopupHandler(container, cardInfo.name, false);
 
                 displayCardImage(cardInfo, container);
             } else {
@@ -1435,6 +1635,32 @@ window.CardLoader = (function () {
      * Tries Supabase first, falls back to YGOProDeck API
      */
     async function fetchCardData(cardName) {
+        if (!cardName) throw new Error('fetchCardData requires a card name');
+
+        // Serve straight from the shared cache — loadCard, popups, preloads and the
+        // backdrop all used to re-request cards another path had already fetched.
+        const cached = cardDataCache[cardName];
+        if (cached && cached._complete) return cached;
+
+        const key = cardName.toLowerCase();
+        if (!cardDataPromises[key]) {
+            cardDataPromises[key] = fetchCardDataUncached(cardName)
+                .then(result => {
+                    if (!result || !result.name) return result;
+                    // Cache under both the requested name and the canonical one, so a
+                    // fallback-name hit doesn't re-fetch under the alias.
+                    const record = Object.assign(cardDataCache[cardName] || {}, result, { _complete: true });
+                    cardDataCache[cardName] = record;
+                    cardDataCache[result.name] = record;
+                    return record;
+                })
+                .finally(() => { delete cardDataPromises[key]; });
+        }
+
+        return cardDataPromises[key];
+    }
+
+    async function fetchCardDataUncached(cardName) {
         // Fallback name mapping to handle YGO API discrepancies seamlessly
         const nameFallbacks = {
             'Thorns of Violet Poison': 'Thorn Fangs of Violet Poison',
@@ -1545,6 +1771,21 @@ window.CardLoader = (function () {
      * Tries Supabase first, falls back to YGOProDeck API
      */
     async function fetchCardDataById(cardId) {
+        const key = String(cardId);
+        if (!cardIdPromises[key]) {
+            cardIdPromises[key] = fetchCardDataByIdUncached(cardId)
+                .then(result => {
+                    if (!result || !result.name) return result;
+                    const record = Object.assign(cardDataCache[result.name] || {}, result, { _complete: true });
+                    cardDataCache[result.name] = record;
+                    return record;
+                })
+                .finally(() => { delete cardIdPromises[key]; });
+        }
+        return cardIdPromises[key];
+    }
+
+    async function fetchCardDataByIdUncached(cardId) {
         // Try Supabase first
         const supabaseData = await fetchCardDataByIdFromSupabase(cardId);
 
@@ -1597,16 +1838,7 @@ window.CardLoader = (function () {
         if (!cardInfo.is_dummy && typeof fetchBanlistData === 'function') {
             // Fetch banlist for the current format (uses cache if available)
             const currentBanlist = await fetchBanlistData(currentBanlistFormat);
-            // Case-insensitive lookup
-            banStatus = currentBanlist[cardInfo.name] || (() => {
-                const lowerName = cardInfo.name.toLowerCase();
-                for (const [key, status] of Object.entries(currentBanlist)) {
-                    if (key.toLowerCase() === lowerName) {
-                        return status;
-                    }
-                }
-                return null;
-            })();
+            banStatus = lookupBanlistStatus(cardInfo.name, currentBanlistFormat, currentBanlist);
         }
 
         // Clear container before rendering
@@ -1775,8 +2007,10 @@ window.CardLoader = (function () {
      * Extract summoning materials from Extra Deck monster descriptions
      */
     function extractSummoningMaterials(description, cardType, cardName) {
-        // Only process Extra Deck monsters (Fusion, Synchro, XYZ)
-        if (!cardType || (!cardType.includes('Fusion') && !cardType.includes('Synchro') && !cardType.includes('XYZ') && !cardType.includes('Link'))) {
+        // Only process Extra Deck monsters (Fusion, Synchro, Xyz, Link). Matched
+        // case-insensitively: the YGOProDeck API spells it "XYZ Monster" while
+        // Supabase rows spell it "Xyz Monster".
+        if (!cardType || !/\b(?:Fusion|Synchro|Xyz|Link)\b/i.test(cardType)) {
             return null;
         }
 
@@ -1827,7 +2061,7 @@ window.CardLoader = (function () {
         for (const pattern of patterns) {
             const match = description.match(pattern);
             if (match && match[1]) {
-                console.log(`[MaterialDebug] Pattern: ${pattern} matched: ${match[1]}`);
+                if (debugMaterials) console.log(`[MaterialDebug] Pattern: ${pattern} matched: ${match[1]}`);
                 let materials = match[1].trim();
                 // Skip obvious non-material lines such as name override lines
                 // (eg. This card's name becomes "Summoned Skull")
@@ -1934,16 +2168,8 @@ window.CardLoader = (function () {
                 const pendulumText = pendulumMatch[1].trim();
                 const monsterText = monsterMatch[1].trim();
 
-                return `
-                    <div class="mb-3">
-                        <div class="text-blue-300 font-bold text-sm mb-1">⚖️ Pendulum Effect</div>
-                        <div class="text-current text-xs leading-relaxed pl-3 border-l-2 border-blue-500">${pendulumText.replace(/\r\n/g, '<br>')}</div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="text-green-300 font-bold text-sm mb-1">⚔️ Monster Effect</div>
-                        <div class="text-current text-xs leading-relaxed pl-3 border-l-2 border-green-500">${monsterText.replace(/\r\n/g, '<br>')}</div>
-                    </div>
-                `;
+                return cpSection('⚖️', 'Pendulum Effect', formatCardText(pendulumText), '#3b82f6')
+                    + cpSection('⚔️', 'Monster Effect', formatCardText(monsterText), '#22c55e');
             }
         }
 
@@ -1957,8 +2183,7 @@ window.CardLoader = (function () {
         }
         // For even deeper debugging, show the intermediate materialsText and remainingDescription
         if (debugMaterials) {
-            const debugMaterials = linkifyMaterials(summoningMaterials || '');
-            console.log('[CardLoader] debug materialsText (post-linkify):', debugMaterials);
+            console.log('[CardLoader] debug materialsText (post-linkify):', linkifyMaterials(summoningMaterials || ''));
         }
         if (summoningMaterials) {
             // Remove materials from description and format specially
@@ -1967,11 +2192,11 @@ window.CardLoader = (function () {
             // trim it here. This is an extra safety net for APIs that flatten newlines.
             materialsText = materialsText.replace(/\s+(?:You|If|When|Once|During|For|Unless|While|Then|In the|If a|If an|If any|When a|When an|When you|While your)\b[\s\S]*$/i, '').trim();
             // Preserve line break display in the materials block
-            materialsText = materialsText.replace(/\r?\n/g, ' ');
+            materialsText = materialsText.replace(/(?:<br>|\r?\n)/g, ' ');
             // Remove the materials substring from the description, but be conservative:
             // only remove if it appears at the start of the description or on its own line
             // (prevents accidental removal of the same word used later in effect text).
-            const remainingDescription = removeMaterialsFromDescription(description, summoningMaterials);
+            let remainingDescription = removeMaterialsFromDescription(description, summoningMaterials);
             // Final fuzzy safety: if the removed fails but the first sentence begins with
             // the same words (ignoring curly quotes/whitespace), remove that leading
             // instance. This prevents duplication when the captured materials are
@@ -1983,8 +2208,7 @@ window.CardLoader = (function () {
                 const anchored = new RegExp('^\\s*' + escapeRegExp(summoningMaterials).replace(/\r?\n/g, '\\s*').replace(/"/g, '["“”]?').replace(/\s+/g, '\\s+'), 'mi');
                 if (anchored.test(remainingDescription)) {
                     if (debugMaterials) console.log('[CardLoader] Fuzzy removal of materials from beginning of remaining description');
-                    const newDesc = remainingDescription.replace(anchored, '').trim();
-                    return newDesc;
+                    remainingDescription = remainingDescription.replace(anchored, '').trim();
                 }
             }
             if (debugMaterials && remainingDescription && summoningMaterials && remainingDescription.includes(summoningMaterials)) {
@@ -1996,30 +2220,26 @@ window.CardLoader = (function () {
             // Determine icon based on card type
             let materialIcon = '🧬';
             if (cardType) {
-                if (cardType.includes('Fusion')) materialIcon = '🌀';
-                else if (cardType.includes('Synchro')) materialIcon = '🌟';
-                else if (cardType.includes('XYZ')) materialIcon = '🌌';
-                else if (cardType.includes('Link')) materialIcon = '🔗';
+                // Case-insensitive for the same XYZ/Xyz reason as above.
+                if (/\bFusion\b/i.test(cardType)) materialIcon = '🌀';
+                else if (/\bSynchro\b/i.test(cardType)) materialIcon = '🌟';
+                else if (/\bXyz\b/i.test(cardType)) materialIcon = '🌌';
+                else if (/\bLink\b/i.test(cardType)) materialIcon = '🔗';
             }
 
-            return `
-                <div class="mb-3">
-                            <div class="text-purple-300 font-bold text-sm mb-1">${materialIcon} Materials</div>
-                            <div class="text-gray-300 text-xs leading-relaxed pl-3 border-l-2 border-purple-500">${materialsText}</div>
-                </div>
-                <div class="mb-3">
-                    <div class="text-current text-xs leading-relaxed">${remainingDescription.replace(/\r\n/g, '<br>')}</div>
-                </div>
-            `;
+            return cpSection(materialIcon, 'Materials', materialsText, '#a855f7')
+                + `<div class="cp-section cp-body-text">${formatCardText(remainingDescription)}</div>`;
         }
 
-        // Check for other effect types (Link, Ritual, Fusion, Synchro, XYZ)
+        // Check for other effect types (Link, Ritual, Fusion, Synchro, XYZ). The
+        // rule colour carries the distinction now, so these are plain hex values
+        // rather than Tailwind classes that the build would have to know about.
         const effectTypes = [
-            { pattern: /\[ Link Monster Effect \]/, label: '🔗 Link Effect', color: 'purple' },
-            { pattern: /\[ Ritual Monster Effect \]/, label: '📿 Ritual Effect', color: 'orange' },
-            { pattern: /\[ Fusion Monster Effect \]/, label: '🔥 Fusion Effect', color: 'red' },
-            { pattern: /\[ Synchro Monster Effect \]/, label: '⚡ Synchro Effect', color: 'yellow' },
-            { pattern: /\[ XYZ Monster Effect \]/, label: '✨ XYZ Effect', color: 'pink' }
+            { pattern: /\[ Link Monster Effect \]/, icon: '🔗', label: 'Link Effect', rule: '#a855f7' },
+            { pattern: /\[ Ritual Monster Effect \]/, icon: '📿', label: 'Ritual Effect', rule: '#f97316' },
+            { pattern: /\[ Fusion Monster Effect \]/, icon: '🔥', label: 'Fusion Effect', rule: '#ef4444' },
+            { pattern: /\[ Synchro Monster Effect \]/, icon: '⚡', label: 'Synchro Effect', rule: '#eab308' },
+            { pattern: /\[ XYZ Monster Effect \]/, icon: '✨', label: 'Xyz Effect', rule: '#ec4899' }
         ];
 
         for (const effectType of effectTypes) {
@@ -2027,29 +2247,33 @@ window.CardLoader = (function () {
                 const match = description.match(new RegExp(`${effectType.pattern.source}(.*)`, 's'));
                 if (match) {
                     const effectText = match[1].trim();
-                    return `
-                        <div class="mb-3">
-                            <div class="text-${effectType.color}-300 font-bold text-sm mb-1">${effectType.label}</div>
-                            <div class="text-current text-xs leading-relaxed pl-3 border-l-2 border-${effectType.color}-500">${effectText.replace(/\r\n/g, '<br>')}</div>
-                        </div>
-                    `;
+                    return cpSection(effectType.icon, effectType.label, formatCardText(effectText), effectType.rule);
                 }
             }
         }
 
-        // For regular cards, just format with line breaks
-        return `<div class="text-current text-xs leading-relaxed">${description.replace(/\r\n/g, '<br>')}</div>`;
+        // For regular cards, just the card text.
+        return `<div class="cp-body-text">${formatCardText(description)}</div>`;
     }
 
-    // Small helper to highlight quoted card names in materials strings
+    // Bold the quoted card names in a materials string. Returns escaped HTML: the
+    // caller drops the result straight into innerHTML, and escaping upstream would
+    // turn the very quotes this matches on into &quot; entities.
+    // Matches straight double quotes "..." and curly quotes “...”; single quotes are
+    // left alone because they are common inside card names.
     function linkifyMaterials(materials) {
         if (!materials) return materials;
-        // Match straight double quotes "..." and curly quotes “...” or ”..."; avoid matching single quotes as those are common in card names
-        // Keep materials in the same color as the Summoning Materials block by removing
-        // the special accent color. Keep bold for emphasis.
-        return materials.replace(/["“”]([^"“”]+)["“”]/g, (m, name) => {
-            return `<strong class="font-bold">${name}</strong>`;
-        });
+        const text = String(materials);
+        const re = /["“”]([^"“”]+)["“”]/g;
+        let out = '';
+        let last = 0;
+        let match;
+        while ((match = re.exec(text)) !== null) {
+            out += esc(text.slice(last, match.index));
+            out += `<strong class="font-bold">${esc(match[1])}</strong>`;
+            last = match.index + match[0].length;
+        }
+        return out + esc(text.slice(last));
     }
 
     // Escape string for use in a regular expression
@@ -2112,6 +2336,117 @@ window.CardLoader = (function () {
             .toLowerCase();
     }
 
+    // Monster attributes, in the game's own colours.
+    const ATTRIBUTE_STYLES = {
+        DARK:   { icon: 'fa-moon',     fg: '#c4b5fd', bg: 'rgba(124,58,237,0.18)',  border: 'rgba(167,139,250,0.45)' },
+        LIGHT:  { icon: 'fa-sun',      fg: '#fde68a', bg: 'rgba(234,179,8,0.18)',   border: 'rgba(250,204,21,0.45)' },
+        EARTH:  { icon: 'fa-mountain', fg: '#d6bfa4', bg: 'rgba(146,64,14,0.22)',   border: 'rgba(180,120,60,0.45)' },
+        WATER:  { icon: 'fa-tint',     fg: '#93c5fd', bg: 'rgba(2,132,199,0.20)',   border: 'rgba(56,189,248,0.45)' },
+        FIRE:   { icon: 'fa-fire',     fg: '#fca5a5', bg: 'rgba(220,38,38,0.20)',   border: 'rgba(248,113,113,0.45)' },
+        WIND:   { icon: 'fa-wind',     fg: '#86efac', bg: 'rgba(22,163,74,0.20)',   border: 'rgba(74,222,128,0.45)' },
+        DIVINE: { icon: 'fa-bolt',     fg: '#fcd34d', bg: 'rgba(180,83,9,0.25)',    border: 'rgba(251,191,36,0.55)' }
+    };
+
+    /**
+     * Pill geometry lives in card-popup.css (.cp-pill); only the per-attribute
+     * colours are passed in, as custom properties, so the palette stays here in JS
+     * next to the data it describes.
+     */
+    function pillVars(fg, bg, border) {
+        return `--pill-fg:${fg};--pill-bg:${bg};--pill-border:${border};`;
+    }
+
+    /**
+     * The API uses -1 for the "?" ATK/DEF printed on cards like Slifer the Sky
+     * Dragon; rendering it raw produced "ATK/-1".
+     */
+    function formatStatValue(value) {
+        if (value === null || value === undefined || value === '') return null;
+        const n = Number(value);
+        if (Number.isNaN(n)) return esc(value);
+        return n < 0 ? '?' : String(n);
+    }
+
+    /**
+     * Attribute / Level / Rank / Pendulum Scale badges for the popup header.
+     * Xyz monsters have a Rank rather than a Level, and Rank 0 exists (Number S0:
+     * Utopic ZEXAL), so the level is tested against null rather than for truthiness.
+     */
+    function formatIdentityBar(cardInfo) {
+        const type = cardInfo.type || '';
+        if (!/Monster/i.test(type)) return '';
+
+        const badges = [];
+
+        const attribute = (cardInfo.attribute || '').toUpperCase();
+        const attrStyle = ATTRIBUTE_STYLES[attribute];
+        if (attrStyle) {
+            badges.push(`
+                <span class="cp-pill" style="${pillVars(attrStyle.fg, attrStyle.bg, attrStyle.border)}">
+                    <i class="fas ${attrStyle.icon}"></i>${esc(attribute)}
+                </span>`);
+        }
+
+        const level = cardInfo.level;
+        if (level !== null && level !== undefined && level !== '') {
+            const value = Number(level);
+            if (!Number.isNaN(value) && value >= 0) {
+                const isRank = /\bXyz\b/i.test(type);
+                // Xyz frames are black with gold Rank stars; Level stars sit on a
+                // warmer frame. Same glyph, different backing, as on the real cards.
+                const bg = isRank ? 'rgba(15,23,42,0.9)' : 'rgba(217,119,6,0.16)';
+                const border = isRank ? 'rgba(251,191,36,0.55)' : 'rgba(251,191,36,0.4)';
+                const stars = '★'.repeat(Math.min(value, 13));
+                badges.push(`
+                    <span class="cp-pill" style="${pillVars('#fde68a', bg, border)}">
+                        ${stars ? `<span class="cp-stars">${stars}</span>` : ''}
+                        <span>${isRank ? 'Rank' : 'Lv'} ${value}</span>
+                    </span>`);
+            }
+        }
+
+        const scale = cardInfo.scale;
+        if (scale !== null && scale !== undefined && scale !== '') {
+            // Blue on the left, red on the right, as the scales are printed.
+            const gradient = 'linear-gradient(90deg,rgba(37,99,235,0.28) 0%,rgba(220,38,38,0.28) 100%)';
+            badges.push(`
+                <span class="cp-pill" style="${pillVars('#e2e8f0', gradient, 'rgba(148,163,184,0.35)')}">
+                    <i class="fas fa-arrows-alt-h"></i>Scale ${esc(scale)}
+                </span>`);
+        }
+
+        if (!badges.length) return '';
+        return `<div class="cp-pills">${badges.join('')}</div>`;
+    }
+
+    /**
+     * ATK / DEF (or ATK / Link rating) as a pair of tiles, replacing the old
+     * single "ATK/1500 DEF/1200" text line.
+     */
+    function formatStatTiles(cardInfo) {
+        if (!/Monster/i.test(cardInfo.type || '')) return '';
+
+        const tile = (label, value, color) => `
+            <div class="cp-tile">
+                <div class="cp-label">${label}</div>
+                <div class="cp-tile-value" style="--tile-fg:${color};">${value}</div>
+            </div>`;
+
+        const tiles = [];
+        const atk = formatStatValue(cardInfo.atk);
+        if (atk !== null) tiles.push(tile('ATK', atk, '#fbbf24'));
+
+        if (cardInfo.linkval !== null && cardInfo.linkval !== undefined && cardInfo.linkval !== '') {
+            tiles.push(tile('Link', `LINK-${esc(cardInfo.linkval)}`, '#60a5fa'));
+        } else {
+            const def = formatStatValue(cardInfo.def);
+            if (def !== null) tiles.push(tile('DEF', def, '#93c5fd'));
+        }
+
+        if (!tiles.length) return '';
+        return `<div class="cp-tiles">${tiles.join('')}</div>`;
+    }
+
     /**
      * Get the appropriate icon for a card type
      */
@@ -2139,7 +2474,7 @@ window.CardLoader = (function () {
      */
     function formatSetsSection(cardInfo) {
         if (!cardInfo || !cardInfo.card_sets || cardInfo.card_sets.length === 0) {
-            return '<p class="text-gray-500 text-xs italic">No set data available.</p>';
+            return '<p class="cp-note">No set data available.</p>';
         }
 
         const sets = cardInfo.card_sets;
@@ -2154,30 +2489,30 @@ window.CardLoader = (function () {
             const priceVal = set.set_price ? parseFloat(set.set_price) : 0;
             const price = priceVal > 0 ? `$${priceVal.toFixed(2)}` : '';
 
-            // Rarity color coding
-            let rarityColor = 'text-gray-400';
-            if (rarity.includes('Secret')) rarityColor = 'text-yellow-300';
-            else if (rarity.includes('Ultra')) rarityColor = 'text-amber-400';
-            else if (rarity.includes('Super')) rarityColor = 'text-blue-400';
-            else if (rarity.includes('Rare')) rarityColor = 'text-cyan-400';
-            else if (rarity.includes('Common')) rarityColor = 'text-slate-400';
+            // Rarity colour coding. Hex rather than Tailwind classes so the rows
+            // still read correctly without output.css.
+            let rarityColor = '#94a3b8';
+            if (rarity.includes('Secret')) rarityColor = '#fde047';
+            else if (rarity.includes('Ultra')) rarityColor = '#fbbf24';
+            else if (rarity.includes('Super')) rarityColor = '#60a5fa';
+            else if (rarity.includes('Rare')) rarityColor = '#22d3ee';
 
             return `
-                <div class="flex items-start gap-2 py-1.5 border-b border-slate-700/50 last:border-0">
-                    <div class="flex-1 min-w-0">
-                        <div class="text-xs text-slate-200 truncate" title="${set.set_name}">${set.set_name}</div>
-                        <div class="flex items-center gap-2 mt-0.5">
-                            <span class="text-[10px] text-slate-500 font-mono">${setCode}</span>
-                            <span class="text-[10px] ${rarityColor} font-medium">${rarityShort || rarity}</span>
+                <div class="cp-setrow">
+                    <div style="flex:1;min-width:0;">
+                        <div class="cp-setname" title="${esc(set.set_name)}">${esc(set.set_name)}</div>
+                        <div class="cp-setmeta">
+                            <span class="cp-setcode">${esc(setCode)}</span>
+                            <span class="cp-label" style="color:${rarityColor};">${esc(rarityShort || rarity)}</span>
                         </div>
                     </div>
-                    ${price ? `<span class="text-[10px] text-green-400 font-medium whitespace-nowrap">${price}</span>` : ''}
+                    ${price ? `<span class="cp-price">${price}</span>` : ''}
                 </div>`;
         }).join('');
 
         return `
-            <div class="text-xs text-gray-400 mb-2">📦 ${sets.length} Set${sets.length > 1 ? 's' : ''}</div>
-            <div class="space-y-0">${setItems}</div>
+            <div class="cp-head">📦 ${sets.length} Set${sets.length > 1 ? 's' : ''}</div>
+            <div>${setItems}</div>
         `;
     }
 
@@ -2185,9 +2520,13 @@ window.CardLoader = (function () {
      * Format price section HTML for card popup
      * Uses prices from YGOProDeck API (card_prices array)
      * @param {Object} cardInfo - Card data object from API
+     * @param {Object} [options]
+     * @param {boolean} [options.wrapper=true] - false omits the bordered container,
+     *        for callers that already render one (the popup's Prices tab).
      * @returns {string} HTML string for price section
      */
-    function formatPriceSection(cardInfo) {
+    function formatPriceSection(cardInfo, options = {}) {
+        const withWrapper = options.wrapper !== false;
         if (!cardInfo || !cardInfo.card_prices || !cardInfo.card_prices[0]) {
             return '';
         }
@@ -2212,40 +2551,33 @@ window.CardLoader = (function () {
         // Cardmarket URL
         const cmUrl = `https://www.cardmarket.com/en/YuGiOh/Products/Search?searchString=${encodedName}`;
 
-        let priceHtml = '<div class="mt-3 pt-2 border-t border-gray-700">';
-        priceHtml += '<div class="text-xs text-gray-400 mb-2">💰 Market Prices</div>';
+        let priceHtml = withWrapper ? '<div class="cp-divider">' : '';
+        priceHtml += '<div class="cp-head">💰 Market Prices</div>';
 
         // Main price comparison bar
         const maxPrice = Math.max(tcgPrice || 0, cmPrice || 0);
+        const bar = (href, label, amount, gradient, width) => `
+            <a href="${href}" target="_blank" rel="noopener noreferrer" class="cp-bar-row">
+                <div class="cp-bar-head">
+                    <span>${label}</span>
+                    <span class="cp-price">${amount}</span>
+                </div>
+                <div class="cp-bar-track">
+                    <div class="cp-bar-fill" style="width:${width}%;--bar-bg:${gradient};"></div>
+                </div>
+            </a>`;
+
         if (maxPrice > 0) {
-            priceHtml += '<div class="mb-3">';
+            priceHtml += '<div style="margin-bottom:12px;">';
 
             if (tcgPrice && tcgPrice > 0) {
-                const tcgWidth = (tcgPrice / maxPrice) * 100;
-                priceHtml += `
-                    <a href="${tcgUrl}" target="_blank" rel="noopener noreferrer" class="block mb-2 group">
-                        <div class="flex items-center justify-between text-[10px] mb-0.5">
-                            <span class="text-gray-400 group-hover:text-gray-200">TCGplayer</span>
-                            <span class="text-green-400 font-bold">$${tcgPrice.toFixed(2)}</span>
-                        </div>
-                        <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all" style="width: ${tcgWidth}%"></div>
-                        </div>
-                    </a>`;
+                priceHtml += bar(tcgUrl, 'TCGplayer', `$${tcgPrice.toFixed(2)}`,
+                    'linear-gradient(90deg,#3b82f6,#60a5fa)', (tcgPrice / maxPrice) * 100);
             }
 
             if (cmPrice && cmPrice > 0) {
-                const cmWidth = (cmPrice / maxPrice) * 100;
-                priceHtml += `
-                    <a href="${cmUrl}" target="_blank" rel="noopener noreferrer" class="block group">
-                        <div class="flex items-center justify-between text-[10px] mb-0.5">
-                            <span class="text-gray-400 group-hover:text-gray-200">Cardmarket</span>
-                            <span class="text-green-400 font-bold">€${cmPrice.toFixed(2)}</span>
-                        </div>
-                        <div class="h-3 bg-slate-800 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all" style="width: ${cmWidth}%"></div>
-                        </div>
-                    </a>`;
+                priceHtml += bar(cmUrl, 'Cardmarket', `€${cmPrice.toFixed(2)}`,
+                    'linear-gradient(90deg,#f59e0b,#fbbf24)', (cmPrice / maxPrice) * 100);
             }
 
             priceHtml += '</div>';
@@ -2262,28 +2594,28 @@ window.CardLoader = (function () {
             if (setsWithPrices.length > 0) {
                 const maxSetPrice = setsWithPrices[0].price;
 
-                priceHtml += '<div class="mt-3 pt-2 border-t border-slate-700">';
-                priceHtml += '<div style="font-size: 10px; color: #9ca3af; margin-bottom: 6px;">📊 Price by Printing (Top 6)</div>';
+                priceHtml += '<div class="cp-divider">';
+                priceHtml += '<div class="cp-head">📊 Price by Printing (Top 6)</div>';
 
                 setsWithPrices.forEach(set => {
                     const width = (set.price / maxSetPrice) * 100;
                     const rarity = set.set_rarity || '';
 
-                    // Color by rarity (using inline styles)
-                    let barBg = 'linear-gradient(to right, #64748b, #94a3b8)'; // default slate
-                    if (rarity.includes('Secret')) barBg = 'linear-gradient(to right, #eab308, #fde047)';
-                    else if (rarity.includes('Ultra')) barBg = 'linear-gradient(to right, #f59e0b, #fbbf24)';
-                    else if (rarity.includes('Super')) barBg = 'linear-gradient(to right, #3b82f6, #60a5fa)';
-                    else if (rarity.includes('Rare')) barBg = 'linear-gradient(to right, #06b6d4, #22d3ee)';
+                    // Colour by rarity, matching formatSetsSection's rarity colours.
+                    let barBg = 'linear-gradient(90deg,#64748b,#94a3b8)'; // default slate
+                    if (rarity.includes('Secret')) barBg = 'linear-gradient(90deg,#eab308,#fde047)';
+                    else if (rarity.includes('Ultra')) barBg = 'linear-gradient(90deg,#f59e0b,#fbbf24)';
+                    else if (rarity.includes('Super')) barBg = 'linear-gradient(90deg,#3b82f6,#60a5fa)';
+                    else if (rarity.includes('Rare')) barBg = 'linear-gradient(90deg,#06b6d4,#22d3ee)';
 
                     priceHtml += `
-                        <div style="margin-bottom: 6px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
-                                <span style="color: #9ca3af; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${set.set_name}">${set.set_code || set.set_name}</span>
-                                <span style="color: #4ade80; font-weight: bold;">$${set.price.toFixed(2)}</span>
+                        <div class="cp-bar-row">
+                            <div class="cp-bar-head">
+                                <span class="cp-setname" style="max-width:180px;" title="${esc(set.set_name)}">${esc(set.set_code || set.set_name)}</span>
+                                <span class="cp-price">$${set.price.toFixed(2)}</span>
                             </div>
-                            <div style="height: 6px; background-color: #1e293b; border-radius: 9999px; overflow: hidden;">
-                                <div style="height: 100%; width: ${width}%; background: ${barBg}; border-radius: 9999px;"></div>
+                            <div class="cp-bar-track">
+                                <div class="cp-bar-fill" style="width:${width}%;--bar-bg:${barBg};"></div>
                             </div>
                         </div>`;
                 });
@@ -2292,7 +2624,7 @@ window.CardLoader = (function () {
             }
         }
 
-        priceHtml += '</div>';
+        if (withWrapper) priceHtml += '</div>';
         return priceHtml;
     }
 
@@ -2307,27 +2639,13 @@ window.CardLoader = (function () {
         if (!popup) return;
 
         // Update tab buttons
-        const tabs = popup.querySelectorAll('.popup-tab-btn');
-        tabs.forEach(btn => {
-            if (btn.dataset.tab === tabName) {
-                btn.classList.add('text-blue-400', 'border-blue-500');
-                btn.classList.remove('text-slate-200', 'border-transparent');
-                btn.style.backgroundColor = '#334155'; // Active tab background
-            } else {
-                btn.classList.remove('text-blue-400', 'border-blue-500');
-                btn.classList.add('text-slate-200', 'border-transparent');
-                btn.style.backgroundColor = ''; // Reset to default
-            }
+        popup.querySelectorAll('.popup-tab-btn').forEach(btn => {
+            btn.classList.toggle('is-active', btn.dataset.tab === tabName);
         });
 
         // Update tab content
-        const contents = popup.querySelectorAll('.popup-tab-content');
-        contents.forEach(content => {
-            if (content.id === `tab-${tabName}`) {
-                content.classList.remove('hidden');
-            } else {
-                content.classList.add('hidden');
-            }
+        popup.querySelectorAll('.popup-tab-content').forEach(content => {
+            content.classList.toggle('cp-hidden', content.id !== `tab-${tabName}`);
         });
     };
 
@@ -2357,12 +2675,11 @@ window.CardLoader = (function () {
 
         // Check if card is already in cache
         if (!cardDataCache[cardName]) {
-            // Fetch card data first
-            const data = await fetchCardData(cardName);
-            if (data) {
-                cardDataCache[cardName] = data;
-            } else {
-                console.warn('[CardLoader] Could not fetch card:', cardName);
+            try {
+                // fetchCardData throws when the card can't be resolved anywhere.
+                if (!await fetchCardData(cardName)) throw new Error('no data');
+            } catch (error) {
+                console.warn('[CardLoader] Could not fetch card:', cardName, error);
                 return;
             }
         }
@@ -2416,7 +2733,7 @@ window.CardLoader = (function () {
 
                         // Update price
                         const priceArea = document.getElementById('popup-price-area');
-                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo).replace('<div class="mt-3 pt-2 border-t border-gray-700">', '').replace('<div class="text-xs text-gray-400 mb-1">💰 Prices</div>', '');
+                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo, { wrapper: false });
 
                         // Update release date
                         const misc = cardInfo.misc_info ? cardInfo.misc_info[0] : null;
@@ -2441,26 +2758,21 @@ window.CardLoader = (function () {
             }).catch(e => { console.warn(e); cardInfo._fetching = false; });
         }
 
-        let stats = '';
-        let atkDef = [];
-        // Check for valid ATK/DEF values (not null/undefined) - handles both API and Supabase data
-        if (cardInfo.atk !== undefined && cardInfo.atk !== null) atkDef.push(`ATK/${cardInfo.atk}`);
-        if (cardInfo.def !== undefined && cardInfo.def !== null && !cardInfo.linkval) atkDef.push(`DEF/${cardInfo.def}`);
-        if (cardInfo.linkval) atkDef.push(`LINK-${cardInfo.linkval}`);
-        if (atkDef.length > 0) {
-            stats = `<p class="mt-2 text-yellow-400 font-bold">${atkDef.join(' ')}</p>`;
-        }
+        // ATK/DEF tiles, and the attribute / Level-or-Rank / Pendulum Scale badges.
+        const stats = formatStatTiles(cardInfo);
+        const identityBar = formatIdentityBar(cardInfo);
 
         let cardType;
         const race = cardInfo.race || 'Unknown';
 
-        if (cardInfo.type.includes('Monster')) {
-            cardType = `[${race} / ${cardInfo.type.replace(' Monster', '')}]`;
-        } else if (cardInfo.type.includes('Spell')) {
-            const icon = getCardTypeIcon(race, cardInfo.type);
+        const infoType = cardInfo.type || '';
+        if (infoType.includes('Monster')) {
+            cardType = `[${race} / ${infoType.replace(' Monster', '')}]`;
+        } else if (infoType.includes('Spell')) {
+            const icon = getCardTypeIcon(race, infoType);
             cardType = `${icon} [${race} Spell]`;
-        } else if (cardInfo.type.includes('Trap')) {
-            const icon = getCardTypeIcon(race, cardInfo.type);
+        } else if (infoType.includes('Trap')) {
+            const icon = getCardTypeIcon(race, infoType);
             cardType = `${icon} [${race} Trap]`;
         } else {
             cardType = `[${race} Card]`;
@@ -2476,66 +2788,82 @@ window.CardLoader = (function () {
             releaseDateHtml = `Release: ${misc.tcg_date || misc.ocg_date}`;
         }
 
-        // Prepare Price HTML separately to strip container divs if needed
-        const priceHtml = formatPriceSection(cardInfo).replace('<div class="mt-3 pt-2 border-t border-gray-700">', '').replace('<div class="text-xs text-gray-400 mb-1">💰 Prices</div>', '');
+        // The Prices tab supplies its own container.
+        const priceHtml = formatPriceSection(cardInfo, { wrapper: false });
 
         popup.innerHTML = `
-            <div class="flex flex-col h-full" style="background-color: #0f172a;">
-                <div class="flex-shrink-0" style="background-color: #0f172a;">
-                    <div class="flex justify-between items-start mb-1.5">
-                        <h3 class="text-blue-400 font-bold text-lg leading-tight mr-2">${cardInfo.name}</h3>
-                        <span id="popup-release-date" class="text-[10px] text-gray-500 bg-gray-800 px-1.5 py-0.5 rounded border border-gray-700 whitespace-nowrap ${releaseDateHtml ? '' : 'hidden'}">
-                            ${releaseDateHtml}
-                        </span>
+            <div class="cp-root">
+                <div class="cp-head-area">
+                    <div class="cp-titlebar">
+                        <h3 class="cp-title">${esc(cardInfo.name)}</h3>
+                        <span id="popup-release-date" class="cp-chip ${releaseDateHtml ? '' : 'cp-hidden'}">${releaseDateHtml}</span>
                     </div>
 
-                    <div class="flex items-center mb-2">
-                         <button onclick="window.CardLoader.showLargeImageByName('${cardInfo.name.replace(/'/g, "\\'")}', event)" class="flex items-center gap-1.5 px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 rounded-full text-[10px] text-slate-300 hover:text-white transition-all group shadow-sm">
-                            <i class="fas fa-image text-slate-400 group-hover:text-blue-400 transition-colors"></i>
-                            <span class="font-medium tracking-wide">View Full Art</span>
-                         </button>
-                    </div>
-                    
+                    ${identityBar}
+
+                    <button type="button" id="popup-full-art-btn" class="cp-artbtn">
+                        <i class="fas fa-image"></i><span>View Full Art</span>
+                    </button>
+
                     <!-- Tab Navigation -->
-                    <div class="flex border-b border-slate-600 mt-1" style="background-color: #1e293b;">
-                        <button onclick="window.switchPopupTab('details')" data-tab="details" class="popup-tab-btn flex-1 py-1.5 text-xs font-medium text-blue-400 border-b-2 border-blue-500 transition-colors" style="background-color: #334155;">Details</button>
-                        <button onclick="window.switchPopupTab('sets')" data-tab="sets" class="popup-tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Sets</button>
-                        <button onclick="window.switchPopupTab('prices')" data-tab="prices" class="popup-tab-btn flex-1 py-1.5 text-xs font-medium text-slate-200 border-b-2 border-transparent hover:text-white transition-colors">Prices</button>
+                    <div class="cp-tabs">
+                        <button type="button" data-tab="details" class="popup-tab-btn cp-tab is-active">Details</button>
+                        <button type="button" data-tab="sets" class="popup-tab-btn cp-tab">Sets</button>
+                        <button type="button" data-tab="prices" class="popup-tab-btn cp-tab">Prices</button>
                     </div>
-                    
+
                     <!-- Card Type (below tabs) -->
-                    <p class="text-xs text-gray-300 mt-2">${cardType}</p>
+                    <div><span class="cp-typeline">${cardType}</span></div>
                 </div>
 
-                <div class="flex-1 mt-2 pr-1" style="background-color: #0f172a;">
+                <div class="cp-body-area">
                     <!-- Details Tab -->
-                    <div id="tab-details" class="popup-tab-content" style="background-color: #0f172a;">
+                    <div id="tab-details" class="popup-tab-content">
                         <div id="popup-desc-area">
-                            ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="text-gray-400 italic text-xs p-2">Loading details...</p>'}
+                            ${cardInfo.desc ? formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name) : '<p class="cp-note">Loading details…</p>'}
                         </div>
                         ${stats}
-                        <!-- Tags Section (below details) -->
-                        <div id="card-tags-container" class="mt-3 pt-2 border-t border-slate-700">
-                            <p class="text-gray-500 italic text-xs">Loading tags...</p>
-                        </div>
+                        <!-- Tags Section (below details). Only rendered when Supabase
+                             is configured; otherwise it sat on "Loading tags…" forever. -->
+                        ${getSupabaseClient() ? `
+                        <div class="cp-divider">
+                            <div class="cp-head">🏷️ Gameplay Tags</div>
+                            <div id="card-tags-container"><p class="cp-note">Loading tags…</p></div>
+                        </div>` : ''}
                     </div>
 
                     <!-- Prices Tab -->
-                    <div id="tab-prices" class="popup-tab-content hidden" style="background-color: #0f172a;">
-                        <div id="popup-price-area" class="pt-2">
-                            ${priceHtml || '<p class="text-gray-500 text-xs italic">No price data available.</p>'}
+                    <div id="tab-prices" class="popup-tab-content cp-hidden">
+                        <div id="popup-price-area">
+                            ${priceHtml || '<p class="cp-note">No price data available.</p>'}
                         </div>
                     </div>
 
                     <!-- Sets Tab -->
-                    <div id="tab-sets" class="popup-tab-content hidden" style="background-color: #0f172a;">
-                        <div id="popup-sets-area" style="padding-top: 4px;">
+                    <div id="tab-sets" class="popup-tab-content cp-hidden">
+                        <div id="popup-sets-area">
                             ${formatSetsSection(cardInfo)}
                         </div>
                     </div>
                 </div>
             </div>
         `;
+
+        // Bound as listeners rather than inline onclick attributes, so card names
+        // never have to survive a trip through HTML attribute parsing.
+        const fullArtBtn = popup.querySelector('#popup-full-art-btn');
+        if (fullArtBtn) {
+            fullArtBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showLargeImageModal(cardInfo.name, e);
+            });
+        }
+        popup.querySelectorAll('.popup-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.switchPopupTab(btn.dataset.tab);
+            });
+        });
 
         popup.style.display = 'block';
         popup.style.zIndex = '10000';
@@ -2567,14 +2895,15 @@ window.CardLoader = (function () {
                             );
                         }
 
-                        // Use formatTagsSection but strip the outer container/header as we are in a tab
-                        let content = formatTagsSection(tags, cardInfo.type || '', cardPasscode, cardInfo.name || '', hasDiscardAction);
-                        // Simple clean up to remove the "Gameplay Tags" header from the helper output
-                        content = content.replace(/<div class="text-xs text-gray-400 mb-2">🏷️ Gameplay Tags<\/div>/, '');
-                        content = content.replace(/<div class="mt-3 pt-2 border-t border-gray-700">/, '<div>'); // Remove top border
-                        tagsContainer.innerHTML = content;
+                        // The container already supplies the divider and heading, so
+                        // ask for the bare groups. This used to be done by regex-
+                        // matching the helper's exact class strings, which broke
+                        // silently whenever those classes changed.
+                        tagsContainer.innerHTML = formatTagsSection(
+                            tags, cardInfo.type || '', cardPasscode, cardInfo.name || '', hasDiscardAction, { bare: true }
+                        );
                     } else {
-                        tagsContainer.innerHTML = '<p class="text-gray-500 text-xs italic">No tags found for this card.</p>';
+                        tagsContainer.innerHTML = '<p class="cp-note">No tags found for this card.</p>';
                     }
                 }
             });
@@ -2699,8 +3028,7 @@ window.CardLoader = (function () {
             try {
                 const cardInfo = await fetchCardData(cardName);
                 if (cardInfo) {
-                    cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${cardInfo.id}.jpg`;
-                    cardDataCache[cardName] = cardInfo;
+                    cardInfo.hosted_image_url = `${CONFIG.IMAGE_BASE_URL}/${encodeURIComponent(cardInfo.id)}.png`;
                 }
             } catch (error) {
                 console.warn(`Failed to preload card: ${cardName}`, error);
@@ -2728,7 +3056,7 @@ window.CardLoader = (function () {
         }
 
         try {
-            const response = await fetch('/assets/data/discord_links.json');
+            const response = await fetch(DISCORD_LINKS_URL);
             if (!response.ok) {
                 throw new Error(`Discord links fetch error: ${response.status}`);
             }
@@ -2766,7 +3094,8 @@ window.CardLoader = (function () {
             allCardsToCheck.push(...config.relatedCards);
         }
 
-        const banlist = await fetchBanlistData();
+        const format = currentBanlistFormat;
+        const banlist = await fetchBanlistData(format);
 
         const result = {
             forbidden: [],
@@ -2777,7 +3106,7 @@ window.CardLoader = (function () {
         };
 
         allCardsToCheck.forEach(cardName => {
-            const status = banlist[cardName];
+            const status = lookupBanlistStatus(cardName, format, banlist);
 
             if (status === 'Forbidden') {
                 result.forbidden.push(cardName);
@@ -2976,29 +3305,26 @@ window.CardLoader = (function () {
         // Fetch real banlist data from API for the selected format
         const banlist = await fetchBanlistData(format);
 
-        // Helper function for case-insensitive banlist lookup
-        function getBanlistStatus(cardName, banlistMap) {
-            // First try exact match
-            if (banlistMap[cardName]) {
-                return banlistMap[cardName];
-            }
-            // Then try case-insensitive match
-            const lowerName = cardName.toLowerCase();
-            for (const [key, status] of Object.entries(banlistMap)) {
-                if (key.toLowerCase() === lowerName) {
-                    return status;
-                }
-            }
-            return null;
-        }
+        const getBanlistStatus = (cardName) => lookupBanlistStatus(cardName, format, banlist);
 
-        // Check which cards are banned
-        const forbidden = cards.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
-        const limited = cards.filter(c => getBanlistStatus(c, banlist) === 'Limited');
-        const semiLimited = cards.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
-        const relatedForbidden = merged.filter(c => getBanlistStatus(c, banlist) === 'Forbidden');
-        const relatedLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Limited');
-        const relatedSemiLimited = merged.filter(c => getBanlistStatus(c, banlist) === 'Semi-Limited');
+        // Check which cards are banned. One pass per list instead of six filters,
+        // each of which previously rescanned the whole banlist for every card.
+        const bucket = (names) => {
+            const out = { Forbidden: [], Limited: [], 'Semi-Limited': [] };
+            names.forEach(name => {
+                const status = getBanlistStatus(name);
+                if (out[status]) out[status].push(name);
+            });
+            return out;
+        };
+        const own = bucket(cards);
+        const related = bucket(merged);
+        const forbidden = own.Forbidden;
+        const limited = own.Limited;
+        const semiLimited = own['Semi-Limited'];
+        const relatedForbidden = related.Forbidden;
+        const relatedLimited = related.Limited;
+        const relatedSemiLimited = related['Semi-Limited'];
 
         const hasRestrictions = forbidden.length > 0 || limited.length > 0 || semiLimited.length > 0;
         const hasRelatedRestrictions = relatedForbidden.length > 0 || relatedLimited.length > 0 || relatedSemiLimited.length > 0;
@@ -3833,8 +4159,6 @@ window.CardLoader = (function () {
     // ARCHETYPE CARDS BROWSER (Supabase)
     // ========================================
 
-    let archetypeCardsModal = null;
-
     /**
      * Fetch all cards for an archetype from Supabase
      * @param {string} archetypeName - Name of the archetype
@@ -3861,177 +4185,6 @@ window.CardLoader = (function () {
         }
     }
 
-    /**
-     * Sort cards into categories: Main Deck Monsters, Spells, Traps, Extra Deck
-     * @param {Array} cards - Array of card objects
-     * @returns {Object} Sorted cards by category
-     */
-    function sortCardsByType(cards, autoSort = true) {
-        const extraDeckTypes = ['Fusion', 'Synchro', 'Xyz', 'Link'];
-
-        const sorted = {
-            monsters: [],
-            spells: [],
-            traps: [],
-            extraDeck: []
-        };
-
-        cards.forEach(card => {
-            const cardType = (card.cardtype || card.card_type || '').toLowerCase();
-
-            // Check if it's an Extra Deck monster
-            const isExtraDeck = extraDeckTypes.some(type => cardType.includes(type.toLowerCase()));
-
-            if (isExtraDeck) {
-                sorted.extraDeck.push(card);
-            } else if (cardType.includes('monster')) {
-                sorted.monsters.push(card);
-            } else if (cardType.includes('spell')) {
-                sorted.spells.push(card);
-            } else if (cardType.includes('trap')) {
-                sorted.traps.push(card);
-            } else {
-                // Default to monsters if type is unclear
-                sorted.monsters.push(card);
-            }
-        });
-
-        // Sort each category alphabetically by name if requested
-        if (autoSort) {
-            Object.keys(sorted).forEach(key => {
-                sorted[key].sort((a, b) => (a.cardname || a.card_name || '').localeCompare(b.cardname || b.card_name || ''));
-            });
-        }
-
-        return sorted;
-    }
-
-    /**
-     * Create and show the archetype cards modal
-     * @param {string} archetypeName - Name of the archetype
-     * @param {Object} sortedCards - Cards sorted by type
-     */
-    function showArchetypeCardsModal(archetypeName, sortedCards) {
-        // Remove existing modal if present
-        if (archetypeCardsModal) {
-            archetypeCardsModal.remove();
-        }
-
-        const totalCards = sortedCards.monsters.length + sortedCards.spells.length +
-            sortedCards.traps.length + sortedCards.extraDeck.length;
-
-        // Create modal HTML
-        const modalHtml = `
-            <div id="archetype-cards-modal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);">
-                <div class="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                    <!-- Header -->
-                    <div class="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
-                        <div>
-                            <h2 class="text-xl font-bold text-white">${archetypeName} Cards</h2>
-                            <p class="text-sm text-gray-400">${totalCards} cards in archetype</p>
-                        </div>
-                        <button id="close-archetype-modal" class="text-gray-400 hover:text-white text-2xl font-bold px-3 py-1 rounded hover:bg-gray-700 transition-colors">
-                            ×
-                        </button>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="flex-1 overflow-y-auto p-4 space-y-6">
-                        ${renderCardSection('Main Deck Monsters', sortedCards.monsters, 'bg-yellow-600', '👹')}
-                        ${renderCardSection('Spell Cards', sortedCards.spells, 'bg-green-600', '✨')}
-                        ${renderCardSection('Trap Cards', sortedCards.traps, 'bg-purple-600', '🪤')}
-                        ${renderCardSection('Extra Deck', sortedCards.extraDeck, 'bg-blue-600', '⭐')}
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Create and append modal
-        const modalContainer = document.createElement('div');
-        modalContainer.innerHTML = modalHtml;
-        archetypeCardsModal = modalContainer.firstElementChild;
-        document.body.appendChild(archetypeCardsModal);
-
-        // Close handlers
-        document.getElementById('close-archetype-modal').addEventListener('click', closeArchetypeCardsModal);
-        archetypeCardsModal.addEventListener('click', (e) => {
-            if (e.target === archetypeCardsModal) closeArchetypeCardsModal();
-        });
-
-        // Escape key handler
-        const escHandler = (e) => {
-            if (e.key === 'Escape') {
-                closeArchetypeCardsModal();
-                document.removeEventListener('keydown', escHandler);
-            }
-        };
-        document.addEventListener('keydown', escHandler);
-
-        // Prevent body scroll
-        document.body.style.overflow = 'hidden';
-    }
-
-    /**
-     * Render a section of cards
-     */
-    function renderCardSection(title, cards, bgColor, icon) {
-        if (cards.length === 0) return '';
-
-        const cardItems = cards.map(card => {
-            const name = card.cardname || card.card_name || 'Unknown';
-            const passcode = card.passcode || card.id || '';
-            const imageUrl = passcode ? `${CONFIG.IMAGE_BASE_URL}/${passcode}.jpg` : '';
-
-            // Extract date
-            let dateDisplay = '';
-            if (card.misc_info && card.misc_info[0]) {
-                dateDisplay = card.misc_info[0].tcg_date || card.misc_info[0].ocg_date || '';
-            } else if (card.tcg_date || card.ocg_date) {
-                dateDisplay = card.tcg_date || card.ocg_date || '';
-            }
-
-            return `
-                <div class="flex flex-col items-center group cursor-pointer card-item" 
-                     data-card-name="${name}" data-passcode="${passcode}">
-                    <div class="w-20 h-28 rounded overflow-hidden border border-gray-600 group-hover:border-blue-400 transition-all shadow-md group-hover:shadow-lg group-hover:shadow-blue-500/20 relative">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${name}" class="w-full h-full object-cover" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'h-full flex items-center justify-center bg-gray-800 text-xs text-gray-400 p-1 text-center\\'>${name}</div>'">`
-                    : `<div class="h-full flex items-center justify-center bg-gray-800 text-xs text-gray-400 p-1 text-center">${name}</div>`}
-                        ${dateDisplay ? `<div class="absolute top-0 right-0 bg-black/60 backdrop-blur-[2px] text-slate-200 text-[8px] px-1 py-0.5 rounded-bl font-mono z-10 pointer-events-none leading-none">${dateDisplay}</div>` : ''}
-                    </div>
-                    <span class="text-xs text-gray-300 mt-1 text-center line-clamp-2 max-w-20 group-hover:text-white transition-colors">${name}</span>
-                </div>
-            `;
-        }).join('');
-
-        return `
-            <div class="space-y-3">
-                <div class="flex items-center gap-2">
-                    <span class="${bgColor} text-white px-3 py-1 rounded-full text-sm font-semibold">${icon} ${title}</span>
-                    <span class="text-gray-500 text-sm">(${cards.length})</span>
-                </div>
-                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
-                    ${cardItems}
-                </div>
-            </div>
-        `;
-    }
-
-    /**
-     * Close the archetype cards modal
-     */
-    function closeArchetypeCardsModal() {
-        if (archetypeCardsModal) {
-            archetypeCardsModal.remove();
-            archetypeCardsModal = null;
-            document.body.style.overflow = '';
-        }
-    }
-
-
-    // ============================================================================
-    // Card Browser Page Logic has been moved to card-browser.js
-    // The initCardBrowserPage function is now in the CardBrowser module.
-    // ============================================================================
 
     /**
      * Render archetype cards browser button (Link to standalone page)
@@ -4244,7 +4397,12 @@ window.CardLoader = (function () {
      */
     function clearCache() {
         Object.keys(cardDataCache).forEach(key => delete cardDataCache[key]);
-        Object.keys(banlistCache).forEach(key => delete banlistCache[key]);
+        Object.keys(cardDataPromises).forEach(key => delete cardDataPromises[key]);
+        Object.keys(cardIdPromises).forEach(key => delete cardIdPromises[key]);
+        // Empty each format's map rather than deleting the key — fetchBanlistData
+        // reads banlistCache[format] directly and used to throw after a clear.
+        Object.keys(banlistCache).forEach(format => { banlistCache[format] = {}; });
+        Object.keys(banlistLowerIndex).forEach(key => delete banlistLowerIndex[key]);
         console.log('Card cache and banlist cache cleared');
     }
 
@@ -4423,8 +4581,6 @@ window.CardLoader = (function () {
         linkifyMaterials,
         removeMaterialsFromDescription,
         setMaterialsDebug: (val) => { debugMaterials = !!val; if (window) window.__CARDLOADER_DEBUG_MATERIALS__ = !!val; },
-        // Helpers for testing / external usage
-        linkifyMaterials,
         // AI content warning injection
         injectComboWarnings,
         // Gameplay tags (Supabase integration)

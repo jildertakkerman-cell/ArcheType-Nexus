@@ -488,7 +488,13 @@ async function displayAnalysis(data) {
     }
     if (data.moveLog && data.moveLog.length > 0) {
         document.getElementById('replayBrowserSection').style.display = '';
-        currentReplayBrowser = new ReplayBrowser('replayBrowserContainer', data.moveLog, [p1Name, p2Name]);
+        currentReplayBrowser = new ReplayBrowser('replayBrowserContainer', data.moveLog, [p1Name, p2Name], {
+            decks: data.decks,
+            // Share the deck-list metadata cache so ATK/DEF and zone counts reuse
+            // the lookups the deck lists already paid for.
+            cardMeta: cardMetadataCache,
+            fetchMeta: fetchCardMetadata,
+        });
         currentReplayBrowser.buildUI();
         currentReplayBrowser.wireFullscreenButtons();
     } else {
@@ -714,6 +720,8 @@ async function fetchAndStoreCards(ids) {
                     level: card.level,
                     rank: card.rank,
                     linkval: card.linkval,
+                    linkmarkers: card.linkmarkers,   // ["Top","Bottom-Left",…] — drawn on the replay board
+                    scale: card.scale,               // pendulum scale, shown in the replay board's P zones
                     atk: card.atk,
                     def: card.def,
                     desc: card.desc || "",

@@ -1384,6 +1384,7 @@ h1 {
 }
 
 .replay-board-column {
+    position: relative;   /* positioning context for the pile-contents viewer */
     display: flex;
     justify-content: center;
     background: rgba(0, 0, 0, 0.2);
@@ -1406,7 +1407,10 @@ h1 {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: 1010px; /* Constrain to match the board's height */
+    /* Matches the two board halves plus the strips and phase bar between them.
+       Derived from the same --rb-* metrics so it no longer drifts out of sync
+       when the row height changes. */
+    max-height: calc(2 * (3 * var(--rb-row) + 2 * var(--rb-gap) + 2 * var(--rb-pad) + var(--rb-hand)) + 96px);
     overflow: hidden;
 }
 
@@ -1629,15 +1633,18 @@ h1 {
 
 /* Effect Animations */
 @keyframes effectPulse {
-    0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); filter: brightness(1); }
-    50% { box-shadow: 0 0 20px 10px rgba(234, 179, 8, 0); filter: brightness(1.5); }
-    100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); filter: brightness(1); }
+    0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); filter: var(--tk-art) brightness(1); }
+    50% { box-shadow: 0 0 20px 10px rgba(234, 179, 8, 0); filter: var(--tk-art) brightness(1.5); }
+    100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); filter: var(--tk-art) brightness(1); }
 }
 
+/* Shakes drive --tk-fx, not transform — see the .card-token comment in
+   Visualizer_Styles.css. Writing transform here would cancel the P2 mirror
+   and any defense rotation for as long as the animation runs. */
 @keyframes effectNegate {
-    0%, 100% { transform: translateX(0); filter: grayscale(0); }
-    20%, 60% { transform: translateX(-5px); filter: grayscale(0.5); }
-    40%, 80% { transform: translateX(5px); filter: grayscale(1); }
+    0%, 100% { --tk-fx: translateX(0); filter: var(--tk-art) grayscale(0); }
+    20%, 60% { --tk-fx: translateX(-5px); filter: var(--tk-art) grayscale(0.5); }
+    40%, 80% { --tk-fx: translateX(5px); filter: var(--tk-art) grayscale(1); }
 }
 
 .replay-board-half .card-token.effect-activating {
@@ -1689,9 +1696,9 @@ h1 {
 
 /* Stat Change Glow */
 @keyframes statGlow {
-    0%   { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.8); filter: brightness(1); }
-    50%  { box-shadow: 0 0 18px 8px rgba(251, 191, 36, 0); filter: brightness(1.6); }
-    100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); filter: brightness(1); }
+    0%   { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.8); filter: var(--tk-art) brightness(1); }
+    50%  { box-shadow: 0 0 18px 8px rgba(251, 191, 36, 0); filter: var(--tk-art) brightness(1.6); }
+    100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); filter: var(--tk-art) brightness(1); }
 }
 
 .replay-board-half .card-token.stat-change-glow {
@@ -1749,23 +1756,364 @@ h1 {
 
 /* Attack Impact Shake */
 @keyframes impactShake {
-    0% { transform: translate(0, 0); }
-    20% { transform: translate(-3px, 2px); }
-    40% { transform: translate(3px, -2px); }
-    60% { transform: translate(-3px, -2px); }
-    80% { transform: translate(3px, 2px); }
-    100% { transform: translate(0, 0); }
+    0% { --tk-fx: translate(0, 0); }
+    20% { --tk-fx: translate(-3px, 2px); }
+    40% { --tk-fx: translate(3px, -2px); }
+    60% { --tk-fx: translate(-3px, -2px); }
+    80% { --tk-fx: translate(3px, 2px); }
+    100% { --tk-fx: translate(0, 0); }
 }
 
 .impact-shake {
     animation: impactShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
-    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
+    filter: var(--tk-art) drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
 }
 
-/* Ritual/Pendulum summon animations reused from Visualizer_Styles, just ensuring the
-   board tokens inside .replay-board-half are scoped correctly */
-.replay-board-half .card-token {
-    /* Tokens use the same .card-token class — styles inherited from Visualizer_Styles.css */
+/* Card type accents — the border colour is the only at-a-glance cue for what
+   kind of card is sitting in a zone, since art alone doesn't read at board size.
+   Classes are applied by ReplayBrowser._applyCardType once the passcode
+   resolves; ctype-monster is the default a token starts life with. */
+.replay-board-half .card-token.ctype-monster {
+    border-color: #d4a03c;
+}
+
+.replay-board-half .card-token.ctype-spell {
+    border-color: #1d9e74;
+}
+
+.replay-board-half .card-token.ctype-trap {
+    border-color: #bc5a84;
+}
+
+.replay-board-half .card-token.ctype-extra {
+    border-color: #7c5ccf;
+}
+
+/* The animation classes set their own border with !important, so an activating
+   or negated card still overrides these — that's intentional. */
+
+/* --------------------------------------------------------------------------
+   ATK / DEF readout on face-up field monsters
+   -------------------------------------------------------------------------- */
+
+.replay-board-half .card-token .rb-stats {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    gap: 1px;
+    padding: 1px;
+    border-radius: 0 0 3px 3px;
+    background: rgba(2, 6, 23, 0.82);
+    font-size: 0.55rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+}
+
+/* Undo P2's 180° mirror so the numbers read the right way up. Defense-position
+   cards are deliberately NOT counter-rotated — the bar rides with the card, the
+   way a sideways card's own text does. */
+.p2-half .card-token .rb-stats {
+    transform: rotate(180deg);
+}
+
+.replay-board-half .card-token .rb-stats b,
+.replay-board-half .card-token .rb-stats i {
+    flex: 1;
+    padding: 2px 0;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.07);
+    color: #e2e8f0;
+    font-style: normal;
+    text-align: center;
+}
+
+/* Buffed / debuffed relative to the printed value */
+.replay-board-half .card-token .rb-stats b.up {
+    background: rgba(34, 197, 94, 0.3);
+    color: #86efac;
+}
+
+.replay-board-half .card-token .rb-stats b.down {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+.replay-board-half .card-token .rb-stats i {
+    background: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+    font-size: 0.5rem;
+}
+
+/* Stats are unreadable at mobile card sizes — the popup covers that case. */
+@media (max-width: 768px) {
+    .replay-board-half .card-token .rb-stats {
+        display: none;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Pile counts + the card-back stack under a non-empty Deck / Extra / GY / Banish
+   -------------------------------------------------------------------------- */
+
+.replay-board-half .zone[data-count]::before {
+    content: attr(data-count);
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    z-index: 30;
+    min-width: 1.05rem;
+    padding: 1px 4px;
+    border-radius: 999px;
+    background: rgba(2, 6, 23, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #f1f5f9;
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1.3;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* Suggest depth for a pile that still has cards in it. Layered insets rather
+   than real tokens — the deck's contents are never instantiated as tokens. */
+.replay-board-half .zone.rb-stacked {
+    box-shadow:
+        inset 0 2px 6px rgba(0, 0, 0, 0.4),
+        2px 2px 0 -1px rgba(148, 163, 184, 0.25),
+        4px 4px 0 -2px rgba(148, 163, 184, 0.15);
+}
+
+/* The deck and extra deck are never instantiated as tokens, so without this they
+   read as empty for the whole replay. A dimmed card back plus the count makes it
+   obvious there's something there. */
+.replay-board-half .deck-zone.rb-stacked,
+.replay-board-half .extra-deck-zone.rb-stacked {
+    background-image:
+        linear-gradient(rgba(8, 12, 24, 0.55), rgba(8, 12, 24, 0.72)),
+        url('https://images.ygoprodeck.com/images/cards/back_high.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+}
+
+.replay-board-half .zone.rb-browsable {
+    cursor: pointer;
+}
+
+.replay-board-half .zone.rb-browsable:hover {
+    border-color: #fff;
+}
+
+/* Zone labels were 0.4–0.45rem and sat underneath the cards. */
+.replay-board-half .zone::after {
+    bottom: 2px;
+    font-size: 0.55rem;
+    color: rgba(226, 232, 240, 0.75);
+}
+
+.replay-board-half .extra-monster-zone::after,
+.replay-board-half .main-monster-zone::after,
+.replay-board-half .spell-trap-zone::after {
+    font-size: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Pile contents viewer
+   -------------------------------------------------------------------------- */
+
+.rb-zoneview {
+    position: absolute;
+    z-index: 200;
+    top: 50%;
+    left: 50%;
+    width: min(320px, 90%);
+    max-height: 70%;
+    transform: translate(-50%, -50%) scale(0.96);
+    display: none;
+    flex-direction: column;
+    border-radius: 0.6rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(9, 14, 26, 0.97);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7);
+    opacity: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.rb-zoneview.open {
+    display: flex;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.rb-zoneview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.rb-zoneview-close {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.rb-zoneview-close:hover {
+    background: rgba(239, 68, 68, 0.35);
+    color: #fff;
+}
+
+.rb-zoneview-list {
+    flex: 1;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+}
+
+.rb-zoneview-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 0.3rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+}
+
+.rb-zoneview-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: #fff;
+}
+
+.rb-zoneview-item img {
+    width: 26px;
+    height: 38px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 2px;
+    background: #1e293b;
+}
+
+.rb-zoneview-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   Link arrows + pendulum scale
+   -------------------------------------------------------------------------- */
+
+/* Sits inside the token, so it inherits the card's rotation — the arrows on
+   P2's mirrored half point the opposite way, which is what they actually do. */
+.replay-board-half .card-token .rb-links {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.replay-board-half .card-token .rb-links i {
+    position: absolute;
+    width: 0;
+    height: 0;
+    /* Triangle pointing up; each direction rotates it to point outward. */
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid #f472b6;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9));
+}
+
+.replay-board-half .card-token .rb-links i[data-d="Top"]          { top: 0;    left: 50%;  transform: translate(-50%, -50%) rotate(0deg); }
+.replay-board-half .card-token .rb-links i[data-d="Top-Right"]    { top: 0;    left: 100%; transform: translate(-50%, -50%) rotate(45deg); }
+.replay-board-half .card-token .rb-links i[data-d="Right"]        { top: 50%;  left: 100%; transform: translate(-50%, -50%) rotate(90deg); }
+.replay-board-half .card-token .rb-links i[data-d="Bottom-Right"] { top: 100%; left: 100%; transform: translate(-50%, -50%) rotate(135deg); }
+.replay-board-half .card-token .rb-links i[data-d="Bottom"]       { top: 100%; left: 50%;  transform: translate(-50%, -50%) rotate(180deg); }
+.replay-board-half .card-token .rb-links i[data-d="Bottom-Left"]  { top: 100%; left: 0;    transform: translate(-50%, -50%) rotate(225deg); }
+.replay-board-half .card-token .rb-links i[data-d="Left"]         { top: 50%;  left: 0;    transform: translate(-50%, -50%) rotate(270deg); }
+.replay-board-half .card-token .rb-links i[data-d="Top-Left"]     { top: 0;    left: 0;    transform: translate(-50%, -50%) rotate(315deg); }
+
+/* Pendulum scale, shown on the card because the card covers the zone's diamond. */
+.replay-board-half .card-token .rb-scale {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    min-width: 0.9rem;
+    padding: 1px 3px;
+    border-radius: 3px;
+    background: rgba(2, 6, 23, 0.85);
+    border: 1px solid #38bdf8;
+    color: #7dd3fc;
+    font-size: 0.55rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+}
+
+.p2-half .card-token .rb-scale {
+    transform: rotate(180deg);
+}
+
+@media (max-width: 768px) {
+    /* Same reasoning as the ATK/DEF bar — too small to read at mobile card size. */
+    .replay-board-half .card-token .rb-scale {
+        display: none;
+    }
+
+    .replay-board-half .card-token .rb-links i {
+        border-left-width: 3px;
+        border-right-width: 3px;
+        border-bottom-width: 4px;
+    }
+}
+
+/* Xyz materials — dimmed and tucked behind the host monster, which carries a
+   ×N badge. Positioning is done in ReplayBrowser._reflowMaterials. */
+.replay-board-half .card-token.rb-material {
+    --tk-art: contrast(105%) blur(0.2px) brightness(0.55);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+}
+
+/* Top-right, not bottom-left: the bottom edge belongs to the ATK/DEF bar and an
+   Xyz host always has one, so a bottom-left badge sat on top of its ATK value. */
+.replay-board-half .card-token[data-materials]::after {
+    content: '\00D7' attr(data-materials);
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    padding: 2px 5px;
+    border-radius: 999px;
+    background: #0f172a;
+    border: 1px solid #fcd34d;
+    color: #fcd34d;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* Keep the badge upright on the mirrored half */
+.p2-half .card-token[data-materials]::after {
+    transform: rotate(180deg);
 }
 
 /* ==========================================================================
@@ -1777,57 +2125,101 @@ h1 {
     flex-direction: column-reverse;
 }
 
+/* --------------------------------------------------------------------------
+   Token orientation. Every rule below sets --tk-rot rather than transform, so
+   a card keeps its rotation through attack lunges, shakes and summon
+   animations (those drive --tk-fx). Order matters: the P2 overrides have to
+   come after the rules they beat, since several of these tie on specificity.
+   -------------------------------------------------------------------------- */
+
 /* Banished cards are rotated sideways */
 .replay-board-half .card-token[data-zone*="-banish"] {
-    transform: rotate(90deg);
+    --tk-rot: 90deg;
 }
 
 /* Rotate P2's cards upside-down so it's clear they belong to the opponent */
 .p2-half .card-token {
-    transform: rotate(180deg);
+    --tk-rot: 180deg;
 }
 
 .p2-half .card-token[data-zone*="-banish"] {
-    transform: rotate(270deg); /* 180 + 90 = upside-down + sideways */
+    --tk-rot: 270deg; /* 180 + 90 = upside-down + sideways */
 }
 
+/* Defense position — face-up (card-defense-pos) and face-down (card-facedown-defense).
+   These used to be injected into <head> at runtime by ReplayBrowser just so they
+   would land after the P2 rules above; keeping them here does the same job and
+   makes the whole cascade readable in one place. */
+.card-defense-pos,
+.card-facedown-defense {
+    --tk-rot: 90deg;
+}
+
+.p2-half .card-defense-pos,
+.p2-half .card-facedown-defense {
+    --tk-rot: 270deg;
+}
+
+/* --------------------------------------------------------------------------
+   Board metrics. The desktop, fullscreen and mobile layouts differ only in
+   these five numbers plus (on mobile) the area map, so they live in one place
+   and every dependent value is derived from them — including the board height,
+   which used to be a separate magic number that had to be kept in sync by hand.
+
+   Row height also sets the card size: ReplayBrowser._fitCard measures the zone
+   and fits a true 59:86 card into it, so taller rows mean bigger cards.
+   -------------------------------------------------------------------------- */
+/* Defined on the dashboard, not the board half, so the sidebar can derive its
+   own height from the same numbers. The mobile and fullscreen blocks override
+   them further down on .replay-board-half, which is nearer and so wins for the
+   board's own subtree. */
+.replay-dashboard {
+    --rb-row: 126px;    /* one field-grid row */
+    --rb-side: 105px;   /* the two narrow side columns */
+    --rb-gap: 5px;
+    --rb-pad: 8px;      /* vertical; must stay a single length for the calcs */
+    --rb-pad-x: 8px;
+    --rb-hand: 120px;
+}
+
+.replay-board-half .duel-board {
+    height: calc(3 * var(--rb-row) + 2 * var(--rb-gap) + 2 * var(--rb-pad) + var(--rb-hand));
+}
+
+.replay-board-half .field-grid {
+    grid-template-columns: var(--rb-side) 1fr var(--rb-side);
+    grid-template-rows: repeat(3, var(--rb-row));
+    gap: var(--rb-gap);
+    padding: var(--rb-pad) var(--rb-pad-x);
+}
+
+/* P2's half is the same grid with the rows in the opposite order. Rows are all
+   var(--rb-row), so unlike before this needs the area map only. */
 .replay-board-half.p2-half .field-grid {
     grid-template-areas:
         "extra-deck spell-traps     deck     "
         "field      main-monsters   gy       "
         "corner-tl  extra-monsters  banished";
-    /* Mirrored row heights to match the areas: all 108px since sizes are now uniform */
-    grid-template-rows: 108px 108px 108px;
-}
-
-/* Compact the overall board size for the replay viewer */
-.replay-board-half .duel-board {
-    height: 470px;
-}
-
-.replay-board-half .field-grid {
-    grid-template-columns: 105px 1fr 105px;
-    grid-template-rows: 108px 108px 108px;
-    gap: 5px;
-    padding: 8px;
 }
 
 .replay-board-half .extra-monster-zones {
     gap: 40px;
 }
 
+/* Side and extra-monster zones track the row height so every zone on the board
+   is the same shape — _fitCard then yields one card size everywhere. */
 .replay-board-half .extra-monster-zone {
-    width: 95px;
-    height: 108px;
+    width: calc(var(--rb-side) - 10px);
+    height: var(--rb-row);
 }
 
 .replay-board-half .main-monster-zone,
 .replay-board-half .spell-trap-zone {
-    min-height: 100px;
+    min-height: 0;
 }
 
 .replay-board-half .hand-area {
-    height: 120px;
+    height: var(--rb-hand);
 }
 
 .replay-board-half .pendulum-icon {
@@ -1953,33 +2345,38 @@ h1 {
     max-width: none;
 }
 
-.replay-fullscreen-overlay .replay-board-half .field-grid {
-    flex: 1;
-    grid-template-columns: 100px 1fr 100px;
-    grid-template-rows: 1fr 1.3fr 1.3fr;
-    gap: 6px;
-    padding: 10px;
-    min-height: 0;
+/* Fullscreen keeps the same area map and only retunes the metrics. Rows switch
+   from fixed to fractional so the board fills the viewport height; because they
+   are now all equal, the mirrored p2 row order that used to be declared here
+   is no longer needed. */
+.replay-fullscreen-overlay .replay-board-half {
+    --rb-side: 100px;
+    --rb-gap: 6px;
+    --rb-pad: 10px;
+    --rb-pad-x: 10px;
+    --rb-hand: clamp(105px, 12vh, 130px);
 }
 
-.replay-fullscreen-overlay .replay-board-half.p2-half .field-grid {
-    grid-template-rows: 1.3fr 1.3fr 1fr;
+.replay-fullscreen-overlay .replay-board-half .field-grid {
+    flex: 1;
+    /* minmax(0, 1fr), not plain 1fr: a bare 1fr keeps each row's content-based
+       minimum, and the extra-monster zones carry an intrinsic aspect-ratio
+       height — that inflated the top row to 131px while the other two got 83px,
+       giving three different card sizes on one board. */
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    min-height: 0;
 }
 
 .replay-fullscreen-overlay .replay-board-half .hand-area {
     flex-shrink: 0;
-    height: clamp(105px, 12vh, 130px);
 }
 
+/* Rows are fractional here, so pin the width and let aspect-ratio derive the
+   height — height:auto would collapse to zero inside the flex row. */
 .replay-fullscreen-overlay .replay-board-half .extra-monster-zone {
     width: 90px;
     height: auto;
-    aspect-ratio: 59/86;
-}
-
-.replay-fullscreen-overlay .replay-board-half .main-monster-zone,
-.replay-fullscreen-overlay .replay-board-half .spell-trap-zone {
-    min-height: 0;
+    aspect-ratio: 59 / 86;
 }
 
 /* Sidebar fills full height */
@@ -2399,47 +2796,56 @@ h1 {
         display: flex;
     }
 
-    /* --- Board sizing (single board now gets the full viewport width) --- */
-    .replay-board-half .duel-board {
+    /* --- Board sizing (single board now gets the full viewport width) ---
+       Mobile is the one layout with a genuinely different area map: four
+       columns, four rows, piles along the bottom. Inline and fullscreen share
+       every rule below — they used to be two near-identical copies that had to
+       be edited in lockstep. --- */
+    .replay-board-half,
+    .replay-fullscreen-overlay .replay-board-half {
+        --rb-row: 104px;
+        --rb-gap: 6px;
+        --rb-pad: 8px;
+        --rb-pad-x: 6px;
+        --rb-hand: 128px;
+        --rb-pile-row: 88px;   /* the shorter bottom row holding field/extra/gy/deck */
+    }
+
+    .replay-board-half .duel-board,
+    .replay-fullscreen-overlay .replay-board-half .duel-board {
+        height: auto;
         min-height: 520px;
     }
 
-    .replay-board-half .field-grid {
-        grid-template-columns: 1fr 1fr 1fr 1fr;
+    .replay-board-half .field-grid,
+    .replay-fullscreen-overlay .replay-board-half .field-grid {
+        grid-template-columns: repeat(4, 1fr);
         grid-template-areas:
             "extra-monsters extra-monsters extra-monsters banished"
             "main-monsters  main-monsters  main-monsters  main-monsters"
             "spell-traps    spell-traps    spell-traps    spell-traps"
             "field          extra-deck     gy             deck";
-        grid-template-rows: 104px 104px 104px 88px;
-        gap: 6px;
-        padding: 8px 6px;
+        grid-template-rows: repeat(3, var(--rb-row)) var(--rb-pile-row);
     }
 
-    .replay-board-half.p2-half .field-grid {
+    .replay-board-half.p2-half .field-grid,
+    .replay-fullscreen-overlay .replay-board-half.p2-half .field-grid {
         grid-template-areas:
             "field          extra-deck     gy             deck"
             "spell-traps    spell-traps    spell-traps    spell-traps"
             "main-monsters  main-monsters  main-monsters  main-monsters"
             "extra-monsters extra-monsters extra-monsters banished";
-        grid-template-rows: 88px 104px 104px 104px;
+        grid-template-rows: var(--rb-pile-row) repeat(3, var(--rb-row));
     }
 
-    .replay-board-half .main-monster-zone,
-    .replay-board-half .spell-trap-zone {
-        min-height: 0;
-    }
-
-    .replay-board-half .extra-monster-zone {
+    .replay-board-half .extra-monster-zone,
+    .replay-fullscreen-overlay .replay-board-half .extra-monster-zone {
         width: 84px;
         height: 118px;
+        aspect-ratio: auto;
     }
 
-    .replay-board-half .hand-area {
-        height: 128px;
-    }
-
-    /* --- Same single-board layout inside fullscreen mode --- */
+    /* Fullscreen on a phone stops stretching to the viewport and just scrolls. */
     .replay-fullscreen-overlay .replay-board-outer {
         height: auto;
     }
@@ -2448,43 +2854,8 @@ h1 {
         flex: none;
     }
 
-    .replay-fullscreen-overlay .replay-board-half .duel-board {
-        height: auto;
-        flex: none;
-        min-height: 520px;
-    }
-
     .replay-fullscreen-overlay .replay-board-half .field-grid {
         flex: none;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        grid-template-areas:
-            "extra-monsters extra-monsters extra-monsters banished"
-            "main-monsters  main-monsters  main-monsters  main-monsters"
-            "spell-traps    spell-traps    spell-traps    spell-traps"
-            "field          extra-deck     gy             deck";
-        grid-template-rows: 104px 104px 104px 88px;
-        gap: 6px;
-        padding: 8px 6px;
-    }
-
-    .replay-fullscreen-overlay .replay-board-half.p2-half .field-grid {
-        grid-template-areas:
-            "field          extra-deck     gy             deck"
-            "spell-traps    spell-traps    spell-traps    spell-traps"
-            "main-monsters  main-monsters  main-monsters  main-monsters"
-            "extra-monsters extra-monsters extra-monsters banished";
-        grid-template-rows: 88px 104px 104px 104px;
-    }
-
-    .replay-fullscreen-overlay .replay-board-half .hand-area {
-        flex-shrink: 0;
-        height: 128px;
-    }
-
-    .replay-fullscreen-overlay .replay-board-half .extra-monster-zone {
-        width: 84px;
-        height: 118px;
-        aspect-ratio: auto;
     }
 
     /* --- Touch targets --- */

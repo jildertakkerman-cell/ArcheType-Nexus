@@ -1849,11 +1849,13 @@ class DuelSimulator {
             const jY = (zoneId.includes('gy') || zoneId.includes('deck') || zoneId.includes('banish')) ? (Math.random() * 4 - 2) : 0;
             token.style.left = (zoneRect.left - boardRect.left + (zoneRect.width - w) / 2 + jX) + 'px';
             token.style.top = (zoneRect.top - boardRect.top + (zoneRect.height - h) / 2 + jY) + 'px';
-            // Rotate banished cards sideways
+            // Rotate banished cards sideways. This goes through --tk-rot rather
+            // than transform so it composes with the summon animations, which
+            // drive --tk-fx (see the .card-token comment in Visualizer_Styles.css).
             if (zoneId.includes('banish')) {
-                token.style.transform = 'rotate(90deg)';
+                token.style.setProperty('--tk-rot', '90deg');
             } else {
-                token.style.transform = 'none';
+                token.style.removeProperty('--tk-rot');
             }
         }
     }
@@ -1944,7 +1946,7 @@ class DuelSimulator {
         if (isVanishTarget || (isToken && isLeaving)) {
             this.log(isVanishTarget ? `(${c.data.name} vanishes)` : `(Token removed)`);
             c.element.style.opacity = "0";
-            c.element.style.transform = "scale(0.5)";
+            c.element.style.setProperty('--tk-fx', 'scale(0.5)');
             // Note: data-zone is deliberately left untouched (rather than set to the vanish
             // target) so the GY/Banish viewer panels, which filter by data-zone, never list
             // a vanished Token — it never actually occupied that zone.
@@ -1978,7 +1980,7 @@ class DuelSimulator {
 
         c.element.style.display = 'block';
         c.element.style.opacity = '1';
-        c.element.style.transform = 'scale(1)';
+        c.element.style.removeProperty('--tk-fx');
         c.element.style.pointerEvents = 'auto';
 
         // Ensure high Z-Index during movement so it flies OVER other cards
@@ -2007,7 +2009,7 @@ class DuelSimulator {
             if (dummy) {
                 dummy.element.setAttribute('data-zone', 'zone-removing');
                 dummy.element.style.opacity = '0';
-                dummy.element.style.transform = 'scale(0)';
+                dummy.element.style.setProperty('--tk-fx', 'scale(0)');
                 setTimeout(() => { dummy.element.style.display = 'none'; }, 350);
             }
         }

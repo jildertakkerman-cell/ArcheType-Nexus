@@ -236,7 +236,33 @@
     gap: 4px;
 }
 
-/* Card Token */
+/* Card Token
+   --------------------------------------------------------------------------
+   A token's transform is composed from two registered custom properties so the
+   things that want to move it stop overwriting each other:
+
+     --tk-rot  orientation that PERSISTS — the P2 mirror, defense position,
+               face-down defense, the sideways banish rotation. Owned by CSS.
+     --tk-fx   TRANSIENT motion — attack lunges, shakes, summon flourishes.
+               Owned by keyframes and by ReplayBrowser's inline styles.
+
+   Both are registered with @property so they still animate and transition;
+   an unregistered custom property would snap between values instead.
+   Anything writing `transform` on .card-token directly will clobber the other
+   concern — write to one of these instead. */
+@property --tk-rot {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@property --tk-fx {
+    syntax: '<transform-list>';
+    inherits: false;
+    /* Doubles as the hardware-acceleration hint the token used to set directly. */
+    initial-value: translateZ(0);
+}
+
 .card-token {
     width: 120px;
     height: 175px;
@@ -260,19 +286,30 @@
     image-rendering: high-quality;
     /* Standard property */
 
-    /* 2. Force hardware acceleration to unlock better texture filtering */
-    transform: translateZ(0);
+    /* 2. Force hardware acceleration to unlock better texture filtering
+          (the translateZ(0) now lives in --tk-fx's initial-value).
+          The defaults are given inside var() rather than as declarations on
+          this rule on purpose: a `--tk-rot: 0deg` here would tie on specificity
+          with .card-defense-pos and win on load order, silently killing defense
+          rotation. In var() they only apply when nothing else set the property,
+          which also keeps this working if @property above is unsupported. */
+    transform: rotate(var(--tk-rot, 0deg)) var(--tk-fx, translateZ(0));
     backface-visibility: hidden;
 
-    /* 3. "The Blur Hack": A tiny blur removes the jagged aliasing noise */
-    filter: contrast(105%) blur(0.2px);
+    /* 3. "The Blur Hack": A tiny blur removes the jagged aliasing noise.
+          Held in a custom property so effects can ADD to it (brightness, grayscale,
+          drop-shadow) instead of replacing it — `filter` is not additive, so every
+          rule that set it plainly used to drop the base art treatment for the
+          duration of its animation. */
+    --tk-art: contrast(105%) blur(0.2px);
+    filter: var(--tk-art);
 }
 
 .card-token.active-card {
     border-color: #fbbf24;
     box-shadow: 0 0 20px #fbbf24, 0 0 10px #f59e0b;
     z-index: 20;
-    transform: scale(1.15);
+    --tk-fx: scale(1.15);
 }
 
 /* Effect Activation Animation */
@@ -309,20 +346,20 @@
 
 @keyframes effectActivate {
     0% {
-        transform: translateZ(0) scale(1);
-        filter: contrast(105%) blur(0.2px) brightness(1);
+        --tk-fx: translateZ(0) scale(1);
+        filter: var(--tk-art) brightness(1);
     }
     25% {
-        transform: translateZ(0) scale(1.25);
-        filter: contrast(105%) blur(0.2px) brightness(1.5);
+        --tk-fx: translateZ(0) scale(1.25);
+        filter: var(--tk-art) brightness(1.5);
     }
     50% {
-        transform: translateZ(0) scale(1.2);
-        filter: contrast(105%) blur(0.2px) brightness(1.3);
+        --tk-fx: translateZ(0) scale(1.2);
+        filter: var(--tk-art) brightness(1.3);
     }
     100% {
-        transform: translateZ(0) scale(1);
-        filter: contrast(105%) blur(0.2px) brightness(1);
+        --tk-fx: translateZ(0) scale(1);
+        filter: var(--tk-art) brightness(1);
     }
 }
 
@@ -450,10 +487,10 @@
 }
 
 @keyframes xyzSummonCard {
-    0% { transform: translateZ(0) scale(0.3) rotateY(180deg); filter: brightness(0.5); opacity: 0; }
-    30% { transform: translateZ(0) scale(1.3) rotateY(90deg); filter: brightness(2); opacity: 1; }
-    60% { transform: translateZ(0) scale(1.4) rotateY(0deg); filter: brightness(1.5); }
-    100% { transform: translateZ(0) scale(1) rotateY(0deg); filter: brightness(1); }
+    0% { --tk-fx: translateZ(0) scale(0.3) rotateY(180deg); filter: var(--tk-art) brightness(0.5); opacity: 0; }
+    30% { --tk-fx: translateZ(0) scale(1.3) rotateY(90deg); filter: var(--tk-art) brightness(2); opacity: 1; }
+    60% { --tk-fx: translateZ(0) scale(1.4) rotateY(0deg); filter: var(--tk-art) brightness(1.5); }
+    100% { --tk-fx: translateZ(0) scale(1) rotateY(0deg); filter: var(--tk-art) brightness(1); }
 }
 
 @keyframes xyzSpiral {
@@ -507,10 +544,10 @@
 }
 
 @keyframes synchroSummonCard {
-    0% { transform: translateZ(0) scale(0.2) translateY(-50px); filter: brightness(3) saturate(0); opacity: 0; }
-    40% { transform: translateZ(0) scale(1.3) translateY(0); filter: brightness(2) saturate(0.5); opacity: 1; }
-    70% { transform: translateZ(0) scale(1.2) translateY(0); filter: brightness(1.3) saturate(1); }
-    100% { transform: translateZ(0) scale(1) translateY(0); filter: brightness(1) saturate(1); }
+    0% { --tk-fx: translateZ(0) scale(0.2) translateY(-50px); filter: var(--tk-art) brightness(3) saturate(0); opacity: 0; }
+    40% { --tk-fx: translateZ(0) scale(1.3) translateY(0); filter: var(--tk-art) brightness(2) saturate(0.5); opacity: 1; }
+    70% { --tk-fx: translateZ(0) scale(1.2) translateY(0); filter: var(--tk-art) brightness(1.3) saturate(1); }
+    100% { --tk-fx: translateZ(0) scale(1) translateY(0); filter: var(--tk-art) brightness(1) saturate(1); }
 }
 
 @keyframes synchroRing1 {
@@ -567,11 +604,11 @@
 }
 
 @keyframes fusionSummonCard {
-    0% { transform: translateZ(0) scale(0) rotate(-180deg); filter: brightness(0) hue-rotate(0deg); opacity: 0; }
-    30% { transform: translateZ(0) scale(0.8) rotate(-90deg); filter: brightness(1.5) hue-rotate(45deg); opacity: 1; }
-    60% { transform: translateZ(0) scale(1.4) rotate(0deg); filter: brightness(2) hue-rotate(90deg); }
-    80% { transform: translateZ(0) scale(1.2) rotate(10deg); filter: brightness(1.3) hue-rotate(45deg); }
-    100% { transform: translateZ(0) scale(1) rotate(0deg); filter: brightness(1) hue-rotate(0deg); }
+    0% { --tk-fx: translateZ(0) scale(0) rotate(-180deg); filter: var(--tk-art) brightness(0) hue-rotate(0deg); opacity: 0; }
+    30% { --tk-fx: translateZ(0) scale(0.8) rotate(-90deg); filter: var(--tk-art) brightness(1.5) hue-rotate(45deg); opacity: 1; }
+    60% { --tk-fx: translateZ(0) scale(1.4) rotate(0deg); filter: var(--tk-art) brightness(2) hue-rotate(90deg); }
+    80% { --tk-fx: translateZ(0) scale(1.2) rotate(10deg); filter: var(--tk-art) brightness(1.3) hue-rotate(45deg); }
+    100% { --tk-fx: translateZ(0) scale(1) rotate(0deg); filter: var(--tk-art) brightness(1) hue-rotate(0deg); }
 }
 
 @keyframes fusionSwirl {
@@ -626,10 +663,10 @@
 }
 
 @keyframes linkSummonCard {
-    0% { transform: translateZ(0) scale(0.1); filter: brightness(3) contrast(2); opacity: 0; }
-    30% { transform: translateZ(0) scale(1.2); filter: brightness(2) contrast(1.5); opacity: 1; }
-    60% { transform: translateZ(0) scale(1.15); filter: brightness(1.5) contrast(1.2); }
-    100% { transform: translateZ(0) scale(1); filter: brightness(1) contrast(1); }
+    0% { --tk-fx: translateZ(0) scale(0.1); filter: var(--tk-art) brightness(3) contrast(2); opacity: 0; }
+    30% { --tk-fx: translateZ(0) scale(1.2); filter: var(--tk-art) brightness(2) contrast(1.5); opacity: 1; }
+    60% { --tk-fx: translateZ(0) scale(1.15); filter: var(--tk-art) brightness(1.5) contrast(1.2); }
+    100% { --tk-fx: translateZ(0) scale(1); filter: var(--tk-art) brightness(1) contrast(1); }
 }
 
 @keyframes linkCircuit {
@@ -685,10 +722,10 @@
 }
 
 @keyframes contactFusionCard {
-    0% { transform: translateZ(0) scale(0.5); filter: brightness(0.5) saturate(2); opacity: 0; }
-    40% { transform: translateZ(0) scale(1.35); filter: brightness(2) saturate(1.5); opacity: 1; }
-    70% { transform: translateZ(0) scale(1.2); filter: brightness(1.5) saturate(1.2); }
-    100% { transform: translateZ(0) scale(1); filter: brightness(1) saturate(1); }
+    0% { --tk-fx: translateZ(0) scale(0.5); filter: var(--tk-art) brightness(0.5) saturate(2); opacity: 0; }
+    40% { --tk-fx: translateZ(0) scale(1.35); filter: var(--tk-art) brightness(2) saturate(1.5); opacity: 1; }
+    70% { --tk-fx: translateZ(0) scale(1.2); filter: var(--tk-art) brightness(1.5) saturate(1.2); }
+    100% { --tk-fx: translateZ(0) scale(1); filter: var(--tk-art) brightness(1) saturate(1); }
 }
 
 @keyframes contactFusionVortex {
@@ -1052,7 +1089,7 @@
 
     /* Adjust active glow to not be too huge on small cards */
     .card-token.active-card {
-        transform: scale(1.1);
+        --tk-fx: scale(1.1);
         box-shadow: 0 0 10px #fbbf24;
     }
 
@@ -1063,20 +1100,20 @@
 
     @keyframes effectActivateMobile {
         0% {
-            transform: translateZ(0) scale(1);
-            filter: contrast(105%) blur(0.2px) brightness(1);
+            --tk-fx: translateZ(0) scale(1);
+            filter: var(--tk-art) brightness(1);
         }
         25% {
-            transform: translateZ(0) scale(1.15);
-            filter: contrast(105%) blur(0.2px) brightness(1.4);
+            --tk-fx: translateZ(0) scale(1.15);
+            filter: var(--tk-art) brightness(1.4);
         }
         50% {
-            transform: translateZ(0) scale(1.12);
-            filter: contrast(105%) blur(0.2px) brightness(1.2);
+            --tk-fx: translateZ(0) scale(1.12);
+            filter: var(--tk-art) brightness(1.2);
         }
         100% {
-            transform: translateZ(0) scale(1);
-            filter: contrast(105%) blur(0.2px) brightness(1);
+            --tk-fx: translateZ(0) scale(1);
+            filter: var(--tk-art) brightness(1);
         }
     }
 
