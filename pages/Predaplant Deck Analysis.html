@@ -369,6 +369,614 @@
             color: #a855f7 !important;
         }
     </style>
+    <!-- ===== Beyond the Brave: Predaplant Daredevil (spotlight + fourth tab) =====
+         Its own block so the rules above stay untouched. Everything is scoped to
+         dd-* classes (never .card, which page-sections.js wraps), and every colour
+         comes from the --dd-* tokens, so the block recolours in one place. -->
+    <style>
+        :root {
+            --dd-surface: #2c1b47;            /* same as .card */
+            --dd-surface-raised: #3e2a63;
+            --dd-surface-sunken: #140b24;
+            --dd-border: #4c2a85;
+            --dd-border-strong: #6d4ca3;
+            --dd-divider: rgba(76, 42, 133, 0.6);
+            --dd-heading: #ffffff;
+            --dd-text: #e9d5ff;
+            --dd-muted: #c4b5fd;
+            --dd-accent: #fb7185;             /* Daredevil thorn crimson */
+            --dd-accent-strong: #e11d48;
+            --dd-accent-line: rgba(251, 113, 133, 0.45);
+            --dd-accent-wash: rgba(225, 29, 72, 0.12);
+            --dd-mint: #a7f3d0;               /* the page's .text-accent */
+            --dd-mint-wash: rgba(167, 243, 208, 0.08);
+            --dd-gold: #fbbf24;               /* the page's .text-gold */
+            --dd-good: #4ade80;
+            --dd-bad: #f87171;
+            --dd-radius: 1rem;
+        }
+
+        /* Four tabs: keep the pill inside the viewport so it scrolls sideways on phones */
+        .tab-nav { max-width: 100%; }
+        .tab-btn { flex-shrink: 0; }
+        .tab-btn:focus-visible { outline: 2px solid var(--dd-gold); outline-offset: 2px; }
+
+        .dd-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Card art slot: CardLoader swaps the name for the image */
+        .dd-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 1px solid var(--dd-border);
+            border-radius: 0.5rem;
+            background: var(--dd-surface-raised);
+            color: var(--dd-text);
+            font-size: 0.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+        }
+        .dd-art:has(img) { padding: 0; border: 0; background: none; aspect-ratio: auto; }
+
+        /* ----- Spotlight strip (always visible, above the tabs) ----- */
+        .dd-spot {
+            display: grid;
+            grid-template-columns: 84px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--dd-accent-line);
+            border-radius: var(--dd-radius);
+            background:
+                radial-gradient(120% 140% at 0% 0%, var(--dd-accent-wash), transparent 55%),
+                radial-gradient(120% 140% at 100% 100%, var(--dd-mint-wash), transparent 55%),
+                var(--dd-surface-sunken);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        .dd-spot-art { grid-area: art; }
+        .dd-spot-head { grid-area: head; min-width: 0; }
+        .dd-spot-body { grid-area: body; min-width: 0; }
+        .dd-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0 0 0.4rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--dd-muted);
+        }
+        .dd-kicker .tab-new-badge { margin-left: 0; }
+        .dd-spot-title,
+        .dd-hero-title {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 700;
+            line-height: 1.2;
+            color: var(--dd-heading);
+        }
+        .dd-spot-title { font-size: 1.4rem; }
+        .dd-stats { margin-top: 0.35rem; font-size: 0.78rem; font-weight: 600; color: var(--dd-gold); }
+        .dd-hook { font-size: 0.92rem; line-height: 1.6; color: var(--dd-text); }
+        .dd-label {
+            margin: 1rem 0 0.5rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--dd-muted);
+        }
+        .dd-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .dd-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--dd-border-strong);
+            border-radius: 9999px;
+            background: rgba(44, 27, 71, 0.85);
+            color: var(--dd-heading);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+        }
+        .dd-tag i { font-size: 0.75rem; color: var(--dd-mint); }
+        .dd-tag--poly i { color: var(--dd-gold); }
+        .dd-tag--no { border-style: dashed; }
+        .dd-tag--no i { color: var(--dd-bad); }
+        .dd-tag-role { font-weight: 400; color: var(--dd-muted); }
+        .dd-tag:hover { border-color: var(--dd-accent); background: var(--dd-accent-wash); transform: translateY(-1px); }
+        .dd-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--dd-accent);
+            border-radius: 0.5rem;
+            background: linear-gradient(180deg, var(--dd-accent-strong) 0%, #4c0519 100%);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-decoration: none;
+            box-shadow: 0 0 18px rgba(225, 29, 72, 0.3);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .dd-spot-cta:hover { box-shadow: 0 0 26px rgba(225, 29, 72, 0.5); transform: translateY(-1px); }
+
+        /* ----- Panel furniture ----- */
+        #daredevil-tab [id] { scroll-margin-top: 1.5rem; }
+        .dd-section { margin-bottom: 2.5rem; }
+        .dd-h2 {
+            margin-bottom: 0.75rem;
+            font-size: 1.35rem;
+            font-weight: 800;
+            line-height: 1.25;
+            color: var(--dd-heading);
+            text-align: center;
+        }
+        .dd-lede {
+            max-width: 46rem;
+            margin: 0 auto 1.5rem;
+            line-height: 1.65;
+            color: var(--dd-text);
+            text-align: center;
+        }
+        .dd-lede strong, .dd-panel strong, .dd-route strong { color: var(--dd-heading); }
+        .dd-panel {
+            padding: 1.25rem;
+            border: 1px solid var(--dd-border);
+            border-radius: var(--dd-radius);
+            background: var(--dd-surface);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+        .dd-center { text-align: center; }
+        .dd-note { margin-top: 1rem; font-size: 0.8rem; line-height: 1.55; color: var(--dd-muted); }
+        .dd-note strong { color: var(--dd-text); }
+        .dd-link {
+            color: var(--dd-mint);
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dotted var(--dd-mint);
+        }
+        .dd-link:hover { color: #fff; border-bottom-color: #fff; }
+        #daredevil-tab a:focus-visible,
+        .dd-spot a:focus-visible,
+        .dd-preset:focus-visible,
+        .dd-play:focus-visible,
+        .dd-seg input:focus-visible + span,
+        .dd-table-wrap:focus-visible {
+            outline: 2px solid var(--dd-gold);
+            outline-offset: 2px;
+        }
+
+        /* Hero */
+        .dd-hero {
+            padding: 1.5rem;
+            border: 1px solid var(--dd-border);
+            border-top: 4px solid var(--dd-accent);
+            border-radius: var(--dd-radius);
+            background:
+                radial-gradient(120% 120% at 100% 0%, var(--dd-accent-wash), transparent 60%),
+                linear-gradient(135deg, var(--dd-surface) 0%, var(--dd-surface-sunken) 100%);
+            box-shadow: 0 4px 25px rgba(139, 92, 246, 0.15);
+        }
+        .dd-hero-title { font-size: 1.6rem; }
+        .dd-hero > p { margin-top: 0.85rem; line-height: 1.7; color: var(--dd-text); }
+        .dd-quote {
+            margin: 1rem 0 0;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--dd-mint);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--dd-mint-wash);
+            color: var(--dd-text);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .dd-quote cite { display: block; margin-top: 0.3rem; font-size: 0.75rem; font-style: normal; color: var(--dd-muted); }
+        .dd-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.1rem 0 0; padding: 0; list-style: none; }
+        .dd-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--dd-border-strong);
+            border-radius: 9999px;
+            background: var(--dd-surface-sunken);
+            color: var(--dd-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .dd-chip i { color: var(--dd-accent); }
+
+        /* Card profile */
+        .dd-profile { display: grid; gap: 1.25rem; align-items: start; }
+        .dd-profile > .dd-art { max-width: 190px; margin: 0 auto; }
+        .dd-card-name { font-size: 1.3rem; font-weight: 800; color: var(--dd-heading); }
+        .dd-cardtext {
+            margin: 0.85rem 0 0;
+            padding: 0.9rem 1rem;
+            border-left: 3px solid var(--dd-accent);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--dd-surface-sunken);
+            color: var(--dd-text);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .dd-cardtext p + p { margin-top: 0.5rem; }
+        .dd-mini {
+            margin-top: 1.1rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--dd-mint);
+        }
+        .dd-plain { display: grid; gap: 0.65rem; margin: 0.6rem 0 0; padding: 0; list-style: none; }
+        .dd-plain li {
+            display: grid;
+            grid-template-columns: 1.5rem minmax(0, 1fr);
+            gap: 0.5rem;
+            color: var(--dd-text);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+        .dd-plain i { margin-top: 0.25rem; color: var(--dd-accent); text-align: center; }
+
+        /* Two ways to summon */
+        .dd-routes { display: grid; gap: 1rem; }
+        .dd-route {
+            padding: 1.25rem;
+            border: 1px solid var(--dd-border);
+            border-radius: var(--dd-radius);
+            background: linear-gradient(160deg, var(--dd-surface-raised), var(--dd-surface));
+        }
+        .dd-route--tribute { border-color: var(--dd-accent-line); }
+        .dd-route h3 { display: flex; align-items: center; gap: 0.6rem; font-size: 1.05rem; font-weight: 700; color: var(--dd-heading); }
+        .dd-route h3 i { color: var(--dd-accent); }
+        .dd-route > p { margin-top: 0.4rem; font-size: 0.86rem; line-height: 1.55; color: var(--dd-muted); }
+        .dd-facts { display: grid; gap: 0.5rem; margin: 0.9rem 0 0; }
+        .dd-facts > div {
+            display: grid;
+            grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+            gap: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--dd-divider);
+            font-size: 0.84rem;
+            line-height: 1.5;
+        }
+        .dd-facts dt { font-weight: 700; color: var(--dd-mint); }
+        .dd-facts dd { margin: 0; color: var(--dd-text); }
+
+        /* Super Polymerization recipe */
+        .dd-recipe { display: grid; gap: 0.75rem; margin: 0 0 1.5rem; padding: 0; list-style: none; counter-reset: dd-recipe; }
+        .dd-recipe li {
+            position: relative;
+            padding: 1rem 1rem 1rem 3.25rem;
+            border: 1px solid var(--dd-border);
+            border-radius: 0.75rem;
+            background: var(--dd-surface);
+            color: var(--dd-text);
+            font-size: 0.86rem;
+            line-height: 1.55;
+            counter-increment: dd-recipe;
+        }
+        .dd-recipe li::before {
+            content: counter(dd-recipe);
+            position: absolute;
+            top: 0.95rem;
+            left: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 50%;
+            background: var(--dd-accent-strong);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+        .dd-recipe strong { display: block; margin-bottom: 0.2rem; color: var(--dd-heading); }
+
+        /* Enabler table */
+        .dd-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--dd-border);
+            border-radius: 0.75rem;
+            background: var(--dd-surface);
+        }
+        .dd-table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 0.84rem; }
+        .dd-table th,
+        .dd-table td {
+            padding: 0.7rem 0.9rem;
+            border-bottom: 1px solid var(--dd-divider);
+            color: var(--dd-text);
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .dd-table thead th {
+            background: var(--dd-surface-sunken);
+            color: var(--dd-mint);
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .dd-table tbody th[scope="row"] { color: var(--dd-heading); font-weight: 700; }
+        .dd-table .dd-group th {
+            background: var(--dd-surface-raised);
+            color: var(--dd-gold);
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .dd-table tbody tr:last-child > * { border-bottom: 0; }
+        .dd-verdict {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.55rem;
+            border: 1px solid;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .dd-verdict--yes { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: var(--dd-good); }
+        .dd-verdict--no { border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.12); color: var(--dd-bad); }
+        .dd-next { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+        .dd-next li {
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--dd-border-strong);
+            border-radius: 9999px;
+            background: var(--dd-surface-sunken);
+            color: var(--dd-text);
+            font-size: 0.78rem;
+        }
+        .dd-next strong { color: var(--dd-heading); }
+
+        /* "Can you summon it?" checker */
+        .dd-checker {
+            display: grid;
+            gap: 1rem;
+            padding: 1.25rem;
+            border: 1px solid var(--dd-border);
+            border-radius: var(--dd-radius);
+            background: var(--dd-surface);
+        }
+        .dd-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .dd-presets .dd-label { width: 100%; margin: 0; }
+        .dd-preset {
+            min-height: 40px;
+            padding: 0.4rem 0.85rem;
+            border: 1px solid var(--dd-border-strong);
+            border-radius: 9999px;
+            background: var(--dd-surface-sunken);
+            color: var(--dd-text);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .dd-preset:hover { border-color: var(--dd-accent); }
+        .dd-preset[aria-pressed="true"] { border-color: var(--dd-accent); background: var(--dd-accent-wash); color: var(--dd-heading); }
+        .dd-inputs { display: grid; gap: 1rem; }
+        .dd-set {
+            min-width: 0;
+            margin: 0;
+            padding: 0.9rem 1rem 1rem;
+            border: 1px solid var(--dd-border);
+            border-radius: 0.75rem;
+            background: var(--dd-surface-sunken);
+        }
+        .dd-set legend {
+            padding: 0 0.4rem;
+            color: var(--dd-mint);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .dd-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem 0.75rem;
+            padding: 0.6rem 0;
+            border-top: 1px solid var(--dd-divider);
+        }
+        .dd-row:first-of-type { padding-top: 0.2rem; border-top: 0; }
+        .dd-row-name { flex: 1 1 11rem; color: var(--dd-heading); font-size: 0.85rem; font-weight: 700; }
+        .dd-seg { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+        .dd-seg label { position: relative; cursor: pointer; }
+        .dd-seg input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+        .dd-seg span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0.3rem 0.7rem;
+            border: 1px solid var(--dd-border-strong);
+            border-radius: 0.5rem;
+            background: var(--dd-surface);
+            color: var(--dd-text);
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .dd-seg input:checked + span {
+            border-color: var(--dd-accent);
+            background: var(--dd-accent-wash);
+            color: var(--dd-heading);
+            box-shadow: inset 0 0 0 1px var(--dd-accent);
+        }
+        .dd-hint { margin-top: 0.6rem; color: var(--dd-muted); font-size: 0.75rem; line-height: 1.5; }
+        .dd-result {
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--dd-border);
+            border-left-width: 4px;
+            border-radius: 0.75rem;
+            background: var(--dd-surface-sunken);
+        }
+        .dd-result--on { border-left-color: var(--dd-good); }
+        .dd-result--off { border-left-color: var(--dd-bad); }
+        .dd-result-title { display: flex; align-items: center; gap: 0.5rem; color: var(--dd-heading); font-size: 1rem; font-weight: 800; }
+        .dd-result--on .dd-result-title i { color: var(--dd-good); }
+        .dd-result--off .dd-result-title i { color: var(--dd-bad); }
+        .dd-result p { margin-top: 0.35rem; color: var(--dd-text); font-size: 0.86rem; line-height: 1.55; }
+        .dd-result ul { margin: 0.6rem 0 0; padding-left: 1.1rem; list-style: disc; color: var(--dd-text); font-size: 0.84rem; line-height: 1.55; }
+        .dd-result li + li { margin-top: 0.3rem; }
+        .dd-result .dd-result-sub { margin-top: 0.75rem; color: var(--dd-mint); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+        /* Combo lines */
+        .dd-lines { display: grid; gap: 1rem; }
+        .dd-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            padding: 1.1rem;
+            border: 1px solid var(--dd-border);
+            border-radius: var(--dd-radius);
+            background: linear-gradient(160deg, var(--dd-surface-raised), var(--dd-surface));
+        }
+        .dd-line-head { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 0.8rem; align-items: start; }
+        .dd-line-tag { color: var(--dd-accent); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .dd-line h3 { margin-top: 0.2rem; color: var(--dd-heading); font-size: 1rem; font-weight: 700; line-height: 1.3; }
+        .dd-line dl { display: grid; gap: 0.5rem; margin: 0; font-size: 0.83rem; }
+        .dd-line dt { color: var(--dd-mint); font-weight: 700; }
+        .dd-line dd { margin: 0; color: var(--dd-text); line-height: 1.5; }
+        .dd-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: auto;
+            padding: 0.55rem 1rem;
+            border: 1px solid var(--dd-accent);
+            border-radius: 0.6rem;
+            background: var(--dd-accent-wash);
+            color: var(--dd-heading);
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .dd-play:hover { background: rgba(225, 29, 72, 0.25); }
+
+        /* Branded, rulings, fit, ratios */
+        .dd-split { display: grid; gap: 1rem; }
+        .dd-split h3 { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; color: var(--dd-heading); font-size: 1rem; font-weight: 700; }
+        .dd-list { display: grid; gap: 0.55rem; margin: 0; padding: 0; list-style: none; }
+        .dd-list li {
+            display: grid;
+            grid-template-columns: 1.25rem minmax(0, 1fr);
+            gap: 0.5rem;
+            color: var(--dd-text);
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+        .dd-list i { margin-top: 0.25rem; text-align: center; }
+        .dd-list--good i, .dd-split .dd-good-title i { color: var(--dd-good); }
+        .dd-list--bad i, .dd-split .dd-bad-title i { color: var(--dd-bad); }
+        .dd-rules { display: grid; gap: 0.75rem; }
+        .dd-rule { padding: 1rem; border: 1px solid var(--dd-border); border-radius: 0.75rem; background: var(--dd-surface); }
+        .dd-rule h3 { color: var(--dd-heading); font-size: 0.92rem; font-weight: 700; line-height: 1.35; }
+        .dd-rule p { margin-top: 0.35rem; color: var(--dd-text); font-size: 0.84rem; line-height: 1.55; }
+        .dd-src {
+            display: inline-block;
+            margin-bottom: 0.45rem;
+            padding: 0.1rem 0.5rem;
+            border: 1px solid;
+            border-radius: 9999px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .dd-src--card { border-color: rgba(167, 243, 208, 0.35); background: rgba(167, 243, 208, 0.1); color: var(--dd-mint); }
+        .dd-src--community { border-color: rgba(251, 191, 36, 0.35); background: rgba(251, 191, 36, 0.1); color: var(--dd-gold); }
+        .dd-ratio-list { margin: 0; padding: 0; list-style: none; }
+        .dd-ratio-list li {
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr);
+            gap: 0.6rem;
+            padding: 0.55rem 0;
+            border-top: 1px solid var(--dd-divider);
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+        .dd-ratio-list li:first-child { border-top: 0; }
+        .dd-qty { color: var(--dd-gold); font-weight: 800; }
+        .dd-ratio-list strong { color: var(--dd-heading); }
+        .dd-ratio-list span { display: block; color: var(--dd-muted); font-size: 0.78rem; }
+
+        /* Deep-link highlight */
+        .dd-flash { animation: ddFlash 1.6s ease-out 1; }
+        .dd-table tr.dd-flash { animation: none; }
+        .dd-table tr.dd-flash > * { animation: ddFlashBg 1.6s ease-out 1; }
+        @keyframes ddFlash { from { box-shadow: 0 0 0 3px var(--dd-accent); } to { box-shadow: 0 0 0 3px transparent; } }
+        @keyframes ddFlashBg { from { background-color: var(--dd-accent-wash); } to { background-color: transparent; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .dd-flash, .dd-table tr.dd-flash > * { animation: none; }
+            .dd-tag, .dd-spot-cta, .dd-play { transition: none; }
+            .dd-tag:hover, .dd-spot-cta:hover { transform: none; }
+        }
+        @media (max-width: 639px) {
+            .dd-tags { gap: 0.4rem; }
+            .dd-tag { gap: 0.35rem; min-height: 34px; padding: 0.3rem 0.65rem; font-size: 0.75rem; }
+            .dd-facts > div { grid-template-columns: minmax(0, 1fr); gap: 0.15rem; }
+        }
+        @media (min-width: 640px) {
+            .dd-spot {
+                grid-template-columns: 128px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                row-gap: 0.75rem;
+                padding: 1.5rem;
+            }
+            .dd-spot-title { font-size: 1.75rem; }
+            .dd-recipe { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (min-width: 768px) {
+            .dd-section { margin-bottom: 4rem; }
+            .dd-h2 { font-size: 1.75rem; }
+            .dd-hero { padding: 2rem; }
+            .dd-hero-title { font-size: 2rem; }
+            .dd-panel { padding: 1.5rem; }
+            .dd-profile { grid-template-columns: 190px minmax(0, 1fr); column-gap: 1.75rem; }
+            .dd-profile > .dd-art { margin: 0; }
+            .dd-routes, .dd-split, .dd-rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 900px) {
+            .dd-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 960px) {
+            .dd-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
@@ -409,6 +1017,41 @@
             </div>
         </section>
 
+        <!-- Predaplant Daredevil spotlight: always visible. Every tag opens the Daredevil tab at
+             the matching section (the inline script at the end of the page opens the hidden tab
+             first); the full write-up lives in that tab. -->
+        <aside class="dd-spot" data-pcs-scope="spot" aria-labelledby="dd-spot-title">
+            <div class="dd-spot-art">
+                <div id="dd-spot-img-container" class="dd-art">Predaplant Daredevil</div>
+            </div>
+            <div class="dd-spot-head">
+                <p class="dd-kicker"><span class="tab-new-badge">New card</span> Beyond the Brave &middot; TCG <time datetime="2026-10-08">8 Oct 2026</time></p>
+                <h2 id="dd-spot-title" class="dd-spot-title">Predaplant Daredevil</h2>
+                <p class="dd-stats">Level 6 &middot; DARK &middot; Plant &middot; Fusion &middot; ATK 2200 / DEF 1500</p>
+            </div>
+            <div class="dd-spot-body">
+                <p class="dd-hook">A Fusion Monster you can also summon straight from the Extra Deck: Tribute a monster with a
+                    Predator Counter, even one of your opponent's, plus a "Predaplant" you control. That Tribute doesn't
+                    target and starts no chain. On the turn it's Special Summoned, Daredevil destroys one Spell or Trap
+                    for each monster with a Predator Counter.</p>
+                <p id="dd-spot-poly-label" class="dd-label">Super Polymerization synergy</p>
+                <ul class="dd-tags" aria-labelledby="dd-spot-poly-label">
+                    <li><a class="dd-tag dd-tag--poly" href="#dd-superpoly"><i class="fas fa-flask" aria-hidden="true"></i> Super Polymerization <span class="dd-tag-role">fuses their monster</span></a></li>
+                    <li><a class="dd-tag dd-tag--poly" href="#dd-level-one"><i class="fas fa-bullseye" aria-hidden="true"></i> Predator Counters <span class="dd-tag-role">any Level becomes 1</span></a></li>
+                    <li><a class="dd-tag dd-tag--poly" href="#dd-enabler-chlamy"><i class="fas fa-seedling" aria-hidden="true"></i> Chlamydosundew <span class="dd-tag-role">in-archetype Super Poly</span></a></li>
+                    <li><a class="dd-tag dd-tag--poly" href="#dd-line-ambush"><i class="fas fa-bolt" aria-hidden="true"></i> Predaplanning <span class="dd-tag-role">opponent's turn</span></a></li>
+                </ul>
+                <p id="dd-spot-engine-label" class="dd-label">Engine tags</p>
+                <ul class="dd-tags" aria-labelledby="dd-spot-engine-label">
+                    <li><a class="dd-tag" href="#dd-line-triantis"><i class="fas fa-eye-slash" aria-hidden="true"></i> Triantis <span class="dd-tag-role">counters without targeting</span></a></li>
+                    <li><a class="dd-tag" href="#dd-summon"><i class="fas fa-leaf" aria-hidden="true"></i> Longinephila <span class="dd-tag-role">Level 1 + GY counter</span></a></li>
+                    <li><a class="dd-tag" href="#dd-enabler-branded"><i class="fas fa-dragon" aria-hidden="true"></i> Lubellion &amp; Albion <span class="dd-tag-role">Branded bridge</span></a></li>
+                    <li><a class="dd-tag dd-tag--no" href="#dd-enabler-banishment"><i class="fas fa-ban" aria-hidden="true"></i> Branded Banishment <span class="dd-tag-role">can't: Level 8+ only</span></a></li>
+                </ul>
+                <a class="dd-spot-cta" href="#daredevil">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </aside>
+
         <!-- Tab Navigation -->
         <div class="flex justify-center w-full mb-10">
             <div class="tab-nav">
@@ -420,6 +1063,9 @@
                 </button>
                 <button onclick="switchTab('violet-poison')" id="btn-violet-poison" class="tab-btn active">
                     <i class="fas fa-biohazard"></i> Thorns of Violet Poison <span class="tab-new-badge">New</span>
+                </button>
+                <button onclick="switchTab('daredevil')" id="btn-daredevil" class="tab-btn" aria-controls="daredevil-tab">
+                    <i class="fas fa-skull" aria-hidden="true"></i> Daredevil <span class="tab-new-badge" aria-hidden="true">New</span><span class="dd-sr-only"> (new card)</span>
                 </button>
             </div>
         </div>
@@ -750,12 +1396,12 @@
                         </div>
                     </div>
 
-                    <!-- Baalthea -->
+                    <!-- Bal Teah -->
                     <div class="card p-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
                         <div id="baalthea-img-container" class="card-image-container card-placeholder">Predaplant
-                            Baalthea</div>
+                            Bal Teah</div>
                         <div>
-                            <h3 class="text-xl font-bold text-accent mb-2">Predaplant Baalthea</h3>
+                            <h3 class="text-xl font-bold text-accent mb-2">Predaplant Bal Teah</h3>
                             <div
                                 class="inline-block bg-[#1a0f2d] text-xs px-2 py-1 rounded text-white border border-[#a78bfa] mb-3 shadow-[0_0_8px_rgba(167,139,250,0.5)]">
                                 Level 4 | DARK | Plant | Synchro Tuner</div>
@@ -804,9 +1450,9 @@
                                     class="w-40 md:w-48 flex-shrink-0 card-placeholder border-2 border-purple-500 shadow-lg">
                                     Four Heavenly Dragons</div>
                                 <div>
-                                    <h3 class="text-lg font-bold text-white leading-tight">Starving Venom Fusion Dragon
-                                        of the Four Heavenly Dragons</h3>
-                                    <p class="text-xs text-purple-300 mt-1">Level 8 | DARK | Dragon | Fusion</p>
+                                    <h3 class="text-lg font-bold text-white leading-tight">Starving Venom Fusion Dragon,
+                                        Four Heavenly Dragons</h3>
+                                    <p class="text-xs text-purple-300 mt-1">Level 8 | DARK | Dragon | Fusion | TCG release 12 Nov 2026</p>
                                 </div>
                             </div>
                             <p class="text-sm text-purple-200">On SS: Target 1 monster; ATK becomes 0, negate effects,
@@ -889,20 +1535,20 @@
                             <tr>
                                 <td><span class="step-badge">5</span></td>
                                 <td>Synchro Summon <strong class="text-white border-b border-white">Predaplant
-                                        Baalthea</strong> using Longinephila + Lilizard.</td>
-                                <td><strong>Field:</strong> Baalthea. <br><strong>GY:</strong> Longinephila, Lilizard.
+                                        Bal Teah</strong> using Longinephila + Lilizard.</td>
+                                <td><strong>Field:</strong> Bal Teah. <br><strong>GY:</strong> Longinephila, Lilizard.
                                 </td>
                             </tr>
                             <tr>
                                 <td><span class="step-badge">6</span></td>
-                                <td>Baalthea triggers to revive Lilizard. Lilizard triggers upon GY summon.</td>
-                                <td><strong>Field:</strong> Baalthea, Lilizard. <br><strong class="text-green-400">Hand:
+                                <td>Bal Teah triggers to revive Lilizard. Lilizard triggers upon GY summon.</td>
+                                <td><strong>Field:</strong> Bal Teah, Lilizard. <br><strong class="text-green-400">Hand:
                                         Draw 1 unknown card.</strong></td>
                             </tr>
                             <tr>
                                 <td><span class="step-badge">7</span></td>
                                 <td>Synchro Summon <strong class="text-white border-b border-white">Bramble Rose
-                                        Dragon</strong> using Baalthea + Lilizard.</td>
+                                        Dragon</strong> using Bal Teah + Lilizard.</td>
                                 <td><strong>Field:</strong> Bramble Rose Dragon (Level 7 Synchro).</td>
                             </tr>
                             <tr>
@@ -966,7 +1612,7 @@
                         The release of the continuous-impact Normal Spell <strong class="text-accent font-bold" style="color: #a7f3d0;">"Thorns of Violet Poison"</strong> (initially translated as <em>"Thorn Fangs of Violet Poison"</em>) in <strong>Battles of Legend: Glorious Gallery</strong> completely redefines the Predaplant strategy! 
                     </p>
                     <p class="text-purple-200 text-base md:text-lg leading-relaxed" style="color: #e9d5ff;">
-                        Instead of playing a slow game of resource attrition and wearing your opponent down over time, this card transforms Predaplant into a lightning-fast <strong>One-Turn Kill (OTK)</strong> powerhouse. By summoning a specific dragon to reduce opposing monsters' Attack to 0, you can wipe their entire board and deal massive burn damage based on their original Attack values—easily winning the duel in a single move!
+                        Instead of playing a slow game of resource attrition and wearing your opponent down over time, this card transforms Predaplant into a lightning-fast <strong>One-Turn Kill (OTK)</strong> powerhouse. By summoning Starving Venom Fusion Dragon and letting it grow past one of their Special Summoned monsters, you can wipe every weaker monster from their board and deal burn damage based on their original Attack values—often winning the duel in a single move!
                     </p>
                 </div>
             </section>
@@ -990,7 +1636,7 @@
                             <div class="text-xs" style="color: #e9d5ff; line-height: 1.4;">
                                 <div style="color: #fbbf24; font-weight: bold; margin-bottom: 0.25rem;">Normal Spell Card</div>
                                 <div>TCG Set: Battles of Legend: Glorious Gallery</div>
-                                <div class="text-[10px] text-purple-400 mt-1">(OCG: Premium Pack 2026 / Ultra Rare)</div>
+                                <div class="text-[10px] text-purple-400 mt-1">(OCG: Premium Pack 2026)</div>
                             </div>
                         </div>
 
@@ -1027,7 +1673,7 @@
             <section class="mb-10 md:mb-16">
                 <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The "Starving Venom" Target Ecosystem</h2>
                 <p class="text-center text-purple-200 max-w-3xl mx-auto mb-8" style="color: #e9d5ff;">
-                    Since the spell card requires you to target a face-up <strong>"Starving Venom Fusion Dragon"</strong>, choosing the right dragon is key to success. Here are the core targets you will use in your extra deck:
+                    Thorns of Violet Poison targets a monster named exactly <strong>"Starving Venom Fusion Dragon"</strong> in your Monster Zone. The newer Starving Venom dragons have names of their own, so in the TCG only one card is a legal target. Here's where each dragon fits:
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1035,17 +1681,17 @@
                         <div>
                             <div class="flex items-center gap-3 mb-3 border-b border-[#4c2a85] pb-2">
                                 <span class="text-2xl">👑</span>
-                                <h3 class="font-bold font-serif text-white">The Master Target</h3>
+                                <h3 class="font-bold font-serif text-white">The Only Legal Target</h3>
                             </div>
                             <div class="flex justify-center mb-4">
-                                <div id="eco-four-heavenly-img" class="card-image-container card-placeholder glow-accent mx-auto mb-2" style="height: 240px; display: flex; align-items: center; justify-content: center;">
-                                    Four Heavenly Dragons
+                                <div id="eco-svfd-img" class="card-image-container card-placeholder glow-accent mx-auto mb-2" style="height: 240px; display: flex; align-items: center; justify-content: center;">
+                                    Starving Venom Fusion Dragon
                                 </div>
                             </div>
-                            <h4 class="font-bold text-accent text-sm mb-2" style="color: #a7f3d0;">Four Heavenly Dragons</h4>
-                            <p class="text-xs text-purple-300 mb-4" style="color: #d8b4fe;">Starving Venom Fusion Dragon of the Four Heavenly Dragons</p>
+                            <h4 class="font-bold text-accent text-sm mb-2" style="color: #a7f3d0;">Starving Venom Fusion Dragon</h4>
+                            <p class="text-xs text-purple-300 mb-4" style="color: #d8b4fe;">Level 8 DARK Dragon Fusion &middot; 2800 ATK</p>
                             <p class="text-xs text-purple-200" style="color: #e9d5ff;">
-                                <strong>Why it is the best:</strong> When summoned, this retrained Level 8 boss permanently reduces any enemy threat's Attack to 0 and negates its effects! This ensures the monster is weaker than your dragon (2800 ATK), letting the Spell easily wipe it out while dealing massive burn damage based on its original, printed Attack!
+                                <strong>Why it's the one:</strong> It's the only TCG-legal card with the exact name Thorns asks for. It needs 2 DARK monsters on the field, which Predaplants make easily with Bufolicula, Predaprime Fusion or Chlamydosundew. When it's Fusion Summoned, it gains ATK equal to one of your opponent's Special Summoned monsters until the end of the turn, so that monster is always below it when Thorns resolves, and it still burns for its full original ATK.
                             </p>
                         </div>
                     </div>
@@ -1066,6 +1712,9 @@
                             <p class="text-xs text-purple-200" style="color: #e9d5ff;">
                                 <strong>Why it is useful:</strong> If your main Starving Venom Fusion Dragon is in the Graveyard, you can summon this Level 8 dragon and copy its name and effects from the Graveyard. This turns it into a valid target for the Spell, ensuring you can still pull off your OTK even when resources are low!
                             </p>
+                            <p class="text-xs mt-3" style="color: #fecaca; padding: 0.5rem 0.65rem; border: 1px solid rgba(248, 113, 113, 0.45); border-radius: 0.5rem; background: rgba(127, 29, 29, 0.25);">
+                                <strong style="color: #f87171;"><i class="fas fa-ban mr-1" aria-hidden="true"></i>Forbidden in the TCG.</strong> Supreme King Dragon Starving Venom can't be played at TCG events, so this copy play only works in the OCG or in casual games.
+                            </p>
                         </div>
                     </div>
 
@@ -1073,7 +1722,7 @@
                         <div>
                             <div class="flex items-center gap-3 mb-3 border-b border-[#4c2a85] pb-2">
                                 <span class="text-2xl">🦋</span>
-                                <h3 class="font-bold font-serif text-white">The Active Defender</h3>
+                                <h3 class="font-bold font-serif text-white">Support, Not a Target</h3>
                             </div>
                             <div class="flex justify-center mb-4">
                                 <div id="eco-sv-wing-dragon-img" class="card-image-container card-placeholder glow-accent mx-auto mb-2" style="height: 240px; display: flex; align-items: center; justify-content: center;">
@@ -1083,7 +1732,10 @@
                             <h4 class="font-bold text-accent text-sm mb-2" style="color: #a7f3d0;">Starving Venom Wing Dragon</h4>
                             <p class="text-xs text-purple-300 mb-4" style="color: #d8b4fe;">Level 10 Fusion & Pendulum Dragon</p>
                             <p class="text-xs text-purple-200" style="color: #e9d5ff;">
-                                <strong>Why it is useful:</strong> A massive boss that negates monster effects, absorbs Attack, and sweeps cards. When placed in the Pendulum Zone, its passive effect automatically places counters on opponent's monsters the moment they are Special Summoned, creating an absolute negation lock!
+                                <strong>Why it's still useful:</strong> Its name isn't "Starving Venom Fusion Dragon", so Thorns can't target it. It earns its slot elsewhere: it negates monster effects, absorbs ATK and destroys cards, and in the Pendulum Zone it puts a Predator Counter on every monster your opponent Special Summons, which Dragostapelia turns into a negation lock.
+                            </p>
+                            <p class="text-xs mt-3" style="color: #e9d5ff; padding: 0.5rem 0.65rem; border: 1px solid rgba(167, 243, 208, 0.35); border-radius: 0.5rem; background: rgba(167, 243, 208, 0.07);">
+                                <strong style="color: #a7f3d0;">Same for Four Heavenly Dragons:</strong> Starving Venom Fusion Dragon, Four Heavenly Dragons (TCG release 12 Nov 2026) has its own name too, so it can't be the target either. Its Quick Effect can Fusion Summon the original Starving Venom Fusion Dragon on your opponent's turn from DARK monsters on either field, including itself, ready for Thorns on your turn.
                             </p>
                         </div>
                     </div>
@@ -1177,8 +1829,10 @@
                 </div>
             </section>
 
-            <!-- Step-by-Step OTK Combo Guide -->
-            <section class="mb-10 md:mb-16">
+            <!-- Step-by-Step OTK Combo Guide. Rebuilt 2026-09-25 from the official card text: Thorns can
+                 only target a monster named "Starving Venom Fusion Dragon". The same line is combo6 in
+                 assets/data/combos/predaplant-combos.json. -->
+            <section class="mb-10 md:mb-16" id="thorns-otk" data-pcs-scope="thorns">
                 <div class="card p-6 md:p-8">
                     <div class="flex items-center gap-4 mb-6 border-b border-[#4c2a85] pb-4">
                         <div class="bg-gradient-to-tr from-purple-600 to-indigo-600 text-white w-12 h-12 rounded-xl flex items-center justify-center shadow-lg border border-purple-400/30 flex-shrink-0">
@@ -1186,12 +1840,12 @@
                         </div>
                         <div>
                             <h3 class="text-xl md:text-3xl font-bold font-serif text-white">Step-by-Step OTK Combo Guide</h3>
-                            <p class="text-xs text-purple-300 uppercase tracking-widest font-semibold mt-0.5">How to Win in One Turn with 10,000+ Damage</p>
+                            <p class="text-xs text-purple-300 uppercase tracking-widest font-semibold mt-0.5">Two Cards, One Normal Summon, One Turn</p>
                         </div>
                     </div>
 
                     <p class="text-sm md:text-base text-purple-200 mb-8" style="color: #e9d5ff;">
-                        Here is a simple, step-by-step guide to pulling off a massive One-Turn Kill (OTK) combo. You will learn how to summon your key monsters, search for your spell, summon your boss dragon to weaken the opponent's monster to 0 Attack, and unleash <strong>"Thorns of Violet Poison"</strong> to deal massive damage and win the duel!
+                        This line goes second into monsters your opponent Special Summoned. It starts from <strong>Predaplant Ophrys Scorpio</strong> and any other monster, uses a single Normal Summon, finds <strong>"Thorns of Violet Poison"</strong> on the way, and ends on the original Starving Venom Fusion Dragon, the one monster Thorns can target. Ultra Polymerization costs 2000 Life Points. Watch for Nibiru once Scorpio and Cobra come back, which is your fifth summon.
                     </p>
 
                     <div class="flex flex-col items-center gap-6">
@@ -1203,9 +1857,9 @@
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">1</span>
-                                        <h3 class="text-lg font-bold text-white">Summon Scorpio & Cobra</h3>
+                                        <h3 class="text-lg font-bold text-white">Summon Scorpio &amp; Cobra</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Normal Summon your key starter <strong class="text-accent">Predaplant Ophrys Scorpio</strong>. Discard 1 monster to Special Summon <strong class="text-accent">Predaplant Darlingtonia Cobra</strong> directly from your Deck.</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Normal Summon <strong class="text-accent">Predaplant Ophrys Scorpio</strong>. Send 1 monster from your hand to the GY (Predaplant Byblisp is ideal) to Special Summon <strong class="text-accent">Predaplant Darlingtonia Cobra</strong> from your Deck.</p>
                                 </div>
                             </div>
                         </div>
@@ -1221,9 +1875,9 @@
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">2</span>
-                                        <h3 class="text-lg font-bold text-white">Search Ultra Polymerization</h3>
+                                        <h3 class="text-lg font-bold text-white">Add Ultra Polymerization</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Upon being Special Summoned, Darlingtonia Cobra's effect triggers to let you search your deck and add <strong class="text-accent">Ultra Polymerization</strong> (or any "Fusion" spell) to your hand.</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Cobra was Special Summoned by a "Predaplant" effect, so it adds <strong class="text-accent">Ultra Polymerization</strong> to your hand (once per Duel). Byblisp, now in the GY, adds a Predaplant monster too; this guide takes Drosophyllum Hydra.</p>
                                 </div>
                             </div>
                         </div>
@@ -1241,7 +1895,7 @@
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">3</span>
                                         <h3 class="text-lg font-bold text-white">Fusion Summon Ambulomelides</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Activate <strong class="text-accent">Ultra Polymerization</strong> by paying 2000 Life Points. Fuse Scorpio and Cobra together to summon the crucial Extra Deck extender <strong class="text-accent">Predaplant Ambulomelides</strong>.</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Pay 2000 Life Points for Ultra Polymerization and fuse Scorpio and Cobra into <strong class="text-accent">Predaplant Ambulomelides</strong>. Nobody can respond to Ultra Polymerization.</p>
                                 </div>
                             </div>
                         </div>
@@ -1253,13 +1907,13 @@
                         <!-- Step 4 -->
                         <div class="card p-6 combo-step-card w-full max-w-2xl">
                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                                <div id="thorns-longi-img" class="card-image-container flex-shrink-0 card-placeholder">Predaplant Longinephila</div>
+                                <div id="thorns-spell-add-img" class="card-image-container flex-shrink-0 card-placeholder">Thorns of Violet Poison</div>
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">4</span>
-                                        <h3 class="text-lg font-bold text-white">Search Longinephila & Banish Spell</h3>
+                                        <h3 class="text-lg font-bold text-white">Add Thorns &amp; Bring Back the Materials</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Trigger Ambulomelides' on-summon effect to search your deck for the Level 1 Tuner <strong class="text-accent">Predaplant Longinephila</strong>. Then, banish Ultra Polymerization from your GY to Special Summon Scorpio and Cobra back from the GY!</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Ambulomelides adds <strong class="text-accent">Thorns of Violet Poison</strong> from your Deck; it is always treated as a "Predap" card. Then banish Ultra Polymerization from your GY to Special Summon Scorpio and Cobra back, with 0 ATK and their effects negated.</p>
                                 </div>
                             </div>
                         </div>
@@ -1271,13 +1925,13 @@
                         <!-- Step 5 -->
                         <div class="card p-6 combo-step-card w-full max-w-2xl">
                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                                <div id="thorns-chlamy-img" class="card-image-container flex-shrink-0 card-placeholder">Predaplant Chlamydosundew</div>
+                                <div id="thorns-longi-img" class="card-image-container flex-shrink-0 card-placeholder">Predaplant Longinephila</div>
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">5</span>
-                                        <h3 class="text-lg font-bold text-white">Tribute Cobra for Chlamydosundew</h3>
+                                        <h3 class="text-lg font-bold text-white">Tribute Cobra for Longinephila</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Use Ambulomelides' active effect: tribute the revived Cobra to Special Summon the key fusion material <strong class="text-accent">Predaplant Chlamydosundew</strong> directly from your Deck.</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Ambulomelides Tributes Cobra and Special Summons <strong class="text-accent">Predaplant Longinephila</strong> from your Deck. Longinephila adds <strong class="text-accent">Predaplant Bufolicula</strong>.</p>
                                 </div>
                             </div>
                         </div>
@@ -1289,13 +1943,13 @@
                         <!-- Step 6 -->
                         <div class="card p-6 combo-step-card w-full max-w-2xl">
                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                                <div id="thorns-longi-img-2" class="card-image-container flex-shrink-0 card-placeholder">Predaplant Longinephila</div>
+                                <div id="thorns-bufo-img" class="card-image-container flex-shrink-0 card-placeholder">Predaplant Bufolicula</div>
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">6</span>
-                                        <h3 class="text-lg font-bold text-white">Summon Longinephila & Search Thorns</h3>
+                                        <h3 class="text-lg font-bold text-white">Fusion Summon Starving Venom Fusion Dragon</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Normal Summon <strong class="text-accent">Predaplant Longinephila</strong> that you searched earlier. Its summon effect immediately triggers, letting you add the devastating spell <strong class="text-accent">Thorns of Violet Poison</strong> directly from your deck to your hand!</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Place Bufolicula in your Pendulum Zone and use its Pendulum Effect. Ambulomelides and Scorpio are the 2 DARK monsters on the field that <strong class="text-accent">Starving Venom Fusion Dragon</strong> needs.</p>
                                 </div>
                             </div>
                         </div>
@@ -1307,13 +1961,13 @@
                         <!-- Step 7 -->
                         <div class="card p-6 combo-step-card w-full max-w-2xl">
                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                                <div id="thorns-sv-four-heavenly-img" class="card-image-container flex-shrink-0 card-placeholder">Four Heavenly Dragons</div>
+                                <div id="thorns-svfd-img" class="card-image-container flex-shrink-0 card-placeholder">Starving Venom Fusion Dragon</div>
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">7</span>
-                                        <h3 class="text-lg font-bold text-white">Fusion Summon Your Boss Dragon</h3>
+                                        <h3 class="text-lg font-bold text-white">Grow Past Their Biggest Monster</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Use Chlamydosundew's active effect to fuse Scorpio and your Level 5 Ambulomelides together on the field to Fusion Summon <strong class="text-accent">Starving Venom Fusion Dragon of the Four Heavenly Dragons</strong> (2800 ATK)!</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">It was Fusion Summoned, so it gains ATK equal to one of your opponent's Special Summoned monsters until the end of the turn. Pick their strongest: your dragon now has 2800 plus that monster's ATK.</p>
                                 </div>
                             </div>
                         </div>
@@ -1325,13 +1979,13 @@
                         <!-- Step 8 -->
                         <div class="card p-6 combo-step-card w-full max-w-2xl">
                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                                <div id="thorns-sv-four-heavenly-img-2" class="card-image-container flex-shrink-0 card-placeholder">Four Heavenly Dragons</div>
+                                <div id="thorns-spell-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Thorns of Violet Poison</div>
                                 <div>
                                     <div class="flex items-center mb-2">
                                         <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">8</span>
-                                        <h3 class="text-lg font-bold text-white">Reduce Opposing Threat to 0 ATK</h3>
+                                        <h3 class="text-lg font-bold text-white">Activate Thorns of Violet Poison</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Trigger the Four Heavenly Dragons' on-summon effect: target the opponent's strongest, most dangerous face-up monster. Its current Attack becomes <strong>exactly 0</strong> and its effects are completely negated!</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Target Starving Venom Fusion Dragon in your Monster Zone. It can't attack this turn, and every monster your opponent controls with less ATK than it is destroyed.</p>
                                 </div>
                             </div>
                         </div>
@@ -1343,35 +1997,21 @@
                         <!-- Step 9 -->
                         <div class="card p-6 combo-step-card w-full max-w-2xl">
                             <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                                <div id="thorns-spell-combo-img" class="card-image-container flex-shrink-0 card-placeholder">Thorns of Violet Poison</div>
-                                <div>
-                                    <div class="flex items-center mb-2">
-                                        <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">9</span>
-                                        <h3 class="text-lg font-bold text-white">Activate Thorns of Violet Poison</h3>
-                                    </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Play <strong class="text-accent">Thorns of Violet Poison</strong>, targeting your Four Heavenly Dragons. The spell resolves, instantly destroying all enemy monsters with lower Attack (including the 0 ATK threat!).</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="w-full flex justify-center">
-                            <i class="fas fa-chevron-down text-2xl arrow-color animate-bounce"></i>
-                        </div>
-
-                        <!-- Step 10 -->
-                        <div class="card p-6 combo-step-card w-full max-w-2xl">
-                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
                                 <div id="thorns-spell-combo-img-2" class="card-image-container flex-shrink-0 card-placeholder">Thorns of Violet Poison</div>
                                 <div>
                                     <div class="flex items-center mb-2">
-                                        <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">10</span>
-                                        <h3 class="text-lg font-bold text-white">Discard Hand for the Win!</h3>
+                                        <span class="bg-purple-700 text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">9</span>
+                                        <h3 class="text-lg font-bold text-white">Discard Your Hand for the Burn</h3>
                                     </div>
-                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Choose to discard your entire hand. Your opponent instantly takes effect burn damage equal to the combined <strong>original Attack</strong> of the destroyed monsters, routinely dealing over <strong>10,000+ total damage</strong> for a spectacular victory!</p>
+                                    <p class="text-indigo-200 text-sm leading-relaxed" style="color: #e9d5ff;">Discard your whole hand (here, Drosophyllum Hydra) to deal damage equal to the destroyed monsters' combined <strong>original</strong> ATK. If that reaches their Life Points (three 2700 ATK monsters already make 8100), the duel ends here. Otherwise Longinephila can still attack for 600.</p>
                                 </div>
                             </div>
                         </div>
 
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <button type="button" class="dd-play" data-combo-open="6"><i class="fas fa-play" aria-hidden="true"></i> Play this line in the combo simulator (line 6)</button>
                     </div>
                 </div>
             </section>
@@ -1403,12 +2043,12 @@
                             <h4 class="font-bold text-accent mb-2" style="color: #a7f3d0;"><i class="fas fa-shield-virus mr-2"></i>Board Insulation (Protecting Your Plays):</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3">
                                 <div class="flex gap-3 items-start bg-[#1a0f2d]/50 p-4 rounded-lg border border-[#4c2a85]">
-                                    <div id="thorns-dheadevil-img" class="card-image-container flex-shrink-0 card-placeholder w-16" style="min-height:90px;font-size:0.5rem;">Predaplant Dheadevil</div>
-                                    <p class="text-xs" style="color: #e9d5ff;"><strong>Predaplant Dheadevil (Level 6):</strong> Summoned easily using Longinephila. During your turn, you can destroy opponent Spells and Traps up to the number of monsters with a Predator Counter and destroy them. Use Dheadevil to sweep backrow clean before activating your win condition!</p>
+                                    <div id="thorns-dheadevil-img" class="card-image-container flex-shrink-0 card-placeholder w-16" style="min-height:90px;font-size:0.5rem;">Predaplant Daredevil</div>
+                                    <p class="text-xs" style="color: #e9d5ff;"><strong>Predaplant Daredevil (Level 6):</strong> Summoned easily using Longinephila. In a Main Phase of the turn it's Special Summoned, it destroys Spells and Traps, up to the number of monsters with a Predator Counter. Use Daredevil to sweep backrow clean before activating your win condition! <a href="#daredevil" class="lore-link">Full breakdown in the Daredevil tab</a></p>
                                 </div>
                                 <div class="flex gap-3 items-start bg-[#1a0f2d]/50 p-4 rounded-lg border border-[#4c2a85]">
-                                    <div id="thorns-baalthea-img" class="card-image-container flex-shrink-0 card-placeholder w-16" style="min-height:90px;font-size:0.5rem;">Predaplant Baalthea</div>
-                                    <p class="text-xs" style="color: #e9d5ff;"><strong>Predaplant Baalthea (Level 4 Synchro):</strong> Actively protects your plays by Special Summoning your dragons back from the Graveyard if they are negated or destroyed. It also lets you Fusion Summon instantly on your opponent's turn to dodge target removals!</p>
+                                    <div id="thorns-baalthea-img" class="card-image-container flex-shrink-0 card-placeholder w-16" style="min-height:90px;font-size:0.5rem;">Predaplant Bal Teah</div>
+                                    <p class="text-xs" style="color: #e9d5ff;"><strong>Predaplant Bal Teah (Level 4 Synchro):</strong> Actively protects your plays by Special Summoning your dragons back from the Graveyard if they are negated or destroyed. It also lets you Fusion Summon instantly on your opponent's turn to dodge target removals!</p>
                                 </div>
                             </div>
                         </div>
@@ -1428,6 +2068,470 @@
                 </div>
             </section>
 
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: BEYOND THE BRAVE: DAREDEVIL         -->
+        <!-- ========================================== -->
+        <!-- Card art here loads the first time the tab opens (inline script at the end of the
+             page). The three lines live in assets/data/combos/predaplant-combos.json as combo3-5
+             and play in the shared combo simulator below the tabs. -->
+        <div id="daredevil-tab" data-pcs-scope="daredevil" class="tab-content">
+
+            <!-- Overview -->
+            <section class="dd-section" id="dd-overview">
+                <div class="dd-hero">
+                    <p class="dd-kicker"><span class="tab-new-badge">New card</span> Beyond the Brave</p>
+                    <h2 class="dd-hero-title">Predaplant Daredevil: The Plant That Eats Protected Bosses</h2>
+                    <p>Predaplants have always turned opposing monsters into Level 1 targets. Daredevil is the first
+                        Predaplant that cashes those counters in for Spell and Trap removal. You can Fusion Summon it like
+                        any Fusion Monster, or summon it straight from the Extra Deck by Tributing a monster with a
+                        Predator Counter, yours or your opponent's, together with a "Predaplant" you control. It's a
+                        going-second and opponent's-turn card. Going first, with no counters and no enemy backrow, it's a
+                        2200 ATK body and Fusion material.</p>
+                    <blockquote class="dd-quote">
+                        "Predaplants just got a third Kaiju that you don't need to draw or foolish to play."
+                        <cite>r/yugioh, on the card's reveal. Banksiogre and Drosophyllum Hydra are the other two Predaplants that summon themselves by Tributing a monster with a Predator Counter.</cite>
+                    </blockquote>
+                    <ul class="dd-chips" aria-label="Release">
+                        <li class="dd-chip"><i class="fas fa-box-open" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></li>
+                        <li class="dd-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG debut &middot; <time datetime="2026-03-19">19 Mar 2026</time></li>
+                        <li class="dd-chip"><i class="fas fa-layer-group" aria-hidden="true"></i> Extra Deck &middot; Fusion</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Card profile -->
+            <section class="dd-section" id="dd-card">
+                <h2 class="dd-h2">The Card</h2>
+                <div class="dd-panel dd-profile">
+                    <div id="dd-profile-img-container" class="dd-art">Predaplant Daredevil</div>
+                    <div>
+                        <h3 class="dd-card-name">Predaplant Daredevil</h3>
+                        <p class="dd-stats">Level 6 &middot; DARK &middot; Plant / Fusion / Effect &middot; ATK 2200 / DEF 1500</p>
+                        <blockquote class="dd-cardtext">
+                            <p>1 "Predaplant" monster + 1 Level 1 monster</p>
+                            <p>Must first be either Fusion Summoned, or Special Summoned (from your Extra Deck) by Tributing
+                                1 monster on either field with a Predator Counter and 1 "Predaplant" monster you control.
+                                During the Main Phase, if this card was Special Summoned this turn (Quick Effect): You can
+                                target Spells/Traps on the field, up to the number of monsters with a Predator Counter;
+                                destroy them. You can only use this effect of "Predaplant Daredevil" once per turn.</p>
+                        </blockquote>
+                        <h4 class="dd-mini">In plain words</h4>
+                        <ul class="dd-plain">
+                            <li><i class="fas fa-flask" aria-hidden="true"></i><span><strong>Two ways in.</strong> Fuse a "Predaplant" with any Level 1 monster, or skip the Spell and Tribute a monster with a Predator Counter (either field) together with a "Predaplant" you control.</span></li>
+                            <li><i class="fas fa-eye-slash" aria-hidden="true"></i><span><strong>The Tribute isn't an effect.</strong> It doesn't target and can't be chained to, so "cannot be targeted" and effect negation don't stop it. Cards that negate a Summon still do.</span></li>
+                            <li><i class="fas fa-bomb" aria-hidden="true"></i><span><strong>One Spell/Trap per counter.</strong> In a Main Phase of the turn it was Special Summoned, yours or your opponent's, it destroys up to one Spell/Trap for each monster with a Predator Counter, yours included.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Two ways to summon -->
+            <section class="dd-section" id="dd-summon">
+                <h2 class="dd-h2">Two Ways to Summon It</h2>
+                <p class="dd-lede">Both routes end with the same Daredevil, and both count as Special Summoned for its
+                    effect. They differ in when you can use them and whose monster you spend.</p>
+                <div class="dd-routes">
+                    <article class="dd-route">
+                        <h3><i class="fas fa-flask" aria-hidden="true"></i> Fusion Summon</h3>
+                        <p>1 "Predaplant" monster + 1 Level 1 monster, through any card that can Fusion Summon a Level 6 DARK monster.</p>
+                        <dl class="dd-facts">
+                            <div><dt>When</dt><dd>Whenever the Fusion card allows. Super Polymerization and Bal Teah work on your opponent's turn.</dd></div>
+                            <div><dt>Their monster</dt><dd>Only through Super Polymerization or Chlamydosundew, and it has to be Level 1. A Predator Counter makes any monster with a Level into one.</dd></div>
+                            <div><dt>Chain</dt><dd>The Fusion card is activated, so it can be answered. Super Polymerization can't.</dd></div>
+                            <div><dt>Counts as</dt><dd>A Fusion Summon: Predaplanning's GY effect and Branded Lost trigger.</dd></div>
+                        </dl>
+                    </article>
+                    <article class="dd-route dd-route--tribute">
+                        <h3><i class="fas fa-hand-rock" aria-hidden="true"></i> Tribute From the Extra Deck</h3>
+                        <p>Tribute 1 monster with a Predator Counter on either field and 1 "Predaplant" monster you control.</p>
+                        <dl class="dd-facts">
+                            <div><dt>When</dt><dd>Your own Main Phase only, like every summon by a card's own procedure.</dd></div>
+                            <div><dt>Their monster</dt><dd>Any monster with a counter, even an Xyz or Link Monster, which has no Level.</dd></div>
+                            <div><dt>Chain</dt><dd>None. It doesn't target and isn't an effect.</dd></div>
+                            <div><dt>Counts as</dt><dd>A Special Summon, not a Fusion Summon. Daredevil's effect still works.</dd></div>
+                        </dl>
+                    </article>
+                </div>
+                <p class="dd-note"><strong>Counters that don't target:</strong> Triantis (sent as material), Longinephila's
+                    GY effect, Predaplanning, Banksiogre, Squid Drosera and Starving Venom Wing Dragon's Pendulum Effect.
+                    <strong>Counters that target:</strong> Spinodionaea, Flytrap, Predaplast and Dragostapelia.
+                    Longinephila, Byblisp and Bufolicula are Level 1 "Predaplant" monsters, so any two of them cover both
+                    Fusion materials.</p>
+            </section>
+
+            <!-- Super Polymerization synergy -->
+            <section class="dd-section" id="dd-superpoly">
+                <h2 class="dd-h2">Super Polymerization Synergy</h2>
+                <p class="dd-lede">Super Polymerization uses monsters from both fields, and nobody can respond to it.
+                    Daredevil's second material only has to be <strong>a Level 1 monster</strong>, so once a Predator
+                    Counter is on it, almost any opposing monster qualifies. It's a Quick-Play Spell, which also makes it
+                    the easiest way to get Daredevil out on your opponent's turn, when its effect hits their backrow.</p>
+                <ol class="dd-recipe" id="dd-level-one">
+                    <li><strong>Make it Level 1</strong>A Predator Counter turns a Level 2 or higher monster into Level 1 for as long as the counter stays. Monsters that are Level 1 already need nothing.</li>
+                    <li><strong>Fuse it</strong>Discard 1 and fuse it with your "Predaplant". Super Polymerization doesn't target, and no one can chain to it.</li>
+                    <li><strong>Count the rest</strong>Daredevil was Special Summoned this turn, so in that Main Phase it destroys a Spell/Trap for every other monster with a counter.</li>
+                </ol>
+
+                <h3 class="dd-h2" id="dd-enablers">Which Cards Can Summon Daredevil?</h3>
+                <div class="dd-table-wrap" tabindex="0" role="region" aria-label="Cards that can and can't summon Predaplant Daredevil">
+                    <table class="dd-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Daredevil?</th>
+                                <th scope="col">Materials from</th>
+                                <th scope="col">When</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="dd-group"><th scope="rowgroup" colspan="5">Can use your opponent's monster</th></tr>
+                            <tr id="dd-enabler-superpoly">
+                                <th scope="row">Super Polymerization</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Both fields</td>
+                                <td>Either turn (Quick-Play)</td>
+                                <td>Discard 1. Your "Predaplant" plus their Level 1, or their monster with a Predator Counter.</td>
+                            </tr>
+                            <tr id="dd-enabler-chlamy">
+                                <th scope="row">Predaplant Chlamydosundew</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Itself, your hand and field, and their monsters with a Predator Counter</td>
+                                <td>Your Main Phase</td>
+                                <td>Chlamydosundew is the "Predaplant"; their monster with a counter is the Level 1.</td>
+                            </tr>
+                            <tr id="dd-enabler-fourheavenly">
+                                <th scope="row">Starving Venom Fusion Dragon, Four Heavenly Dragons</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>DARK monsters on either field, including itself</td>
+                                <td>When your opponent activates a card or effect</td>
+                                <td>It's always treated as a "Predaplant" card, so it's the "Predaplant". The Level 1 has to be DARK; its summon effect can make one DARK. TCG release 12 Nov 2026.</td>
+                            </tr>
+                            <tr class="dd-group"><th scope="rowgroup" colspan="5">Your own monsters</th></tr>
+                            <tr id="dd-enabler-balteah">
+                                <th scope="row">Predaplant Bal Teah (GY effect)</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Your hand or field</td>
+                                <td>When a monster is Special Summoned to your opponent's field</td>
+                                <td>Banish "Polymerization" and Bal Teah from your GY. Works on your opponent's turn.</td>
+                            </tr>
+                            <tr id="dd-enabler-bufo">
+                                <th scope="row">Predaplant Bufolicula (Pendulum Effect)</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Your hand or field</td>
+                                <td>Your Main Phase</td>
+                                <td>DARK Fusion Monsters only, and Daredevil is DARK.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Polymerization, Fusion Substitute, Ultra Polymerization</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Polymerization: hand or field. The other two: your field only</td>
+                                <td>Your Main Phase</td>
+                                <td>Two Level 1 "Predaplant" monsters, such as Byblisp and Longinephila, cover both materials.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Predaprime Fusion</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Either field, but it needs 2 or more DARK monsters you control</td>
+                                <td>Your Main Phase</td>
+                                <td>Daredevil has only 2 materials, so both come from your side.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Instant Fusion</th>
+                                <td><span class="dd-verdict dd-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td>&mdash;</td>
+                                <td>&mdash;</td>
+                                <td>Level 5 or lower only, and Daredevil is Level 6.</td>
+                            </tr>
+                            <tr class="dd-group"><th scope="rowgroup" colspan="5">Branded engine</th></tr>
+                            <tr id="dd-enabler-branded">
+                                <th scope="row">Lubellion the Searing Dragon</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Your field, GY and face-up banished cards, shuffled into the Deck</td>
+                                <td>When Lubellion is Fusion Summoned</td>
+                                <td>Discard 1. It summons Level 8 or lower, and Daredevil is Level 6.</td>
+                            </tr>
+                            <tr id="dd-enabler-albion">
+                                <th scope="row">Albion the Branded Dragon</th>
+                                <td><span class="dd-verdict dd-verdict--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td>Your hand, field and GY, banished</td>
+                                <td>When Albion is Fusion Summoned</td>
+                                <td>Level 8 or lower, like Lubellion.</td>
+                            </tr>
+                            <tr id="dd-enabler-banishment">
+                                <th scope="row">Branded Banishment</th>
+                                <td><span class="dd-verdict dd-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td>&mdash;</td>
+                                <td>&mdash;</td>
+                                <td>It only summons Level 8 or higher Fusion Monsters. It's a common misread for an opponent's-turn Daredevil.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Branded in Red</th>
+                                <td><span class="dd-verdict dd-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td>&mdash;</td>
+                                <td>&mdash;</td>
+                                <td>Level 8 or higher only.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Branded Fusion</th>
+                                <td><span class="dd-verdict dd-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td>&mdash;</td>
+                                <td>&mdash;</td>
+                                <td>Only Fusion Monsters that mention "Fallen of Albaz".</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Fallen of Albaz</th>
+                                <td><span class="dd-verdict dd-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td>&mdash;</td>
+                                <td>&mdash;</td>
+                                <td>Albaz has to be one of the materials, and it's neither a "Predaplant" nor Level 1.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p id="dd-next-label" class="dd-label">Where Daredevil goes next, as material</p>
+                <ul class="dd-next" aria-labelledby="dd-next-label">
+                    <li><strong>Mirrorjade the Iceblade Dragon</strong>: the "1 Fusion Monster" next to Fallen of Albaz</li>
+                    <li><strong>Predaplant Dragostapelia</strong>: it's both the Fusion Monster and a DARK monster</li>
+                    <li><strong>Starving Venom Predapower Fusion Dragon</strong>: the DARK Fusion Monster</li>
+                    <li><strong>Starving Venom Fusion Dragon</strong>: one of the 2 DARK monsters on the field</li>
+                </ul>
+            </section>
+
+            <!-- Interactive checker -->
+            <section class="dd-section" id="dd-checker">
+                <h2 class="dd-h2">Can You Summon It Right Now?</h2>
+                <p class="dd-lede">Describe the board, and the checker lists every legal way to get Daredevil out and how
+                    many Spells/Traps it can then destroy. It follows the card text above.</p>
+                <div class="dd-checker" data-dd-checker>
+                    <div class="dd-presets" role="group" aria-labelledby="dd-presets-label">
+                        <p id="dd-presets-label" class="dd-label">Try a board</p>
+                        <button type="button" class="dd-preset" data-preset="triantis" aria-pressed="false">Triantis break (line 3)</button>
+                        <button type="button" class="dd-preset" data-preset="ambush" aria-pressed="false">Opponent's turn ambush (line 4)</button>
+                        <button type="button" class="dd-preset" data-preset="branded" aria-pressed="false">Branded break (line 5)</button>
+                        <button type="button" class="dd-preset" data-preset="banishment" aria-pressed="false">Branded Banishment on their turn</button>
+                        <button type="button" class="dd-preset" data-preset="battle" aria-pressed="false">Super Poly in the Battle Phase</button>
+                    </div>
+                    <div class="dd-inputs" data-dd-controls>
+                        <p class="dd-hint">The interactive checker needs JavaScript. The two summon methods and the table above cover every case.</p>
+                    </div>
+                    <div class="dd-result" data-dd-result aria-live="polite"></div>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="dd-section" id="dd-lines">
+                <h2 class="dd-h2">Three New Lines</h2>
+                <p class="dd-lede">Each line runs step by step in the combo simulator below the tabs, next to the other
+                    Predaplant lines. The opponent's cards stay off the simulator board; the steps say what happens to
+                    them.</p>
+                <div class="dd-lines">
+                    <article class="dd-line" id="dd-line-triantis">
+                        <div class="dd-line-head">
+                            <div id="dd-line-triantis-img-container" class="dd-art">Predaplant Triantis</div>
+                            <div>
+                                <p class="dd-line-tag">Line 3 &middot; Going second &middot; 2 cards</p>
+                                <h3>Two-Card Triantis Backrow Break</h3>
+                            </div>
+                        </div>
+                        <dl>
+                            <div><dt>Hand</dt><dd>Predaplant Ophrys Scorpio + Predaplant Byblisp.</dd></div>
+                            <div><dt>Against</dt><dd>A boss that can't be targeted, a second monster and two Set cards.</dd></div>
+                            <div><dt>How</dt><dd>Bufolicula fuses Triantis and Longinephila into Ambulomelides. Triantis counters both of their monsters without targeting, and Longinephila's GY effect counters your Scorpio. Daredevil Tributes the boss, destroys both Set cards, and Drosophyllum Hydra Tributes the other monster.</dd></div>
+                            <div><dt>Ends on</dt><dd>An empty opposing field; four attackers for 5200 damage.</dd></div>
+                            <div><dt>Watch for</dt><dd>Ash Blossom on Scorpio and the three adds, and Nibiru once Daredevil, your fifth summon, lands.</dd></div>
+                        </dl>
+                        <button type="button" class="dd-play" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play line 3 in the simulator</button>
+                    </article>
+                    <article class="dd-line" id="dd-line-ambush">
+                        <div class="dd-line-head">
+                            <div id="dd-line-ambush-img-container" class="dd-art">Super Polymerization</div>
+                            <div>
+                                <p class="dd-line-tag">Line 4 &middot; Opponent's turn</p>
+                                <h3>Predaplanning Ambush With Super Polymerization</h3>
+                            </div>
+                        </div>
+                        <dl>
+                            <div><dt>Your board</dt><dd>Dragostapelia and Longinephila, with Predaplanning and Super Polymerization Set, and 1 card in hand.</dd></div>
+                            <div><dt>Against</dt><dd>A boss, a second monster and two Set cards, summoned and Set this turn.</dd></div>
+                            <div><dt>How</dt><dd>Predaplanning counters every face-up monster, so Dragostapelia negates theirs. Super Polymerization fuses their boss with Longinephila. Predaplanning's GY effect and Daredevil's Quick Effect clear the rest in one chain.</dd></div>
+                            <div><dt>Ends on</dt><dd>Their field empty during their own Main Phase.</dd></div>
+                            <div><dt>Watch for</dt><dd>Activate Super Polymerization in a Main Phase, not the Battle Phase, so Daredevil's effect is live straight away.</dd></div>
+                        </dl>
+                        <button type="button" class="dd-play" data-combo-open="4"><i class="fas fa-play" aria-hidden="true"></i> Play line 4 in the simulator</button>
+                    </article>
+                    <article class="dd-line" id="dd-line-branded">
+                        <div class="dd-line-head">
+                            <div id="dd-line-branded-img-container" class="dd-art">Lubellion the Searing Dragon</div>
+                            <div>
+                                <p class="dd-line-tag">Line 5 &middot; Going second &middot; Branded</p>
+                                <h3>Branded Lubellion Break</h3>
+                            </div>
+                        </div>
+                        <dl>
+                            <div><dt>Hand</dt><dd>Predaplant Longinephila + Branded Fusion (Limited).</dd></div>
+                            <div><dt>Against</dt><dd>A boss that can't be targeted and a second monster.</dd></div>
+                            <div><dt>How</dt><dd>Longinephila is the DARK material for Lubellion, which becomes Mirrorjade. Its GY effect counters the boss, Daredevil Tributes it, and Mirrorjade banishes the other monster.</dd></div>
+                            <div><dt>Ends on</dt><dd>Mirrorjade, Daredevil and Heliamphorhynchus attack for 6400; Albion Sets Branded Banishment in the End Phase.</dd></div>
+                            <div><dt>Watch for</dt><dd>Their Set cards stay: no counters are left for Daredevil's effect. Nibiru is live after your fifth summon.</dd></div>
+                        </dl>
+                        <button type="button" class="dd-play" data-combo-open="5"><i class="fas fa-play" aria-hidden="true"></i> Play line 5 in the simulator</button>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Branded Predaplant -->
+            <section class="dd-section" id="dd-branded">
+                <h2 class="dd-h2">Daredevil in Branded Predaplant</h2>
+                <p class="dd-lede">Branded Predaplant keeps its Branded Fusion, Mirrorjade and Branded Banishment
+                    package. Daredevil fits around it, not inside Branded Banishment.</p>
+                <div class="dd-split">
+                    <div class="dd-panel">
+                        <h3 class="dd-good-title"><i class="fas fa-check-circle" aria-hidden="true"></i> Works</h3>
+                        <ul class="dd-list dd-list--good">
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Lubellion and Albion can summon it when they're Fusion Summoned, since both reach Level 8 or lower.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>It's the Fusion Monster that Mirrorjade needs next to Fallen of Albaz, and both halves of Dragostapelia's "1 Fusion + 1 DARK".</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Branded Fusion's turn only allows Fusion Monsters from the Extra Deck, and Daredevil is one.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Longinephila can be Branded Fusion's DARK material, then place the counter from the GY (<a class="dd-link" href="#dd-line-branded">line 5</a>).</span></li>
+                        </ul>
+                    </div>
+                    <div class="dd-panel">
+                        <h3 class="dd-bad-title"><i class="fas fa-times-circle" aria-hidden="true"></i> Doesn't</h3>
+                        <ul class="dd-list dd-list--bad">
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Branded Banishment and Branded in Red only summon Level 8 or higher, so neither can make Daredevil.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Fallen of Albaz's own effect has to use Albaz, which is neither a "Predaplant" nor Level 1.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Branded Lost only protects and adds on a Fusion Summon, not on the Tribute summon.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rulings -->
+            <section class="dd-section" id="dd-rules">
+                <h2 class="dd-h2">Rulings to Know</h2>
+                <div class="dd-rules">
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Card text</span>
+                        <h3>The Tribute summon starts no chain</h3>
+                        <p>It's the card's own summoning procedure, not an effect. It can't be chained to, doesn't target,
+                            and gets around "cannot be targeted" and effect negation. Cards that negate a Summon still work.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Game rule</span>
+                        <h3>Tribute summon: your Main Phase only</h3>
+                        <p>Summons by a card's own procedure need your Main Phase. On your opponent's turn, use a Fusion
+                            route: Super Polymerization, Bal Teah or Four Heavenly Dragons.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Game rule</span>
+                        <h3>Unaffected monsters stay out of reach</h3>
+                        <p>A Predator Counter is placed by an effect, so a monster unaffected by your card effects can't
+                            get one, and Daredevil can't Tribute it. A monster that only can't be targeted can still get a counter from
+                            Triantis, Longinephila's GY effect or Predaplanning.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Card text</span>
+                        <h3>Xyz and Link Monsters</h3>
+                        <p>They can get a Predator Counter but have no Level, so they can't be the Level 1 material. They
+                            can still be Tributed for the summon.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Card text</span>
+                        <h3>What the effect counts</h3>
+                        <p>Every monster with a Predator Counter on either field when you activate it, yours included;
+                            Daredevil itself has none. "Up to" lets you target fewer. It targets, so your opponent can chain
+                            the Set cards it targets, and Spells/Traps that can't be targeted are safe.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Card text</span>
+                        <h3>When the effect works</h3>
+                        <p>In any Main Phase of the turn it was Special Summoned, yours or your opponent's. If it was
+                            summoned in the Battle Phase, it can still use the effect in Main Phase 2. It's once per turn by name, so a
+                            second Daredevil can't use it that turn.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--card">Card text</span>
+                        <h3>The Tribute summon isn't a Fusion Summon</h3>
+                        <p>Predaplanning's GY effect and Branded Lost only trigger on a Fusion Summon. A Byblisp Tributed
+                            this way is banished, and Sarraceniant doesn't add a card: a Tribute for a summon isn't a
+                            card effect.</p>
+                    </article>
+                    <article class="dd-rule">
+                        <span class="dd-src dd-src--community">Community reading</span>
+                        <h3>Are the Tributed monsters Fusion Material?</h3>
+                        <p>A Reddit rulings thread says yes, as with other Fusion Monsters that have a Tribute procedure.
+                            That would trigger Triantis and Bufolicula. There's no official TCG ruling yet, so none of the
+                            lines here rely on it.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- When it shines -->
+            <section class="dd-section" id="dd-fit">
+                <h2 class="dd-h2">When to Play It</h2>
+                <div class="dd-split">
+                    <div class="dd-panel">
+                        <h3 class="dd-good-title"><i class="fas fa-seedling" aria-hidden="true"></i> Shines</h3>
+                        <ul class="dd-list dd-list--good">
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Going second into a boss that can't be targeted: the Tribute ignores that protection.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Against decks that Set several Spells and Traps or rely on Continuous and Field Spells.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>On your opponent's turn after Predaplanning, or with Starving Venom Wing Dragon in the Pendulum Zone, which puts a counter on everything they Special Summon.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Against Level 1 monsters: Super Polymerization takes them without any setup.</span></li>
+                        </ul>
+                    </div>
+                    <div class="dd-panel">
+                        <h3 class="dd-bad-title"><i class="fas fa-skull" aria-hidden="true"></i> Dead</h3>
+                        <ul class="dd-list dd-list--bad">
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Going first: no counters and no enemy backrow. It's still a DARK Fusion Monster for Dragostapelia or Mirrorjade.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Monsters unaffected by card effects: no counter, no Tribute.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Decks with no backrow: the effect has nothing to hit, so it's a Tribute removal and a 2200 ATK attacker.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span>Nibiru: the Tribute summon still counts toward your opponent's five summons.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Deckbuilding -->
+            <section class="dd-section" id="dd-ratios">
+                <h2 class="dd-h2">Building Around It</h2>
+                <div class="dd-split">
+                    <div class="dd-panel">
+                        <h3><i class="fas fa-layer-group" aria-hidden="true"></i> Extra Deck</h3>
+                        <ul class="dd-ratio-list">
+                            <li><span class="dd-qty">1</span><div><strong>Predaplant Daredevil</strong><span>A second copy lets you Tribute twice in one turn, but only one can use the effect.</span></div></li>
+                            <li><span class="dd-qty">1&ndash;2</span><div><strong>Predaplant Ambulomelides</strong><span>The Bufolicula target in line 3; it adds Hydra.</span></div></li>
+                            <li><span class="dd-qty">1</span><div><strong>Mirrorjade, Lubellion, Albion</strong><span>Only in Branded builds (line 5).</span></div></li>
+                        </ul>
+                    </div>
+                    <div class="dd-panel">
+                        <h3><i class="fas fa-leaf" aria-hidden="true"></i> Main Deck pieces that feed it</h3>
+                        <ul class="dd-ratio-list">
+                            <li><span class="dd-qty">3</span><div><strong>Predaplant Longinephila</strong><span>Level 1 "Predaplant", adds any "Predap" card, and places a counter from the GY without targeting.</span></div></li>
+                            <li><span class="dd-qty">3</span><div><strong>Predaplant Byblisp</strong><span>Level 1 "Predaplant" that revives itself as Tribute fodder whenever a counter is on the field.</span></div></li>
+                            <li><span class="dd-qty">1&ndash;2</span><div><strong>Predaplant Triantis</strong><span>Counters on up to as many monsters as you control, by choosing.</span></div></li>
+                            <li><span class="dd-qty">1&ndash;2</span><div><strong>Predaplant Bufolicula</strong><span>A Main Phase Fusion from the Pendulum Zone.</span></div></li>
+                            <li><span class="dd-qty">1</span><div><strong>Predaplant Drosophyllum Hydra</strong><span>A second Tribute that removes another monster with a counter.</span></div></li>
+                            <li><span class="dd-qty">1&ndash;2</span><div><strong>Super Polymerization</strong><span>The opponent's-turn route; side in more when going second.</span></div></li>
+                            <li><span class="dd-qty">1</span><div><strong>Predaplanning</strong><span>A counter on every face-up monster, then a GY destruction after a DARK Fusion Summon.</span></div></li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="dd-note">These counts are Archetype Nexus's suggestion for a Daredevil build, not a tournament
+                    list. Branded Fusion and Instant Fusion are Limited in the TCG. The deck lists and deck search below
+                    the tabs are unchanged.</p>
+            </section>
+
+            <!-- Combo simulator pointer -->
+            <section class="dd-section" id="dd-lab">
+                <div class="dd-panel dd-center">
+                    <h2 class="dd-h2">Run the Lines</h2>
+                    <p class="dd-lede">The combo simulator below the tabs now has six Predaplant lines. Lines 3 to 5 are
+                        the Daredevil lines above; line 6 is the Thorns of Violet Poison OTK.</p>
+                    <button type="button" class="dd-play" data-combo-open="3"><i class="fas fa-gamepad" aria-hidden="true"></i> Open the combo simulator</button>
+                </div>
+            </section>
         </div>
 
         <!-- ========================================== -->
@@ -1567,7 +2671,7 @@
                 // Modern BLZD
                 'longinephila-img-container': 'Predaplant Longinephila',
                 'lilizard-img-container': 'Predaplant Lilizard',
-                'baalthea-img-container': 'Predaplant Baalthea',
+                'baalthea-img-container': 'Predaplant Bal Teah',
                 'sv-four-heavenly-img-container': 'Starving Venom Fusion Dragon of the Four Heavenly Dragons',
                 'sv-wing-dragon-img-container': 'Starving Venom Wing Dragon',
                 // Glorious Gallery Thorns of Violet Poison
@@ -1575,17 +2679,16 @@
                 'thorns-scorpio-img': 'Predaplant Ophrys Scorpio',
                 'thorns-cobra-img': 'Predaplant Darlingtonia Cobra',
                 'thorns-ambulo-img': 'Predaplant Ambulomelides',
+                'thorns-spell-add-img': 'Thorns of Violet Poison',
                 'thorns-longi-img': 'Predaplant Longinephila',
-                'thorns-chlamy-img': 'Predaplant Chlamydosundew',
-                'thorns-longi-img-2': 'Predaplant Longinephila',
-                'thorns-sv-four-heavenly-img': 'Starving Venom Fusion Dragon of the Four Heavenly Dragons',
-                'thorns-sv-four-heavenly-img-2': 'Starving Venom Fusion Dragon of the Four Heavenly Dragons',
+                'thorns-bufo-img': 'Predaplant Bufolicula',
+                'thorns-svfd-img': 'Starving Venom Fusion Dragon',
                 'thorns-spell-combo-img': 'Thorns of Violet Poison',
                 'thorns-spell-combo-img-2': 'Thorns of Violet Poison',
-                'thorns-dheadevil-img': 'Predaplant Dheadevil',
-                'thorns-baalthea-img': 'Predaplant Baalthea',
+                'thorns-dheadevil-img': 'Predaplant Daredevil',
+                'thorns-baalthea-img': 'Predaplant Bal Teah',
                 // Target Ecosystem
-                'eco-four-heavenly-img': 'Starving Venom Fusion Dragon of the Four Heavenly Dragons',
+                'eco-svfd-img': 'Starving Venom Fusion Dragon',
                 'eco-supreme-king-img': 'Supreme King Dragon Starving Venom',
                 'eco-sv-wing-dragon-img': 'Starving Venom Wing Dragon',
                 // Consistency Matrix
@@ -1628,6 +2731,482 @@
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
+    <!-- Daredevil tab (Beyond the Brave). Keeps the page's own switchTab() and adds:
+         lazy panel art, deep links into any tab (#daredevil, #dd-superpoly, #classic ...),
+         "Play line N" buttons for the shared combo simulator, and the "Can you summon it?"
+         checker. Everything the checker knows is in the config block at its top; the rules
+         it applies are Daredevil's printed text. -->
+    <script>
+        (function () {
+            'use strict';
+
+            var TAB = 'daredevil';
+            var TAB_NAMES = ['classic', 'modern', 'violet-poison', 'daredevil'];
+            var COMBO_SLUG = 'predaplant';        // assets/data/combos/predaplant-combos.json (lines 3-5)
+            var SPOT_ART = { 'dd-spot-img-container': 'Predaplant Daredevil' };
+            var PANEL_ART = {
+                'dd-profile-img-container': 'Predaplant Daredevil',
+                'dd-line-triantis-img-container': 'Predaplant Triantis',
+                'dd-line-ambush-img-container': 'Super Polymerization',
+                'dd-line-branded-img-container': 'Lubellion the Searing Dragon'
+            };
+            var reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
+            var panelReady = false;
+
+            function hasCardLoader() { return typeof CardLoader !== 'undefined'; }
+
+            // Art and the checker are set up once, the first time the tab opens.
+            function preparePanel() {
+                if (panelReady) return;
+                panelReady = true;
+                if (hasCardLoader()) CardLoader.loadCards(PANEL_ART);
+                initChecker();
+            }
+
+            // The tab buttons are plain toggles styled by .active; mirror that as aria-current.
+            function syncCurrent() {
+                document.querySelectorAll('.tab-nav .tab-btn').forEach(function (btn) {
+                    if (btn.classList.contains('active')) btn.setAttribute('aria-current', 'true');
+                    else btn.removeAttribute('aria-current');
+                });
+                keepActiveTabVisible();
+            }
+
+            // On phones the four-tab pill scrolls sideways; centre the active tab inside it.
+            function keepActiveTabVisible() {
+                var nav = document.querySelector('.tab-nav');
+                var active = nav && nav.querySelector('.tab-btn.active');
+                if (!active || nav.scrollWidth <= nav.clientWidth) return;
+                var navRect = nav.getBoundingClientRect();
+                var btnRect = active.getBoundingClientRect();
+                var left = nav.scrollLeft + (btnRect.left - navRect.left) - (nav.clientWidth - btnRect.width) / 2;
+                nav.scrollTo({ left: Math.max(0, left), behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+            }
+
+            function showTab(name) {
+                var panel = document.getElementById(name + '-tab');
+                if (!panel || typeof switchTab !== 'function') return;
+                if (!panel.classList.contains('active')) switchTab(name);
+                syncCurrent();
+                if (name === TAB) preparePanel();
+            }
+
+            function scrollToEl(el) {
+                if (!el) return;
+                // Let the tab finish painting before scrolling to it.
+                setTimeout(function () {
+                    el.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+                }, 60);
+            }
+
+            function flash(el) {
+                el.classList.remove('dd-flash');
+                void el.offsetWidth;
+                el.classList.add('dd-flash');
+                setTimeout(function () { el.classList.remove('dd-flash'); }, 1700);
+            }
+
+            // A tab name opens that tab; an anchor inside a hidden tab opens its tab first.
+            function reveal(id) {
+                if (!id || !/^[\w:.-]+$/.test(id)) return;
+                if (TAB_NAMES.indexOf(id) !== -1) {
+                    showTab(id);
+                    scrollToEl(document.querySelector('.tab-nav'));
+                    return;
+                }
+                var target = document.getElementById(id);
+                if (!target) return;
+                var panel = target.closest('.tab-content');
+                if (panel) showTab(panel.id.replace(/-tab$/, ''));
+                scrollToEl(target);
+                if (panel) flash(target);
+            }
+
+            function hashId() {
+                var raw = window.location.hash.slice(1);
+                try { return decodeURIComponent(raw); } catch (e) { return raw; }
+            }
+
+            window.addEventListener('hashchange', function () { reveal(hashId()); });
+
+            // A click on a link to the current hash fires no hashchange, so Daredevil links reveal directly.
+            document.addEventListener('click', function (event) {
+                var link = event.target.closest('a[href^="#"]');
+                if (!link) return;
+                var id = link.getAttribute('href').slice(1);
+                if (id !== TAB && id.indexOf('dd-') !== 0) return;
+                event.preventDefault();
+                if (window.location.hash !== '#' + id && window.history && history.pushState) {
+                    history.pushState(null, '', '#' + id);
+                }
+                reveal(id);
+            });
+
+            // "Play line N": select combo N in the shared simulator below the tabs. The simulator
+            // mounts itself asynchronously, so wait for its option to exist before clicking it.
+            function whenComboOption(num, done) {
+                var mount = document.querySelector('[data-combo-system="' + COMBO_SLUG + '"]');
+                if (!mount) return;
+                scrollToEl(mount);
+                var selector = '.combo-selector-option[data-value="' + num + '"]';
+                var option = mount.querySelector(selector);
+                if (option) { done(option, mount); return; }
+                if (!window.MutationObserver) return;
+                var timer = null;
+                var observer = new MutationObserver(function () {
+                    var found = mount.querySelector(selector);
+                    if (!found) return;
+                    observer.disconnect();
+                    clearTimeout(timer);
+                    done(found, mount);
+                });
+                observer.observe(mount, { childList: true, subtree: true });
+                timer = setTimeout(function () { observer.disconnect(); }, 10000);
+            }
+
+            document.addEventListener('click', function (event) {
+                var trigger = event.target.closest('[data-combo-open]');
+                if (!trigger) return;
+                event.preventDefault();
+                whenComboOption(trigger.getAttribute('data-combo-open'), function (option, mount) {
+                    option.click();
+                    scrollToEl(mount);
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                // The spotlight above the tabs is always visible, so its art loads with the page.
+                if (hasCardLoader()) CardLoader.loadCards(SPOT_ART);
+                document.querySelectorAll('.tab-nav .tab-btn').forEach(function (btn) {
+                    btn.addEventListener('click', syncCurrent);
+                });
+                var tabBtn = document.getElementById('btn-' + TAB);
+                if (tabBtn) tabBtn.addEventListener('click', preparePanel);
+                syncCurrent();
+                if (window.location.hash) reveal(hashId());
+            });
+
+            // ----- "Can you summon it right now?" checker -----
+            var PHASES = [
+                { value: 'mine', label: 'Your Main Phase' },
+                { value: 'opp', label: "Opponent's Main Phase" },
+                { value: 'battle', label: 'A Battle Phase' }
+            ];
+            var TARGETS = [
+                { value: 'counter', label: 'Has a Predator Counter' },
+                { value: 'level1', label: 'Is Level 1 already' },
+                { value: 'neither', label: 'Neither' }
+            ];
+            var OTHERS = [
+                { value: '0', label: '0' },
+                { value: '1', label: '1' },
+                { value: '2', label: '2' },
+                { value: '3', label: '3+' }
+            ];
+            var YES_NO = [
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' }
+            ];
+            var CARDS = [
+                { value: 'none', label: 'None' },
+                { value: 'superpoly', label: 'Super Polymerization' },
+                { value: 'chlamy', label: 'Chlamydosundew' },
+                { value: 'own', label: 'Polymerization, Bufolicula, Lubellion, Albion' },
+                { value: 'branded8', label: 'Branded Banishment or Branded in Red' },
+                { value: 'instant', label: 'Instant Fusion' }
+            ];
+            var DEFAULTS = { phase: 'mine', target: 'counter', others: '1', predaplant: 'yes', level1: 'no', card: 'none' };
+            var PRESETS = {
+                triantis: { phase: 'mine', target: 'counter', others: '2', predaplant: 'yes', level1: 'yes', card: 'none' },
+                ambush: { phase: 'opp', target: 'counter', others: '2', predaplant: 'yes', level1: 'yes', card: 'superpoly' },
+                branded: { phase: 'mine', target: 'counter', others: '0', predaplant: 'yes', level1: 'no', card: 'none' },
+                banishment: { phase: 'opp', target: 'counter', others: '1', predaplant: 'yes', level1: 'no', card: 'branded8' },
+                battle: { phase: 'battle', target: 'level1', others: '1', predaplant: 'yes', level1: 'no', card: 'superpoly' }
+            };
+
+            // "plus" means the board had 3 or more other counters, so the real number may be higher.
+            function spellTraps(count, plus) {
+                if (count <= 0) return 'nothing';
+                if (plus) return count + ' or more Spells/Traps';
+                return 'up to ' + count + (count === 1 ? ' Spell/Trap' : ' Spells/Traps');
+            }
+
+            // Every route to Daredevil the board allows, and how many monsters with a counter remain for its effect.
+            function evaluate(s) {
+                var others = Number(s.others);
+                var plus = s.others === '3';
+                var hasPredaplant = s.predaplant === 'yes';
+                var ownLevel1 = s.level1 === 'yes';
+                var yourMain = s.phase === 'mine';
+                var theirLevel1 = s.target === 'counter' || s.target === 'level1';
+                var routes = [];
+                var blocked = [];
+
+                // 1. Tribute summon: the card's own procedure.
+                if (!yourMain) {
+                    blocked.push('Tribute summon: only in your own Main Phase, like every summon by a card\'s own procedure.');
+                } else if (!hasPredaplant) {
+                    blocked.push('Tribute summon: you need a "Predaplant" monster you control to Tribute.');
+                } else if (s.target === 'counter') {
+                    routes.push({ name: 'Tribute summon', removes: true, count: others,
+                        how: 'Tribute their monster and your "Predaplant". No chain, no target.' });
+                } else if (others > 0) {
+                    routes.push({ name: 'Tribute summon', removes: false, count: others - 1,
+                        how: 'Tribute one of the other monsters with a counter and your "Predaplant". Their monster stays.' });
+                } else {
+                    blocked.push('Tribute summon: no monster on the field has a Predator Counter.');
+                }
+
+                // 2. The Fusion card or effect.
+                switch (s.card) {
+                    case 'superpoly':
+                        if (!hasPredaplant) {
+                            blocked.push('Super Polymerization: you still need a "Predaplant" as the other material.');
+                        } else if (theirLevel1) {
+                            routes.push({ name: 'Super Polymerization', removes: true, count: others,
+                                how: 'Discard 1 and fuse their Level 1 monster with your "Predaplant". Nobody can respond.' });
+                        } else if (ownLevel1) {
+                            routes.push({ name: 'Super Polymerization', removes: false, count: others,
+                                how: 'Fuse your own Level 1 with your "Predaplant". Give their monster a counter first if you want it gone instead.' });
+                        } else if (others > 0) {
+                            routes.push({ name: 'Super Polymerization', removes: false, count: others - 1,
+                                how: 'Fuse another monster with a counter (it\'s Level 1) with your "Predaplant". Their monster stays.' });
+                        } else {
+                            blocked.push('Super Polymerization: no Level 1 monster on either field. A Predator Counter turns any monster with a Level into one.');
+                        }
+                        break;
+                    case 'chlamy':
+                        if (!yourMain) {
+                            blocked.push('Chlamydosundew: its effect works in your Main Phase only.');
+                        } else if (s.target === 'counter') {
+                            routes.push({ name: 'Chlamydosundew', removes: true, count: others,
+                                how: 'Chlamydosundew is the "Predaplant"; their monster with a counter is the Level 1.' });
+                        } else if (ownLevel1) {
+                            routes.push({ name: 'Chlamydosundew', removes: false, count: others,
+                                how: 'Chlamydosundew plus a Level 1 from your hand or field. It only takes your opponent\'s monsters if they have a counter.' });
+                        } else {
+                            blocked.push('Chlamydosundew: it only takes your opponent\'s monsters that have a Predator Counter, and you have no Level 1 of your own.');
+                        }
+                        break;
+                    case 'own':
+                        if (!yourMain) {
+                            blocked.push('Polymerization, Bufolicula, Lubellion and Albion are played in your own Main Phase.');
+                        } else if (!hasPredaplant || !ownLevel1) {
+                            blocked.push('Polymerization, Bufolicula, Lubellion and Albion use only your own monsters: you need your own "Predaplant" and your own Level 1, such as Byblisp or Longinephila.');
+                        } else {
+                            routes.push({ name: 'A Polymerization-type card', removes: false, count: others,
+                                how: 'Your "Predaplant" plus your own Level 1. Their monster stays.' });
+                        }
+                        break;
+                    case 'branded8':
+                        blocked.push('Branded Banishment and Branded in Red only summon Level 8 or higher Fusion Monsters, and Daredevil is Level 6.');
+                        break;
+                    case 'instant':
+                        blocked.push('Instant Fusion only summons Level 5 or lower, and Daredevil is Level 6.');
+                        break;
+                }
+
+                var notes = [];
+                if (!routes.length) {
+                    if (s.target === 'neither') {
+                        notes.push('Their monster has no Predator Counter and isn\'t Level 1. Triantis, Longinephila\'s GY effect or Predaplanning can give it one without targeting.');
+                    }
+                    return { on: false, title: 'No way to Daredevil yet', detail: 'What stops each route:', routes: [], blocked: blocked, notes: notes };
+                }
+
+                routes.sort(function (a, b) {
+                    if (a.removes !== b.removes) return a.removes ? -1 : 1;
+                    return b.count - a.count;
+                });
+                var best = routes[0];
+                var sweep = spellTraps(best.count, plus);
+                var title;
+                if (best.removes) {
+                    title = best.count > 0 ? 'Their monster goes, and ' + sweep + ' with it' : 'Their monster goes; Daredevil has nothing to count';
+                } else {
+                    title = best.count > 0 ? 'Daredevil can destroy ' + sweep : 'Daredevil comes out, but has nothing to count';
+                }
+
+                if (s.phase === 'battle') {
+                    notes.push('Its effect only works in a Main Phase. Summoned in the Battle Phase, it can still use it in Main Phase 2 of that turn.');
+                } else if (s.phase === 'opp') {
+                    notes.push('Its effect is a Quick Effect for any Main Phase of the turn it was Special Summoned, so it works on your opponent\'s turn too.');
+                }
+                if (best.count > 0) {
+                    notes.push('The count is taken when you activate the effect, and Daredevil itself has no counter. The effect targets, so your opponent can chain the Set cards, and Spells/Traps that can\'t be targeted are safe.');
+                }
+                if (s.target === 'neither') {
+                    notes.push('Their monster isn\'t Level 1 and has no counter. Triantis, Longinephila\'s GY effect or Predaplanning can give it one without targeting.');
+                }
+
+                return {
+                    on: true,
+                    title: title,
+                    detail: 'Best route: ' + best.name + '. ' + best.how,
+                    routes: routes.slice(1),
+                    blocked: blocked,
+                    notes: notes,
+                    plus: plus
+                };
+            }
+
+            function initChecker() {
+                var root = document.querySelector('[data-dd-checker]');
+                if (!root || root.dataset.ready) return;
+                root.dataset.ready = 'true';
+                var controls = root.querySelector('[data-dd-controls]');
+                var result = root.querySelector('[data-dd-result]');
+                var presetButtons = root.querySelectorAll('[data-preset]');
+                var state = {};
+
+                function radioGroup(key, labelText, options) {
+                    var row = document.createElement('div');
+                    row.className = 'dd-row';
+                    var labelId = 'dd-chk-' + key + '-label';
+                    var name = document.createElement('span');
+                    name.className = 'dd-row-name';
+                    name.id = labelId;
+                    name.textContent = labelText;
+                    var seg = document.createElement('div');
+                    seg.className = 'dd-seg';
+                    seg.setAttribute('role', 'radiogroup');
+                    seg.setAttribute('aria-labelledby', labelId);
+                    options.forEach(function (opt) {
+                        var label = document.createElement('label');
+                        var input = document.createElement('input');
+                        input.type = 'radio';
+                        input.name = 'dd-chk-' + key;
+                        input.value = opt.value;
+                        input.dataset.key = key;
+                        var text = document.createElement('span');
+                        text.textContent = opt.label;
+                        label.append(input, text);
+                        seg.appendChild(label);
+                    });
+                    row.append(name, seg);
+                    return row;
+                }
+
+                function fieldset(legendText, rows, hint) {
+                    var set = document.createElement('fieldset');
+                    set.className = 'dd-set';
+                    var legend = document.createElement('legend');
+                    legend.textContent = legendText;
+                    set.appendChild(legend);
+                    rows.forEach(function (r) { set.appendChild(r); });
+                    if (hint) {
+                        var p = document.createElement('p');
+                        p.className = 'dd-hint';
+                        p.textContent = hint;
+                        set.appendChild(p);
+                    }
+                    return set;
+                }
+
+                function list(items) {
+                    var ul = document.createElement('ul');
+                    items.forEach(function (text) {
+                        var li = document.createElement('li');
+                        li.textContent = text;
+                        ul.appendChild(li);
+                    });
+                    return ul;
+                }
+
+                function sub(text) {
+                    var p = document.createElement('p');
+                    p.className = 'dd-result-sub';
+                    p.textContent = text;
+                    return p;
+                }
+
+                function syncInputs() {
+                    controls.querySelectorAll('input[type="radio"]').forEach(function (input) {
+                        input.checked = state[input.dataset.key] === input.value;
+                    });
+                }
+
+                function markPreset(name) {
+                    presetButtons.forEach(function (btn) {
+                        btn.setAttribute('aria-pressed', btn.dataset.preset === name ? 'true' : 'false');
+                    });
+                }
+
+                function render() {
+                    var verdict = evaluate(state);
+                    result.textContent = '';
+                    result.className = 'dd-result ' + (verdict.on ? 'dd-result--on' : 'dd-result--off');
+
+                    var title = document.createElement('h3');
+                    title.className = 'dd-result-title';
+                    var icon = document.createElement('i');
+                    icon.className = 'fas ' + (verdict.on ? 'fa-check-circle' : 'fa-times-circle');
+                    icon.setAttribute('aria-hidden', 'true');
+                    title.append(icon, document.createTextNode(' ' + verdict.title));
+                    result.appendChild(title);
+
+                    var detail = document.createElement('p');
+                    detail.textContent = verdict.detail;
+                    result.appendChild(detail);
+
+                    if (verdict.routes.length) {
+                        result.appendChild(sub('Also possible'));
+                        result.appendChild(list(verdict.routes.map(function (r) {
+                            var outcome = (r.removes ? 'removes their monster, ' : 'their monster stays, ') + spellTraps(r.count, verdict.plus) + ' for the effect';
+                            return r.name + ': ' + outcome + '.';
+                        })));
+                    }
+                    if (verdict.blocked.length) {
+                        result.appendChild(sub(verdict.on ? 'Not available here' : 'Blocked'));
+                        result.appendChild(list(verdict.blocked));
+                    }
+                    if (verdict.notes.length) {
+                        result.appendChild(sub('Keep in mind'));
+                        result.appendChild(list(verdict.notes));
+                    }
+                }
+
+                function applyState(values, presetName) {
+                    Object.keys(DEFAULTS).forEach(function (key) {
+                        state[key] = (values && values[key]) || DEFAULTS[key];
+                    });
+                    syncInputs();
+                    markPreset(presetName || null);
+                    render();
+                }
+
+                controls.textContent = '';
+                controls.append(
+                    fieldset('The board', [
+                        radioGroup('phase', 'Right now it is', PHASES),
+                        radioGroup('target', 'The monster of theirs you want gone', TARGETS),
+                        radioGroup('others', 'Other monsters with a Predator Counter', OTHERS)
+                    ], 'Count both fields, but leave out that monster and the "Predaplant" you\'d use as material.'),
+                    fieldset('Your side', [
+                        radioGroup('predaplant', 'A "Predaplant" monster you control', YES_NO),
+                        radioGroup('level1', 'A Level 1 monster of your own', YES_NO),
+                        radioGroup('card', 'Your Fusion card or effect', CARDS)
+                    ], 'Byblisp, Longinephila and Bufolicula are Level 1 "Predaplant" monsters, so one of them answers yes to both, and two of them cover both materials.')
+                );
+
+                controls.addEventListener('change', function (event) {
+                    var input = event.target;
+                    if (!input.dataset || !input.dataset.key) return;
+                    state[input.dataset.key] = input.value;
+                    markPreset(null);
+                    render();
+                });
+
+                presetButtons.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        applyState(PRESETS[btn.dataset.preset], btn.dataset.preset);
+                    });
+                });
+
+                applyState(PRESETS.triantis, 'triantis');
+            }
+        })();
+    </script>
 </body>
 
 </html>

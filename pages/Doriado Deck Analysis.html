@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Doriado: An elemental-themed archetype centered around Ritual Summoning and attribute manipulation, featuring powerful cards like Elemental Mistress Doriado that count as all four main attributes to enable devastating trap effects.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Doriado%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
     <title>Doriado Deck Guide: Master of All Elements</title>
     <script src="../assets/js/google-analytics.js"></script>
             <!-- Supabase CDN for gameplay tags (optional) -->
@@ -12,7 +13,11 @@
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -131,6 +136,705 @@
         .banner-header h1 {
              font-family: 'Cinzel', serif;
         }
+
+        /* --- Guide tabs + Elemental Saga Doriado (Beyond the Brave) panel ---
+           Scoped here rather than as Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild. */
+        :root {
+            --betb-primary: #8b5cf6;
+            --betb-primary-soft: #a78bfa;
+            --betb-primary-line: rgba(139, 92, 246, 0.45);
+            --betb-secondary: #10b981;
+            --betb-secondary-soft: #34d399;
+            --betb-surface: #1f1b29;
+            --betb-surface-deep: #16131e;
+            --betb-inset: #110f16;
+            --betb-border: #3a3446;
+            --betb-text: #d1d5db;
+            --betb-muted: #9ca3af;
+        }
+        /* Attribute palette, matching the Graveyard icons in the classic end board. */
+        .betb-attr--fire  { --attr: #f87171; --attr-bg: rgba(248, 113, 113, 0.16); }
+        .betb-attr--water { --attr: #60a5fa; --attr-bg: rgba(96, 165, 250, 0.16); }
+        .betb-attr--earth { --attr: #d6a354; --attr-bg: rgba(214, 163, 84, 0.16); }
+        .betb-attr--wind  { --attr: #4ade80; --attr-bg: rgba(74, 222, 128, 0.16); }
+        .betb-attr--light { --attr: #fde047; --attr-bg: rgba(253, 224, 71, 0.14); }
+        .betb-attr--dark  { --attr: #a1a1aa; --attr-bg: rgba(161, 161, 170, 0.16); }
+
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid var(--betb-border);
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: -2px;
+            font: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--betb-muted);
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #e5e7eb; background-color: rgba(139, 92, 246, 0.08); }
+        .tab-btn[aria-selected="true"] {
+            color: var(--betb-primary-soft);
+            border-bottom-color: var(--betb-primary);
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .betb-planner button:focus-visible,
+        .betb-planner input:focus-visible {
+            outline: 2px solid var(--betb-primary-soft);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there
+           so deep-link visitors don't see the whole guide outlined. */
+        .tab-panel:target:focus-visible { outline: none; }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--betb-secondary);
+            color: #06140f;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .betb-intro {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            line-height: 1.65;
+            color: var(--betb-text);
+            text-align: center;
+        }
+        .betb-intro strong { color: #fff; }
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-deep);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--betb-text);
+        }
+        .betb-chip i { color: var(--betb-primary-soft); }
+        .betb-chip--tcg { border-color: rgba(16, 185, 129, 0.6); }
+        .betb-chip--tcg i { color: var(--betb-secondary-soft); }
+        .betb-pillars {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--betb-primary-soft);
+            filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5));
+        }
+        .betb-callout {
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-secondary);
+            border-radius: 0.5rem;
+            background: var(--betb-surface);
+            line-height: 1.6;
+            color: var(--betb-text);
+        }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: var(--betb-secondary-soft);
+        }
+        .betb-callout strong { color: #fff; }
+
+        /* Card art slot. Reserves the card's 59:86 shape so nothing shifts when
+           CardLoader swaps the art in, then drops the empty-slot styling. */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            border: 2px solid var(--betb-border);
+            border-radius: 0.25rem;
+            background: var(--betb-inset);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            font-size: 0.6rem;
+            line-height: 1.3;
+            letter-spacing: 1px;
+            text-align: center;
+            text-transform: uppercase;
+            color: #6b6480;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        /* CardLoader's not-found fallback nests a full-size placeholder; keep it in the slot. */
+        .betb-art .card-placeholder {
+            min-height: 0;
+            height: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+            letter-spacing: inherit;
+        }
+
+        /* Card spotlight: art | name + stats on top, text full-width below on
+           phones; art spans both rows from tablet up. */
+        .betb-spotlight {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(139, 92, 246, 0.12);
+        }
+        .betb-spotlight-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-spotlight-art { grid-area: art; }
+        .betb-spotlight-head { grid-area: head; min-width: 0; }
+        .betb-spotlight-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--betb-secondary-soft);
+        }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #fff;
+            text-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+        }
+        .betb-stats {
+            display: grid;
+            gap: 0.2rem;
+            margin-top: 0.6rem;
+            font-size: 0.8rem;
+        }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; font-weight: 600; color: #e5e7eb; }
+        .betb-label {
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--betb-text);
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--betb-primary);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-opt {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #c4b5fd;
+        }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-secondary);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: rgba(16, 185, 129, 0.08);
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: #e5e7eb;
+        }
+        .betb-role strong { color: var(--betb-secondary-soft); }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-inset);
+        }
+        .betb-glance dt {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+        .betb-glance dd {
+            margin: 0.25rem 0 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--betb-primary-soft);
+        }
+        .betb-glance dd.betb-glance-open { color: #4ade80; }
+
+        /* Attribute planner */
+        .betb-planner {
+            display: grid;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .betb-planner-presets {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .betb-planner-presets .betb-label { width: 100%; margin: 0; }
+        .betb-preset,
+        .betb-filter-btn {
+            min-height: 40px;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: var(--betb-text);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .betb-preset:hover,
+        .betb-filter-btn:hover { border-color: var(--betb-primary-soft); color: #fff; }
+        .betb-preset[aria-pressed="true"],
+        .betb-filter-btn[aria-pressed="true"] {
+            border-color: var(--betb-primary);
+            background: rgba(139, 92, 246, 0.22);
+            color: #fff;
+        }
+        .betb-filter-btn { display: inline-flex; align-items: center; gap: 0.35rem; }
+        .betb-filter-btn i { color: var(--attr, var(--betb-primary-soft)); }
+        .betb-planner-inputs { display: grid; gap: 1rem; }
+        .betb-attr-set {
+            min-width: 0;
+            margin: 0;
+            padding: 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.6rem;
+            background: var(--betb-inset);
+        }
+        .betb-attr-set legend {
+            padding: 0 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+        .betb-attr-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+        .betb-attr-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.15rem;
+            min-height: 52px;
+            padding: 0.4rem 0.25rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: transparent;
+            color: var(--betb-muted);
+            font: inherit;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .betb-attr-btn i { font-size: 1rem; color: var(--attr); opacity: 0.55; }
+        .betb-attr-btn:hover { border-color: var(--attr); color: #fff; }
+        .betb-attr-btn[aria-pressed="true"] {
+            border-color: var(--attr);
+            background: var(--attr-bg);
+            color: #fff;
+            box-shadow: inset 0 0 0 1px var(--attr);
+        }
+        .betb-attr-btn[aria-pressed="true"] i { opacity: 1; }
+        .betb-attr-btn[aria-disabled="true"] { cursor: not-allowed; }
+        .betb-attr-sub {
+            font-size: 0.6rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: none;
+            color: var(--betb-muted);
+        }
+        .betb-attr-hint { margin-top: 0.6rem; font-size: 0.75rem; line-height: 1.5; color: var(--betb-muted); }
+        .betb-planner-checks { margin: 0; }
+        .betb-planner-checks > div:last-child { grid-column: 1 / -1; }
+        .betb-planner-checks dd { font-size: 0.9rem; }
+        .betb-planner-checks dd.is-live { color: #4ade80; }
+        .betb-planner-checks dd.is-off { color: #fca5a5; }
+        .betb-pull-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
+        .betb-attr-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.1rem 0.5rem;
+            border: 1px solid var(--attr);
+            border-radius: 9999px;
+            background: var(--attr-bg);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+        .betb-attr-chip i { color: var(--attr); }
+        .betb-planner-note {
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-primary);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: rgba(139, 92, 246, 0.1);
+            font-size: 0.85rem;
+            line-height: 1.55;
+            color: #e5e7eb;
+        }
+        .betb-planner-note strong { color: #c4b5fd; }
+        .betb-target-tools {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .betb-filter { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .betb-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--betb-text);
+            cursor: pointer;
+        }
+        .betb-toggle input { width: 1.1rem; height: 1.1rem; accent-color: var(--betb-primary); }
+        .betb-target-list { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+        .betb-target {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0.5rem;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--attr);
+            border-radius: 0.5rem;
+            background: var(--betb-inset);
+            transition: opacity 0.15s;
+        }
+        .betb-target[hidden] { display: none; }
+        .betb-target-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .betb-target-name { font-weight: 700; color: #fff; }
+        .betb-target-meta { font-size: 0.75rem; color: var(--betb-muted); }
+        .betb-target-note { margin-top: 0.25rem; font-size: 0.85rem; line-height: 1.5; color: var(--betb-text); }
+        .betb-target-status {
+            justify-self: start;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.65rem;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-target.is-legal .betb-target-status { border-color: rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .betb-target.is-blocked { opacity: 0.62; }
+        .betb-target.is-blocked .betb-target-status { border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.1); color: #fca5a5; }
+        .betb-target.is-never { opacity: 0.62; }
+        .betb-target.is-never .betb-target-status { border-color: var(--betb-border); background: rgba(156, 163, 175, 0.1); color: var(--betb-muted); }
+        .betb-target-empty { padding: 1rem; text-align: center; font-size: 0.85rem; color: var(--betb-muted); }
+
+        /* Combo line summaries + interactive combo lab */
+        .betb-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-top: 3px solid var(--betb-primary);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-line h3 { font-size: 1.1rem; font-weight: 700; line-height: 1.3; color: #fff; }
+        .betb-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .betb-line-facts dt {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+        .betb-line-facts dd { margin: 0.15rem 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--betb-text); }
+        .betb-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--betb-border);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--betb-muted);
+        }
+        .betb-line-rule strong { color: var(--betb-secondary-soft); }
+        .betb-lab { margin-top: 2rem; }
+        .betb-lab-mount { min-height: 12rem; }
+        .betb-lab-loading { padding: 2rem 1rem; text-align: center; font-size: 0.9rem; color: var(--betb-muted); }
+
+        /* Rules grid */
+        .betb-rules { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-rules > li {
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-primary);
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-rules h3 { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.3rem; font-weight: 700; color: #fff; }
+        .betb-rules h3 i { color: var(--betb-primary-soft); }
+        .betb-rules p { font-size: 0.875rem; line-height: 1.55; color: var(--betb-text); }
+
+        /* Doriado line cards */
+        .betb-kin { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-kin-card {
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            padding: 1rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-kin-card h3 { margin-bottom: 0.35rem; font-weight: 700; color: #fff; }
+        .betb-kin-card p { font-size: 0.85rem; line-height: 1.55; color: var(--betb-text); }
+        .betb-kin-card p + p { margin-top: 0.5rem; }
+        .betb-kin-card strong { color: #c4b5fd; }
+
+        /* Tables scroll inside their own focusable region on narrow screens
+           instead of forcing the page to scroll sideways. */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-deep);
+        }
+        .betb-table { width: 100%; min-width: 560px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(58, 52, 70, 0.8);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            background: var(--betb-surface);
+            border-bottom: 2px solid var(--betb-primary);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--betb-primary-soft);
+        }
+        .betb-table tbody th { font-weight: 700; color: #fff; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table a {
+            color: var(--betb-primary-soft);
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+        .betb-table a:hover { color: #fff; }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--play { border: 1px solid rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .betb-pill--side { border: 1px solid rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.12); color: #fbbf24; }
+        .betb-pill--try  { border: 1px solid rgba(167, 139, 250, 0.45); background: rgba(167, 139, 250, 0.14); color: #c4b5fd; }
+        .betb-pill--skip { border: 1px solid rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.12); color: #f87171; }
+        .betb-note { margin-top: 0.75rem; font-size: 0.8rem; line-height: 1.55; color: var(--betb-muted); }
+        .betb-note strong { color: var(--betb-text); }
+
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid #ef4444;
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-risks i { margin-top: 0.2rem; color: #f87171; }
+        .betb-risks h3 { margin-bottom: 0.25rem; font-weight: 700; color: #fff; }
+        .betb-risks p { font-size: 0.875rem; line-height: 1.55; color: var(--betb-text); }
+
+        @media (min-width: 640px) {
+            .betb-attr-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+            .betb-target { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+            .betb-target-status { justify-self: end; }
+        }
+        @media (min-width: 768px) {
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-spotlight { padding: 1.75rem; }
+            .betb-spotlight-layout {
+                grid-template-columns: 180px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.5rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-planner { padding: 1.75rem; }
+            .betb-planner-checks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .betb-planner-checks > div:last-child { grid-column: auto; }
+            .betb-rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .betb-kin { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .betb-kin-card { grid-template-columns: minmax(0, 1fr); }
+            .betb-kin-card .betb-art { max-width: 120px; }
+        }
+        @media (min-width: 1024px) {
+            .betb-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn,
+            .betb-preset,
+            .betb-filter-btn,
+            .betb-attr-btn,
+            .betb-target { transition: none; }
+        }
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav,
+            .betb-planner-presets,
+            .betb-target-tools { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -172,12 +876,23 @@
             </div>
         </section>
 
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Analysis panel;
+             Elemental Saga Doriado (Beyond the Brave) gets its own panel. The
+             banlist stays below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Doriado guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Elemental Saga Doriado <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
+
                 <!-- Executive Summary -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
             <div class="card p-6">
                 <h2 class="text-xl md:text-2xl font-bold text-white mb-4">Executive Summary</h2>
                 <p class="text-indigo-200">
-                    The "Doriado" series is not a conventional archetype, but a thematic lineage of monsters united by a singular concept: <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=doriado&stype=1" target="_blank" class="lore-link">mastery over the elemental Attributes</a>. This collection�a Ritual monster, a Pendulum monster, and a powerful Nomi monster�forms the basis for unique and challenging strategies. Their power is not in isolation but in their synergistic potential with each other and a vast pool of generic support that enables their demanding mechanics.
+                    The "Doriado" series is not a conventional archetype, but a thematic lineage of monsters united by a singular concept: <a href="https://www.db.yugioh-card.com/yugiohdb/card_search.action?ope=1&sess=1&keyword=doriado&stype=1" target="_blank" class="lore-link">mastery over the elemental Attributes</a>. This collection—a Ritual monster, a Pendulum monster, and a powerful Nomi monster—forms the basis for unique and challenging strategies. Their power is not in isolation but in their synergistic potential with each other and a vast pool of generic support that enables their demanding mechanics.
                 </p>
             </div>
         </section>
@@ -352,6 +1067,423 @@
             </div>
         </section>
 
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== ELEMENTAL SAGA DORIADO (BEYOND THE BRAVE) TAB ====================
+             Card text is the official printed text. Every combo step was checked against
+             the printed text of each card in it; the step-by-step lines themselves live in
+             assets/data/combos/doriado-combos.json and play in the combo simulator. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What Changed -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Beyond the Brave: Elemental Saga Doriado</h2>
+                <ul class="betb-release" role="list" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG · Beyond the Brave · <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG · <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">
+                    Beyond the Brave adds a new Doriado, and she's the first one that works outside her own theme. <strong>Elemental Saga Doriado</strong> is a Level 7 LIGHT Spellcaster with no Ritual Spell and no Summoning condition. Once the monsters in your GY cover three different Attributes, she Special Summons herself from your hand along with any monster in your GY. From the field, she then Special Summons a monster from your Deck whose Attribute you don't have yet. Neither player can respond to either effect. The Mistress and Grace strategies in the <strong>Classic Analysis</strong> tab are unchanged. This tab covers how Saga fits into them and into other multi-Attribute decks.
+                </p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></div>
+                        <h3 class="font-bold text-accent mb-2">Nothing Can Be Chained</h3>
+                        <p class="text-gray-300 text-sm">Neither player can activate cards or effects in response to either of her effects. Ash Blossom, Effect Veiler, Infinite Impermanence, Ghost Belle and Called by the Grave can't be chained to her.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-layer-group"></i></div>
+                        <h3 class="font-bold text-accent mb-2">Three Monsters from One Card</h3>
+                        <p class="text-gray-300 text-sm">From your hand, she Special Summons herself and any monster in your GY. On the field, she Special Summons one more from your Deck. None of this uses your Normal Summon.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-filter"></i></div>
+                        <h3 class="font-bold text-accent mb-2">A Tutor Keyed to Attributes</h3>
+                        <p class="text-gray-300 text-sm">The Deck summon takes any monster whose Attribute isn't on your field or in your GY, including floodgates, Tuners and engine pieces. It arrives with its effects intact.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card Spotlight -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Card Spotlight</h2>
+                <article class="betb-spotlight" aria-labelledby="betb-saga-name">
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-saga-img" class="betb-art">Elemental Saga Doriado</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">New Card · Main Deck Extender</p>
+                            <h3 id="betb-saga-name" class="betb-card-name">Elemental Saga Doriado</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Card type</dt><dd>Effect Monster</dd></div>
+                                <div><dt>Attribute</dt><dd>LIGHT</dd></div>
+                                <div><dt>Type</dt><dd>Spellcaster</dd></div>
+                                <div><dt>Level</dt><dd>7</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>2400 / 2800</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects" role="list">
+                                <li>If this card is in your hand, and you have 3 or more different Attributes among the monsters in your GY: You can target 1 monster in your GY; Special Summon both it and this card.</li>
+                                <li>If you have 3 or more different Attributes among the monsters in your GY: You can Special Summon 1 monster from your Deck with a different Attribute from the monsters in your field or GY.</li>
+                            </ol>
+                            <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only use each effect of "Elemental Saga Doriado" once per turn, also neither player can activate cards or effects in response to either of these effect activations.</p>
+                            <p class="betb-role"><strong>Extender, tutor and board-breaker.</strong> The revive can bring back any monster in your GY, including an Extra Deck monster that was properly summoned before it got there. Unlike Summon Sorceress's pull, the monster from the Deck keeps its effects. She's Level 7, so a revived or pulled Level 7 makes a Rank 7 with her, and a Level 3 Tuner makes a Level 10 Synchro. Once her effects are used, her 2800 DEF holds the field.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Condition</dt><dd>3+ GY Attributes</dd></div>
+                                <div><dt>Hand effect</dt><dd>Once per turn</dd></div>
+                                <div><dt>Deck summon</dt><dd>Once per turn</dd></div>
+                                <div><dt>Responses</dt><dd class="betb-glance-open">None allowed</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Attribute Planner (interactive) -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-planner-title">
+                <h2 id="betb-planner-title" class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Attribute Planner</h2>
+                <p class="betb-intro">Playing Doriado means counting Attributes. Mark what's in your GY and on your field when you'd use her effects. The planner checks both conditions and filters the list of common pulls down to the ones that are legal.</p>
+                <div id="doriado-planner" class="betb-planner">
+                    <div class="betb-planner-presets" role="group" aria-labelledby="betb-presets-label">
+                        <p id="betb-presets-label" class="betb-label">Load an example</p>
+                        <button type="button" class="betb-preset" data-preset="handtraps" aria-pressed="false">After 3 hand traps</button>
+                        <button type="button" class="betb-preset" data-preset="invoked" aria-pressed="false">Invoked line</button>
+                        <button type="button" class="betb-preset" data-preset="saber" aria-pressed="false">Elementsaber line</button>
+                        <button type="button" class="betb-preset" data-preset="mistress" aria-pressed="false">Mistress on the field</button>
+                        <button type="button" class="betb-preset" data-preset="clear" aria-pressed="false">Clear</button>
+                    </div>
+
+                    <div class="betb-planner-inputs">
+                        <fieldset class="betb-attr-set">
+                            <legend>Monsters in your GY</legend>
+                            <div class="betb-attr-grid" data-planner-zone="gy"></div>
+                        </fieldset>
+                        <fieldset class="betb-attr-set">
+                            <legend>Monsters on your field</legend>
+                            <div class="betb-attr-grid" data-planner-zone="field"></div>
+                            <p class="betb-attr-hint">LIGHT stays on: Doriado is on your field whenever you use her Deck summon, and she's LIGHT.</p>
+                        </fieldset>
+                    </div>
+
+                    <div>
+                        <dl class="betb-glance betb-planner-checks">
+                            <div><dt>Hand effect</dt><dd data-planner-out="hand">&nbsp;</dd></div>
+                            <div><dt>Deck summon</dt><dd data-planner-out="deck">&nbsp;</dd></div>
+                            <div><dt>Legal pulls</dt><dd data-planner-out="pulls">&nbsp;</dd></div>
+                        </dl>
+                        <p class="betb-planner-note mt-4" data-planner-out="note"></p>
+                        <p class="betb-sr-only" aria-live="polite" data-planner-out="live"></p>
+                    </div>
+
+                    <div>
+                        <div class="betb-target-tools">
+                            <div class="betb-filter" role="group" aria-label="Filter pull targets by Attribute" data-planner-filter></div>
+                            <label class="betb-toggle"><input type="checkbox" data-planner-legal-only> Legal pulls only</label>
+                        </div>
+                        <ul class="betb-target-list" role="list" data-planner-targets aria-label="Common Deck summon targets"></ul>
+                        <p class="betb-target-empty" data-planner-empty hidden>No cards match this filter.</p>
+                        <p class="betb-note"><strong>Not listed:</strong> the WIND, WATER, FIRE and EARTH Barrier Statues and Fossil Dyna Pachycephalo would be legal pulls by Attribute, but all five are Forbidden in the TCG. Barrier Statue of the Abyss is the floodgate you can still play.</p>
+                    </div>
+                    <noscript><p class="betb-target-empty">The planner needs JavaScript. The rules it checks are listed under "Rules That Decide Your Turn" below.</p></noscript>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-lines-title">
+                <h2 id="betb-lines-title" class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Combo Lines</h2>
+                <p class="betb-intro">Every line follows the same four beats: get three Attributes into the GY, revive with Doriado from your hand, pull the missing Attribute from your Deck, then convert. Each step was checked against the printed text of the cards involved. Pick a line below to play through it on the board.</p>
+                <div class="betb-lines">
+                    <article class="betb-line" aria-labelledby="betb-line-1">
+                        <p class="betb-kicker">Line 1 · Turn 2 or later</p>
+                        <h3 id="betb-line-1">Invoked Extender Loop</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Elemental Saga Doriado, Aleister the Invoker</dd></div>
+                            <div><dt>Needs</dt><dd>FIRE, LIGHT and EARTH already in your GY, such as the Ash Blossom, Effect Veiler and Ghost Belle you used on your opponent's turn</dd></div>
+                            <div><dt>End board</dt><dd>Doriado, Invoked Mechaba and Barrier Statue of the Abyss, with Aleister back in your hand</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Linking Aleister into Artemis puts DARK in the GY as a fourth Attribute, so reviving Aleister still leaves three. Invocation banishes its materials from the field, so your GY stays intact, and with Aleister banished DARK is open for the Abyss. <strong>Watch for:</strong> an opponent can chain Effect Veiler on Doriado to Invocation. If you expect it, use the Deck summon first on a monster that won't lock your Fusion.</p>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-2">
+                        <p class="betb-kicker">Line 2 · Going first</p>
+                        <h3 id="betb-line-2">Elementsaber Attribute Injection</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Palace of the Elemental Lords, Elementsaber Makani, Elementsaber Molehu, Elemental Saga Doriado</dd></div>
+                            <div><dt>Needs</dt><dd>Lapauila Mana, Malo, Nalu, Lapauila, a second Molehu and Barrier Statue of the Abyss in the Deck; Knightmare Cerberus in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Doriado, Makani, Knightmare Cerberus and Barrier Statue of the Abyss under Palace, with Molehu in hand. You skip your next Battle Phase.</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Palace pays Lapauila Mana's cost with Elementsabers from the Deck. Declaring Molehu as FIRE in the GY removes DARK from your GY, so DARK is the only Attribute left to pull: the Abyss. Makani's effect is a soft once per turn, so the revived Makani is a new card and can use it again.</p>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-3">
+                        <p class="betb-kicker">Line 3 · Going second</p>
+                        <h3 id="betb-line-3">One-Card Chaos Angel</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Elemental Saga Doriado</dd></div>
+                            <div><dt>Needs</dt><dd>Exactly FIRE, LIGHT and EARTH in your GY: Ash Blossom, Effect Veiler and Ghost Belle from your opponent's turn</dd></div>
+                            <div><dt>End board</dt><dd>Chaos Angel, unaffected by monster effects your opponent activates, and one of your opponent's cards banished</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> With exactly three Attributes, a revive leaves two, so the Deck summon is off. Chaos Angel takes a Tuner plus LIGHT or DARK non-Tuners: Ash Blossom (Level 3 Tuner) and Doriado (Level 7, LIGHT) make exactly Level 10, and Doriado's LIGHT gives it the immunity. Nothing can target Ash in the GY in response to the revive.</p>
+                    </article>
+                </div>
+                <section class="betb-lab" aria-label="Interactive combo lines">
+                    <div id="doriado-combo-lab" class="betb-lab-mount">
+                        <p class="betb-lab-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading the interactive combo lines…</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Rules -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-rules-title">
+                <h2 id="betb-rules-title" class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Rules That Decide Your Turn</h2>
+                <ul class="betb-rules" role="list">
+                    <li>
+                        <h3><i class="fas fa-dungeon" aria-hidden="true"></i> Only monsters in your GY count</h3>
+                        <p>Doriado in your hand doesn't count. Neither do Spells and Traps such as Infinite Impermanence, or anything in your opponent's GY.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-undo-alt" aria-hidden="true"></i> A revive can switch off the Deck summon</h3>
+                        <p>The monster you revive leaves the GY. If no other monster there shares its Attribute, you drop below three. Revive a monster whose Attribute another GY monster shares, or get a fourth Attribute in first.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-sun" aria-hidden="true"></i> LIGHT is never a legal pull</h3>
+                        <p>You use the Deck summon from the field, and Doriado is LIGHT. The pull checks your field and GY together, but the three-Attribute condition only checks your GY.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-link" aria-hidden="true"></i> The lock covers her activations, not your turn</h3>
+                        <p>Continuous effects already on the field still apply. With a Barrier Statue of another Attribute out, she can't be Special Summoned at all. If you activate another card between her two effects, your opponent can respond to that card, including with Effect Veiler on Doriado.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> Some monsters can't be pulled</h3>
+                        <p>Elemental Mistress Doriado is a Ritual Monster. Elemental Grace Doriado and the Elemental Lords can only be Special Summoned from the hand by their own condition. All three stay in the Deck. Everything else arrives with its effects working.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-hourglass-half" aria-hidden="true"></i> Each effect is once per turn by name</h3>
+                        <p>A second copy can't revive or pull again in the same turn. Plan which copy uses which effect.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-exchange-alt" aria-hidden="true"></i> Declared Attributes count</h3>
+                        <p>An Elementsaber declared as a new Attribute counts as that Attribute while it stays in the GY, until the end of the turn. Revive it and it has its printed Attribute again on the field.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-skull" aria-hidden="true"></i> Nibiru can't be chained to her</h3>
+                        <p>Lines 1 and 2 reach five summons with Doriado's revive or the Fusion just before it. Go straight into the Deck summon after that. Both end on Barrier Statue of the Abyss, and Nibiru is LIGHT, so it can't be Special Summoned once the Abyss is out.</p>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Summon Sorceress comparison -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Elemental Saga Doriado vs. Summon Sorceress</h2>
+                <p class="betb-intro">Players compare her to Summon Sorceress because both pull a monster from the Deck. The printed text shows how differently they do it.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-sorceress-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-sorceress-caption" class="betb-sr-only">Elemental Saga Doriado compared with Summon Sorceress</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Summon Sorceress</th>
+                                <th scope="col">Elemental Saga Doriado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Where it lives</th>
+                                <td>Extra Deck (Link-3), available every game</td>
+                                <td>Main Deck, so you have to draw or add it</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">What it needs</th>
+                                <td>2+ monsters with the same Type, except Tokens</td>
+                                <td>3+ different Attributes among the monsters in your GY</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">What it pulls</th>
+                                <td>A monster with the same Type as one it points to, in Defense Position, with its effects negated</td>
+                                <td>Any monster whose Attribute is missing from your field and GY, with its effects intact</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Responses</th>
+                                <td>Can be chained to as usual</td>
+                                <td>Neither player can respond</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>Takeaway:</strong> Summon Sorceress is always available, but everything it pulls is negated. Doriado has to be drawn or added to your hand, but her pulls keep their effects, so a floodgate works the moment it lands.</p>
+            </section>
+
+            <!-- The Doriado line -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Saga and the Rest of the Doriado Line</h2>
+                <p class="betb-intro">Saga doesn't replace the classic cards. Here is how she works with each of them.</p>
+                <div class="betb-kin">
+                    <article class="betb-kin-card">
+                        <div id="betb-kin-mistress-img" class="betb-art">Elemental Mistress Doriado</div>
+                        <div>
+                            <h3>Elemental Mistress Doriado</h3>
+                            <p>Saga can't pull her, because she's a Ritual Monster. Once she's been Ritual Summoned and sent to the GY, Saga's hand effect can revive her, which turns a Set Fuh-Rin-Ka-Zan back on.</p>
+                            <p>On the field she's also treated as WIND, WATER, FIRE and EARTH, so <strong>DARK is the only Attribute Saga can pull</strong> while Mistress is face-up. In the GY she counts only as LIGHT.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card">
+                        <div id="betb-kin-dark-img" class="betb-art">Dark Doriado</div>
+                        <div>
+                            <h3>Dark Doriado</h3>
+                            <p>A legal pull whenever DARK is missing, and the natural one next to Mistress. Its monster effect triggers on a Special Summon too: <strong>stack an EARTH, WATER, FIRE and WIND monster on top of your Deck</strong> in any order.</p>
+                            <p>In the Pendulum Zone, it gives your EARTH, WATER, FIRE and WIND monsters 200 ATK/DEF for each different Attribute among the monsters you control.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card">
+                        <div id="betb-kin-grace-img" class="betb-art">Elemental Grace Doriado</div>
+                        <div>
+                            <h3>Elemental Grace Doriado</h3>
+                            <p>Saga can't pull her either: Grace is Special Summoned only from the hand, and she's LIGHT. What Saga does is fill the GY that Grace needs.</p>
+                            <p>Grace needs <strong>6 or more monsters with different Attributes across both GYs</strong> and gains 500 ATK/DEF for each. The Elementsaber line alone leaves four in yours once the turn ends.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Ways to reach and use her -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Cards That Find Her or Use Her</h2>
+                <p class="betb-intro">She has no archetype searcher, and one card players expect to work doesn't.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-access-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-access-caption" class="betb-sr-only">Cards that add Elemental Saga Doriado to your hand or use her as material, and their limits</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">What it does with Doriado</th>
+                                <th scope="col">Catch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row"><a href="White%20Forest%20Deck%20Analysis.html">Rciela, Sinister Soul of the White Forest</a></th>
+                                <td>When it's Special Summoned, send 1 Spell or Trap from your hand or field to the GY to add a LIGHT Spellcaster from your Deck. Doriado qualifies.</td>
+                                <td>It's a Level 6 Synchro Tuner, and you need a Spell or Trap to send.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Chaos Space</th>
+                                <td><span class="betb-pill betb-pill--skip"><i class="fas fa-times" aria-hidden="true"></i> Doesn't work</span></td>
+                                <td>It only adds monsters that can't be Normal Summoned, and Doriado can be Tribute Summoned.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sinful Spoils of Doom - Rciela</th>
+                                <td>Target Doriado, a Level 7 Spellcaster. Your opponent's monsters lose 2400 ATK, and any that drop to 0 are destroyed.</td>
+                                <td>Doriado is sent to the GY during the Standby Phase of the next turn.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Number 11: Big Eye, Mecha Phantom Beast Dracossack</th>
+                                <td>Both need 2 Level 7 monsters: Doriado plus a Level 7 she revives or pulls.</td>
+                                <td>This uses Doriado as material, so pull from the Deck first.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="Chaos%20Deck%20Analysis.html">Chaos Angel</a></th>
+                                <td>1 Tuner + 1+ LIGHT or DARK non-Tuners. Doriado plus a Level 3 Tuner such as Ash Blossom, Ghost Belle or Ghost Mourner makes Level 10. When it's Special Summoned, it banishes 1 card on the field, and Doriado's LIGHT makes your Synchro Monsters unaffected by monster effects your opponent activates.</td>
+                                <td>Same as above: pull first, then Synchro Summon.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Where she fits -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Where She Fits</h2>
+                <p class="betb-intro">She's worth playing wherever three Attributes reach the GY without extra effort.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-fit-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-fit-caption" class="betb-sr-only">Recommended copies of Elemental Saga Doriado by deck, with reasons</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Deck</th>
+                                <th scope="col">Verdict</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Elementsaber</th>
+                                <td><span class="betb-pill betb-pill--play"><i class="fas fa-check" aria-hidden="true"></i> Play 2</span></td>
+                                <td>Every Elementsaber search and negation sends an Elementsaber to the GY, and each one can declare a new Attribute there. Palace can pay costs from the Deck. See Line 2.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="Invoked%20Deck%20Analysis.html">Invoked</a></th>
+                                <td><span class="betb-pill betb-pill--play"><i class="fas fa-check" aria-hidden="true"></i> Play 1</span></td>
+                                <td>Linking Aleister into Artemis puts DARK in the GY. Invocation can banish material from your field or either player's GY, so it doesn't have to use up your Attributes. See Line 1.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Hand-trap-heavy decks</th>
+                                <td><span class="betb-pill betb-pill--side"><i class="fas fa-exchange-alt" aria-hidden="true"></i> Side 1–2</span></td>
+                                <td>Going second, the hand traps you used last turn often cover three Attributes. Revive a Level 3 Tuner and Synchro Summon Chaos Angel. See Line 3.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="Charmer%20Deck%20Analysis.html">Charmer</a></th>
+                                <td><span class="betb-pill betb-pill--try"><i class="fas fa-flask" aria-hidden="true"></i> Try 1</span></td>
+                                <td>Link-2 Charmers such as Aussa the Earth Charmer, Immovable Special Summon a monster of their Attribute from your opponent's GY, and their Link materials fill yours with mixed Attributes.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="White%20Forest%20Deck%20Analysis.html">White Forest</a></th>
+                                <td><span class="betb-pill betb-pill--try"><i class="fas fa-flask" aria-hidden="true"></i> Situational</span></td>
+                                <td>Rciela adds her directly, but the deck mostly sends LIGHT and DARK monsters to the GY, so the three-Attribute condition is hard to meet.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Mono-Attribute decks</th>
+                                <td><span class="betb-pill betb-pill--skip"><i class="fas fa-times" aria-hidden="true"></i> Skip</span></td>
+                                <td>Without other Attributes splashed in, three different Attributes won't reach the GY.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Weak points -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Weak Points to Play Around</h2>
+                <ul class="betb-risks" role="list">
+                    <li>
+                        <i class="fas fa-hourglass-start" aria-hidden="true"></i>
+                        <div>
+                            <h3>Going first</h3>
+                            <p>Your hand traps don't reach the GY before your first turn. Unless your deck sends several Attributes to the GY as part of its combo, she's a dead card in your opening hand.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ghost" aria-hidden="true"></i>
+                        <div>
+                            <h3>GY removal before you start</h3>
+                            <p>The lock only starts when she activates. D.D. Crow, Called by the Grave or a Bystial used earlier can drop you below three Attributes. Dimension Shifter and Macro Cosmos stop cards from reaching the GY at all.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ban" aria-hidden="true"></i>
+                        <div>
+                            <h3>Floodgates and continuous negation</h3>
+                            <p>Anything already on the field still applies. A Barrier Statue of another Attribute stops her Special Summon, and Skill Drain negates her Deck summon on the field.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-exchange-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>The gap between her two effects</h3>
+                            <p>If you activate anything else between the revive and the Deck summon, your opponent can respond to it, including with Effect Veiler or Infinite Impermanence on Doriado. When you can, use the Deck summon straight after the revive.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="betb-callout mt-6">
+                    <h3 class="betb-callout-title"><i class="fas fa-gavel" aria-hidden="true"></i> Verdict</h3>
+                    <p>Elemental Saga Doriado is the most flexible Doriado yet. In any deck that gets three Attributes into its GY, she's a +2 that nobody can respond to, and her Deck summon can end your turn on a floodgate. She doesn't fix Mistress Control's reliance on Ritual pieces or Grace's six-Attribute requirement, but she fills the GY that Grace needs. Play two in Elementsaber and one in Invoked, side her in hand-trap-heavy decks for going second, and leave her out of mono-Attribute decks.</p>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
+
         <!-- TCG Banlist Status Section (Dynamic) -->
         <section class="my-10 md:my-16">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Live TCG Banlist Status</h2>
@@ -371,6 +1503,7 @@
                 'Elemental Mistress Doriado',
                 'Dark Doriado',
                 'Elemental Grace Doriado',
+                'Elemental Saga Doriado',
                 "Doriado's Blessing",
                 'Fuh-Rin-Ka-Zan'
             ], {
@@ -490,6 +1623,308 @@
                 initPageSections('Doriado');
             });
         </script>
+
+    <!-- Elemental Saga Doriado: Attribute planner -->
+    <script>
+        (function () {
+            'use strict';
+
+            const root = document.getElementById('doriado-planner');
+            if (!root) return;
+
+            const ATTRS = [
+                { key: 'FIRE', icon: 'fa-fire' },
+                { key: 'WATER', icon: 'fa-water' },
+                { key: 'EARTH', icon: 'fa-mountain' },
+                { key: 'WIND', icon: 'fa-wind' },
+                { key: 'LIGHT', icon: 'fa-sun' },
+                { key: 'DARK', icon: 'fa-moon' }
+            ];
+            const ICON = {};
+            ATTRS.forEach(a => { ICON[a.key] = a.icon; });
+            const attrClass = key => 'betb-attr--' + key.toLowerCase();
+
+            // Common Deck summon targets. `never` marks monsters that can't be
+            // Special Summoned from the Deck no matter which Attributes are missing.
+            const TARGETS = [
+                { name: 'Barrier Statue of the Abyss', attr: 'DARK', meta: 'Level 4', note: 'Only DARK monsters can be Special Summoned, yours included. Pull it last.' },
+                { name: 'Dark Doriado', attr: 'DARK', meta: 'Level 4 Pendulum', note: 'When it is Special Summoned, stack an EARTH, WATER, FIRE and WIND monster on top of your Deck in any order.' },
+                { name: 'Ghost Mourner & Moonlit Chill', attr: 'WIND', meta: 'Level 3 Tuner', note: 'With Doriado, makes a Level 10 Synchro such as Chaos Angel.' },
+                { name: 'Ash Blossom & Joyous Spring', attr: 'FIRE', meta: 'Level 3 Tuner', note: 'With Doriado, makes a Level 10 Synchro such as Chaos Angel.' },
+                { name: 'Ghost Belle & Haunted Mansion', attr: 'EARTH', meta: 'Level 3 Tuner', note: 'With Doriado, makes a Level 10 Synchro such as Chaos Angel.' },
+                { name: 'Aleister the Invoker', attr: 'DARK', meta: 'Level 4', note: 'Material for Invocation. Its Invocation search only triggers on a Normal Summon or flip, not a Special Summon.' },
+                { name: 'Elementsaber Makani', attr: 'WIND', meta: 'Level 2', note: 'Send an Elementsaber from your hand to add an Elementsaber or Elemental Lord from your Deck to your hand.' },
+                { name: 'Elementsaber Malo', attr: 'FIRE', meta: 'Level 3', note: 'Send an Elementsaber from your hand to send an Elementsaber or Elemental Lord from your Deck to the GY.' },
+                { name: 'Elementsaber Nalu', attr: 'WATER', meta: 'Level 3', note: 'Send an Elementsaber from your hand to add an Elementsaber or Elemental Lord from your GY to your hand.' },
+                { name: 'Elementsaber Aina', attr: 'EARTH', meta: 'Level 2', note: 'Send an Elementsaber from your hand to revive another Elementsaber from your GY.' },
+                { name: 'Windrose the Elemental Lord', attr: 'WIND', meta: 'Level 8', never: true, note: 'Can only be Special Summoned from the hand, by having exactly 5 WIND monsters in your GY.' },
+                { name: 'Elemental Mistress Doriado', attr: 'LIGHT', meta: 'Level 3 Ritual', never: true, note: "A Ritual Monster: it can't be Special Summoned from the Deck. LIGHT is never open anyway." },
+                { name: 'Elemental Grace Doriado', attr: 'LIGHT', meta: 'Level 9', never: true, note: 'Must be Special Summoned from the hand by its own condition, and it is LIGHT.' }
+            ];
+
+            // Field presets leave out LIGHT: Doriado herself is always on the field for the Deck summon.
+            // `atPull` presets show the board after the revive, so revive advice doesn't apply.
+            const PRESETS = {
+                handtraps: {
+                    gy: ['FIRE', 'LIGHT', 'EARTH'],
+                    field: [],
+                    note: "Ash Blossom, Effect Veiler and Ghost Belle, used on your opponent's turn."
+                },
+                invoked: {
+                    gy: ['FIRE', 'LIGHT', 'EARTH'],
+                    field: [],
+                    atPull: true,
+                    note: 'Line 1 just before the pull: Doriado and Invoked Mechaba (both LIGHT) on the field, with the three hand traps still in the GY and Aleister banished. DARK is open for Barrier Statue of the Abyss.'
+                },
+                saber: {
+                    gy: ['FIRE', 'WATER', 'LIGHT'],
+                    field: ['WIND', 'EARTH'],
+                    atPull: true,
+                    note: 'Line 2 just before the pull: Makani (WIND), Knightmare Cerberus (EARTH) and Doriado on the field, and Molehu declared as FIRE in the GY. DARK is the only pull, so Barrier Statue of the Abyss.'
+                },
+                mistress: {
+                    gy: ['FIRE', 'WATER', 'EARTH'],
+                    field: ['WIND', 'WATER', 'FIRE', 'EARTH'],
+                    atPull: true,
+                    note: 'Elemental Mistress Doriado face-up is also treated as WIND, WATER, FIRE and EARTH, so with any three Attributes in the GY, DARK is the only pull. Dark Doriado fits.'
+                },
+                clear: { gy: [], field: [] }
+            };
+
+            const state = { gy: new Set(), field: new Set(), filter: 'ALL', legalOnly: false, preset: null };
+            const out = name => root.querySelector('[data-planner-out="' + name + '"]');
+            const listEl = root.querySelector('[data-planner-targets]');
+            const emptyEl = root.querySelector('[data-planner-empty]');
+            const legalOnlyInput = root.querySelector('[data-planner-legal-only]');
+            const filterEl = root.querySelector('[data-planner-filter]');
+
+            // --- Build the controls ---
+            ['gy', 'field'].forEach(zone => {
+                const grid = root.querySelector('[data-planner-zone="' + zone + '"]');
+                ATTRS.forEach(({ key, icon }) => {
+                    const locked = zone === 'field' && key === 'LIGHT';
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'betb-attr-btn ' + attrClass(key);
+                    btn.dataset.zone = zone;
+                    btn.dataset.attr = key;
+                    btn.setAttribute('aria-pressed', String(locked));
+                    btn.innerHTML = '<i class="fas ' + icon + '" aria-hidden="true"></i><span>' + key + '</span>' +
+                        (locked ? '<span class="betb-attr-sub">Doriado</span>' : '');
+                    if (locked) {
+                        btn.setAttribute('aria-disabled', 'true');
+                        btn.setAttribute('aria-label', 'LIGHT on your field: always on, because Doriado is LIGHT');
+                    } else {
+                        btn.setAttribute('aria-label', key + (zone === 'gy' ? ' in your GY' : ' on your field'));
+                    }
+                    grid.appendChild(btn);
+                });
+            });
+
+            [{ key: 'ALL', icon: 'fa-th-large', label: 'All' }].concat(ATTRS.map(a => ({ key: a.key, icon: a.icon, label: a.key })))
+                .forEach(({ key, icon, label }) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'betb-filter-btn' + (key === 'ALL' ? '' : ' ' + attrClass(key));
+                    btn.dataset.filter = key;
+                    btn.setAttribute('aria-pressed', String(key === 'ALL'));
+                    btn.innerHTML = '<i class="fas ' + icon + '" aria-hidden="true"></i> ' + label;
+                    filterEl.appendChild(btn);
+                });
+
+            const items = TARGETS.map(t => {
+                const li = document.createElement('li');
+                li.className = 'betb-target ' + attrClass(t.attr);
+                li.innerHTML =
+                    '<div>' +
+                        '<div class="betb-target-head">' +
+                            '<span class="betb-attr-chip ' + attrClass(t.attr) + '"><i class="fas ' + ICON[t.attr] + '" aria-hidden="true"></i>' + t.attr + '</span>' +
+                            '<span class="betb-target-name"></span>' +
+                            '<span class="betb-target-meta"></span>' +
+                        '</div>' +
+                        '<p class="betb-target-note"></p>' +
+                    '</div>' +
+                    '<span class="betb-target-status"></span>';
+                li.querySelector('.betb-target-name').textContent = t.name;
+                li.querySelector('.betb-target-meta').textContent = t.meta;
+                li.querySelector('.betb-target-note').textContent = t.note;
+                listEl.appendChild(li);
+                return { t: t, li: li, status: li.querySelector('.betb-target-status') };
+            });
+
+            // --- Rules ---
+            function evaluate() {
+                const gyCount = state.gy.size;
+                const live = gyCount >= 3;
+                const present = new Set(Array.from(state.gy).concat(Array.from(state.field), ['LIGHT']));
+                const pulls = live ? ATTRS.map(a => a.key).filter(k => !present.has(k)) : [];
+                return { gyCount: gyCount, live: live, present: present, pulls: pulls };
+            }
+
+            function targetStatus(t, ev) {
+                if (t.never) return { cls: 'is-never', icon: 'fa-ban', text: "Can't be pulled" };
+                if (!ev.live) return { cls: 'is-blocked', icon: 'fa-lock', text: 'Deck summon off' };
+                if (ev.present.has(t.attr)) return { cls: 'is-blocked', icon: 'fa-times', text: t.attr + ' already there' };
+                return { cls: 'is-legal', icon: 'fa-check', text: 'Legal pull' };
+            }
+
+            function countNote(ev) {
+                const n = ev.gyCount;
+                if (n < 3) {
+                    return 'Doriado stays in your hand: your GY shows ' + n + ' of the 3 Attributes she needs.';
+                }
+                if (n === 3) {
+                    return 'Exactly three. A revive takes a monster out of the GY, so unless another GY monster shares its Attribute, the Deck summon switches off. Revive a duplicate, add a fourth Attribute first, or spend Doriado on a Synchro or Xyz Summon.';
+                }
+                return 'Room to spare: you can revive one monster and still have three Attributes for the Deck summon.';
+            }
+
+            function setCheck(el, text, isLive) {
+                el.textContent = text;
+                el.classList.toggle('is-live', isLive);
+                el.classList.toggle('is-off', !isLive);
+            }
+
+            // --- Render ---
+            function render(announce) {
+                const ev = evaluate();
+                const missing = Math.max(0, 3 - ev.gyCount);
+
+                root.querySelectorAll('.betb-attr-btn').forEach(btn => {
+                    if (btn.getAttribute('aria-disabled') === 'true') return;
+                    btn.setAttribute('aria-pressed', String(state[btn.dataset.zone].has(btn.dataset.attr)));
+                });
+                root.querySelectorAll('.betb-preset').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(btn.dataset.preset === state.preset));
+                });
+                filterEl.querySelectorAll('.betb-filter-btn').forEach(btn => {
+                    btn.setAttribute('aria-pressed', String(btn.dataset.filter === state.filter));
+                });
+
+                setCheck(out('hand'), ev.live ? 'Live' : 'Needs ' + missing + ' more', ev.live);
+                if (!ev.live) {
+                    setCheck(out('deck'), 'Needs ' + missing + ' more', false);
+                } else {
+                    setCheck(out('deck'), ev.pulls.length ? 'Live' : 'Nothing left to pull', ev.pulls.length > 0);
+                }
+
+                const pullsEl = out('pulls');
+                pullsEl.textContent = '';
+                if (ev.pulls.length) {
+                    const wrap = document.createElement('span');
+                    wrap.className = 'betb-pull-chips';
+                    ev.pulls.forEach(key => {
+                        const chip = document.createElement('span');
+                        chip.className = 'betb-attr-chip ' + attrClass(key);
+                        chip.innerHTML = '<i class="fas ' + ICON[key] + '" aria-hidden="true"></i>' + key;
+                        wrap.appendChild(chip);
+                    });
+                    pullsEl.appendChild(wrap);
+                    pullsEl.classList.remove('is-off');
+                } else {
+                    pullsEl.textContent = 'None';
+                    pullsEl.classList.add('is-off');
+                }
+
+                const preset = state.preset && PRESETS[state.preset];
+                out('note').textContent = preset && preset.atPull
+                    ? preset.note
+                    : (preset && preset.note ? preset.note + ' ' : '') + countNote(ev);
+
+                let shown = 0;
+                items.forEach(({ t, li, status }) => {
+                    const s = targetStatus(t, ev);
+                    li.classList.remove('is-legal', 'is-blocked', 'is-never');
+                    li.classList.add(s.cls);
+                    status.innerHTML = '<i class="fas ' + s.icon + '" aria-hidden="true"></i> ' + s.text;
+                    const visible = (state.filter === 'ALL' || t.attr === state.filter) &&
+                        (!state.legalOnly || s.cls === 'is-legal');
+                    li.hidden = !visible;
+                    if (visible) shown++;
+                });
+                emptyEl.hidden = shown > 0;
+
+                if (announce) {
+                    out('live').textContent =
+                        'Hand effect ' + (ev.live ? 'live' : 'off') + '. ' +
+                        'Deck summon ' + (ev.live && ev.pulls.length ? 'live' : 'off') + '. ' +
+                        'Legal pulls: ' + (ev.pulls.length ? ev.pulls.join(', ') : 'none') + '.';
+                }
+            }
+
+            function applyPreset(name) {
+                const p = PRESETS[name];
+                if (!p) return;
+                state.gy = new Set(p.gy);
+                state.field = new Set(p.field);
+                state.preset = name === 'clear' ? null : name;
+            }
+
+            // --- Events ---
+            root.addEventListener('click', e => {
+                const attrBtn = e.target.closest('.betb-attr-btn');
+                if (attrBtn) {
+                    if (attrBtn.getAttribute('aria-disabled') === 'true') return;
+                    const set = state[attrBtn.dataset.zone];
+                    const key = attrBtn.dataset.attr;
+                    if (set.has(key)) set.delete(key); else set.add(key);
+                    state.preset = null;
+                    render(true);
+                    return;
+                }
+                const presetBtn = e.target.closest('.betb-preset');
+                if (presetBtn) {
+                    applyPreset(presetBtn.dataset.preset);
+                    render(true);
+                    return;
+                }
+                const filterBtn = e.target.closest('.betb-filter-btn');
+                if (filterBtn) {
+                    state.filter = filterBtn.dataset.filter;
+                    render(false);
+                }
+            });
+
+            legalOnlyInput.addEventListener('change', () => {
+                state.legalOnly = legalOnlyInput.checked;
+                render(false);
+            });
+
+            applyPreset('handtraps');
+            render(false);
+        })();
+    </script>
+
+    <!-- Guide tabs: the Elemental Saga art and the combo simulator only load the
+         first time that tab opens. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-betb': [
+                    { 'betb-saga-img': 'Elemental Saga Doriado' },
+                    {
+                        'betb-kin-mistress-img': 'Elemental Mistress Doriado',
+                        'betb-kin-dark-img': 'Dark Doriado',
+                        'betb-kin-grace-img': 'Elemental Grace Doriado'
+                    }
+                ]
+            },
+            panelInit: {
+                'tab-betb': function () {
+                    const mount = document.getElementById('doriado-combo-lab');
+                    if (!mount) return;
+                    // combo-system.js declares ComboLoader as a top-level class, which
+                    // is a global binding but not a property of window.
+                    if (typeof ComboLoader === 'undefined') {
+                        mount.innerHTML = '<p class="betb-lab-loading">The interactive combo lines could not load. The line summaries above still list every hand, requirement and end board.</p>';
+                        return;
+                    }
+                    ComboLoader.renderComboSystem('doriado-combo-lab', 'doriado');
+                }
+            }
+        });
+    </script>
+
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Number: An Xyz archetype featuring powerful Number monsters summoned through Rank-Up Magic and overlay units.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Number%20Deck%20Analysis.html">
+    <!-- Every step in assets/data/combos/number-combos.json was checked against official card text. -->
+    <meta name="combos-verified" content="true">
     <title>Number Deck Guide: Legendary Xyz Fragments</title>
     <script src="../assets/js/google-analytics.js"></script>
             <!-- Supabase CDN for gameplay tags (optional) -->
@@ -13,8 +15,15 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/text-utils.js"></script>
+    <script src="../assets/js/deck-dock.js" defer></script>
+    <script src="../assets/js/synergy-tags.js"></script>
+    <script src="../assets/js/page-sections.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
@@ -1121,6 +1130,461 @@
             color: #c7d2fe;
         }
     </style>
+    <style>
+        /* ===== Beyond the Brave tab: Number 104: Masquerade V =====
+           xyzp-*  Xyz profile card with Rank-Up route links. To profile another
+                   Number, copy one <article class="card xyzp"> block and swap the
+                   node/route modifiers (--chaos, --cxyz, --spell, --entry).
+           mvs-*   Spotlight strip above the tabs.
+           Colours come from the --xyzp-* tokens below. */
+        :root {
+            --xyzp-accent: #00f6ff;
+            --xyzp-gold: #ffd700;
+            --xyzp-chaos: #fb7185;
+            --xyzp-cxyz: #c084fc;
+            --xyzp-spell: #34d399;
+            --xyzp-text: #c7d2fe;
+            --xyzp-muted: #8f9bd0;
+            --xyzp-surface: rgba(16, 15, 48, 0.6);
+            --xyzp-surface-deep: rgba(10, 9, 32, 0.7);
+            --xyzp-line: rgba(99, 102, 241, 0.35);
+            --xyzp-line-strong: rgba(99, 102, 241, 0.6);
+        }
+
+        /* page-sections.js wraps a card's body in .cms-section; keep it in the body slot. */
+        .nc-card > .cms-section { grid-area: body; }
+
+        /* --- Spotlight strip --- */
+        .mvs {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 auto 2rem;
+            padding: 0.9rem 1.1rem;
+            border-radius: 1rem;
+            background: linear-gradient(120deg, rgba(0, 246, 255, 0.1), rgba(251, 113, 133, 0.08) 60%, rgba(26, 26, 61, 0.7));
+            border: 1px solid rgba(0, 246, 255, 0.35);
+        }
+
+        .mvs-art {
+            width: 64px;
+            height: 64px;
+            border-radius: 0.6rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a3d;
+            border: 1px solid var(--xyzp-line-strong);
+            color: var(--xyzp-accent);
+            font-size: 1.4rem;
+        }
+
+        .mvs-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .mvs-kicker {
+            margin: 0 0 0.2rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--xyzp-muted);
+        }
+
+        .mvs-kicker .tab-new-badge { margin: 0 0.35rem 0 0; }
+
+        .mvs-title {
+            margin: 0 0 0.25rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.05rem;
+            color: #fff;
+        }
+
+        .mvs-hook {
+            margin: 0;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: var(--xyzp-text);
+        }
+
+        .mvs-cta,
+        .xyzp-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 2.25rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            border: 1px solid var(--xyzp-accent);
+            background: var(--xyzp-accent);
+            color: #0a0920;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+
+        .mvs-cta:hover,
+        .xyzp-link:hover {
+            background: #fff;
+            border-color: #fff;
+        }
+
+        .xyzp-link--out {
+            background: transparent;
+            color: var(--xyzp-accent);
+        }
+
+        .xyzp-link--out:hover {
+            background: rgba(0, 246, 255, 0.12);
+            border-color: var(--xyzp-accent);
+            color: #fff;
+        }
+
+        .mvs-cta:focus-visible,
+        .xyzp-link:focus-visible,
+        .xyzp-ref:focus-visible,
+        .xyzp-text > summary:focus-visible {
+            outline: 2px solid var(--xyzp-gold);
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 640px) {
+            .mvs { grid-template-columns: auto 1fr; }
+            .mvs-cta { grid-column: 1 / -1; }
+        }
+
+        /* --- Xyz profile card --- */
+        .xyzp { padding: 1.5rem; }
+
+        .xyzp-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .xyzp-kicker {
+            margin: 0 0 0.3rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--xyzp-accent);
+        }
+
+        .xyzp-name {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.1rem, 2.6vw, 1.5rem);
+            line-height: 1.25;
+            color: #fff;
+        }
+
+        .xyzp-rank {
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            border-radius: 0.6rem;
+            background: #0a0920;
+            border: 1px solid var(--xyzp-gold);
+            color: var(--xyzp-gold);
+        }
+
+        .xyzp-rank-num {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .xyzp-rank-label {
+            font-size: 0.55rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .xyzp-grid {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+
+        .xyzp-art .card-image-container { max-width: none; }
+
+        .xyzp-stats {
+            list-style: none;
+            padding: 0;
+        }
+
+        .xyzp-text { margin-top: 0.9rem; }
+
+        .xyzp-text > summary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 2rem;
+            cursor: pointer;
+            list-style: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--xyzp-accent);
+        }
+
+        .xyzp-text > summary::-webkit-details-marker { display: none; }
+        .xyzp-text > summary i { transition: transform 0.2s; }
+        .xyzp-text[open] > summary i { transform: rotate(90deg); }
+        .xyzp-text .nc-cardtext { margin-top: 0.5rem; }
+        .xyzp-text .nc-cardtext p { margin: 0 0 0.5rem; }
+        .xyzp-text .nc-cardtext p:last-child { margin-bottom: 0; }
+
+        .xyzp-ref {
+            padding: 0;
+            border: 0;
+            border-bottom: 1px dotted currentColor;
+            background: none;
+            font: inherit;
+            font-weight: 600;
+            color: var(--xyzp-accent);
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .xyzp-ref:hover { color: #fff; }
+
+        /* Rank-Up routes */
+        .xyzp-routes {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--xyzp-line);
+        }
+
+        .xyzp-h4 {
+            margin: 0 0 0.35rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            color: #fff;
+        }
+
+        .xyzp-sub {
+            margin: 0 0 1rem;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            color: var(--xyzp-text);
+        }
+
+        .xyzp-track {
+            list-style: none;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .xyzp-node {
+            --node: var(--xyzp-accent);
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            min-width: 0;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid var(--node);
+            border-radius: 0.7rem;
+            background: var(--xyzp-surface-deep);
+        }
+
+        .xyzp-node--chaos { --node: var(--xyzp-chaos); }
+        .xyzp-node--cxyz { --node: var(--xyzp-cxyz); }
+
+        .xyzp-node-rank {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--node);
+        }
+
+        .xyzp-node-name {
+            font-size: 0.86rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #fff;
+        }
+
+        .xyzp-node-note {
+            font-size: 0.74rem;
+            line-height: 1.35;
+            color: var(--xyzp-muted);
+        }
+
+        .xyzp-edge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            max-width: 7.5rem;
+            font-size: 0.68rem;
+            line-height: 1.3;
+            text-align: center;
+            color: var(--xyzp-muted);
+        }
+
+        .xyzp-edge i { color: var(--xyzp-gold); }
+
+        .xyzp-route-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: 0.75rem;
+        }
+
+        .xyzp-route {
+            --route: var(--xyzp-accent);
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+            padding: 0.85rem 0.95rem;
+            border: 1px solid var(--xyzp-line);
+            border-left: 3px solid var(--route);
+            border-radius: 0.7rem;
+            background: var(--xyzp-surface);
+        }
+
+        .xyzp-route--spell { --route: var(--xyzp-spell); }
+        .xyzp-route--cxyz { --route: var(--xyzp-cxyz); }
+        .xyzp-route--entry { --route: var(--xyzp-gold); }
+
+        .xyzp-route-path {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.35rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.58rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--xyzp-muted);
+        }
+
+        .xyzp-pill {
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.3rem;
+            border: 1px solid var(--xyzp-line-strong);
+            background: #14133a;
+            color: #7dd3fc;
+        }
+
+        .xyzp-pill--c {
+            border-color: rgba(251, 113, 133, 0.5);
+            color: var(--xyzp-chaos);
+        }
+
+        .xyzp-pill--x {
+            border-color: rgba(192, 132, 252, 0.5);
+            color: var(--xyzp-cxyz);
+        }
+
+        .xyzp-route h5 {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.4rem;
+            margin: 0;
+            font-size: 0.92rem;
+            color: #fff;
+        }
+
+        .xyzp-tag {
+            padding: 0.1rem 0.45rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(255, 215, 0, 0.45);
+            background: rgba(255, 215, 0, 0.12);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.56rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #ffe680;
+        }
+
+        .xyzp-route p {
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: var(--xyzp-text);
+        }
+
+        .xyzp-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: auto;
+            padding-top: 0.25rem;
+        }
+
+        /* Combo simulator mount; the placeholder is replaced on first open. */
+        .xyzp-lab { margin-top: 1rem; }
+
+        .xyzp-lab-wait {
+            margin: 0;
+            padding: 1.5rem;
+            border: 1px dashed var(--xyzp-line-strong);
+            border-radius: 0.7rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--xyzp-muted);
+        }
+
+        .xyzp-cta-link {
+            color: var(--xyzp-accent);
+            font-weight: 700;
+        }
+
+        .xyzp-cta-link:hover { color: #fff; }
+
+        @media (max-width: 720px) {
+            .xyzp-track { grid-template-columns: 1fr; }
+
+            .xyzp-edge {
+                flex-direction: row;
+                max-width: none;
+            }
+
+            .xyzp-edge i { transform: rotate(90deg); }
+        }
+
+        @media (max-width: 640px) {
+            .xyzp { padding: 1.1rem; }
+            .xyzp-grid { grid-template-columns: 1fr; }
+
+            .xyzp-art {
+                width: 100%;
+                max-width: 180px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .xyzp-text > summary i,
+            .mvs-cta,
+            .xyzp-link { transition: none; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <link href="../output.css" rel="stylesheet">
@@ -1165,6 +1629,18 @@
             </div>
         </section>
 
+        <!-- Spotlight: newest Number, links into its tab -->
+        <aside class="mvs" data-pcs-scope="spot" aria-labelledby="mvs-title">
+            <div id="mvs-art" class="mvs-art" aria-hidden="true"><i class="fas fa-mask"></i></div>
+            <div>
+                <p class="mvs-kicker"><span class="tab-new-badge">New</span>Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="mvs-title" class="mvs-title">Number 104: Masquerade V</h2>
+                <p class="mvs-hook">Vector's Rank 4 comes back as a searcher. It adds any "Barian's" Spell or Trap, then
+                    ranks up into Number C104 from the Graveyard without a Rank-Up-Magic Spell.</p>
+            </div>
+            <a class="mvs-cta" href="#tab-betb">Xyz profile <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+        </aside>
+
         <!-- TAB NAVIGATION -->
         <div class="tab-nav">
             <button class="tab-btn active" data-tab="tab-core" onclick="switchTab('tab-core')">
@@ -1175,6 +1651,9 @@
             </button>
             <button class="tab-btn" data-tab="tab-impact" onclick="switchTab('tab-impact')">
                 Impact Report <span class="tab-year-badge">2026</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-betb" onclick="switchTab('tab-betb')">
+                Beyond the Brave <span class="tab-new-badge">New</span>
             </button>
         </div>
 
@@ -1351,7 +1830,6 @@
             <div class="nc-meta">
                 <span class="nc-chip"><i class="fas fa-torii-gate"></i> OCG &middot; Limit Over Collection: The Heroes &middot; Feb 2026</span>
                 <span class="nc-chip nc-chip-live"><i class="fas fa-globe-americas"></i> TCG &middot; Magnificent Monsters &middot; 4 Sep 2026</span>
-                <span class="nc-chip"><i class="fas fa-hashtag"></i> LOCH-JP010 / MAMO-EN010</span>
             </div>
 
             <div class="card p-6 nc-card mb-6">
@@ -1535,8 +2013,9 @@
             <!-- Head to head -->
             <div class="card p-6 mb-6">
                 <h3 class="text-xl font-bold text-white mb-2">Against the Rank 4 Incumbents</h3>
-                <p class="text-blue-200 text-sm mb-4">All three are Rank 4 monsters a Number or Onomat board can make
-                    off two Level 4 bodies. They do very different jobs.</p>
+                <p class="text-blue-200 text-sm mb-4">All three come out of the two Level 4 bodies a Number or Onomat
+                    board already makes: one as a Rank 4, one on top of a Rank 4 Utopia, and one as a Link Monster.
+                    They do very different jobs.</p>
                 <div class="nc-vs">
                     <div class="nc-vs-col nc-vs-col-new">
                         <h4 class="nc-vs-name">Utopia, Emissary of Light <span class="nc-vs-flag">New</span></h4>
@@ -1564,7 +2043,7 @@
                     </div>
                     <div class="nc-vs-col">
                         <h4 class="nc-vs-name">Number S39: Utopia the Lightning</h4>
-                        <p class="nc-vs-stat">R4 &middot; LIGHT &middot; Warrior &middot; 2500 / 2000</p>
+                        <p class="nc-vs-stat">R5 &middot; LIGHT &middot; Warrior &middot; 2500 / 2000</p>
                         <div class="nc-vs-row nc-vs-no">
                             <i class="fas fa-times-circle"></i>
                             <span><span class="nc-vs-label">Protects</span>Nothing outside its own damage step</span>
@@ -1581,13 +2060,13 @@
                         </div>
                         <div class="nc-vs-row nc-vs-mid">
                             <i class="fas fa-exclamation-circle"></i>
-                            <span><span class="nc-vs-label">The catch</span>Reaches the board through a Rank-Up, so it
-                                costs an extra card</span>
+                            <span><span class="nc-vs-label">The catch</span>Needs a Rank 4 Utopia on the field to
+                                overlay onto, and can't itself be used as Xyz material</span>
                         </div>
                     </div>
                     <div class="nc-vs-col">
                         <h4 class="nc-vs-name">S:P Little Knight</h4>
-                        <p class="nc-vs-stat">R4 &middot; DARK &middot; Warrior &middot; 1500 / 1500</p>
+                        <p class="nc-vs-stat">Link-2 &middot; DARK &middot; Warrior &middot; 1600 ATK</p>
                         <div class="nc-vs-row nc-vs-mid">
                             <i class="fas fa-exclamation-circle"></i>
                             <span><span class="nc-vs-label">Protects</span>By removing the threat instead, banished
@@ -1600,13 +2079,13 @@
                         </div>
                         <div class="nc-vs-row nc-vs-no">
                             <i class="fas fa-times-circle"></i>
-                            <span><span class="nc-vs-label">Ceiling</span>1500 ATK. It is not trying to win a
+                            <span><span class="nc-vs-label">Ceiling</span>1600 ATK. It is not trying to win a
                                 fight</span>
                         </div>
                         <div class="nc-vs-row nc-vs-mid">
                             <i class="fas fa-exclamation-circle"></i>
-                            <span><span class="nc-vs-label">The catch</span>Needs two differently-named materials, and
-                                it is not a "Number"</span>
+                            <span><span class="nc-vs-label">The catch</span>Its banish needs an Extra Deck monster as
+                                material, it is not a "Number", and Links are banned in Genesys</span>
                         </div>
                     </div>
                 </div>
@@ -1666,8 +2145,8 @@
                     </div>
                     <div class="nc-fail">
                         <i class="fas fa-box-open"></i>
-                        <span><b>Magnificent Monsters is a collector set.</b> Pull rates are slot-based, so the playable
-                            Ultra Rare is the only copy most people will open.</span>
+                        <span><b>Magnificent Monsters is a collector set.</b> Pull rates are slot-based, so playable
+                            copies are harder to open than in a core booster.</span>
                     </div>
                 </div>
             </div>
@@ -1887,20 +2366,20 @@
                     </div>
                     <div class="nc-step">
                         <span class="nc-step-n">2</span>
-                        <p>Utopic Onomatopoeia's field effect Special Summons Zubaba Knight and
+                        <p>Utopic Onomatopoeia's field effect Special Summons Zubababa Knight and
                             <strong class="text-accent">Onomatokage</strong> straight out of hand.</p>
                     </div>
                     <div class="nc-step">
                         <span class="nc-step-n">3</span>
-                        <p>Zubaba Knight's trigger searches
+                        <p>Zubababa Knight's trigger searches
                             <strong class="text-accent">Zubababancho Gagagacoat</strong>, refilling the hand for the
-                            second half of the line.</p>
+                            second half of the line, and the Knight becomes Level 4 to match it.</p>
                     </div>
                     <div class="nc-step">
                         <span class="nc-step-n">4</span>
                         <p>Overlay into Galaxy Photon Dragon, detach to search
-                            <strong class="text-accent">Galaxy-Eyes Tachyon Primal</strong>, and let the detached Zubaba
-                            Knight trigger again in the graveyard.</p>
+                            <strong class="text-accent">Galaxy-Eyes Tachyon Primal</strong>. The detached Zubababa
+                            Knight triggers too and adds a "Gagaga" monster from the Deck.</p>
                     </div>
                     <div class="nc-step">
                         <span class="nc-step-n">5</span>
@@ -2057,6 +2536,420 @@
         </div>
         <!-- ===== END IMPACT REPORT TAB ===== -->
 
+        <!-- ===== TAB 4: BEYOND THE BRAVE (Number 104: Masquerade V) =====
+             Card text matches the official database. Card art and the combo simulator
+             (assets/data/combos/number-combos.json) load the first time this tab opens. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel hidden">
+
+        <section class="mb-10 md:mb-16 animate-fadeIn" aria-labelledby="betb-title">
+            <h2 id="betb-title" class="text-xl md:text-3xl font-bold text-white mb-6 text-center">New Number: Number 104: Masquerade V</h2>
+            <p class="nc-lede cms-section" data-section-key="masquerade-v-intro">
+                Beyond the Brave brings back Vector's Rank 4. The 2013 Number 104: Masquerade only did anything during
+                the Battle Phase. Masquerade V detaches to add any "Barian's" Spell or Trap, and it starts a Rank-Up
+                chain: V Umbral Horror turns it into Number C104: Umbral Horror Masquerade Victory from the Graveyard
+                with no Rank-Up-Magic Spell, and CXyz Hope Chaos Barian Dragon stacks on top of that. For a Number deck
+                it is a new Rank 4 with its own engine, and a new Extra Deck card to reveal to Seventh Tachyon.
+            </p>
+            <div class="nc-meta">
+                <span class="nc-chip"><i class="fas fa-torii-gate"></i> OCG &middot; Beyond the Brave &middot; 18 Jul 2026</span>
+                <span class="nc-chip nc-chip-live"><i class="fas fa-globe-americas"></i> TCG &middot; Beyond the Brave &middot; 8 Oct 2026</span>
+                <span class="nc-chip nc-chip-gold"><i class="fas fa-coins"></i> Genesys &middot; 20 points</span>
+            </div>
+
+            <!-- Xyz profile card -->
+            <article id="masquerade-v" class="card xyzp mb-6" aria-labelledby="masquerade-v-name">
+                <header class="xyzp-head">
+                    <div>
+                        <p class="xyzp-kicker">Xyz profile &middot; Number 104</p>
+                        <h3 id="masquerade-v-name" class="xyzp-name">Number 104: Masquerade V</h3>
+                    </div>
+                    <div class="xyzp-rank" role="img" aria-label="Rank 4">
+                        <span class="xyzp-rank-num" aria-hidden="true">4</span>
+                        <span class="xyzp-rank-label" aria-hidden="true">Rank</span>
+                    </div>
+                </header>
+
+                <div class="xyzp-grid">
+                    <div class="xyzp-art">
+                        <div id="masquerade-v-img-container" class="card-image-container card-placeholder">Number 104: Masquerade V</div>
+                    </div>
+                    <div class="xyzp-body">
+                        <ul class="nc-stats xyzp-stats" aria-label="Card stats">
+                            <li class="nc-stat">Rank 4</li>
+                            <li class="nc-stat">LIGHT</li>
+                            <li class="nc-stat">Spellcaster / Xyz</li>
+                            <li class="nc-stat">2700 / 1200</li>
+                            <li class="nc-stat">3 Level 4 monsters</li>
+                        </ul>
+                        <div class="nc-row">
+                            <span class="nc-row-label">Once per turn &middot; Barian's tutor</span>
+                            <p>Detach 1 material to add any "Barian's" Spell or Trap from your Deck to your hand. The
+                                limit applies to each copy, so two Masquerade V can use it twice in one turn.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">Granted effect &middot; once per turn</span>
+                            <p>An Xyz Monster summoned using Masquerade V on the field as material gains a mandatory
+                                trigger for when it is Xyz Summoned. Your opponent can banish 4 monsters with different
+                                Attributes and 1 Spell from their Deck. If they don't, you banish the top 10 cards of their
+                                Deck. Rank-Ups count, because V Umbral Horror and both Barian's Force Spells treat the
+                                summon as an Xyz Summon.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">Materials</span>
+                            <p><button type="button" class="xyzp-ref" data-cardname="Gorgonic Umbral Horror">Gorgonic
+                                    Umbral Horror</button> and <button type="button" class="xyzp-ref"
+                                    data-cardname="Shining Umbral Horror">Shining Umbral Horror</button> can each count as
+                                2 materials for it, so one of them plus one more Level 4 monster is enough.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">Name</span>
+                            <p>Early listings called it <em>Number 104: Masquerade Vain</em>. It is a different card from
+                                the 2013 <button type="button" class="xyzp-ref" data-cardname="Number 104: Masquerade">Number
+                                    104: Masquerade</button>, but both count as "Masquerade" Xyz Monsters for V Umbral
+                                Horror and Barian's Hope.</p>
+                        </div>
+                        <details class="xyzp-text">
+                            <summary><i class="fas fa-chevron-right" aria-hidden="true"></i>Official card text</summary>
+                            <div class="nc-cardtext">
+                                <p>3 Level 4 monsters</p>
+                                <p>Once per turn: You can detach 1 material from this card; add 1 "Barian's" Spell/Trap
+                                    from your Deck to your hand. You can only use the following effect of "Number 104:
+                                    Masquerade V" once per turn. An Xyz Monster that was Summoned using this card on the
+                                    field as material gains this effect.</p>
+                                <p>&#9679; If this card is Xyz Summoned: Activate this effect; your opponent can banish 4
+                                    monsters with different Attributes and 1 Spell from their Deck. If they did not, you
+                                    banish the top 10 cards of their Deck.</p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <!-- Rank-Up interactions -->
+                <section class="xyzp-routes" aria-labelledby="masquerade-v-routes">
+                    <h4 id="masquerade-v-routes" class="xyzp-h4">Rank-Up interactions</h4>
+                    <p class="xyzp-sub">Every step is an Xyz Summon that keeps its materials. The banish effect reaches
+                        exactly one step up.</p>
+
+                    <ol class="xyzp-track" aria-label="Rank-Up path from Masquerade V">
+                        <li class="xyzp-node">
+                            <span class="xyzp-node-rank">Rank 4 &middot; Number</span>
+                            <span class="xyzp-node-name">Number 104: Masquerade V</span>
+                            <span class="xyzp-node-note">Adds a Barian's card</span>
+                        </li>
+                        <li class="xyzp-edge" aria-label="then, via V Umbral Horror or either Barian's Force">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            <span>V Umbral Horror or Barian's Force</span>
+                        </li>
+                        <li class="xyzp-node xyzp-node--chaos">
+                            <span class="xyzp-node-rank">Rank 5 &middot; Number C</span>
+                            <span class="xyzp-node-name">Number C104: Umbral Horror Masquerade Victory</span>
+                            <span class="xyzp-node-note">Gains the banish effect</span>
+                        </li>
+                        <li class="xyzp-edge" aria-label="then, by direct overlay">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            <span>Direct overlay</span>
+                        </li>
+                        <li class="xyzp-node xyzp-node--cxyz">
+                            <span class="xyzp-node-rank">Rank 7 &middot; CXyz</span>
+                            <span class="xyzp-node-name">CXyz Hope Chaos Barian Dragon</span>
+                            <span class="xyzp-node-note">Search lock, no banish effect</span>
+                        </li>
+                    </ol>
+
+                    <ul class="xyzp-route-list">
+                        <li class="xyzp-route">
+                            <div class="xyzp-route-path"><span class="xyzp-pill">R4</span><i class="fas fa-arrow-right" aria-hidden="true"></i><span class="xyzp-pill xyzp-pill--c">R5 Number</span></div>
+                            <h5><button type="button" class="xyzp-ref" data-cardname="V Umbral Horror">V Umbral Horror</button> <span class="xyzp-tag">No Spell</span></h5>
+                            <p>Banish it from your GY, targeting a Masquerade Xyz Monster you control, to Special Summon a
+                                "Number" one Rank higher on top of it. That is normally C104 Victory, which picks up
+                                Masquerade V's banish effect on arrival.</p>
+                            <div class="xyzp-links">
+                                <a class="xyzp-link" href="#number-combo-lab" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i>Play line 1</a>
+                                <a class="xyzp-link xyzp-link--out" href="Barian%27s%20Deck%20Analysis.html#ladder-title">Barian's guide <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                            </div>
+                        </li>
+                        <li class="xyzp-route xyzp-route--spell">
+                            <div class="xyzp-route-path"><span class="xyzp-pill">Any R4</span><i class="fas fa-arrow-right" aria-hidden="true"></i><span class="xyzp-pill xyzp-pill--c">R5 Number C</span></div>
+                            <h5><button type="button" class="xyzp-ref" data-cardname="Rank-Up-Magic Limited Barian's Force">Rank-Up-Magic Limited Barian's Force</button> <span class="xyzp-tag">Masquerade V adds it</span></h5>
+                            <p>Turns any Rank 4 Xyz Monster into any Rank 5 "Number C". It is the backup when V Umbral
+                                Horror is banished or negated. The same Spell turns a Number 39: Utopia into Number C39:
+                                Utopia Ray V.</p>
+                            <div class="xyzp-links">
+                                <a class="xyzp-link xyzp-link--out" href="Barian%27s%20Deck%20Analysis.html#line-rum">Fallback line <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                            </div>
+                        </li>
+                        <li class="xyzp-route xyzp-route--spell">
+                            <div class="xyzp-route-path"><span class="xyzp-pill">R4</span><i class="fas fa-arrow-right" aria-hidden="true"></i><span class="xyzp-pill xyzp-pill--c">R5 same Type</span></div>
+                            <h5><button type="button" class="xyzp-ref" data-cardname="Rank-Up-Magic Barian's Force">Rank-Up-Magic Barian's Force</button> <span class="xyzp-tag">Masquerade V adds it</span></h5>
+                            <p>Needs the same Type, so from Masquerade V it reaches either Number C104. It also moves 1
+                                material from one of your opponent's monsters onto the new monster, which still gains the
+                                banish effect.</p>
+                            <div class="xyzp-links">
+                                <a class="xyzp-link xyzp-link--out" href="#masquerade-family">Both C104s <i class="fas fa-arrow-down" aria-hidden="true"></i></a>
+                            </div>
+                        </li>
+                        <li class="xyzp-route xyzp-route--cxyz">
+                            <div class="xyzp-route-path"><span class="xyzp-pill xyzp-pill--c">R5 Number C</span><i class="fas fa-arrow-right" aria-hidden="true"></i><span class="xyzp-pill xyzp-pill--x">R7 CXyz</span></div>
+                            <h5><button type="button" class="xyzp-ref" data-cardname="CXyz Hope Chaos Barian Dragon">CXyz Hope Chaos Barian Dragon</button> <span class="xyzp-tag">No Spell</span></h5>
+                            <p>Xyz Summoned from any one Number C101 to C107 you control, keeping its materials. On top of
+                                C104 Victory it arrives with 3 materials and 3000 ATK, and your opponent can't add cards
+                                from their Main Deck to their hand except by drawing.</p>
+                            <div class="xyzp-links">
+                                <a class="xyzp-link" href="#number-combo-lab" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i>Play line 1</a>
+                                <a class="xyzp-link xyzp-link--out" href="Barian%27s%20Deck%20Analysis.html#card-dragon">Dragon profile <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                            </div>
+                        </li>
+                        <li class="xyzp-route xyzp-route--entry">
+                            <div class="xyzp-route-path"><span class="xyzp-pill">Reveal</span><i class="fas fa-arrow-right" aria-hidden="true"></i><span class="xyzp-pill">Level 4 search</span></div>
+                            <h5><button type="button" class="xyzp-ref" data-cardname="Seventh Tachyon">Seventh Tachyon</button> <span class="xyzp-tag">Entry point</span></h5>
+                            <p>Not a Rank-Up, but the reason Number decks care. Reveal Masquerade V to add any Level 4
+                                LIGHT or Spellcaster monster: V or Shining Umbral Horror, or the deck's own Utopic
+                                Onomatopoeia, ZS - Ascended Sage and Astraltopia.</p>
+                            <div class="xyzp-links">
+                                <a class="xyzp-link" href="#number-combo-lab" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i>Play line 2</a>
+                                <a class="xyzp-link xyzp-link--out" href="Barian%27s%20Deck%20Analysis.html#line-tachyon">Tachyon start <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                            </div>
+                        </li>
+                    </ul>
+                </section>
+            </article>
+
+            <!-- The Number 104 line -->
+            <div id="masquerade-family" class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-2">The Number 104 Line</h3>
+                <p class="text-blue-200 text-sm mb-4">Vector's four Xyz Monsters. The two Rank 4s and the two Rank 5s
+                    share stats; the 2026 cards swap the Battle Phase tricks for a search and a Quick Effect.</p>
+                <div class="nc-scroll">
+                    <table class="nc-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Rank</th>
+                                <th scope="col">Attribute / Type</th>
+                                <th scope="col">ATK</th>
+                                <th scope="col">What it does</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Number 104: Masquerade <span class="text-xs text-indigo-300">(2013)</span></td>
+                                <td>Rank 4</td>
+                                <td>LIGHT Spellcaster</td>
+                                <td>2700</td>
+                                <td>Negates an opponent's monster effect during the Battle Phase and deals 800 damage.
+                                    Sends the top card of your opponent's Deck to the GY once per turn.</td>
+                            </tr>
+                            <tr class="nc-table-hi">
+                                <td><strong>Number 104: Masquerade V</strong> <span class="text-xs text-indigo-300">(2026)</span></td>
+                                <td>Rank 4</td>
+                                <td>LIGHT Spellcaster</td>
+                                <td>2700</td>
+                                <td>Adds a Barian's Spell or Trap, and gives the Xyz Monster summoned on top of it the
+                                    banish effect.</td>
+                            </tr>
+                            <tr>
+                                <td>Number C104: Umbral Horror Masquerade <span class="text-xs text-indigo-300">(2013)</span></td>
+                                <td>Rank 5</td>
+                                <td>DARK Spellcaster</td>
+                                <td>3000</td>
+                                <td>Destroys a Spell or Trap when Special Summoned. With the 2013 Masquerade as material,
+                                    it negates an opponent's monster effect on either turn, discards a random card and
+                                    halves their LP.</td>
+                            </tr>
+                            <tr>
+                                <td>Number C104: Umbral Horror Masquerade Victory <span class="text-xs text-indigo-300">(2026)</span></td>
+                                <td>Rank 5</td>
+                                <td>DARK Spellcaster</td>
+                                <td>3000</td>
+                                <td>Quick Effect: detach 1 to destroy a card. Wins every battle by 100, and a battle
+                                    destruction discards a random card and halves their LP.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="nc-flow-caption">Both Rank 5s can be reached from either Rank 4 with V Umbral Horror or
+                    Barian's Force, and from any Rank 4 with Limited Barian's Force.</p>
+            </div>
+
+            <!-- Search menu -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-2">What Masquerade V Adds to Your Hand</h3>
+                <p class="text-blue-200 text-sm mb-4">Any "Barian's" Spell or Trap. Barian Untopia counts too, because
+                    it is always treated as a "Barian's" card.</p>
+                <div class="nc-syn-grid">
+                    <div class="nc-syn nc-syn-key">
+                        <span class="nc-syn-badge"><i class="fas fa-ban"></i> Going first</span>
+                        <h4>Barian's Seal</h4>
+                        <p>Counter Trap. While you control a CXyz or a Number C101 to C107, it negates a Spell, Trap or
+                            monster effect and attaches a monster to one of your Xyz Monsters. From the GY it revives 2
+                            Umbral Horror monsters.</p>
+                        <span class="nc-syn-take">The default pick once C104 or the Dragon is out. A Utopia board alone
+                            does not turn it on.</span>
+                    </div>
+                    <div class="nc-syn nc-syn-good">
+                        <span class="nc-syn-badge"><i class="fas fa-hand-holding-heart"></i> Extender</span>
+                        <h4>Barian's Hope</h4>
+                        <p>Special Summons an Umbral Horror or any Masquerade Xyz, 2013 cards included, from your hand or
+                            GY. From the GY it banishes itself to attach a Number Xyz from your Extra Deck or GY to any Xyz
+                            Monster you control.</p>
+                        <span class="nc-syn-take">The GY half works on Utopia Xyz Monsters too.</span>
+                    </div>
+                    <div class="nc-syn nc-syn-good">
+                        <span class="nc-syn-badge"><i class="fas fa-angles-up"></i> Rank-Up</span>
+                        <h4>Rank-Up-Magic Limited Barian's Force</h4>
+                        <p>Any Rank 4 Xyz Monster into any Rank 5 Number C.</p>
+                        <span class="nc-syn-take">Doubles as a Utopia into Utopia Ray V Rank-Up.</span>
+                    </div>
+                    <div class="nc-syn nc-syn-mid">
+                        <span class="nc-syn-badge"><i class="fas fa-angles-up"></i> Rank-Up</span>
+                        <h4>Rank-Up-Magic Barian's Force</h4>
+                        <p>Same Type, one Rank up, into a Number C or CXyz, and it takes a material from one of your
+                            opponent's monsters.</p>
+                        <span class="nc-syn-take">Stricter than Limited, but it can also reach CXyz.</span>
+                    </div>
+                    <div class="nc-syn nc-syn-mid">
+                        <span class="nc-syn-badge"><i class="fas fa-landmark"></i> Floodgate</span>
+                        <h4>Barian's Seventh Untopia</h4>
+                        <p>Neither player can Special Summon from the Extra Deck more than twice per turn, except Number
+                            monsters. It also adds an Umbral Horror (then you discard 1), and in each End Phase both
+                            players take 400 per Xyz Monster on the field.</p>
+                        <span class="nc-syn-take">Numbers don't count toward the two; Eclipse Twins and other generic Xyz
+                            Monsters do.</span>
+                    </div>
+                    <div class="nc-syn nc-syn-mid">
+                        <span class="nc-syn-badge"><i class="fas fa-shield-alt"></i> Protection</span>
+                        <h4>Barian Untopia</h4>
+                        <p>Your Numbers 101 to 107, CXyz and Number C monsters can't be targeted or destroyed by your
+                            opponent's card effects. It shares the Field Zone with Seventh Untopia.</p>
+                        <span class="nc-syn-take">Covers Masquerade V, both C104s and every C39 Utopia Ray, but not the
+                            Rank 4 Utopias.</span>
+                    </div>
+                    <div class="nc-syn nc-syn-bad">
+                        <span class="nc-syn-badge"><i class="fas fa-times"></i> Never</span>
+                        <h4>Barian's Chaos Draw</h4>
+                        <p>It can only be activated when you draw it for your normal draw and reveal it.</p>
+                        <span class="nc-syn-take">Adding it any other way leaves it with nothing to do.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Combo lines: combo simulator, mounted on first open -->
+            <div id="masquerade-v-combos" class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-2">Combo Lines</h3>
+                <p class="text-blue-200 text-sm cms-section" data-section-key="masquerade-v-combos-intro">Both lines
+                    run in the combo simulator. Line 1 is the going-first Rank-Up chain from Gorgonic Umbral Horror
+                    alone. Line 2 starts from Seventh Tachyon, which a Number deck is more likely to open, and breaks a
+                    board going second.</p>
+                <div id="number-combo-lab" class="xyzp-lab">
+                    <p class="xyzp-lab-wait"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading the combo simulator&hellip;</p>
+                </div>
+                <p class="nc-flow-caption">The full Barian's Seventh Untopia version of line 1 is in the
+                    <a class="xyzp-cta-link" href="Barian%27s%20Deck%20Analysis.html#line-main">Barian's guide</a>.</p>
+            </div>
+
+            <!-- Rulings -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">Rulings and Timing</h3>
+                <ul class="nc-list cms-section" data-section-key="masquerade-v-rulings">
+                    <li><i class="fas fa-layer-group" style="color:#00f6ff"></i> <strong class="text-accent">Double
+                            materials need 3 or more.</strong> Gorgonic and Shining count as 2 only for a Number that
+                        needs 3 or more materials. Masquerade V qualifies; Number 39: Utopia, which needs 2, does not.</li>
+                    <li><i class="fas fa-level-up-alt" style="color:#00f6ff"></i> <strong class="text-accent">One step
+                            up, once per turn.</strong> The monster summoned on Masquerade V gets the banish effect. The
+                        Dragon summoned on C104 does not, and a second Masquerade V ranked up in the same turn gets
+                        nothing.</li>
+                    <li><i class="fas fa-clone" style="color:#00f6ff"></i> <strong class="text-accent">The detach is
+                            per copy.</strong> It has no name clause, so two Masquerade V can add two Barian's cards in
+                        one turn.</li>
+                    <li><i class="fas fa-user-check" style="color:#ffd700"></i> <strong class="text-secondary-accent">Your
+                            opponent chooses.</strong> They can banish 4 monsters with different Attributes and 1 Spell of
+                        their choice, or refuse and lose the top 10 cards of their Deck.</li>
+                    <li><i class="fas fa-tag" style="color:#ffd700"></i> <strong class="text-secondary-accent">The 2013
+                            C104 wants the 2013 name.</strong> Its negate needs "Number 104: Masquerade" as material, and
+                        Masquerade V has a different name. Rank up the original to unlock it.</li>
+                    <li><i class="fas fa-angles-up" style="color:#00f6ff"></i> <strong class="text-accent">V works on any
+                            Masquerade Xyz.</strong> That includes both Rank 5 C104s, so a second V Umbral Horror can take
+                        one to a Rank 6 Number such as Number 39: Utopia Beyond.</li>
+                    <li><i class="fas fa-lock" style="color:#f87171"></i> <strong class="text-red-300">Seventh Tachyon
+                            locks the Extra Deck.</strong> After it resolves you can only Special Summon Xyz Monsters
+                        from the Extra Deck for the rest of the turn.</li>
+                </ul>
+            </div>
+
+            <!-- Verdict -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-white mb-2">Fitting It Into a Number Deck</h3>
+                <p class="text-blue-200 text-sm mb-4">Masquerade V is strongest with its own Main Deck engine. How much
+                    of that engine you can afford depends on the format.</p>
+                <div class="nc-split cms-section" data-section-key="masquerade-v-verdict">
+                    <div class="nc-split-col nc-split-col-hot">
+                        <h4>Advanced: Utopia and Onomat</h4>
+                        <span class="nc-verdict nc-verdict-maybe"><i class="fas fa-puzzle-piece"></i> Splash it</span>
+                        <p>On its own, Masquerade V costs three Level 4 monsters that an Onomat line would rather spend on
+                            two Rank 4s. It pays off once Gorgonic or Shining Umbral Horror is there to count double. Our
+                            starting package is Gorgonic, V and Shining Umbral Horror in the Main Deck, and 1 to 2
+                            Masquerade V, C104 Victory and the Dragon in the Extra Deck.</p>
+                    </div>
+                    <div class="nc-split-col nc-split-col-cold">
+                        <h4>Genesys</h4>
+                        <span class="nc-verdict nc-verdict-no"><i class="fas fa-coins"></i> Priced out of the top</span>
+                        <p>Masquerade V costs 20 points, Gorgonic 10, and V and Shining Umbral Horror 7 each: 44 points for
+                            one copy of each. CXyz Hope Chaos Barian Dragon costs 100, the whole budget, so in Genesys the
+                            chain realistically stops at C104 Victory. See the Impact Report tab for how Number bosses are
+                            priced.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weak points -->
+            <div class="card p-6 mb-6">
+                <h3 class="text-xl font-bold text-red-400 mb-4">Where It Falls Over</h3>
+                <div class="nc-fails cms-section" data-section-key="masquerade-v-weaknesses">
+                    <div class="nc-fail">
+                        <i class="fas fa-cubes"></i>
+                        <span><b>Three materials without the engine.</b> Outside the Umbral Horror package it costs three
+                            Level 4 monsters for a searcher and a 2700 ATK body.</span>
+                    </div>
+                    <div class="nc-fail">
+                        <i class="fas fa-hand-paper"></i>
+                        <span><b>Search choke points.</b> Gorgonic, V Umbral Horror and Masquerade V all add cards from
+                            the Deck, so Ash Blossom &amp; Joyous Spring and Droll &amp; Lock Bird hit the line
+                            early.</span>
+                    </div>
+                    <div class="nc-fail">
+                        <i class="fas fa-ghost"></i>
+                        <span><b>The free Rank-Up runs through the GY.</b> D.D. Crow, the Bystials and Dimension Shifter
+                            stop V Umbral Horror. Limited Barian's Force is the backup.</span>
+                    </div>
+                    <div class="nc-fail">
+                        <i class="fas fa-random"></i>
+                        <span><b>Your opponent picks the banish.</b> They choose the 5 cards they need least, unless they
+                            would rather lose 10 at random.</span>
+                    </div>
+                    <div class="nc-fail">
+                        <i class="fas fa-meteor"></i>
+                        <span><b>Nibiru lands early.</b> Line 1 reaches its fifth summon on C104 Victory, before the
+                            Dragon is on the field.</span>
+                    </div>
+                    <div class="nc-fail">
+                        <i class="fas fa-ban"></i>
+                        <span><b>Barian's Seal needs a Chaos card.</b> It only works while you control a CXyz or a Number
+                            C101 to C107, so it does nothing behind a Utopia-only board.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nc-note nc-note-gold">
+                <i class="fas fa-book-open"></i>
+                <span>The <a class="xyzp-cta-link" href="Barian%27s%20Deck%20Analysis.html#overview">Barian's guide</a>
+                    covers the full engine around Masquerade V: Barian's Seventh Untopia, Thousand Umbral Horror, the
+                    complete end board, and the Shark version.</span>
+            </div>
+        </section>
+
+        </div>
+        <!-- ===== END BEYOND THE BRAVE TAB ===== -->
+
                 <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist Status</h2>
@@ -2095,6 +2988,7 @@
                 'Number F0: Utopic Future',
                 'Number F0: Utopic Draco Future',
                 'Number 99: Utopia Dragonar',
+                'Number 104: Masquerade V',
                 'Number 38: Hope Harbinger Dragon Titanic Galaxy'
             ], {
                 archetypeName: 'Number',
@@ -2104,6 +2998,10 @@
                     'Number 86: Heroic Champion - Rhongomyniad',
                     'Number 89: Diablosis the Mind Hacker',
                     'Number 95: Galaxy-Eyes Dark Matter Dragon',
+                    'Number C104: Umbral Horror Masquerade Victory',
+                    'Gorgonic Umbral Horror',
+                    'V Umbral Horror',
+                    'CXyz Hope Chaos Barian Dragon',
                     'Number S0: Utopic ZEXAL'
                 ],
                 archetypeTraits: {
@@ -2220,6 +3118,107 @@
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
+    <!-- Beyond the Brave tab (Number 104: Masquerade V). Runs before tab-deeplink.js so a
+         #tab-betb link that opens the tab on load also mounts its content.
+         combo-system.js is loaded in <head>. -->
+    <script>
+        (function () {
+            'use strict';
+
+            var PANEL_ID = 'tab-betb';
+            var COMBO_MOUNT_ID = 'number-combo-lab';
+            var COMBO_SLUG = 'number'; // assets/data/combos/number-combos.json
+            var PANEL_ART = { 'masquerade-v-img-container': 'Number 104: Masquerade V' };
+            var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            var artRequested = false;
+            var comboReady = null;
+
+            // Art and the combo simulator are fetched once, the first time the tab opens.
+            function openBetbPanel() {
+                if (!artRequested && typeof CardLoader !== 'undefined') {
+                    artRequested = true;
+                    CardLoader.loadCards(PANEL_ART);
+                }
+                if (!comboReady) {
+                    // combo-system.js declares ComboLoader as a top-level class, which is
+                    // not a property of window, so check it with typeof.
+                    comboReady = typeof ComboLoader === 'undefined'
+                        ? Promise.resolve(null)
+                        : ComboLoader.renderComboSystem(COMBO_MOUNT_ID, COMBO_SLUG);
+                }
+                return comboReady;
+            }
+
+            var tabBtn = document.querySelector('[data-tab="' + PANEL_ID + '"]');
+            if (tabBtn) tabBtn.addEventListener('click', openBetbPanel);
+
+            // A link to an anchor inside a hidden tab (#masquerade-v, #number-combo-lab)
+            // opens that tab first; tab-deeplink.js then scrolls to it.
+            function openPanelForHash() {
+                var id = window.location.hash.slice(1);
+                try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+                if (!id || !/^[\w:.-]+$/.test(id)) return;
+                var target = document.getElementById(id);
+                var panel = target && target.closest('.tab-panel');
+                if (!panel || panel === target || !panel.classList.contains('hidden')) return;
+                switchTab(panel.id);
+                if (panel.id === PANEL_ID) openBetbPanel();
+            }
+            window.addEventListener('hashchange', openPanelForHash);
+            document.addEventListener('DOMContentLoaded', openPanelForHash);
+
+            // "Play line N" on a Rank-Up route selects that line in the simulator.
+            document.querySelectorAll('[data-combo-open]').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var num = link.getAttribute('data-combo-open');
+                    openBetbPanel().then(function () {
+                        var option = document.querySelector('#' + COMBO_MOUNT_ID +
+                            ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        var mount = document.getElementById(COMBO_MOUNT_ID);
+                        if (mount) mount.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+                    });
+                });
+            });
+
+            // Card-name buttons open the shared card popup.
+            document.querySelectorAll('.xyzp-ref[data-cardname]').forEach(function (ref) {
+                ref.addEventListener('click', function (event) {
+                    if (typeof CardLoader === 'undefined' || !CardLoader.showPopupByName) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    var source = event;
+                    // Keyboard activation has no pointer position; anchor the popup to the button.
+                    if (!event.clientX && !event.clientY) {
+                        var rect = ref.getBoundingClientRect();
+                        source = {
+                            clientX: rect.left + rect.width / 2,
+                            clientY: rect.bottom,
+                            target: ref,
+                            stopPropagation: function () { }
+                        };
+                    }
+                    CardLoader.showPopupByName(ref.getAttribute('data-cardname'), source);
+                });
+            });
+
+            // Cropped art for the spotlight thumbnail; the mask icon stays if it fails.
+            document.addEventListener('DOMContentLoaded', function () {
+                var slot = document.getElementById('mvs-art');
+                if (!slot || typeof CardLoader === 'undefined' || !CardLoader.getCardCroppedImageUrl) return;
+                CardLoader.getCardCroppedImageUrl('Number 104: Masquerade V').then(function (url) {
+                    if (!url) return;
+                    var img = document.createElement('img');
+                    img.src = url;
+                    img.alt = '';
+                    img.decoding = 'async';
+                    slot.replaceChildren(img);
+                }).catch(function () { });
+            });
+        })();
+    </script>
     <!-- Tab deep links (#tab-2026 and friends) -->
     <script src="../assets/js/tab-deeplink.js"></script>
 </body>

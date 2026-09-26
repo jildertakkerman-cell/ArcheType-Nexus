@@ -16,6 +16,10 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <!-- Combo simulator for the Beyond the Brave tab (assets/data/combos/artmage-combos.json) -->
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -259,6 +263,1255 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
         }
     </style>
+
+    <style>
+        /* ===== Theorealized Medius (Beyond the Brave) =====
+           Added in its own block so the original styles above stay as they were.
+           The write-up is a fourth "Beyond the Brave Era" tab (#tab-content-betb) that
+           uses the page's own switchTab() buttons, plus a spotlight above the tabs.
+           Every colour below comes from the --tm-* tokens. Class names avoid .card and
+           .combo-step-card, which page-sections.js wraps for community edits. */
+        :root {
+            /* Read by the combo simulator's theme detection. */
+            --accent-color: #a78bfa;
+
+            --tm-violet: #a78bfa;
+            --tm-violet-soft: #ddd6fe;
+            --tm-violet-line: rgba(167, 139, 250, 0.4);
+            --tm-violet-wash: rgba(167, 139, 250, 0.1);
+            --tm-gold: #f5c96b;
+            --tm-gold-soft: #fde9b5;
+            --tm-gold-line: rgba(245, 201, 107, 0.45);
+            --tm-gold-wash: rgba(245, 201, 107, 0.08);
+            --tm-ok: #4ade80;
+            --tm-ok-line: rgba(74, 222, 128, 0.45);
+            --tm-ok-wash: rgba(74, 222, 128, 0.1);
+            --tm-no: #f87171;
+            --tm-no-line: rgba(248, 113, 113, 0.45);
+            --tm-no-wash: rgba(248, 113, 113, 0.1);
+            --tm-surface: #222238;
+            --tm-surface-deep: #17172a;
+            --tm-inset: #111122;
+            --tm-border: #3a3a5c;
+            --tm-border-strong: #52527a;
+            --tm-text: #e5e7eb;
+            --tm-muted: #a5a5c8;
+
+            /* One colour per family on the connection map. */
+            --tm-c-patron: #f5c96b;
+            --tm-c-theorealize: #67e8f9;
+            --tm-c-arsmagna: #e8b04a;
+            --tm-c-diactorus: #fb7185;
+            --tm-c-artmage: #a78bfa;
+            --tm-c-doomz: #2dd4bf;
+            --tm-c-elfnote: #a3e635;
+            --tm-c-medius: #e2e8f0;
+        }
+
+        .tm-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .tm-badge {
+            display: inline-block;
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--tm-gold);
+            color: #2a1d04;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+
+        .tm-kicker,
+        .tm-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--tm-gold-soft);
+        }
+
+        .tm-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tm-stats {
+            font-size: 0.8rem;
+            color: var(--tm-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Card art slots. Ids end in -img-container so page-sections.js leaves them alone. */
+        .tm-art-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 59 / 86;
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px dashed var(--tm-border-strong);
+            border-radius: 0.4rem;
+            background: var(--tm-inset);
+            color: var(--tm-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .tm-art-slot:has(img) {
+            aspect-ratio: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+        }
+
+        .tm-art-slot img {
+            width: 100%;
+            height: auto;
+            border-radius: 0.4rem;
+        }
+
+        .tab-btn:focus-visible,
+        .tm-tab a:focus-visible,
+        .tm-tab button:focus-visible,
+        .tm-tab input:focus-visible,
+        .tm-spot a:focus-visible,
+        .tm-spot button:focus-visible {
+            outline: 2px solid var(--tm-gold);
+            outline-offset: 3px;
+        }
+
+        /* --- Always-visible spotlight above the tabs --- */
+        .tm-spot {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--tm-gold-line);
+            border-top: 3px solid var(--tm-gold);
+            border-radius: 0.9rem;
+            background:
+                radial-gradient(circle at 12% 0%, var(--tm-gold-wash), transparent 60%),
+                linear-gradient(145deg, var(--tm-surface), var(--tm-surface-deep));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .tm-spot-art {
+            width: 8.5rem;
+            margin: 0 auto;
+        }
+
+        .tm-spot-title {
+            margin: 0.35rem 0 0.25rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #fff;
+        }
+
+        .tm-spot-hook {
+            margin: 0.75rem 0 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--tm-text);
+        }
+
+        .tm-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.4rem 0 1.1rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 2.25rem;
+            padding: 0.3rem 0.75rem;
+            border: 1px solid var(--tm-border-strong);
+            border-radius: 9999px;
+            background: var(--tm-inset);
+            color: var(--tm-text);
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .tm-tag:hover {
+            border-color: var(--tm-tag-color, var(--tm-gold));
+            background: var(--tm-surface);
+        }
+
+        .tm-tag-dot {
+            width: 0.55rem;
+            height: 0.55rem;
+            border-radius: 9999px;
+            background: var(--tm-tag-color, var(--tm-gold));
+            flex-shrink: 0;
+        }
+
+        .tm-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 2.75rem;
+            padding: 0.55rem 1.1rem;
+            border: 0;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.45);
+            transition: transform 0.2s ease;
+        }
+
+        .tm-cta:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (min-width: 640px) {
+            .tm-spot {
+                grid-template-columns: 8.5rem 1fr;
+                padding: 1.5rem;
+            }
+
+            .tm-spot-art {
+                margin: 0;
+            }
+        }
+
+        /* --- The fourth tab (#tab-content-betb) --- */
+        .tm-tab {
+            color: var(--tm-text);
+        }
+
+        .tm-section {
+            margin-bottom: 3.5rem;
+            scroll-margin-top: 1.5rem;
+        }
+
+        .tm-h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #fff;
+        }
+
+        .tm-h2 i {
+            color: var(--tm-gold);
+        }
+
+        .tm-lede {
+            max-width: 46rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.65;
+            color: var(--tm-muted);
+        }
+
+        .tm-h3 {
+            margin: 1.75rem 0 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--tm-violet-soft);
+        }
+
+        .tm-panel {
+            padding: 1.25rem;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.9rem;
+            background: linear-gradient(160deg, var(--tm-surface), var(--tm-surface-deep));
+        }
+
+        .tm-notice {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            padding: 0.9rem 1rem;
+            border-left: 4px solid var(--tm-gold);
+            border-radius: 0 0.6rem 0.6rem 0;
+            background: var(--tm-gold-wash);
+            color: var(--tm-gold-soft);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+
+        .tm-notice[hidden] {
+            display: none;
+        }
+
+        .tm-toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0 0 2.5rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-toc a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 2.25rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.5rem;
+            background: var(--tm-inset);
+            color: var(--tm-text);
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .tm-toc a:hover {
+            border-color: var(--tm-violet);
+        }
+
+        /* Card profile */
+        .tm-profile {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .tm-profile-art {
+            width: 100%;
+            max-width: 13rem;
+            margin: 0 auto;
+        }
+
+        .tm-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.6rem 0 1rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-chips li {
+            padding: 0.2rem 0.6rem;
+            border: 1px solid var(--tm-border-strong);
+            border-radius: 9999px;
+            background: var(--tm-inset);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--tm-text);
+        }
+
+        .tm-chips .tm-chip--gold {
+            border-color: var(--tm-gold-line);
+            color: var(--tm-gold-soft);
+        }
+
+        .tm-cardtext {
+            margin: 0;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--tm-border);
+            border-left: 3px solid var(--tm-violet);
+            border-radius: 0.5rem;
+            background: var(--tm-inset);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            color: var(--tm-text);
+        }
+
+        .tm-cardtext p + p {
+            margin-top: 0.55rem;
+        }
+
+        .tm-cardtext .tm-bullet {
+            padding-left: 1rem;
+        }
+
+        .tm-clauses {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-clause {
+            padding: 1rem;
+            border: 1px solid var(--tm-border);
+            border-top: 3px solid var(--tm-clause-color, var(--tm-violet));
+            border-radius: 0.6rem;
+            background: var(--tm-surface-deep);
+        }
+
+        .tm-clause h3 {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .tm-clause-mark {
+            color: var(--tm-clause-color, var(--tm-violet));
+            font-weight: 800;
+        }
+
+        .tm-clause p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--tm-muted);
+        }
+
+        @media (min-width: 768px) {
+            .tm-profile {
+                grid-template-columns: 13rem 1fr;
+                align-items: start;
+            }
+
+            .tm-clauses {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Tables (head-to-head, ratios, the Ars Magna trio) */
+        .tm-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.6rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tm-table {
+            width: 100%;
+            min-width: 34rem;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .tm-table th,
+        .tm-table td {
+            padding: 0.65rem 0.8rem;
+            border-bottom: 1px solid var(--tm-border);
+            text-align: left;
+            vertical-align: top;
+            line-height: 1.5;
+        }
+
+        .tm-table thead th {
+            background: var(--tm-inset);
+            color: var(--tm-gold-soft);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .tm-table tbody th {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .tm-table tbody tr:last-child th,
+        .tm-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .tm-table td {
+            color: var(--tm-muted);
+        }
+
+        .tm-table .tm-num {
+            color: #fff;
+            font-weight: 700;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tm-foot {
+            margin-top: 0.6rem;
+            font-size: 0.8rem;
+            color: var(--tm-muted);
+        }
+
+        .tm-inline-link {
+            color: var(--tm-violet-soft);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .tm-inline-link:hover {
+            color: #fff;
+        }
+
+        /* --- Connection map --- */
+        .tm-map {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .tm-map-stage {
+            position: relative;
+            width: 100%;
+            max-width: 34rem;
+            margin: 0 auto;
+            aspect-ratio: 1 / 1;
+        }
+
+        .tm-map-lines {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .tm-map-lines line {
+            stroke: var(--tm-border-strong);
+            stroke-width: 0.5;
+            stroke-dasharray: 1.2 1.2;
+            transition: stroke 0.25s ease, stroke-width 0.25s ease;
+        }
+
+        .tm-map-lines line.is-active {
+            stroke: var(--tm-line-color, var(--tm-gold));
+            stroke-width: 0.9;
+            stroke-dasharray: none;
+        }
+
+        .tm-map-ring {
+            fill: none;
+            stroke: var(--tm-violet-line);
+            stroke-width: 0.3;
+        }
+
+        .tm-node {
+            position: absolute;
+            left: var(--x);
+            top: var(--y);
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.1rem;
+            width: 7.25rem;
+            min-height: 3.5rem;
+            padding: 0.45rem 0.5rem;
+            border: 1px solid var(--tm-node-color);
+            border-radius: 0.7rem;
+            background: var(--tm-inset);
+            color: #fff;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .tm-node:hover {
+            background: var(--tm-surface);
+        }
+
+        .tm-node[aria-pressed="true"] {
+            background: var(--tm-surface);
+            box-shadow: 0 0 0 2px var(--tm-node-color), 0 0 22px var(--tm-node-color);
+        }
+
+        .tm-node-name {
+            font-size: 0.82rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .tm-node-role {
+            font-size: 0.66rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--tm-node-color);
+        }
+
+        .tm-node--center {
+            width: 9rem;
+            min-height: 5.5rem;
+            border-width: 2px;
+            border-radius: 9999px;
+            background:
+                radial-gradient(circle at 50% 30%, var(--tm-gold-wash), transparent 70%),
+                var(--tm-surface-deep);
+        }
+
+        .tm-node--center .tm-node-name {
+            font-size: 0.95rem;
+        }
+
+        .tm-map-detail {
+            min-height: 20rem;
+        }
+
+        .tm-detail-kicker {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--tm-detail-color, var(--tm-gold));
+        }
+
+        .tm-detail-kicker::before {
+            content: '';
+            width: 0.6rem;
+            height: 0.6rem;
+            border-radius: 9999px;
+            background: var(--tm-detail-color, var(--tm-gold));
+        }
+
+        .tm-detail-title {
+            margin: 0.3rem 0 0.75rem;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .tm-detail-clause {
+            margin-bottom: 1rem;
+            padding: 0.7rem 0.85rem;
+            border-left: 3px solid var(--tm-detail-color, var(--tm-gold));
+            border-radius: 0 0.4rem 0.4rem 0;
+            background: var(--tm-inset);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        .tm-detail-list {
+            margin: 0 0 1rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-detail-list li {
+            position: relative;
+            padding: 0.35rem 0 0.35rem 1.6rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--tm-text);
+        }
+
+        .tm-detail-list li i {
+            position: absolute;
+            left: 0;
+            top: 0.55rem;
+            width: 1rem;
+            text-align: center;
+        }
+
+        .tm-detail-list--ok i {
+            color: var(--tm-ok);
+        }
+
+        .tm-detail-list--no i {
+            color: var(--tm-no);
+        }
+
+        .tm-detail-sub {
+            margin: 0.5rem 0 0.2rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--tm-muted);
+        }
+
+        .tm-detail-tip {
+            padding: 0.7rem 0.85rem;
+            border: 1px solid var(--tm-gold-line);
+            border-radius: 0.5rem;
+            background: var(--tm-gold-wash);
+            font-size: 0.88rem;
+            line-height: 1.55;
+            color: var(--tm-gold-soft);
+        }
+
+        .tm-detail-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 0.9rem;
+            color: var(--tm-violet-soft);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .tm-detail-link:hover {
+            color: #fff;
+        }
+
+        @media (min-width: 1024px) {
+            .tm-map {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            }
+        }
+
+        /* Phones: the ring becomes a two-column list of buttons. */
+        @media (max-width: 639px) {
+            .tm-map-stage {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+                aspect-ratio: auto;
+            }
+
+            .tm-map-lines {
+                display: none;
+            }
+
+            .tm-node {
+                position: static;
+                transform: none;
+                width: auto;
+                min-height: 3.25rem;
+            }
+
+            .tm-node--center {
+                grid-column: 1 / -1;
+                border-radius: 0.7rem;
+                min-height: 3.5rem;
+            }
+
+            .tm-map-detail {
+                min-height: 0;
+            }
+        }
+
+        /* --- Banish checker --- */
+        .tm-checker {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        .tm-fieldset {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            min-width: 0;
+        }
+
+        .tm-fieldset legend {
+            margin-bottom: 0.6rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--tm-gold-soft);
+        }
+
+        .tm-options {
+            display: grid;
+            gap: 0.4rem;
+        }
+
+        .tm-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.55rem 0.7rem;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.5rem;
+            background: var(--tm-inset);
+            font-size: 0.88rem;
+            line-height: 1.45;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .tm-option:hover {
+            border-color: var(--tm-border-strong);
+        }
+
+        .tm-option:has(input:checked) {
+            border-color: var(--tm-violet);
+            background: var(--tm-violet-wash);
+        }
+
+        .tm-option input {
+            flex-shrink: 0;
+            width: 1rem;
+            height: 1rem;
+            margin-top: 0.15rem;
+            accent-color: var(--tm-violet);
+        }
+
+        .tm-verdict {
+            padding: 1.1rem 1.2rem;
+            border: 1px solid var(--tm-border);
+            border-left-width: 4px;
+            border-radius: 0.6rem;
+            background: var(--tm-inset);
+        }
+
+        .tm-verdict.is-yes {
+            border-color: var(--tm-ok-line);
+            border-left-color: var(--tm-ok);
+            background: var(--tm-ok-wash);
+        }
+
+        .tm-verdict.is-no {
+            border-color: var(--tm-no-line);
+            border-left-color: var(--tm-no);
+            background: var(--tm-no-wash);
+        }
+
+        .tm-verdict-head {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .tm-verdict.is-yes .tm-verdict-head i {
+            color: var(--tm-ok);
+        }
+
+        .tm-verdict.is-no .tm-verdict-head i {
+            color: var(--tm-no);
+        }
+
+        .tm-verdict-body {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--tm-text);
+        }
+
+        .tm-verdict-options {
+            display: grid;
+            gap: 0.4rem;
+            margin: 0.75rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-verdict-options li {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-start;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .tm-verdict-options .is-on i {
+            color: var(--tm-ok);
+        }
+
+        .tm-verdict-options .is-off {
+            color: var(--tm-muted);
+        }
+
+        .tm-verdict-options .is-off i {
+            color: var(--tm-no);
+        }
+
+        .tm-verdict-options i {
+            margin-top: 0.25rem;
+        }
+
+        @media (min-width: 1024px) {
+            .tm-checker {
+                grid-template-columns: 1.2fr 1fr;
+            }
+
+            .tm-checker-out {
+                position: sticky;
+                top: 1.5rem;
+                align-self: start;
+            }
+        }
+
+        /* --- Rules clinic --- */
+        .tm-rules {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.9rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-rule {
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.6rem;
+            background: var(--tm-surface-deep);
+        }
+
+        .tm-rule-claim {
+            display: flex;
+            gap: 0.5rem;
+            font-weight: 700;
+            color: #fecaca;
+        }
+
+        .tm-rule-claim i {
+            margin-top: 0.2rem;
+            color: var(--tm-no);
+        }
+
+        .tm-rule-fact {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.45rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--tm-text);
+        }
+
+        .tm-rule-fact i {
+            margin-top: 0.3rem;
+            color: var(--tm-ok);
+        }
+
+        @media (min-width: 768px) {
+            .tm-rules {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* --- Combo lab --- */
+        .tm-lines {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .tm-line {
+            display: flex;
+            flex-direction: column;
+            padding: 1.1rem;
+            border: 1px solid var(--tm-border);
+            border-top: 3px solid var(--tm-line-accent, var(--tm-violet));
+            border-radius: 0.7rem;
+            background: var(--tm-surface-deep);
+            scroll-margin-top: 1.5rem;
+        }
+
+        .tm-line-num {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--tm-line-accent, var(--tm-violet));
+        }
+
+        .tm-line h3 {
+            margin: 0.25rem 0 0.6rem;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .tm-line dl {
+            display: grid;
+            gap: 0.5rem;
+            margin: 0 0 1rem;
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+
+        .tm-line dt {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--tm-muted);
+        }
+
+        .tm-line dd {
+            margin: 0;
+            color: var(--tm-text);
+        }
+
+        .tm-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 2.5rem;
+            margin-top: auto;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--tm-line-accent, var(--tm-violet));
+            border-radius: 0.5rem;
+            background: transparent;
+            color: #fff;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .tm-play:hover {
+            background: var(--tm-violet-wash);
+        }
+
+        .tm-lab {
+            min-height: 6rem;
+        }
+
+        .tm-lab-loading {
+            padding: 1rem;
+            color: var(--tm-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (min-width: 1024px) {
+            .tm-lines {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* --- Medius saga timeline --- */
+        .tm-saga {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-saga::before {
+            content: '';
+            position: absolute;
+            left: 1.9rem;
+            top: 0.5rem;
+            bottom: 0.5rem;
+            width: 2px;
+            background: linear-gradient(var(--tm-violet-line), var(--tm-gold-line));
+        }
+
+        .tm-beat {
+            position: relative;
+            display: grid;
+            grid-template-columns: 3.8rem 1fr;
+            gap: 1rem;
+            padding: 0.6rem 0;
+        }
+
+        .tm-beat-art {
+            position: relative;
+            z-index: 1;
+            width: 3.8rem;
+        }
+
+        .tm-beat-art .tm-art-slot {
+            font-size: 0.5rem;
+            padding: 0.2rem;
+        }
+
+        .tm-beat-body {
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.6rem;
+            background: var(--tm-surface-deep);
+        }
+
+        .tm-beat--now .tm-beat-body {
+            border-color: var(--tm-gold-line);
+            background:
+                radial-gradient(circle at 0% 0%, var(--tm-gold-wash), transparent 60%),
+                var(--tm-surface-deep);
+        }
+
+        .tm-beat-era {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--tm-muted);
+        }
+
+        .tm-beat h3 {
+            margin: 0.15rem 0 0.35rem;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .tm-beat p {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: var(--tm-text);
+        }
+
+        .tm-beat .tm-beat-card {
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--tm-muted);
+        }
+
+        .tm-beat-card strong {
+            color: var(--tm-violet-soft);
+        }
+
+        @media (min-width: 640px) {
+            .tm-saga::before {
+                left: 2.9rem;
+            }
+
+            .tm-beat {
+                grid-template-columns: 5.8rem 1fr;
+            }
+
+            .tm-beat-art {
+                width: 5.8rem;
+            }
+
+            .tm-beat-art .tm-art-slot {
+                font-size: 0.6rem;
+            }
+        }
+
+        .tm-reading {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-reading li {
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--tm-border);
+            border-radius: 0.6rem;
+            background: var(--tm-inset);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .tm-reading q {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-family: Georgia, 'Times New Roman', serif;
+            color: var(--tm-gold-soft);
+        }
+
+        @media (min-width: 768px) {
+            .tm-reading {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Guides to the sibling archetypes */
+        .tm-guides {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .tm-guide {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            height: 100%;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--tm-border);
+            border-left: 3px solid var(--tm-guide-color, var(--tm-violet));
+            border-radius: 0.6rem;
+            background: var(--tm-surface-deep);
+            color: var(--tm-text);
+            text-decoration: none;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .tm-guide:hover {
+            transform: translateY(-2px);
+            border-color: var(--tm-guide-color, var(--tm-violet));
+        }
+
+        .tm-guide strong {
+            color: #fff;
+        }
+
+        .tm-guide span {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--tm-muted);
+        }
+
+        @media (min-width: 640px) {
+            .tm-guides {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .tm-guides {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 639px) {
+            .tm-panel,
+            .tm-spot {
+                padding: 1rem;
+            }
+
+            .tm-h2 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tm-node,
+            .tm-cta,
+            .tm-guide,
+            .tm-map-lines line {
+                transition: none;
+            }
+
+            .tm-cta:hover,
+            .tm-guide:hover {
+                transform: none;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -311,8 +1564,39 @@
             </div>
         </section>
 
+        <!-- New Card Spotlight: Theorealized Medius (Beyond the Brave). Always visible.
+             Each tag opens the Beyond the Brave tab at the matching section or map node. -->
+        <aside class="tm-spot" data-pcs-scope="spot" aria-labelledby="tm-spot-title">
+            <div class="tm-spot-art">
+                <div id="tm-spot-img-container" class="tm-art-slot">Theorealized Medius</div>
+            </div>
+            <div>
+                <p class="tm-kicker"><span class="tm-badge">New card</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="tm-spot-title" class="tm-spot-title">Theorealized Medius</h2>
+                <p class="tm-stats">Level 4 &middot; DARK &middot; Fairy &middot; 1800 ATK / 1800 DEF &middot; always treated as a Power Patron card</p>
+                <p class="tm-spot-hook">Medius returns as a Power Patron in his own right. He Special Summons himself
+                    from your hand next to any Power Patron card, such as Artmage Power Patron, and adds a Theorealize
+                    Spell. After that, any monster banished face-up lets him add an Ars Magna card, or banish himself to
+                    bring out a Diactorus straight from the Extra Deck, Artmage Diactorus included.</p>
+                <p id="tm-spot-tags-label" class="tm-label">Jump to</p>
+                <ul class="tm-tags" aria-labelledby="tm-spot-tags-label">
+                    <li><a class="tm-tag" href="#tm-node-powerpatron" style="--tm-tag-color: var(--tm-c-patron)"><span class="tm-tag-dot" aria-hidden="true"></span>Power Patron</a></li>
+                    <li><a class="tm-tag" href="#tm-node-theorealize" style="--tm-tag-color: var(--tm-c-theorealize)"><span class="tm-tag-dot" aria-hidden="true"></span>Theorealize</a></li>
+                    <li><a class="tm-tag" href="#tm-node-arsmagna" style="--tm-tag-color: var(--tm-c-arsmagna)"><span class="tm-tag-dot" aria-hidden="true"></span>Ars Magna</a></li>
+                    <li><a class="tm-tag" href="#tm-node-diactorus" style="--tm-tag-color: var(--tm-c-diactorus)"><span class="tm-tag-dot" aria-hidden="true"></span>Diactorus</a></li>
+                    <li><a class="tm-tag" href="#tm-checker"><i class="fas fa-filter" aria-hidden="true"></i> Banish checker</a></li>
+                    <li><a class="tm-tag" href="#tm-combos"><i class="fas fa-play" aria-hidden="true"></i> Combo lab</a></li>
+                </ul>
+                <button type="button" class="tm-cta" data-open-panel="betb">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
         <!-- ERA SWITCHER TABS -->
         <div class="flex flex-wrap justify-center gap-4 mb-10 border-b border-indigo-500/30 pb-6">
+            <button onclick="switchTab('betb')" id="tab-btn-betb"
+                class="tab-btn inactive px-8 py-3 rounded-full font-bold text-lg flex items-center gap-2">
+                <i class="fas fa-eye text-amber-300"></i> Beyond the Brave Era <span class="tm-badge">New</span>
+            </button>
             <button onclick="switchTab('cori')" id="tab-btn-cori"
                 class="tab-btn active px-8 py-3 rounded-full font-bold text-lg flex items-center gap-2">
                 <i class="fas fa-atom text-cyan-400"></i> Chaos Origins Era (Upcoming)
@@ -326,6 +1610,578 @@
                 <i class="fas fa-history"></i> Burst Protocol Era (Legacy)
             </button>
         </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 0: BEYOND THE BRAVE (THEOREALIZED MEDIUS) -->
+        <!-- Art and the combo simulator load the first  -->
+        <!-- time this tab opens (script at the bottom).  -->
+        <!-- ========================================== -->
+        <div id="tab-content-betb" data-pcs-scope="betb" class="tab-content tm-tab">
+
+            <div id="tm-prerelease" class="tm-notice">
+                <i class="fas fa-calendar-alt" aria-hidden="true" style="margin-top: 0.2rem;"></i>
+                <p><strong>Upcoming in the TCG:</strong> Theorealized Medius releases in <em>Beyond the Brave</em> on
+                    <strong>8 October 2026</strong>. It has been legal in the OCG since 18 July 2026.</p>
+            </div>
+
+            <nav aria-label="Beyond the Brave sections">
+                <ul class="tm-toc">
+                    <li><a href="#tm-profile">Card profile</a></li>
+                    <li><a href="#tm-map">Connection map</a></li>
+                    <li><a href="#tm-checker">Banish checker</a></li>
+                    <li><a href="#tm-rules">Rules clinic</a></li>
+                    <li><a href="#tm-combos">Combo lab</a></li>
+                    <li><a href="#tm-slots">Deck slots</a></li>
+                    <li><a href="#tm-saga">The Medius saga</a></li>
+                </ul>
+            </nav>
+
+            <!-- ============ Card profile ============ -->
+            <section id="tm-profile" class="tm-section" aria-labelledby="tm-profile-title">
+                <h2 id="tm-profile-title" class="tm-h2"><i class="fas fa-eye" aria-hidden="true"></i>Theorealized Medius</h2>
+                <p class="tm-lede">The first Medius card since Medius the Pure, and the first built to connect every
+                    family in his story. It counts as a Power Patron, searches the Theorealize Spells, feeds the Ars
+                    Magna engine, and calls either Diactorus form straight from the Extra Deck.</p>
+
+                <div class="tm-panel tm-profile">
+                    <div class="tm-profile-art">
+                        <div id="tm-profile-img-container" class="tm-art-slot">Theorealized Medius</div>
+                    </div>
+                    <div>
+                        <p class="tm-stats">Effect Monster &middot; Level 4 &middot; DARK &middot; Fairy &middot; ATK 1800 &middot; DEF 1800</p>
+                        <ul class="tm-chips" aria-label="Release and classification">
+                            <li class="tm-chip--gold">TCG &middot; Beyond the Brave &middot; 8 Oct 2026</li>
+                            <li>OCG &middot; 18 Jul 2026</li>
+                            <li>Archetype: Medius</li>
+                            <li>Counts as: Power Patron</li>
+                        </ul>
+                        <blockquote class="tm-cardtext" aria-label="Official TCG card text">
+                            <p>(This card is always treated as a "Power Patron" card.)</p>
+                            <p>If a "Power Patron" card is on the field: You can Special Summon this card from your
+                                hand, then you can add 1 "Theorealize" Spell/Trap from your Deck to your hand. If a
+                                monster is banished face-up (except during the Damage Step): You can activate 1 of these
+                                effects;</p>
+                            <p class="tm-bullet">&#9679; Add 1 "Ars Magna" card from your Deck to your hand.</p>
+                            <p class="tm-bullet">&#9679; Banish this card, and if you do, Special Summon 1 "Diactorus"
+                                monster from your Extra Deck.</p>
+                            <p>You can only use each effect of "Theorealized Medius" once per turn.</p>
+                        </blockquote>
+                    </div>
+                </div>
+
+                <ul class="tm-clauses">
+                    <li class="tm-clause" style="--tm-clause-color: var(--tm-c-patron)">
+                        <h3><span class="tm-clause-mark">&#9312;</span>Summon and search</h3>
+                        <p>Needs a Power Patron card anywhere on the field, yours or your opponent's. Artmage Power
+                            Patron, Nervedo, Purification Power Patron and a second Theorealized Medius all count.
+                            Medius the Pure doesn't. The search is part of the same effect, so an Ash Blossom on it
+                            stops both.</p>
+                    </li>
+                    <li class="tm-clause" style="--tm-clause-color: var(--tm-c-arsmagna)">
+                        <h3><span class="tm-clause-mark">&#9313;</span>Banish: Ars Magna search</h3>
+                        <p>Any monster banished face-up, by either player, while this card is on the field. Every Ars
+                            Magna monster banishes itself face-up from the hand to use its effect, so the package keeps
+                            it supplied.</p>
+                    </li>
+                    <li class="tm-clause" style="--tm-clause-color: var(--tm-c-diactorus)">
+                        <h3><span class="tm-clause-mark">&#9313;</span>Banish: Diactorus</h3>
+                        <p>Or banish it instead to Special Summon Artmage Diactorus or DoomZ Break - Diactorus from the
+                            Extra Deck, no materials needed. The same trigger picks one option, once per turn.</p>
+                    </li>
+                </ul>
+
+                <h3 class="tm-h3">Next to the original</h3>
+                <div class="tm-table-wrap">
+                    <table class="tm-table">
+                        <caption class="tm-sr-only">Medius the Pure compared with Theorealized Medius</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">Medius the Pure</th>
+                                <th scope="col">Theorealized Medius</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Stats</th>
+                                <td>Level 4 DARK Fairy, 1800 / 1800</td>
+                                <td>Identical</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Power Patron card?</th>
+                                <td>No</td>
+                                <td>Yes, always treated as one</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Reaches the field</th>
+                                <td>Normal Summon, or its own GY effect (then banished when it leaves)</td>
+                                <td>From the hand next to a Power Patron card, or from the Deck with Medius the Pure's
+                                    summon effect</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gets you</th>
+                                <td>A Power Patron monster from the Deck, to hand or field</td>
+                                <td>A Theorealize Spell, then an Ars Magna card or a Diactorus</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Named by</th>
+                                <td>Theorealize, Liberation, Overdrive, Past Lull, Artmage Diactorus, Acropolis</td>
+                                <td>No card by name. Ars Magna "Citrinitas" searches it as a "Medius" monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Artmage Diactorus</th>
+                                <td>Its named Fusion Material</td>
+                                <td>Not a material, but summons it directly</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tm-foot">Different names mean separate once-per-turn limits, so you can use both cards' effects in the same turn.</p>
+            </section>
+
+            <!-- ============ Connection map ============ -->
+            <section id="tm-map" class="tm-section" aria-labelledby="tm-map-title">
+                <h2 id="tm-map-title" class="tm-h2"><i class="fas fa-project-diagram" aria-hidden="true"></i>Connection map</h2>
+                <p class="tm-lede">Every family the card touches, and what actually counts. Pick a family to see the
+                    clause that connects it, the cards that work, and the ones that look like they should but don't.</p>
+
+                <div class="tm-panel tm-map">
+                    <div class="tm-map-stage" data-tm-map>
+                        <svg class="tm-map-lines" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+                            <circle class="tm-map-ring" cx="50" cy="50" r="37"></circle>
+                            <line x1="50" y1="50" x2="50" y2="13" data-tm-line="powerpatron" style="--tm-line-color: var(--tm-c-patron)"></line>
+                            <line x1="50" y1="50" x2="76.2" y2="23.8" data-tm-line="theorealize" style="--tm-line-color: var(--tm-c-theorealize)"></line>
+                            <line x1="50" y1="50" x2="87" y2="50" data-tm-line="arsmagna" style="--tm-line-color: var(--tm-c-arsmagna)"></line>
+                            <line x1="50" y1="50" x2="76.2" y2="76.2" data-tm-line="diactorus" style="--tm-line-color: var(--tm-c-diactorus)"></line>
+                            <line x1="50" y1="50" x2="50" y2="87" data-tm-line="artmage" style="--tm-line-color: var(--tm-c-artmage)"></line>
+                            <line x1="50" y1="50" x2="23.8" y2="76.2" data-tm-line="doomz" style="--tm-line-color: var(--tm-c-doomz)"></line>
+                            <line x1="50" y1="50" x2="13" y2="50" data-tm-line="elfnote" style="--tm-line-color: var(--tm-c-elfnote)"></line>
+                            <line x1="50" y1="50" x2="23.8" y2="23.8" data-tm-line="medius" style="--tm-line-color: var(--tm-c-medius)"></line>
+                        </svg>
+                        <button type="button" class="tm-node tm-node--center" id="tm-node-center" data-tm-node="center" aria-pressed="true" aria-controls="tm-map-detail"
+                            style="--x: 50%; --y: 50%; --tm-node-color: var(--tm-c-patron)">
+                            <span class="tm-node-name">Theorealized Medius</span>
+                            <span class="tm-node-role">Overview</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-powerpatron" data-tm-node="powerpatron" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 50%; --y: 13%; --tm-node-color: var(--tm-c-patron)">
+                            <span class="tm-node-name">Power Patron</span>
+                            <span class="tm-node-role">Counts as &middot; enabler</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-theorealize" data-tm-node="theorealize" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 76.2%; --y: 23.8%; --tm-node-color: var(--tm-c-theorealize)">
+                            <span class="tm-node-name">Theorealize</span>
+                            <span class="tm-node-role">Summon search</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-arsmagna" data-tm-node="arsmagna" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 87%; --y: 50%; --tm-node-color: var(--tm-c-arsmagna)">
+                            <span class="tm-node-name">Ars Magna</span>
+                            <span class="tm-node-role">Banish search &middot; fuel</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-diactorus" data-tm-node="diactorus" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 76.2%; --y: 76.2%; --tm-node-color: var(--tm-c-diactorus)">
+                            <span class="tm-node-name">Diactorus</span>
+                            <span class="tm-node-role">Extra Deck call</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-artmage" data-tm-node="artmage" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 50%; --y: 87%; --tm-node-color: var(--tm-c-artmage)">
+                            <span class="tm-node-name">Artmage</span>
+                            <span class="tm-node-role">Host deck</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-doomz" data-tm-node="doomz" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 23.8%; --y: 76.2%; --tm-node-color: var(--tm-c-doomz)">
+                            <span class="tm-node-name">DoomZ</span>
+                            <span class="tm-node-role">Cards to destroy</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-elfnote" data-tm-node="elfnote" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 13%; --y: 50%; --tm-node-color: var(--tm-c-elfnote)">
+                            <span class="tm-node-name">Elfnote</span>
+                            <span class="tm-node-role">Synchro side</span>
+                        </button>
+                        <button type="button" class="tm-node" id="tm-node-medius" data-tm-node="medius" aria-pressed="false" aria-controls="tm-map-detail"
+                            style="--x: 23.8%; --y: 23.8%; --tm-node-color: var(--tm-c-medius)">
+                            <span class="tm-node-name">Medius the Pure</span>
+                            <span class="tm-node-role">The original</span>
+                        </button>
+                    </div>
+
+                    <div id="tm-map-detail" class="tm-map-detail" aria-live="polite">
+                        <p class="tm-detail-kicker">Overview</p>
+                        <p class="tm-detail-title">Theorealized Medius</p>
+                        <p>Pick a family on the map to see how it connects.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ Banish checker ============ -->
+            <section id="tm-checker" class="tm-section" aria-labelledby="tm-checker-title">
+                <h2 id="tm-checker-title" class="tm-h2"><i class="fas fa-filter" aria-hidden="true"></i>Banish checker</h2>
+                <p class="tm-lede">The second effect is the one people misread. Pick what was banished and where
+                    Theorealized Medius is. The verdict says whether it can activate and which Diactorus any Extra
+                    Deck restrictions on your field still allow.</p>
+
+                <form class="tm-panel tm-checker" data-tm-checker aria-describedby="tm-checker-help">
+                    <p id="tm-checker-help" class="tm-sr-only">Changing any option updates the verdict.</p>
+                    <div>
+                        <fieldset class="tm-fieldset">
+                            <legend>1. What was banished?</legend>
+                            <div class="tm-options" data-tm-group="source"></div>
+                        </fieldset>
+                        <fieldset class="tm-fieldset" style="margin-top: 1.25rem;">
+                            <legend>2. Where is Theorealized Medius?</legend>
+                            <div class="tm-options" data-tm-group="where"></div>
+                        </fieldset>
+                        <fieldset class="tm-fieldset" style="margin-top: 1.25rem;">
+                            <legend>3. Extra Deck restrictions this turn (optional)</legend>
+                            <div class="tm-options" data-tm-group="locks"></div>
+                        </fieldset>
+                    </div>
+                    <div class="tm-checker-out">
+                        <div class="tm-verdict" data-tm-verdict role="status" aria-live="polite">
+                            <p class="tm-verdict-head">Pick a banish to check it.</p>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ============ Rules clinic ============ -->
+            <section id="tm-rules" class="tm-section" aria-labelledby="tm-rules-title">
+                <h2 id="tm-rules-title" class="tm-h2"><i class="fas fa-gavel" aria-hidden="true"></i>Rules clinic</h2>
+                <p class="tm-lede">Reveal-season write-ups got several of these wrong. Each answer below comes from the
+                    official TCG text.</p>
+                <ul class="tm-rules">
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"Medius the Pure lets it summon itself from the hand."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>Medius the Pure isn't
+                            a Power Patron card. It can Special Summon Theorealized Medius from the Deck, because
+                            Theorealized Medius counts as a Power Patron monster, but the summon from the hand needs a
+                            real Power Patron card on the field.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"It switches on Theorealize Past Lull."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>Past Lull needs an
+                            Artmage, DoomZ or Elfnote card. Theorealized Medius is only treated as a Power Patron card.
+                            Artmage Power Patron, Artmage Diactorus, Jupredo or Ars Magna "Citrinitas" all work.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"Theorealize Liberation works with either Medius."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>Liberation says "If
+                            you control Medius the Pure". Overdrive and Past Lull also name Medius the Pure. Theorealized
+                            Medius has a different name.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"DoomZ Break - Diactorus destroys a monster whenever it arrives."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>It must first destroy
+                            a DoomZ card in your hand or face-up field, and "then" means no DoomZ card, no monster
+                            destroyed. Citrinitas and Jupredo count as DoomZ cards.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"The Diactorus it calls has every effect."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>It isn't Fusion or Xyz
+                            Summoned. Artmage Diactorus's effect for when "this Fusion Summoned card" is destroyed won't
+                            activate, and DoomZ Break arrives without materials, so it has no Medius the Pure attached
+                            for its Equip Spell effect.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"Any banish triggers it."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>It has to be a monster,
+                            banished face-up, outside the Damage Step. Nervedo, Jupredo, Junoldo, Vidolia and Shade of
+                            the Final Hour all banish face-down, and the Theorealize Spells banishing themselves from the
+                            GY aren't monsters.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"It can trigger from the hand or GY."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>The second effect
+                            doesn't name a location, so it only works while the card is face-up on the field.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"You can search Ars Magna and summon Diactorus in the same turn."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>It's one effect with a
+                            choice of two, once per turn. A second copy doesn't help either, because the limit is by
+                            name.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"Artmage Power Patron is the perfect partner."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>It enables the summon
+                            from the hand, but while it's face-up you can only Special Summon Fusion Monsters from the
+                            Extra Deck. Artmage Diactorus is fine; DoomZ Break - Diactorus and Purification Power Patron
+                            have to wait until it leaves the field.</span></p>
+                    </li>
+                    <li class="tm-rule">
+                        <p class="tm-rule-claim"><i class="fas fa-times" aria-hidden="true"></i>"Ars Magna of the Divergence and Convergence."</p>
+                        <p class="tm-rule-fact"><i class="fas fa-check" aria-hidden="true"></i><span>That's a reveal-season
+                            translation. The TCG names are Ars Magna the Division and the Union, Ars Magna the Finite and
+                            the Infinite, and Theorealized Medius, not "Theorealize Medius".</span></p>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- ============ Combo lab ============ -->
+            <section id="tm-combos" class="tm-section" aria-labelledby="tm-combos-title">
+                <h2 id="tm-combos-title" class="tm-h2"><i class="fas fa-route" aria-hidden="true"></i>Combo lab</h2>
+                <p class="tm-lede">Three lines, one for each build the card fits. All three run step by step in the
+                    combo simulator below, one card move per step, and use only cards released in the TCG.</p>
+
+                <div class="tm-lines">
+                    <article id="tm-line-1" class="tm-line" style="--tm-line-accent: var(--tm-c-artmage)" aria-labelledby="tm-line-1-title">
+                        <p class="tm-line-num">Line 1 &middot; Artmage &middot; going first</p>
+                        <h3 id="tm-line-1-title">Nerva, Diactorus and an Impasto hand-off</h3>
+                        <dl>
+                            <div><dt>Hand</dt><dd>Medius the Pure + Theorealized Medius</dd></div>
+                            <div><dt>Needs</dt><dd>Artmage Power Patron, Theorealize Liberation, Nervedo, Artmage
+                                Graflare and Artmage Impasto -Recapture- in the Deck; Nerva and 2 Artmage Diactorus in
+                                the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Nerva, Artmage Diactorus, Theorealized Medius and Graflare (three
+                                Monster Types) plus a set Impasto. When Impasto banishes Diactorus on their turn,
+                                Theorealized Medius brings out the second copy.</dd></div>
+                        </dl>
+                        <a class="tm-play" href="#artmage-combo-lab" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i>Play line 1</a>
+                    </article>
+
+                    <article id="tm-line-2" class="tm-line" style="--tm-line-accent: var(--tm-c-arsmagna)" aria-labelledby="tm-line-2-title">
+                        <p class="tm-line-num">Line 2 &middot; Ars Magna &middot; going second</p>
+                        <h3 id="tm-line-2-title">DoomZ Break - Diactorus clears the way</h3>
+                        <dl>
+                            <div><dt>Hand</dt><dd>Medius the Pure + Ars Magna the Corruption and the Purification</dd></div>
+                            <div><dt>Needs</dt><dd>Theorealized Medius, Citrinitas, the Finite and the Infinite and the
+                                Division and the Union in the Deck; DoomZ Break - Diactorus and Purification Power
+                                Patron in the Extra Deck</dd></div>
+                            <div><dt>Result</dt><dd>One monster destroyed, another monster and a Spell/Trap banished, 1
+                                card drawn. Theorealized Medius skips the first banish so Citrinitas is on the field as
+                                the DoomZ card DoomZ Break needs.</dd></div>
+                        </dl>
+                        <a class="tm-play" href="#artmage-combo-lab" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i>Play line 2</a>
+                    </article>
+
+                    <article id="tm-line-3" class="tm-line" style="--tm-line-accent: var(--tm-c-theorealize)" aria-labelledby="tm-line-3-title">
+                        <p class="tm-line-num">Line 3 &middot; Medius &middot; going first</p>
+                        <h3 id="tm-line-3-title">Theorealize, a self-banish and Past Lull</h3>
+                        <dl>
+                            <div><dt>Hand</dt><dd>Medius the Pure + Theorealized Medius</dd></div>
+                            <div><dt>Needs</dt><dd>A second Theorealized Medius, a second Medius the Pure, Theorealize
+                                and Theorealize Past Lull in the Deck; Purification Power Patron and Artmage Diactorus
+                                in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Purification Power Patron, Artmage Diactorus and Medius the Pure.
+                                The revived Medius banishes itself as Link Material, which is the face-up banish that
+                                calls Diactorus.</dd></div>
+                        </dl>
+                        <a class="tm-play" href="#artmage-combo-lab" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i>Play line 3</a>
+                    </article>
+                </div>
+
+                <div id="artmage-combo-lab" class="tm-lab">
+                    <p class="tm-lab-loading">Loading the combo simulator&hellip;</p>
+                </div>
+                <p class="tm-foot">Going further with Mediclius? The <a class="tm-inline-link"
+                    href="Power%20Patron%20Deck%20Analysis.html#tab-betb">Power Patron guide</a> has three more lines that use
+                    Theorealized Medius as the Deck summon for Purification Power Patron.</p>
+            </section>
+
+            <!-- ============ Deck slots ============ -->
+            <section id="tm-slots" class="tm-section" aria-labelledby="tm-slots-title">
+                <h2 id="tm-slots-title" class="tm-h2"><i class="fas fa-layer-group" aria-hidden="true"></i>Deck slots</h2>
+                <p class="tm-lede">How many to play depends on what puts a Power Patron card on the field first. These
+                    counts are this guide's own suggestions for the lines above.</p>
+                <div class="tm-table-wrap">
+                    <table class="tm-table">
+                        <caption class="tm-sr-only">Suggested Theorealized Medius counts by build</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Build</th>
+                                <th scope="col">Copies</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Artmage</th>
+                                <td class="tm-num">1&ndash;2</td>
+                                <td>Artmage Power Patron or Nervedo has to be face-up first. After Acropolis's search you
+                                    can only Special Summon Artmage monsters, Medius the Pure or from the Extra Deck, so
+                                    summon Theorealized Medius before you use it.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Ars Magna / Power Patron</th>
+                                <td class="tm-num">2</td>
+                                <td>Medius the Pure calls one from the Deck and Citrinitas searches another. Every Ars
+                                    Magna cost is a face-up banish.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Pure Medius</th>
+                                <td class="tm-num">2</td>
+                                <td>The copy Medius the Pure summons from the Deck is the Power Patron card that lets the
+                                    copy in your hand come down.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Extra Deck</th>
+                                <td class="tm-num">3&ndash;4</td>
+                                <td>1&ndash;2 Artmage Diactorus, 1 DoomZ Break - Diactorus, 1 Purification Power
+                                    Patron.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tm-foot">Not in the TCG yet, according to the card database: Artmage Vandalism -Assault-,
+                    Artmage Varnish -Alteration-, Artmage Pact -Awakening- and Artmage Masterwork -Succession-. The lines
+                    above leave them out.</p>
+            </section>
+
+            <!-- ============ The Medius saga ============ -->
+            <section id="tm-saga" class="tm-section" aria-labelledby="tm-saga-title">
+                <h2 id="tm-saga-title" class="tm-h2"><i class="fas fa-book-open" aria-hidden="true"></i>The Medius saga</h2>
+                <p class="tm-lede">Konami tells this story through card art, not text. The order below is the one the
+                    community has pieced together from the art; the line under each beat is what the card actually
+                    does.</p>
+
+                <ol class="tm-saga">
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-medius-img-container" class="tm-art-slot">Medius the Pure</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">The Acropolis</p>
+                            <h3>The student</h3>
+                            <p>An unremarkable student at the Artmage Acropolis, classmate of Finmel, Graflare and Litera,
+                                in the academy that serves Nerva.</p>
+                            <p class="tm-beat-card"><strong>Medius the Pure:</strong> calls a Power Patron monster from the Deck.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-theorealize-img-container" class="tm-art-slot">Theorealize</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">The first vision</p>
+                            <h3>Theorealize</h3>
+                            <p>Medius foresees the DoomZ attack on Finmel's succession ritual.</p>
+                            <p class="tm-beat-card"><strong>Theorealize:</strong> looks at the top card of your opponent's
+                                Deck, a literal look ahead.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-artdiac-img-container" class="tm-art-slot">Artmage Diactorus</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">The first form</p>
+                            <h3>Artmage Diactorus</h3>
+                            <p>He takes the blow meant for Finmel. The Artmage Power Patron binds Nerva's power to him
+                                to keep him alive.</p>
+                            <p class="tm-beat-card"><strong>Artmage Diactorus:</strong> Medius the Pure + 1 Artmage monster.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-overdrive-img-container" class="tm-art-slot">Theorealize Overdrive</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">The second vision</p>
+                            <h3>Theorealize Overdrive</h3>
+                            <p>Another vision: Graflare broken by the DoomZ machinery he means to turn against the
+                                invaders.</p>
+                            <p class="tm-beat-card"><strong>Theorealize Overdrive:</strong> returns Medius the Pure from the
+                                GY or banishment.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-doomz-img-container" class="tm-art-slot">DoomZ Break - Diactorus</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">The second form</p>
+                            <h3>DoomZ Break - Diactorus</h3>
+                            <p>Medius takes the machinery into himself instead.</p>
+                            <p class="tm-beat-card"><strong>DoomZ Break - Diactorus:</strong> its Equip Spell effect works
+                                when Medius the Pure is its material.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-liberation-img-container" class="tm-art-slot">Theorealize Liberation</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">The forest</p>
+                            <h3>Theorealize Liberation</h3>
+                            <p>Carried to the Elfnote forest, Medius is put through a healing rite.</p>
+                            <p class="tm-beat-card"><strong>Theorealize Liberation:</strong> its GY effect turns a monster
+                                into a Tuner, the Elfnotes' Synchro tool.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat">
+                        <div class="tm-beat-art"><div id="tm-saga-vidolium-img-container" class="tm-art-slot">Vidolium the Unstable Power Patron of Unity</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">Three powers at once</p>
+                            <h3>Vidolium the Unstable Power Patron of Unity</h3>
+                            <p>The powers inside him merge into something none of the three nations can control.</p>
+                            <p class="tm-beat-card"><strong>Vidolium:</strong> summoned by returning 1 Fusion, 1 Synchro and 1
+                                Xyz Monster, one from each nation.</p>
+                        </div>
+                    </li>
+                    <li class="tm-beat tm-beat--now">
+                        <div class="tm-beat-art"><div id="tm-saga-tmedius-img-container" class="tm-art-slot">Theorealized Medius</div></div>
+                        <div class="tm-beat-body">
+                            <p class="tm-beat-era">Beyond the Brave</p>
+                            <h3>Theorealized Medius</h3>
+                            <p>Medius comes back as himself, with Mediclius the Extraordinary Power Patron as his Link
+                                form.</p>
+                            <p class="tm-beat-card"><strong>Theorealized Medius:</strong> always a Power Patron card, and able
+                                to step back into either Diactorus form.</p>
+                        </div>
+                    </li>
+                </ol>
+
+                <h3 class="tm-h3">Reading the card text</h3>
+                <ul class="tm-reading">
+                    <li><q>Always treated as a "Power Patron" card</q>Medius no longer borrows a patron's power. He
+                        counts as one.</li>
+                    <li><q>Add 1 "Theorealize" Spell/Trap</q>The visions that started the story are one search
+                        away.</li>
+                    <li><q>Add 1 "Ars Magna" card</q><em>Ars magna</em>, the Great Art, is an old name for alchemy.
+                        Citrinitas is one of its stages, and Philosophorum points to the philosopher's stone.</li>
+                    <li><q>Banish this card &hellip; Special Summon 1 "Diactorus" monster</q>He can step back into
+                        either of his earlier forms whenever he chooses.</li>
+                </ul>
+
+                <h3 class="tm-h3">The Ars Magna trio mirrors the academy</h3>
+                <div class="tm-table-wrap">
+                    <table class="tm-table">
+                        <caption class="tm-sr-only">How each Ars Magna monster lines up with a classmate and a Power Patron</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Ars Magna monster</th>
+                                <th scope="col">Type, shared with</th>
+                                <th scope="col">Attribute, shared with</th>
+                                <th scope="col">Returns from banishment on</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">The Finite and the Infinite</th>
+                                <td>Warrior &middot; Artmage Finmel</td>
+                                <td>EARTH &middot; Nerva</td>
+                                <td>A Fusion or Link Monster being Special Summoned (Nerva is a Fusion Monster)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The Corruption and the Purification</th>
+                                <td>Dragon &middot; Artmage Graflare</td>
+                                <td>WIND &middot; Jupiter</td>
+                                <td>An Xyz or Link Monster being Special Summoned (Jupiter is an Xyz Monster)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The Division and the Union</th>
+                                <td>Spellcaster &middot; Artmage Litera</td>
+                                <td>FIRE &middot; Junora</td>
+                                <td>A Synchro or Link Monster being Special Summoned (Junora is a Synchro Monster)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tm-foot">A Diactorus from Theorealized Medius counts: Artmage Diactorus brings back the Finite
+                    and the Infinite, and DoomZ Break - Diactorus brings back the Corruption and the Purification.</p>
+
+                <h3 class="tm-h3">The rest of the story</h3>
+                <ul class="tm-guides">
+                    <li><a class="tm-guide" href="Power%20Patron%20Deck%20Analysis.html#tab-betb" style="--tm-guide-color: var(--tm-c-patron)">
+                        <strong>Power Patron</strong><span>The patrons, the Shade Pendulums and Mediclius.</span></a></li>
+                    <li><a class="tm-guide" href="Ars%20Magna%20Deck%20Analysis.html" style="--tm-guide-color: var(--tm-c-arsmagna)">
+                        <strong>Ars Magna</strong><span>The Level 8 trio that returns on every Link Summon.</span></a></li>
+                    <li><a class="tm-guide" href="Doom-Z%20Archetype%20Deep%20Dive.html" style="--tm-guide-color: var(--tm-c-doomz)">
+                        <strong>DoomZ</strong><span>Jupiter's Xyz nation and DoomZ Break - Diactorus.</span></a></li>
+                    <li><a class="tm-guide" href="Elfnote%20Deck%20Analysis.html" style="--tm-guide-color: var(--tm-c-elfnote)">
+                        <strong>Elfnote</strong><span>Junora's Synchro nation.</span></a></li>
+                </ul>
+            </section>
+        </div>
+        <!-- END tab-content-betb -->
+
 
         <!-- ========================================== -->
         <!-- TAB 1: CHAOS ORIGINS ERA (UPCOMING)        -->
@@ -1382,6 +3238,7 @@
             if (typeof CardLoader !== 'undefined' && CardLoader.renderBanlistSectionByArchetype) {
                 await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Artmage', {
                     relatedCards: [
+                        'Theorealized Medius',                        // BETB Addition (filed under "Medius")
                         'Theorealize Past Lull',                      // CORI Addition
                         'Purification Power Patron',                  // CORI Addition
                         'Prohibitive Power Patron Purview - Vilaea',  // CORI Addition
@@ -1426,6 +3283,503 @@
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
+
+    <!-- Theorealized Medius tab (Beyond the Brave). Runs before tab-deeplink.js so a link to
+         an anchor inside the tab (#tm-checker, #tm-node-diactorus) opens the tab first. -->
+    <script>
+        (function () {
+            'use strict';
+
+            var TAB_ID = 'betb';
+            var COMBO_MOUNT_ID = 'artmage-combo-lab';
+            var COMBO_SLUG = 'artmage'; // assets/data/combos/artmage-combos.json
+            var CARD = 'Theorealized Medius';
+            var TCG_RELEASE = new Date('2026-10-08T00:00:00');
+            var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            var narrow = window.matchMedia('(max-width: 1023px)');
+
+            var tabBtn = document.getElementById('tab-btn-' + TAB_ID);
+            var artRequested = false;
+            var comboReady = null;
+
+            function scrollBehavior() {
+                return reduceMotion.matches ? 'auto' : 'smooth';
+            }
+
+            // The pre-release notice hides itself once the TCG set is out.
+            var notice = document.getElementById('tm-prerelease');
+            if (notice && new Date() >= TCG_RELEASE) notice.hidden = true;
+
+            /* ---------- Lazy content: art and the combo simulator load once ---------- */
+            function openBetbPanel() {
+                if (!artRequested && typeof CardLoader !== 'undefined' && CardLoader.loadCards) {
+                    artRequested = true;
+                    CardLoader.loadCards({
+                        'tm-profile-img-container': CARD,
+                        'tm-saga-medius-img-container': 'Medius the Pure',
+                        'tm-saga-theorealize-img-container': 'Theorealize',
+                        'tm-saga-artdiac-img-container': 'Artmage Diactorus',
+                        'tm-saga-overdrive-img-container': 'Theorealize Overdrive',
+                        'tm-saga-doomz-img-container': 'DoomZ Break - Diactorus',
+                        'tm-saga-liberation-img-container': 'Theorealize Liberation',
+                        'tm-saga-vidolium-img-container': 'Vidolium the Unstable Power Patron of Unity',
+                        'tm-saga-tmedius-img-container': CARD
+                    });
+                }
+                if (!comboReady) {
+                    var mount = document.getElementById(COMBO_MOUNT_ID);
+                    // combo-system.js declares ComboLoader as a top-level class, which is
+                    // not a property of window, so check it with typeof.
+                    if (typeof ComboLoader === 'undefined') {
+                        if (mount) mount.innerHTML = '<p class="tm-lab-loading">The combo simulator could not load. The three line summaries above still list every hand, requirement and end board.</p>';
+                        comboReady = Promise.resolve(null);
+                    } else {
+                        comboReady = Promise.resolve(ComboLoader.renderComboSystem(COMBO_MOUNT_ID, COMBO_SLUG))
+                            .catch(function () { return null; });
+                    }
+                }
+                return comboReady;
+            }
+
+            if (tabBtn) tabBtn.addEventListener('click', openBetbPanel);
+
+            /* ---------- Deep links into the tab ---------- */
+            // Open the era tab that holds an element, if it's hidden. The page's own
+            // switchTab() also restyles the buttons, so press the button.
+            function revealTabFor(target) {
+                var owner = target && target.closest('.tab-content');
+                if (!owner || owner === target || owner.classList.contains('active')) return;
+                var btn = document.getElementById(owner.id.replace('tab-content-', 'tab-btn-'));
+                if (btn) btn.click();
+            }
+
+            function targetFromHash(hash) {
+                var id = (hash || '').slice(1);
+                try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+                if (!id || !/^[\w:.-]+$/.test(id)) return null;
+                return document.getElementById(id);
+            }
+
+            function handleTarget(target) {
+                revealTabFor(target);
+                var key = target && target.getAttribute('data-tm-node');
+                if (key) selectNode(key, true);
+            }
+
+            function openPanelForHash() {
+                handleTarget(targetFromHash(window.location.hash));
+            }
+            window.addEventListener('hashchange', openPanelForHash);
+            document.addEventListener('DOMContentLoaded', openPanelForHash);
+
+            // In-page links, before the browser scrolls. hashchange doesn't fire when the
+            // same link is clicked twice.
+            document.addEventListener('click', function (event) {
+                var link = event.target.closest && event.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                handleTarget(targetFromHash(link.hash));
+            });
+
+            // The spotlight's button opens the tab and brings the tab row into view.
+            var cta = document.querySelector('[data-open-panel="' + TAB_ID + '"]');
+            if (cta && tabBtn) {
+                cta.addEventListener('click', function () {
+                    tabBtn.click();
+                    tabBtn.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+                    tabBtn.focus({ preventScroll: true });
+                });
+            }
+
+            // The spotlight is always on screen, so its art loads with the page.
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof CardLoader !== 'undefined' && CardLoader.loadCards) {
+                    CardLoader.loadCards({ 'tm-spot-img-container': CARD });
+                }
+            });
+
+            // "Play line N" selects that line in the simulator.
+            Array.prototype.forEach.call(document.querySelectorAll('[data-combo-open]'), function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var num = link.getAttribute('data-combo-open');
+                    openBetbPanel().then(function () {
+                        var option = document.querySelector('#' + COMBO_MOUNT_ID +
+                            ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        var mount = document.getElementById(COMBO_MOUNT_ID);
+                        if (mount) mount.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+                    });
+                });
+            });
+
+            /* ---------- Connection map ---------- */
+            // Each node: the clause that connects it, what works, what doesn't, and a tip.
+            var NODES = {
+                center: {
+                    kicker: 'Overview',
+                    color: 'var(--tm-c-patron)',
+                    title: 'Theorealized Medius',
+                    clause: null,
+                    works: [
+                        'Power Patron: counts as one, and needs one on the field to summon itself.',
+                        'Theorealize: the Spell it adds when it summons itself.',
+                        'Ars Magna: the card it can add when a monster is banished, and the package that does the banishing.',
+                        'Diactorus: the Extra Deck monster it can become instead.'
+                    ],
+                    not: [],
+                    tip: 'Pick a family on the map for the details. Artmage, DoomZ and Elfnote are the decks it plays in.'
+                },
+                powerpatron: {
+                    kicker: 'Counts as · enabler',
+                    color: 'var(--tm-c-patron)',
+                    title: 'Power Patron',
+                    clause: '(This card is always treated as a "Power Patron" card.) If a "Power Patron" card is on the field: You can Special Summon this card from your hand…',
+                    works: [
+                        'Any card with Power Patron in its name: Artmage Power Patron, Nervedo, Jupredo, Junoldo, Elfnote Power Patron, Power Patron DoomZ, Purification Power Patron, Mediclius, Nerva, Jupiter, Junora, Vidolium, Vidolia.',
+                        'Another Theorealized Medius. It also counts as a Power Patron monster for Medius the Pure\'s summon from the Deck, Purification Power Patron\'s GY check and Shade of the Final Hour.',
+                        'A Power Patron card on your opponent\'s side: the text says "on the field".'
+                    ],
+                    not: [
+                        'Medius the Pure. Its name doesn\'t contain Power Patron and it has no "always treated as" line.'
+                    ],
+                    tip: 'In a pure Medius build, Medius the Pure summons one copy from the Deck, and that copy lets the one in your hand come down (Combo lab, line 3).',
+                    link: { href: 'Power%20Patron%20Deck%20Analysis.html#tab-betb', text: 'Power Patron guide' }
+                },
+                theorealize: {
+                    kicker: 'Summon search',
+                    color: 'var(--tm-c-theorealize)',
+                    title: 'Theorealize',
+                    clause: '…then you can add 1 "Theorealize" Spell/Trap from your Deck to your hand.',
+                    works: [
+                        'Theorealize: sends Medius the Pure from your Deck to the GY. Needs nothing on your field.',
+                        'Theorealize Liberation: needs Medius the Pure on your field. Adds or summons a 300 ATK / 200 DEF monster, such as Nervedo or Artmage Power Patron.',
+                        'Theorealize Overdrive: Special Summons Medius the Pure from your GY or banishment.',
+                        'Theorealize Past Lull: needs an Artmage, DoomZ or Elfnote card. Special Summons Medius the Pure from your hand or Deck, and your opponent can\'t respond.'
+                    ],
+                    not: [
+                        'Theorealized Medius itself for any of them. Every Theorealize Spell names Medius the Pure.',
+                        'Past Lull with only Power Patron cards out. Theorealized Medius isn\'t an Artmage, DoomZ or Elfnote card.'
+                    ],
+                    tip: 'The search belongs to the summon effect. An Ash Blossom on it stops both the summon and the search.',
+                    link: { href: '#cori', text: 'Past Lull in the Chaos Origins tab' }
+                },
+                arsmagna: {
+                    kicker: 'Banish search · fuel',
+                    color: 'var(--tm-c-arsmagna)',
+                    title: 'Ars Magna',
+                    clause: 'If a monster is banished face-up (except during the Damage Step): You can activate 1 of these effects; ● Add 1 "Ars Magna" card from your Deck to your hand.',
+                    works: [
+                        'Every Ars Magna monster banishes itself face-up from your hand to use its effect. That banish is the trigger.',
+                        'Ars Magna "Philosophorum" banishes up to 3 Ars Magna monsters, a trigger on your opponent\'s turn.',
+                        'Ars Magna "Citrinitas" can add a "Medius" monster, and Theorealized Medius has Medius in its name.',
+                        'Citrinitas is always treated as an Artmage, DoomZ and Elfnote card, which enables Past Lull and gives DoomZ Break - Diactorus its DoomZ card.'
+                    ],
+                    not: [
+                        'The Corruption and the Purification banishing Spells/Traps. No monster is banished.'
+                    ],
+                    tip: 'It\'s one effect with two options, once per turn. Let an early banish pass if a later one is worth more (Combo lab, line 2).',
+                    link: { href: 'Ars%20Magna%20Deck%20Analysis.html', text: 'Ars Magna guide' }
+                },
+                diactorus: {
+                    kicker: 'Extra Deck call',
+                    color: 'var(--tm-c-diactorus)',
+                    title: 'Diactorus',
+                    clause: '● Banish this card, and if you do, Special Summon 1 "Diactorus" monster from your Extra Deck.',
+                    works: [
+                        'Artmage Diactorus: Level 8 LIGHT Fairy, 2800 ATK. Negates an activation on the field while you have 3 Monster Types. It\'s a Fusion Monster, so it brings back a banished Finite and the Infinite.',
+                        'DoomZ Break - Diactorus: Rank 4 WIND Machine, 2400 ATK. When Special Summoned, it destroys a DoomZ card in your hand or face-up field, then a monster. It\'s an Xyz Monster, so it brings back a banished Corruption and the Purification.'
+                    ],
+                    not: [
+                        'Neither is Fusion or Xyz Summoned. Artmage Diactorus loses the effect for when "this Fusion Summoned card" is destroyed, and DoomZ Break has no materials.',
+                        'DoomZ Break with no DoomZ card in your hand or face-up field destroys nothing.',
+                        'Theorealized Medius is banished, not sent to the GY, so it doesn\'t count for Purification Power Patron\'s search.'
+                    ],
+                    tip: 'Play two Artmage Diactorus. When Impasto banishes one until the End Phase, Theorealized Medius replaces it straight away (Combo lab, line 1).',
+                    link: { href: 'Doom-Z%20Archetype%20Deep%20Dive.html', text: 'DoomZ guide' }
+                },
+                artmage: {
+                    kicker: 'Host deck',
+                    color: 'var(--tm-c-artmage)',
+                    title: 'Artmage',
+                    clause: 'Artmage Power Patron: "You cannot Special Summon from the Extra Deck, except Fusion Monsters."',
+                    works: [
+                        'Artmage Power Patron is a Power Patron card. Medius the Pure summons it, then Theorealized Medius follows from the hand.',
+                        'Artmage Impasto -Recapture- banishes your own Fusion Monster face-up until the End Phase, a trigger you choose on your opponent\'s turn.',
+                        'Its Fairy Type counts toward the 3 Monster Types that Artmage Diactorus, Finmel and Graflare need.'
+                    ],
+                    not: [
+                        'While Artmage Power Patron is face-up, you can only Special Summon Fusion Monsters from the Extra Deck. Artmage Diactorus is fine; DoomZ Break and Purification Power Patron aren\'t.',
+                        'After Acropolis\'s search you can only Special Summon Artmage monsters, Medius the Pure or from the Extra Deck, which stops the summon from the hand.',
+                        'The turn you use Movement -Pedigree- or Peripeteia -Turmoil-, only Fusion Monsters can come from the Extra Deck.'
+                    ],
+                    tip: 'Summon Theorealized Medius before you use Acropolis\'s search.'
+                },
+                doomz: {
+                    kicker: 'Cards to destroy',
+                    color: 'var(--tm-c-doomz)',
+                    title: 'DoomZ',
+                    clause: 'DoomZ Break - Diactorus: "If this card is Special Summoned: You can destroy 1 "DoomZ" card in your hand or face-up field, then you can destroy 1 monster on the field."',
+                    works: [
+                        'Jupredo the Shademachine Power Patron: a Power Patron card for the summon from the hand, and always treated as a DoomZ card. Destroyed on the field, it goes to the Extra Deck face-up and adds a Power Patron or DoomZ Spell/Trap.',
+                        'Ars Magna "Citrinitas": always treated as a DoomZ card. Destroy it once its search is used.',
+                        'A DoomZ card also enables Theorealize Past Lull.'
+                    ],
+                    not: [
+                        'While Power Patron DoomZ is face-up, only Xyz Monsters can come from the Extra Deck, so Artmage Diactorus and Purification Power Patron are out.'
+                    ],
+                    tip: 'For DoomZ Break\'s Equip Spell effect, Xyz Summon it properly with Medius the Pure as material. The version from Theorealized Medius has no materials.',
+                    link: { href: 'Doom-Z%20Archetype%20Deep%20Dive.html', text: 'DoomZ guide' }
+                },
+                elfnote: {
+                    kicker: 'Synchro side',
+                    color: 'var(--tm-c-elfnote)',
+                    title: 'Elfnote',
+                    clause: 'Elfnote Power Patron: "You cannot Special Summon from the Extra Deck, except Synchro Monsters."',
+                    works: [
+                        'Elfnote Power Patron and Junoldo have Power Patron in their names, so either enables the summon from the hand.',
+                        'Theorealize Liberation\'s GY effect makes a monster a Tuner for the turn.',
+                        'A Synchro Monster being Special Summoned brings back a banished Ars Magna the Division and the Union.',
+                        'An Elfnote card enables Theorealize Past Lull.'
+                    ],
+                    not: [
+                        'While Elfnote Power Patron is face-up, only Synchro Monsters can come from the Extra Deck, which blocks both Diactorus.'
+                    ],
+                    tip: 'Finish Elfnote Power Patron\'s Synchro Summon before a banish, so its restriction is gone when Theorealized Medius wants a Diactorus.',
+                    link: { href: 'Elfnote%20Deck%20Analysis.html', text: 'Elfnote guide' }
+                },
+                medius: {
+                    kicker: 'The original',
+                    color: 'var(--tm-c-medius)',
+                    title: 'Medius the Pure',
+                    clause: 'If this card is Normal or Special Summoned: You can add to your hand, or Special Summon, 1 "Power Patron" monster from your Deck.',
+                    works: [
+                        'Theorealized Medius is a Power Patron monster, so Medius the Pure can add it or summon it from the Deck.',
+                        'Revived by its own GY effect, Medius the Pure is banished when it leaves the field, a face-up banish you can set up yourself.',
+                        'Theorealize, Liberation, Overdrive and Past Lull all name it.'
+                    ],
+                    not: [
+                        'It isn\'t a Power Patron card, so on its own it doesn\'t let Theorealized Medius summon itself from the hand.',
+                        'Same Level, Attribute, Type and stats, but a different name. Nothing that names Medius the Pure accepts Theorealized Medius.'
+                    ],
+                    tip: 'Different names, separate once-per-turn limits. Use both in the same turn.'
+                }
+            };
+
+            var mapStage = document.querySelector('[data-tm-map]');
+            var detail = document.getElementById('tm-map-detail');
+            var nodeBtns = mapStage ? Array.prototype.slice.call(mapStage.querySelectorAll('[data-tm-node]')) : [];
+            var nodeLines = mapStage ? Array.prototype.slice.call(mapStage.querySelectorAll('[data-tm-line]')) : [];
+
+            function el(tag, className, text) {
+                var node = document.createElement(tag);
+                if (className) node.className = className;
+                if (text) node.textContent = text;
+                return node;
+            }
+
+            function detailList(items, kind) {
+                var list = el('ul', 'tm-detail-list tm-detail-list--' + kind);
+                items.forEach(function (text) {
+                    var li = el('li');
+                    var icon = el('i', 'fas ' + (kind === 'ok' ? 'fa-check' : 'fa-times'));
+                    icon.setAttribute('aria-hidden', 'true');
+                    li.appendChild(icon);
+                    li.appendChild(document.createTextNode(text));
+                    list.appendChild(li);
+                });
+                return list;
+            }
+
+            function renderDetail(key) {
+                var data = NODES[key];
+                if (!data || !detail) return;
+                detail.style.setProperty('--tm-detail-color', data.color);
+                detail.innerHTML = '';
+                detail.appendChild(el('p', 'tm-detail-kicker', data.kicker));
+                detail.appendChild(el('p', 'tm-detail-title', data.title));
+                if (data.clause) detail.appendChild(el('p', 'tm-detail-clause', data.clause));
+                if (data.works.length) {
+                    detail.appendChild(el('p', 'tm-detail-sub', key === 'center' ? 'How it connects' : 'Works'));
+                    detail.appendChild(detailList(data.works, 'ok'));
+                }
+                if (data.not.length) {
+                    detail.appendChild(el('p', 'tm-detail-sub', "Doesn't work"));
+                    detail.appendChild(detailList(data.not, 'no'));
+                }
+                if (data.tip) detail.appendChild(el('p', 'tm-detail-tip', data.tip));
+                if (data.link) {
+                    var a = el('a', 'tm-detail-link', data.link.text + ' ');
+                    a.href = data.link.href;
+                    var arrow = el('i', 'fas fa-arrow-right');
+                    arrow.setAttribute('aria-hidden', 'true');
+                    a.appendChild(arrow);
+                    detail.appendChild(a);
+                }
+            }
+
+            function selectNode(key, fromLink) {
+                if (!NODES[key]) return;
+                nodeBtns.forEach(function (btn) {
+                    btn.setAttribute('aria-pressed', String(btn.getAttribute('data-tm-node') === key));
+                });
+                nodeLines.forEach(function (line) {
+                    line.classList.toggle('is-active', line.getAttribute('data-tm-line') === key);
+                });
+                renderDetail(key);
+                // One column: the details sit below the buttons, so bring them into view.
+                if (narrow.matches && detail) {
+                    setTimeout(function () {
+                        detail.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' });
+                    }, fromLink ? 250 : 0);
+                }
+            }
+
+            nodeBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    selectNode(btn.getAttribute('data-tm-node'), false);
+                });
+            });
+            if (detail) renderDetail('center');
+
+            /* ---------- Banish checker ---------- */
+            var SOURCES = [
+                { id: 'arsmagna', label: 'An Ars Magna monster banishes itself from your hand to use its effect', trigger: true,
+                  note: 'Banishing itself is the cost, so the monster is banished face-up. Theorealized Medius activates once that chain resolves.' },
+                { id: 'finite', label: 'Ars Magna the Finite and the Infinite banishes a monster on the field', trigger: true,
+                  note: 'Your opponent\'s monster counts too, so the removal is also a trigger.' },
+                { id: 'philosophorum', label: 'Ars Magna "Philosophorum" banishes Ars Magna monsters', trigger: true,
+                  note: 'It\'s a Trap, so this works on your opponent\'s turn.' },
+                { id: 'impasto', label: 'Artmage Impasto -Recapture- banishes your monster until the End Phase', trigger: true,
+                  note: 'The best trigger on your opponent\'s turn in an Artmage build. A Diactorus replaces the banished monster right away.' },
+                { id: 'medius', label: 'Medius the Pure, revived by its own effect, leaves the field', trigger: true,
+                  note: 'Its own text banishes it face-up when it leaves. Using it as material is the easiest way to set this up.' },
+                { id: 'mediclius', label: 'Mediclius banishes itself and every card your opponent controls', trigger: true,
+                  note: 'Mediclius is a monster banished face-up. Theorealized Medius is your card, so it stays on the field to respond.' },
+                { id: 'opponent', label: 'Your opponent banishes a monster face-up, such as a Bystial\'s cost', trigger: true,
+                  note: 'The text says "a monster", not "your monster", so their banishes count.' },
+                { id: 'corruption', label: 'The Corruption and the Purification banishes Spells or Traps', trigger: false,
+                  note: 'Only a monster being banished counts.' },
+                { id: 'spell', label: 'A Theorealize Spell banishes itself from the GY', trigger: false,
+                  note: 'Spells don\'t count, only monsters.' },
+                { id: 'facedown', label: 'Nervedo, Jupredo, Junoldo, Vidolia or Shade of the Final Hour banishes face-down', trigger: false,
+                  note: 'Face-down banishes don\'t count, and most Power Patron costs banish face-down.' },
+                { id: 'damage', label: 'A monster is banished during the Damage Step', trigger: false,
+                  note: 'The text excludes the Damage Step.' }
+            ];
+
+            var WHERE = [
+                { id: 'field', label: 'Face-up on my field, and no copy has used this effect this turn', ok: true },
+                { id: 'used', label: 'On my field, but a copy already used this effect this turn', ok: false,
+                  why: 'Each effect of Theorealized Medius is once per turn by name, so a second copy can\'t use it either.' },
+                { id: 'hand', label: 'In my hand', ok: false,
+                  why: 'The second effect doesn\'t name a location, so it only works while the card is face-up on the field. From the hand, only the first effect works.' },
+                { id: 'gy', label: 'In my GY or banished', ok: false,
+                  why: 'It has no effect that works from the GY or banishment.' }
+            ];
+
+            // Extra Deck restrictions: each allows only one kind of Extra Deck monster.
+            var LOCKS = [
+                { id: 'artpp', label: 'Artmage Power Patron is face-up (Fusion Monsters only)', allows: 'fusion', name: 'Artmage Power Patron' },
+                { id: 'artspell', label: 'I used Artmage Movement -Pedigree- or Peripeteia -Turmoil- this turn (Fusion Monsters only)', allows: 'fusion', name: 'Pedigree or Turmoil' },
+                { id: 'elfpp', label: 'Elfnote Power Patron is face-up (Synchro Monsters only)', allows: 'synchro', name: 'Elfnote Power Patron' },
+                { id: 'doomzpp', label: 'Power Patron DoomZ is face-up (Xyz Monsters only)', allows: 'xyz', name: 'Power Patron DoomZ' }
+            ];
+
+            var DIACTORUS = [
+                { name: 'Artmage Diactorus', kind: 'fusion',
+                  note: '2800 ATK, negates once you have 3 Monster Types, and brings back a banished Finite and the Infinite.' },
+                { name: 'DoomZ Break - Diactorus', kind: 'xyz',
+                  note: '2400 ATK. Destroys a DoomZ card in your hand or face-up field, then a monster, and brings back a banished Corruption and the Purification.' }
+            ];
+
+            var checker = document.querySelector('[data-tm-checker]');
+            if (checker) {
+                var verdict = checker.querySelector('[data-tm-verdict]');
+
+                function addOption(group, type, name, item, checked) {
+                    var label = el('label', 'tm-option');
+                    var input = document.createElement('input');
+                    input.type = type;
+                    input.name = name;
+                    input.value = item.id;
+                    input.checked = !!checked;
+                    label.appendChild(input);
+                    label.appendChild(el('span', null, item.label));
+                    group.appendChild(label);
+                }
+
+                var groups = {
+                    source: checker.querySelector('[data-tm-group="source"]'),
+                    where: checker.querySelector('[data-tm-group="where"]'),
+                    locks: checker.querySelector('[data-tm-group="locks"]')
+                };
+                SOURCES.forEach(function (item, i) { addOption(groups.source, 'radio', 'tm-source', item, i === 0); });
+                WHERE.forEach(function (item, i) { addOption(groups.where, 'radio', 'tm-where', item, i === 0); });
+                LOCKS.forEach(function (item) { addOption(groups.locks, 'checkbox', 'tm-lock', item, false); });
+
+                function find(list, id) {
+                    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+                    return null;
+                }
+
+                function renderVerdict() {
+                    var srcInput = checker.querySelector('input[name="tm-source"]:checked');
+                    var whereInput = checker.querySelector('input[name="tm-where"]:checked');
+                    var source = find(SOURCES, srcInput && srcInput.value);
+                    var where = find(WHERE, whereInput && whereInput.value);
+                    var locks = Array.prototype.map.call(checker.querySelectorAll('input[name="tm-lock"]:checked'), function (input) {
+                        return find(LOCKS, input.value);
+                    });
+                    if (!source || !where) return;
+
+                    var ok = source.trigger && where.ok;
+                    verdict.classList.toggle('is-yes', ok);
+                    verdict.classList.toggle('is-no', !ok);
+                    verdict.innerHTML = '';
+
+                    var head = el('p', 'tm-verdict-head');
+                    var icon = el('i', 'fas ' + (ok ? 'fa-check-circle' : 'fa-times-circle'));
+                    icon.setAttribute('aria-hidden', 'true');
+                    head.appendChild(icon);
+                    head.appendChild(document.createTextNode(ok ? 'Theorealized Medius can activate'
+                        : (source.trigger ? 'It can\'t activate here' : 'No trigger')));
+                    verdict.appendChild(head);
+                    verdict.appendChild(el('p', 'tm-verdict-body', !source.trigger ? source.note : (!where.ok ? where.why : source.note)));
+                    if (!ok) return;
+
+                    verdict.appendChild(el('p', 'tm-detail-sub', 'Pick one, once per turn'));
+                    var list = el('ul', 'tm-verdict-options');
+
+                    function option(on, text) {
+                        var li = el('li', on ? 'is-on' : 'is-off');
+                        var i = el('i', 'fas ' + (on ? 'fa-check' : 'fa-ban'));
+                        i.setAttribute('aria-hidden', 'true');
+                        li.appendChild(i);
+                        li.appendChild(el('span', null, text));
+                        list.appendChild(li);
+                    }
+
+                    option(true, 'Add 1 Ars Magna card from your Deck to your hand.');
+                    DIACTORUS.forEach(function (d) {
+                        var blockers = locks.filter(function (lock) { return lock.allows !== d.kind; });
+                        if (blockers.length) {
+                            option(false, 'Banish it for ' + d.name + ': blocked by ' +
+                                blockers.map(function (b) { return b.name; }).join(' and ') + '.');
+                        } else {
+                            option(true, 'Banish it for ' + d.name + '. ' + d.note);
+                        }
+                    });
+                    verdict.appendChild(list);
+                }
+
+                checker.addEventListener('change', renderVerdict);
+                checker.addEventListener('submit', function (event) { event.preventDefault(); });
+                renderVerdict();
+            }
+        })();
+    </script>
+    <!-- Tab deep links (#betb, #cori, #blzd, #burst) -->
+    <script src="../assets/js/tab-deeplink.js"></script>
 </body>
 
 </html>

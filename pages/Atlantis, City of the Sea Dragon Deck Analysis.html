@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Atlantis, City of the Sea Dragon: the Beyond the Brave Field Spell behind the Daedalus deck. Every effect explained, the official Link-discount ruling, how it works with Umi and A Legendary Ocean, a Field Zone planner, and combo lines in the combo simulator.">
+    <link rel="canonical" href="https://archetypesnexus.com/pages/Atlantis,%20City%20of%20the%20Sea%20Dragon%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
+    <title>Atlantis, City of the Sea Dragon Guide: Umi Interactions &amp; Combos</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="../output.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+
+    <style>
+        /* ===== Atlantis, City of the Sea Dragon =====
+           Scoped atl-* classes rather than Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild.
+           Every colour comes from the --atl-* tokens below. */
+        :root {
+            --atl-bg: #061220;
+            --atl-surface: #0d2136;
+            --atl-surface-2: #112a44;
+            --atl-inset: #07172a;
+            --atl-border: #21476d;
+            --atl-border-soft: rgba(33, 71, 109, 0.6);
+            --atl-sea: #22d3ee;
+            --atl-sea-soft: #a5f3fc;
+            --atl-sea-line: rgba(34, 211, 238, 0.4);
+            --atl-sea-wash: rgba(34, 211, 238, 0.12);
+            --atl-gold: #f5c451;
+            --atl-gold-soft: #fde68a;
+            --atl-gold-line: rgba(245, 196, 81, 0.45);
+            --atl-gold-wash: rgba(245, 196, 81, 0.1);
+            --atl-ok: #4ade80;
+            --atl-ok-wash: rgba(74, 222, 128, 0.12);
+            --atl-warn: #fbbf24;
+            --atl-warn-wash: rgba(251, 191, 36, 0.12);
+            --atl-danger: #f87171;
+            --atl-danger-wash: rgba(248, 113, 113, 0.12);
+            --atl-text: #d7e5f3;
+            --atl-muted: #8fadc8;
+            --atl-heading: #ffffff;
+            --atl-display: 'Cinzel', 'Times New Roman', serif;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(ellipse at 50% -10%, rgba(34, 211, 238, 0.12) 0%, transparent 55%),
+                linear-gradient(180deg, #081a2e 0%, var(--atl-bg) 40%, #040b15 100%);
+            background-color: var(--atl-bg);
+            color: var(--atl-text);
+        }
+        .container { max-width: 1024px; }
+
+        /* --- Home button (shared look across the site) --- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            overflow: hidden;
+            border: 2px solid #6366f1;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: #8b5cf6;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.6), 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+        .ygo-home-button i { font-size: 22px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+        @media (max-width: 768px) {
+            .ygo-home-button { top: 15px; left: 15px; width: 50px; height: 50px; }
+            .ygo-home-button i { font-size: 18px; }
+        }
+
+        /* --- Card popup (themed) --- */
+        #card-popup {
+            position: fixed;
+            z-index: 1000;
+            display: none;
+            max-width: 300px;
+            padding: 1rem;
+            border: 1px solid var(--atl-gold);
+            border-radius: 0.75rem;
+            background-color: rgba(6, 18, 32, 0.95);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            color: var(--atl-text);
+            font-size: 0.875rem;
+            opacity: 0;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.2s ease-in-out;
+        }
+        #card-popup h3 { color: var(--atl-gold-soft); font-size: 1.125rem; font-weight: 700; }
+        #card-popup p { margin-top: 0.5rem; }
+        #card-popup-stats { color: var(--atl-sea-soft); }
+
+        .atl-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        [id^="atl-"] { scroll-margin-top: 1.5rem; }
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible + span,
+        .atl-table-wrap:focus-visible {
+            outline: 2px solid var(--atl-gold);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+
+        /* ----- Hero: the sunken city ----- */
+        /* Title and tagline only, like the other deck pages' banners; the
+           breadcrumb, summary, dates and links sit in .atl-intro below. */
+        .atl-hero {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            overflow: hidden;
+            margin: 0 0 2rem;
+            padding: 1.5rem 4rem;
+            border: 1px solid var(--atl-gold-line);
+            border-radius: 1.25rem;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(245, 196, 81, 0.16) 0%, transparent 50%),
+                linear-gradient(180deg, #0b2a44 0%, #071a2d 60%, #041120 100%);
+            text-align: center;
+        }
+        .atl-hero-city {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .atl-hero-rays {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(100deg, transparent 0 38px, rgba(165, 243, 252, 0.05) 38px 46px, transparent 46px 90px);
+            mask-image: linear-gradient(180deg, #000 0%, transparent 75%);
+            -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 75%);
+            animation: atl-drift 14s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+        @keyframes atl-drift {
+            from { transform: translateX(-3%); }
+            to { transform: translateX(3%); }
+        }
+        .atl-hero > *:not(.atl-hero-city):not(.atl-hero-rays) { position: relative; }
+        /* ----- Lore Archive (the site-wide intro block under the banner) ----- */
+        .atl-lore {
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--atl-border);
+            border-left: 4px solid var(--atl-gold);
+            border-radius: 0 0.75rem 0.75rem 0;
+            background: rgba(13, 33, 54, 0.82);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .atl-lore-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.9rem; }
+        .atl-lore-badge {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 2px solid #111;
+            border-radius: 9999px;
+            background: #b8892c;
+            color: #fff;
+        }
+        .atl-lore h2 {
+            color: var(--atl-gold);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .atl-lore-quote {
+            color: var(--atl-text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.1rem;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        .atl-lore-body {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--atl-gold-line);
+            color: var(--atl-text);
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        .atl-lore-body strong { color: var(--atl-gold-soft); }
+        @media (min-width: 768px) { .atl-lore { padding: 2rem; } }
+
+        .atl-intro {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            text-align: center;
+        }
+        .atl-intro-text { color: var(--atl-text); font-size: 1rem; line-height: 1.65; }
+        .atl-intro-text strong { color: var(--atl-heading); }
+        .atl-crumbs ol {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.35rem;
+            margin: 0 0 1rem;
+            padding: 0;
+            list-style: none;
+            color: var(--atl-muted);
+            font-size: 0.8rem;
+        }
+        .atl-crumbs li + li::before { content: "/"; margin-right: 0.35rem; color: var(--atl-border); }
+        .atl-crumbs a { color: var(--atl-sea-soft); text-decoration: underline dotted; text-underline-offset: 3px; }
+        .atl-crumbs a:hover { color: #fff; }
+        .atl-kicker {
+            color: var(--atl-gold-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+        .atl-hero h1 {
+            color: var(--atl-heading);
+            font-family: var(--atl-display);
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: 0.02em;
+            text-align: center;
+            text-shadow: 0 0 24px rgba(245, 196, 81, 0.35), 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .atl-hero-sub {
+            margin-top: 0.4rem;
+            color: var(--atl-sea-soft);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            text-align: center;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        .atl-chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.25rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .atl-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 9999px;
+            background: rgba(7, 23, 42, 0.85);
+            color: var(--atl-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .atl-chip i { color: var(--atl-sea-soft); }
+        .atl-chip--tcg { border-color: var(--atl-gold-line); }
+        .atl-chip--tcg i { color: var(--atl-gold); }
+        .atl-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .atl-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.6rem 1.15rem;
+            border: 1px solid var(--atl-sea);
+            border-radius: 9999px;
+            background: var(--atl-sea-wash);
+            color: #fff;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .atl-btn:hover { background: rgba(34, 211, 238, 0.25); box-shadow: 0 0 16px rgba(34, 211, 238, 0.3); }
+        .atl-btn--gold { border-color: var(--atl-gold); background: var(--atl-gold-wash); }
+        .atl-btn--gold:hover { background: rgba(245, 196, 81, 0.22); box-shadow: 0 0 16px rgba(245, 196, 81, 0.3); }
+
+        .atl-toc {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 2.5rem;
+            padding: 0;
+            list-style: none;
+        }
+        .atl-toc a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 9999px;
+            background: var(--atl-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .atl-toc a:hover { border-color: var(--atl-sea); background: var(--atl-sea-wash); }
+        .atl-toc i { color: var(--atl-gold); }
+
+        /* ----- Sections ----- */
+        .atl-section { margin: 0 0 3.5rem; }
+        .atl-h2 {
+            margin-bottom: 0.75rem;
+            color: var(--atl-heading);
+            font-family: var(--atl-display);
+            font-size: 1.45rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-align: center;
+        }
+        .atl-lede {
+            max-width: 44rem;
+            margin: 0 auto 1.75rem;
+            color: var(--atl-text);
+            line-height: 1.65;
+            text-align: center;
+        }
+        .atl-lede strong { color: var(--atl-heading); }
+        .atl-panel {
+            padding: 1.25rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.85rem;
+            background: linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+        }
+        .atl-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--atl-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .atl-link {
+            color: var(--atl-sea-soft);
+            font-weight: 700;
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+        .atl-link:hover { color: #fff; }
+        .atl-subhead { margin-top: 2rem; text-align: center; }
+        .atl-note { margin-top: 0.75rem; color: var(--atl-muted); font-size: 0.82rem; line-height: 1.55; }
+        .atl-note strong { color: var(--atl-text); }
+
+        /* ----- Card art slot: holds the 59:86 card shape until CardLoader
+           swaps the image in, then drops the empty-slot styling. ----- */
+        .atl-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--atl-gold-line);
+            border-radius: 0.35rem;
+            background: var(--atl-inset);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            color: var(--atl-gold-soft);
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .atl-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 6px 22px rgba(0, 0, 0, 0.65), 0 0 28px rgba(245, 196, 81, 0.15);
+        }
+        .atl-art img { width: 100%; border-radius: 0.35rem; }
+        /* CardLoader's not-found fallback nests a full-size .card-placeholder. */
+        .atl-art .card-placeholder { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; font-size: inherit; }
+
+        /* ----- Card spotlight ----- */
+        .atl-spot {
+            padding: 1.25rem;
+            border: 1px solid var(--atl-gold-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 0% 0%, var(--atl-gold-wash) 0%, transparent 55%),
+                linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+            box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+        }
+        .atl-spot-layout {
+            display: grid;
+            grid-template-columns: 104px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+        }
+        .atl-spot-art { grid-area: art; }
+        .atl-spot-head { grid-area: head; min-width: 0; }
+        .atl-spot-body { grid-area: body; min-width: 0; }
+        .atl-card-name {
+            margin-top: 0.2rem;
+            color: var(--atl-heading);
+            font-family: var(--atl-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+        .atl-stats { display: grid; gap: 0.2rem; margin: 0.6rem 0 0; font-size: 0.82rem; }
+        .atl-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .atl-stats dt { color: var(--atl-muted); }
+        .atl-stats dt::after { content: ":"; }
+        .atl-stats dd { margin: 0; color: #e5e7eb; font-weight: 600; }
+        .atl-effects { display: grid; gap: 0.7rem; margin: 0; padding: 0; list-style: none; }
+        .atl-effects > li {
+            display: grid;
+            grid-template-columns: 1.6rem minmax(0, 1fr);
+            gap: 0.6rem;
+            color: var(--atl-text);
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+        .atl-num {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 9999px;
+            background: var(--atl-gold);
+            color: #1a1204;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+        .atl-effect-tag {
+            display: inline-block;
+            margin-right: 0.4rem;
+            padding: 0 0.45rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.3rem;
+            color: var(--atl-sea-soft);
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            vertical-align: 0.1em;
+        }
+        .atl-opt { margin-top: 0.6rem; color: var(--atl-muted); font-size: 0.8rem; line-height: 1.5; }
+        .atl-opt i { margin-right: 0.35rem; color: var(--atl-gold); }
+        .atl-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--atl-gold);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--atl-gold-wash);
+            color: #e5e7eb;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .atl-role strong { color: var(--atl-gold-soft); }
+        .atl-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .atl-glance > div {
+            padding: 0.75rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.5rem;
+            background: var(--atl-inset);
+        }
+        .atl-glance dt {
+            color: var(--atl-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .atl-glance dd { margin: 0.25rem 0 0; color: var(--atl-sea-soft); font-size: 0.9rem; font-weight: 700; line-height: 1.3; }
+        .atl-trivia {
+            margin-top: 1.25rem;
+            padding: 0.9rem 1.1rem;
+            border: 1px dashed var(--atl-border);
+            border-radius: 0.6rem;
+            color: var(--atl-text);
+            font-size: 0.85rem;
+            line-height: 1.55;
+        }
+        .atl-trivia strong { color: var(--atl-heading); }
+
+        /* ----- Effect by effect ----- */
+        .atl-fx { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .atl-fx-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--atl-border);
+            border-top: 3px solid var(--atl-gold);
+            border-radius: 0.85rem;
+            background: linear-gradient(160deg, var(--atl-surface-2), var(--atl-surface));
+        }
+        .atl-fx-head { display: flex; align-items: center; gap: 0.6rem; }
+        .atl-fx-card h3 { color: var(--atl-heading); font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+        .atl-fx-card p { color: var(--atl-text); font-size: 0.88rem; line-height: 1.6; }
+        .atl-fx-card p strong { color: var(--atl-heading); }
+        .atl-list { display: grid; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+        .atl-list > li {
+            display: grid;
+            grid-template-columns: 1.1rem minmax(0, 1fr);
+            gap: 0.5rem;
+            color: var(--atl-text);
+            font-size: 0.86rem;
+            line-height: 1.5;
+        }
+        .atl-list i { margin-top: 0.2rem; }
+        .atl-yes { color: var(--atl-ok); }
+        .atl-no { color: var(--atl-danger); }
+        .atl-dot { color: var(--atl-sea); }
+
+        /* ----- Tables stack into labelled rows below 640px instead of making
+           the page scroll sideways. ----- */
+        .atl-table-wrap { border: 1px solid var(--atl-border); border-radius: 0.6rem; background: var(--atl-surface); }
+        .atl-table { width: 100%; border-collapse: collapse; }
+        .atl-table th,
+        .atl-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid var(--atl-border-soft);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .atl-table thead th {
+            border-bottom: 2px solid var(--atl-gold);
+            background: var(--atl-surface-2);
+            color: var(--atl-gold-soft);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .atl-table tbody th { color: var(--atl-heading); font-weight: 700; }
+        .atl-table td { color: var(--atl-text); }
+        .atl-table td strong { color: var(--atl-heading); }
+        .atl-table tbody tr:last-child > * { border-bottom: none; }
+        .atl-table .atl-col-hero { background: rgba(245, 196, 81, 0.05); }
+        .atl-table--center td { text-align: center; }
+        @media (max-width: 639px) {
+            .atl-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .atl-table,
+            .atl-table tbody,
+            .atl-table tr,
+            .atl-table th,
+            .atl-table td { display: block; width: 100%; }
+            .atl-table tr { padding: 0.5rem 0; border-bottom: 1px solid var(--atl-border); }
+            .atl-table tbody tr:last-child { border-bottom: none; }
+            .atl-table th,
+            .atl-table td { padding: 0.35rem 0.85rem; border-bottom: none; }
+            .atl-table--center td { text-align: left; }
+            .atl-table td[data-label]::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 0.15rem;
+                color: var(--atl-muted);
+                font-size: 0.66rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+            .atl-table .atl-col-hero { background: none; }
+        }
+        .atl-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .atl-pill--yes  { border-color: rgba(74, 222, 128, 0.4); background: var(--atl-ok-wash); color: var(--atl-ok); }
+        .atl-pill--part { border-color: rgba(251, 191, 36, 0.4); background: var(--atl-warn-wash); color: var(--atl-warn); }
+        .atl-pill--no   { border-color: rgba(248, 113, 113, 0.4); background: var(--atl-danger-wash); color: var(--atl-danger); }
+        .atl-pill--na   { border-color: var(--atl-border); background: var(--atl-inset); color: var(--atl-muted); }
+
+        /* ----- Field Zone swap: a numbered flow ----- */
+        .atl-flow { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; counter-reset: atl-flow; }
+        .atl-flow > li {
+            position: relative;
+            padding: 0.9rem 1rem 0.9rem 3.1rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.6rem;
+            background: var(--atl-inset);
+            color: var(--atl-text);
+            font-size: 0.88rem;
+            line-height: 1.55;
+            counter-increment: atl-flow;
+        }
+        .atl-flow > li::before {
+            content: counter(atl-flow);
+            content: counter(atl-flow) / "";
+            position: absolute;
+            top: 0.85rem;
+            left: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            background: var(--atl-sea);
+            color: #04121a;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .atl-flow strong { color: var(--atl-heading); }
+        .atl-choose { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.5rem; }
+        .atl-choose h3 { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; color: var(--atl-heading); font-weight: 800; }
+        .atl-choose h3 i { color: var(--atl-gold); }
+
+        /* ----- Field Zone planner ----- */
+        .atl-planner {
+            display: grid;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--atl-sea-line);
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .atl-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .atl-presets .atl-label { width: 100%; margin: 0; }
+        .atl-preset {
+            min-height: 40px;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 9999px;
+            background: var(--atl-inset);
+            color: var(--atl-text);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .atl-preset:hover { border-color: var(--atl-sea-soft); color: #fff; }
+        .atl-preset[aria-pressed="true"] { border-color: var(--atl-sea); background: var(--atl-sea-wash); color: #fff; }
+        .atl-inputs { display: grid; gap: 1rem; }
+        .atl-set {
+            min-width: 0;
+            margin: 0;
+            padding: 0.9rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.6rem;
+            background: var(--atl-inset);
+        }
+        .atl-set legend {
+            padding: 0 0.4rem;
+            color: var(--atl-sea-soft);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .atl-opts { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+        .atl-opts label { position: relative; display: inline-flex; }
+        .atl-opts input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .atl-opts span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 38px;
+            padding: 0.4rem 0.85rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 9999px;
+            color: var(--atl-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.3;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .atl-opts input:hover + span { border-color: var(--atl-sea-soft); color: #fff; }
+        .atl-opts input:checked + span { border-color: var(--atl-sea); background: var(--atl-sea-wash); color: #fff; }
+        .atl-opts input[type="checkbox"] + span::before {
+            content: "";
+            width: 0.8rem;
+            height: 0.8rem;
+            border: 1.5px solid currentColor;
+            border-radius: 0.2rem;
+        }
+        .atl-opts input[type="checkbox"]:checked + span::before {
+            border-color: var(--atl-sea);
+            background: var(--atl-sea);
+            box-shadow: inset 0 0 0 2px var(--atl-inset);
+        }
+        .atl-hint { margin-top: 0.6rem; color: var(--atl-muted); font-size: 0.76rem; line-height: 1.5; }
+        .atl-summary {
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--atl-border);
+            border-left: 4px solid var(--atl-gold);
+            border-radius: 0.6rem;
+            background: var(--atl-inset);
+            color: var(--atl-heading);
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+        .atl-checks { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+        .atl-check {
+            display: grid;
+            grid-template-columns: 4.6rem minmax(0, 1fr);
+            gap: 0.75rem;
+            align-items: start;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.6rem;
+            background: var(--atl-inset);
+        }
+        .atl-check .atl-pill { justify-content: center; }
+        .atl-check-title { color: var(--atl-heading); font-size: 0.88rem; font-weight: 700; }
+        .atl-check-detail { margin-top: 0.15rem; color: var(--atl-text); font-size: 0.84rem; line-height: 1.5; }
+
+        /* ----- Combo lines ----- */
+        .atl-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .atl-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            padding: 1.1rem;
+            border: 1px solid var(--atl-border);
+            border-top: 3px solid var(--atl-sea);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+        }
+        .atl-line--legacy { border-top-color: var(--atl-gold); }
+        .atl-line h3 { color: var(--atl-heading); font-size: 1rem; font-weight: 800; line-height: 1.3; }
+        .atl-line p { color: var(--atl-text); font-size: 0.85rem; line-height: 1.55; }
+        .atl-line p strong { color: var(--atl-gold-soft); }
+        .atl-line-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-top: auto; padding-top: 0.5rem; }
+        .atl-line-actions .atl-btn { min-height: 40px; padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+        .atl-lab { margin-top: 2rem; }
+        .atl-lab-mount { min-height: 12rem; }
+        .atl-lab-loading { padding: 2rem 1rem; color: var(--atl-muted); font-size: 0.9rem; text-align: center; }
+
+        /* ----- Rulings ----- */
+        .atl-qa { display: grid; gap: 0.85rem; margin: 0; }
+        .atl-qa > div {
+            padding: 1rem 1.15rem;
+            border: 1px solid var(--atl-border);
+            border-left: 4px solid var(--atl-sea);
+            border-radius: 0.6rem;
+            background: linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+        }
+        .atl-qa dt { color: var(--atl-heading); font-size: 0.92rem; font-weight: 700; line-height: 1.45; }
+        .atl-qa dd { margin: 0.35rem 0 0; color: var(--atl-text); font-size: 0.87rem; line-height: 1.6; }
+        .atl-qa dd strong { color: var(--atl-heading); }
+        .atl-source { display: block; margin-top: 0.35rem; color: var(--atl-muted); font-size: 0.76rem; }
+
+        /* ----- Shared widgets: card-loader.js renders the banlist into .card and
+           .combo-step-card boxes and leaves their look to the page, as every
+           other deck page does. :where() keeps the specificity at zero, so the
+           renderer's own utilities (border-l-4 border-red-500, rounded ...) still
+           win. ----- */
+        :where(.card) {
+            border: 1px solid var(--atl-border);
+            border-radius: 1rem;
+            background: linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+        }
+        :where(.combo-step-card) {
+            border: 1px solid var(--atl-border);
+            border-radius: 0.6rem;
+            background: var(--atl-inset);
+        }
+        .banlist-header { font-family: var(--atl-display); letter-spacing: 0.02em; }
+
+        /* ----- Back to the parent archetype ----- */
+        .atl-parent { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .atl-parent-card {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--atl-border);
+            border-radius: 0.85rem;
+            background: linear-gradient(145deg, var(--atl-surface-2), var(--atl-surface));
+            color: var(--atl-text);
+            text-decoration: none;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+        a.atl-parent-card:hover { border-color: var(--atl-gold); transform: translateY(-2px); }
+        .atl-parent-card h3 { display: flex; align-items: center; gap: 0.5rem; color: var(--atl-heading); font-size: 1.02rem; font-weight: 800; }
+        .atl-parent-card h3 i { color: var(--atl-gold); }
+        .atl-parent-card p { font-size: 0.86rem; line-height: 1.55; }
+        .atl-parent-go { margin-top: auto; color: var(--atl-sea-soft); font-size: 0.82rem; font-weight: 700; }
+        .atl-parent-links { display: grid; gap: 0.35rem; margin: 0.25rem 0 0; padding: 0; list-style: none; font-size: 0.86rem; }
+
+        @media (min-width: 640px) {
+            .atl-hero { min-height: 170px; padding: 1.75rem 2rem; }
+            .atl-hero h1 { font-size: 2.5rem; }
+            .atl-hero-sub { font-size: 1.05rem; }
+            .atl-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .atl-choose { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .atl-parent { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 768px) {
+            .atl-h2 { font-size: 1.85rem; }
+            .atl-spot { padding: 1.75rem; }
+            .atl-spot-layout {
+                grid-template-columns: 210px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .atl-card-name { font-size: 1.5rem; }
+            .atl-planner { padding: 1.75rem; }
+            .atl-fx { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .atl-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+            .atl-inputs { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: start; }
+            .atl-parent { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .atl-hero-rays { animation: none; }
+            .atl-btn,
+            .atl-toc a,
+            .atl-preset,
+            .atl-opts span,
+            .atl-parent-card,
+            .ygo-home-button { transition: none; }
+            a.atl-parent-card:hover,
+            .ygo-home-button:hover { transform: none; }
+        }
+        @media print {
+            .ygo-home-button,
+            .atl-hero-rays,
+            .atl-actions,
+            .atl-toc,
+            .atl-presets,
+            .atl-lab,
+            .atl-line-actions .atl-btn { display: none !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/synergy-tags.css">
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+    <script src="../assets/js/text-utils.js"></script>
+    <script src="../assets/js/deck-dock.js" defer></script>
+    <script src="../assets/js/synergy-tags.js"></script>
+    <script src="../assets/js/page-sections.js"></script>
+    <link rel="stylesheet" href="../assets/css/follow-archetype.css">
+    <script src="../assets/js/follow-archetype.js"></script>
+</head>
+<body class="p-4 md:p-8">
+    <div id="card-popup"></div>
+
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus" aria-label="Return to Archetype Nexus">
+        <i class="fas fa-home" aria-hidden="true"></i>
+    </a>
+
+    <div class="container mx-auto" data-pcs-scope="guide">
+
+        <!-- ==================== HERO ==================== -->
+        <header class="atl-hero" data-pcs-skip>
+            <div class="atl-hero-rays" aria-hidden="true"></div>
+            <svg class="atl-hero-city" viewBox="0 0 1200 170" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+                <defs>
+                    <linearGradient id="atl-city-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1b4466"/>
+                        <stop offset="100%" stop-color="#061220"/>
+                    </linearGradient>
+                </defs>
+                <g fill="url(#atl-city-fill)" stroke="#f5c451" stroke-opacity="0.35" stroke-width="1.2">
+                    <path d="M 0 170 V140 H60 V116 H90 V140 H135 V128 Q 157.5 116 180 128 V140 H225 V170 Z"/>
+                    <path d="M 225 170 V122 H255 V98 L 277.5 83 L 300 98 V122 H330 V170 Z"/>
+                    <path d="M 330 170 V131 Q 390 101 450 131 V170 Z"/>
+                    <path d="M 450 170 V110 H477 V86 H495 V68 L 510 50 L 525 68 V86 H543 V110 H570 V170 Z"/>
+                    <path d="M 570 170 V98 Q 630 62 690 98 V170 Z"/>
+                    <path d="M 690 170 V110 H717 V86 H735 V68 L 750 50 L 765 68 V86 H783 V110 H810 V170 Z"/>
+                    <path d="M 810 170 V131 Q 870 101 930 131 V170 Z"/>
+                    <path d="M 930 170 V122 H960 V98 L 982.5 83 L 1005 98 V122 H1035 V170 Z"/>
+                    <path d="M 1035 170 V140 H1080 V128 Q 1102.5 116 1125 128 V140 H1140 V116 H1170 V140 H1200 V170 Z"/>
+                </g>
+                <g fill="none" stroke="#a5f3fc" stroke-opacity="0.35" stroke-width="1">
+                    <circle cx="180" cy="74" r="3"/><circle cx="198" cy="60.8" r="2"/><circle cx="1035" cy="68" r="3"/>
+                    <circle cx="1053" cy="53.6" r="2"/><circle cx="630" cy="44" r="2.5"/><circle cx="390" cy="62" r="2"/>
+                </g>
+            </svg>
+            <h1>Atlantis, City of the Sea Dragon</h1>
+            <p class="atl-hero-sub">The Field Spell Behind the Daedalus Deck</p>
+        </header>
+
+        <div id="deck-dock"></div>
+
+        <!-- Lore / Thematic Intro Section -->
+        <section class="atl-lore" aria-labelledby="atl-lore-title">
+            <div class="atl-lore-head">
+                <div class="atl-lore-badge" aria-hidden="true"><i class="fas fa-book-open"></i></div>
+                <h2 id="atl-lore-title">Lore Archive</h2>
+            </div>
+            <p class="atl-lore-quote">"Plato wrote that Atlantis sank beneath the sea in a single day and night. Under the waves it became something else: the capital of the sea dragons, where the ocean itself answers to Daedalus."</p>
+            <div class="atl-lore-body">
+                <p>
+                    The dragon is older than the city. <strong>Levia-Dragon - Daedalus</strong> reached the TCG in 2004, and <strong>Structure Deck: Fury from the Deep</strong> paired it with A Legendary Ocean and introduced its evolved form, <strong>Ocean Dragon Lord - Neo-Daedalus</strong>. Both cleared the field by sending "Umi" to the GY, and for more than twenty years that pair was all Daedalus had. Beyond the Brave finally builds it a home: Atlantis, recast as a dragon's capital. <strong>Azure Ocean Dragon Lord - Neo-Daedalus Rage</strong> keeps the old trick of spending "Umi" to sweep the field, but now every card named "Umi" rides out the flood.
+                </p>
+            </div>
+        </section>
+
+        <!-- Intro: where this page sits, what the card is, and where to go next -->
+        <section class="atl-intro" aria-label="About this card">
+            <nav class="atl-crumbs" aria-label="Breadcrumb">
+                <ol>
+                    <li><a href="../index.html">Archetype Nexus</a></li>
+                    <li><a href="Umi%20Deck%20Analysis.html">Umi</a></li>
+                    <li><span aria-current="page">Atlantis, City of the Sea Dragon</span></li>
+                </ol>
+            </nav>
+            <p class="atl-intro-text">The Field Spell that turns Daedalus into an archetype. It lowers every Level, makes the Daedalus Link Monsters cheaper, and comes back from the GY. Unlike every older Umi Field Spell, it is <strong>not</strong> named "Umi".</p>
+            <ul class="atl-chips" aria-label="Release dates">
+                <li class="atl-chip atl-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></li>
+                <li class="atl-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; <time datetime="2026-07-18">18 Jul 2026</time></li>
+            </ul>
+            <div class="atl-actions">
+                <a class="atl-btn atl-btn--gold" href="Umi%20Deck%20Analysis.html#tab-betb"><i class="fas fa-water" aria-hidden="true"></i> All 11 new cards on the Umi guide</a>
+                <a class="atl-btn" href="#atl-planner"><i class="fas fa-sliders-h" aria-hidden="true"></i> Field Zone planner</a>
+            </div>
+        </section>
+
+        <nav aria-label="On this page">
+            <ul class="atl-toc">
+                <li><a href="#atl-card"><i class="fas fa-archway" aria-hidden="true"></i> The card</a></li>
+                <li><a href="#atl-effects"><i class="fas fa-list-ol" aria-hidden="true"></i> Effect by effect</a></li>
+                <li><a href="#atl-interaction"><i class="fas fa-water" aria-hidden="true"></i> Umi &amp; A Legendary Ocean</a></li>
+                <li><a href="#atl-planner"><i class="fas fa-sliders-h" aria-hidden="true"></i> Planner</a></li>
+                <li><a href="#atl-combos"><i class="fas fa-play" aria-hidden="true"></i> Combo lines</a></li>
+                <li><a href="#atl-rulings"><i class="fas fa-gavel" aria-hidden="true"></i> Rulings</a></li>
+                <li><a href="#atl-parent"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Umi</a></li>
+            </ul>
+        </nav>
+
+        <!-- ==================== CARD SPOTLIGHT ==================== -->
+        <section class="atl-section" id="atl-card" aria-labelledby="atl-card-title">
+            <h2 id="atl-card-title" class="atl-h2">Card Spotlight</h2>
+            <article class="atl-spot" aria-labelledby="atl-card-name">
+                <div class="atl-spot-layout">
+                    <div class="atl-spot-art">
+                        <div id="atl-card-img-container" class="atl-art">Atlantis, City of the Sea Dragon</div>
+                    </div>
+                    <div class="atl-spot-head">
+                        <p class="atl-kicker">Field Spell</p>
+                        <h3 id="atl-card-name" class="atl-card-name">Atlantis, City of the Sea Dragon</h3>
+                        <dl class="atl-stats">
+                            <div><dt>Card</dt><dd>Spell / Field</dd></div>
+                            <div><dt>Named "Umi"</dt><dd>Never</dd></div>
+                            <div><dt>Engine</dt><dd>Atlantis &amp; Daedalus (Umi)</dd></div>
+                        </dl>
+                    </div>
+                    <div class="atl-spot-body">
+                        <p class="atl-label">Card text</p>
+                        <ol class="atl-effects" role="list">
+                            <li><span class="atl-num" aria-hidden="true">1</span><span><span class="atl-effect-tag">Levels</span>While a monster that mentions "Atlantis, City of the Sea Dragon" is on the field, the Levels of all monsters in both players' hands and on the field are reduced by 1.</span></li>
+                            <li><span class="atl-num" aria-hidden="true">2</span><span><span class="atl-effect-tag">Links</span>When you Link Summon a "Daedalus" Link Monster, you can reduce the total number of materials by 1 (from Link Rating and from mentioned materials).</span></li>
+                            <li><span class="atl-num" aria-hidden="true">3</span><span><span class="atl-effect-tag">GY</span>If this card is in your GY and you control "Umi": You can place this card face-up on your field.</span></li>
+                        </ol>
+                        <p class="atl-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use this effect of "Atlantis, City of the Sea Dragon" once per turn. (Effect 3.)</p>
+                        <p class="atl-role"><strong>What it's for:</strong> effect 2 is the reason to play it. With Atlantis in your Field Zone, two WATER monsters become Levia-Dragoon - Daedalus and three monsters become Azure Ocean Dragon Lord - Neo-Daedalus Rage. Effect 3 makes it hard to get rid of: the new monsters, Advent of Atlantis and both Links are named "Umi" on the field, so Atlantis can almost always come back. Effect 1 is a bonus that hits both players, so it can work for you or against you.</p>
+                        <dl class="atl-glance">
+                            <div><dt>Put on the field by</dt><dd>Advent of Atlantis</dd></div>
+                            <div><dt>Level cut needs</dt><dd>A monster that mentions it</dd></div>
+                            <div><dt>Link discount</dt><dd>Daedalus Links only</dd></div>
+                            <div><dt>Comes back</dt><dd>From the GY, once per turn</dd></div>
+                        </dl>
+                        <p class="atl-trivia"><strong>The name:</strong> its Japanese name, 竜都アトランティス, means "Dragon Capital Atlantis", and early fan translations called it <em>Atlantis, the Dragon Capital</em>. The official English name is <em>Atlantis, City of the Sea Dragon</em>. It is a different card from the Atlantean archetype's Atlantis cards, and from Warrior of Atlantis.</p>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- ==================== EFFECT BY EFFECT ==================== -->
+        <section class="atl-section" id="atl-effects" aria-labelledby="atl-effects-title">
+            <h2 id="atl-effects-title" class="atl-h2">Effect by Effect</h2>
+            <p class="atl-lede">Konami's database notes that effects 1 and 2 apply from the Field Zone without starting a chain, while effect 3 is activated in the GY and does start one.</p>
+            <div class="atl-fx">
+                <article class="atl-fx-card" id="atl-fx-levels" aria-labelledby="atl-fx-levels-title">
+                    <div class="atl-fx-head"><span class="atl-num" aria-hidden="true">1</span><h3 id="atl-fx-levels-title">Every Level Drops by 1</h3></div>
+                    <p>It only works while <strong>a monster that mentions Atlantis</strong> is on the field, on either side. Konami defines that as a monster whose text names "Atlantis, City of the Sea Dragon" as a card. That's all six Atlantis and Daedalus monsters:</p>
+                    <ul class="atl-list">
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>Warchief, Monster Arms, Siren Vortex, Levia-Dragon of Atlantis</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>Levia-Dragoon - Daedalus, Neo-Daedalus Rage</span></li>
+                        <li><i class="fas fa-times atl-no" aria-hidden="true"></i><span>Not Fisherman of Legend, Kairyu-Shin, Electric Jellyfish or Coralianectes: they mention "Umi", not Atlantis</span></li>
+                    </ul>
+                    <p>It lowers <strong>your opponent's Levels too</strong>, whatever their Attribute. Two of their Level 4s make a Rank 3, not a Rank 4, and every Synchro total drops by 1 for each monster used. Ranks and Link Ratings don't change.</p>
+                </article>
+                <article class="atl-fx-card" id="atl-fx-links" aria-labelledby="atl-fx-links-title">
+                    <div class="atl-fx-head"><span class="atl-num" aria-hidden="true">2</span><h3 id="atl-fx-links-title">One Material Fewer</h3></div>
+                    <p>Only for <strong>"Daedalus" Link Monsters</strong>, and only while Atlantis is in your Field Zone. It doesn't need an Atlantis monster on the field.</p>
+                    <ul class="atl-list">
+                        <li><i class="fas fa-link atl-dot" aria-hidden="true"></i><span><strong>Levia-Dragoon - Daedalus:</strong> 2 WATER monsters instead of 3</span></li>
+                        <li><i class="fas fa-link atl-dot" aria-hidden="true"></i><span><strong>Neo-Daedalus Rage:</strong> 3 monsters instead of 4</span></li>
+                    </ul>
+                    <p>With the discount, <strong>each Link Monster counts as one material</strong>. You can't use a Link Monster's rating to cover the missing material. The official ruling is in the table below.</p>
+                </article>
+                <article class="atl-fx-card" id="atl-fx-gy" aria-labelledby="atl-fx-gy-title">
+                    <div class="atl-fx-head"><span class="atl-num" aria-hidden="true">3</span><h3 id="atl-fx-gy-title">Back From the GY</h3></div>
+                    <p>If Atlantis is in your GY and <strong>you control "Umi"</strong>, it places itself face-up in your Field Zone, once per turn. It isn't a Quick Effect, so you use it in your Main Phase.</p>
+                    <ul class="atl-list">
+                        <li><i class="fas fa-water atl-dot" aria-hidden="true"></i><span>"Umi" you control: any Atlantis monster, Advent of Atlantis, a Daedalus Link, Umi, A Legendary Ocean or Sea Stealth II</span></li>
+                        <li><i class="fas fa-exchange-alt atl-dot" aria-hidden="true"></i><span>If Umi or A Legendary Ocean is in your Field Zone, placing Atlantis sends it to the GY</span></li>
+                        <li><i class="fas fa-ban atl-no" aria-hidden="true"></i><span>Macro Cosmos and other banish effects stop it for good</span></li>
+                    </ul>
+                    <p>That's what makes Neo-Daedalus Rage's sweep cheap for you: Atlantis goes to the GY with everything else that isn't "Umi", and comes back in your Main Phase.</p>
+                </article>
+            </div>
+
+            <h3 class="atl-label atl-subhead" id="atl-faq-links">Official ruling: what the Link discount allows</h3>
+            <div class="atl-table-wrap" role="region" aria-labelledby="atl-faq-caption" tabindex="0">
+                <table class="atl-table atl-table--center">
+                    <caption id="atl-faq-caption" class="atl-sr-only">Which Daedalus Link Monsters you can Link Summon with Atlantis's discount, by the monsters you control</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">You control only</th>
+                            <th scope="col">Levia-Dragoon (2 needed)</th>
+                            <th scope="col">Neo-Daedalus Rage (3 needed)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">1 WATER Link-2</th>
+                            <td data-label="Levia-Dragoon"><span class="atl-pill atl-pill--no">No</span></td>
+                            <td data-label="Neo-Daedalus Rage"><span class="atl-pill atl-pill--no">No</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">1 WATER Link-3</th>
+                            <td data-label="Levia-Dragoon"><span class="atl-pill atl-pill--no">No</span></td>
+                            <td data-label="Neo-Daedalus Rage"><span class="atl-pill atl-pill--no">No</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2 WATER Normal Monsters</th>
+                            <td data-label="Levia-Dragoon"><span class="atl-pill atl-pill--yes">Yes</span></td>
+                            <td data-label="Neo-Daedalus Rage"><span class="atl-pill atl-pill--no">No</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">3 WATER Normal Monsters</th>
+                            <td data-label="Levia-Dragoon"><span class="atl-pill atl-pill--yes">Yes</span></td>
+                            <td data-label="Neo-Daedalus Rage"><span class="atl-pill atl-pill--yes">Yes</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">1 WATER Link-2 + 1 WATER Normal Monster</th>
+                            <td data-label="Levia-Dragoon"><span class="atl-pill atl-pill--yes">Yes</span></td>
+                            <td data-label="Neo-Daedalus Rage"><span class="atl-pill atl-pill--no">No</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">1 WATER Link-3 + 1 WATER Normal Monster</th>
+                            <td data-label="Levia-Dragoon"><span class="atl-pill atl-pill--yes">Yes</span></td>
+                            <td data-label="Neo-Daedalus Rage"><span class="atl-pill atl-pill--no">No</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="atl-note"><strong>Source:</strong> Konami's official card database FAQ, published 17 Jul 2026. With the discount, Levia-Dragoon's requirement is treated as "2 WATER monsters" and Neo-Daedalus Rage's as "3 monsters". So in practice, count monsters, not Link Ratings: Levia-Dragoon plus 2 more monsters is 3, enough for Rage.</p>
+        </section>
+
+        <!-- ==================== INTERACTION WITH UMI / A LEGENDARY OCEAN ==================== -->
+        <section class="atl-section" id="atl-interaction" aria-labelledby="atl-interaction-title">
+            <h2 id="atl-interaction-title" class="atl-h2">Atlantis, Umi and A Legendary Ocean</h2>
+            <p class="atl-lede">All three want your one Field Zone. <strong>Umi</strong> and <strong>A Legendary Ocean</strong> are "Umi" and switch the classic cards on by themselves. <strong>Atlantis</strong> isn't, so the classic cards run off the new monsters and Advent instead, and in exchange you get the Link discount and a Field Spell that comes back.</p>
+
+            <div class="atl-table-wrap" role="region" aria-labelledby="atl-compare-caption" tabindex="0">
+                <table class="atl-table">
+                    <caption id="atl-compare-caption" class="atl-sr-only">Umi, A Legendary Ocean and Atlantis, City of the Sea Dragon compared</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col"><span class="atl-sr-only">Feature</span></th>
+                            <th scope="col">Umi</th>
+                            <th scope="col">A Legendary Ocean</th>
+                            <th scope="col" class="atl-col-hero">Atlantis, City of the Sea Dragon</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Named "Umi"</th>
+                            <td data-label="Umi">Yes</td>
+                            <td data-label="A Legendary Ocean">Always: in the hand, Deck, GY and on the field</td>
+                            <td data-label="Atlantis" class="atl-col-hero"><strong>Never</strong></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Levels</th>
+                            <td data-label="Umi">No change</td>
+                            <td data-label="A Legendary Ocean">WATER monsters &minus;1, in both hands and on both fields, always</td>
+                            <td data-label="Atlantis" class="atl-col-hero"><strong>All</strong> monsters &minus;1, in both hands and on both fields, only while a monster that mentions Atlantis is on the field</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">ATK / DEF</th>
+                            <td data-label="Umi">Fish, Sea Serpent, Thunder and Aqua +200; Machine and Pyro &minus;200</td>
+                            <td data-label="A Legendary Ocean">WATER +200</td>
+                            <td data-label="Atlantis" class="atl-col-hero">None</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Link Summons</th>
+                            <td data-label="Umi">No effect</td>
+                            <td data-label="A Legendary Ocean">No effect</td>
+                            <td data-label="Atlantis" class="atl-col-hero">Daedalus Links need 1 fewer material</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">From the GY</th>
+                            <td data-label="Umi">Sea Stealth Attack can activate it</td>
+                            <td data-label="A Legendary Ocean">Sea Stealth Attack can activate it</td>
+                            <td data-label="Atlantis" class="atl-col-hero">Places itself while you control "Umi"</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Found by</th>
+                            <td data-label="Umi">Kairyu-Shin, Advent of Atlantis</td>
+                            <td data-label="A Legendary Ocean">Kairyu-Shin, Warrior of Atlantis, Advent of Atlantis</td>
+                            <td data-label="Atlantis" class="atl-col-hero">Advent of Atlantis</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Kairyu-Shin's lock</th>
+                            <td data-label="Umi"><span class="atl-pill atl-pill--yes">On by itself</span></td>
+                            <td data-label="A Legendary Ocean"><span class="atl-pill atl-pill--yes">On by itself</span></td>
+                            <td data-label="Atlantis" class="atl-col-hero"><span class="atl-pill atl-pill--part">Needs another "Umi"</span></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">After Rage's sweep</th>
+                            <td data-label="Umi"><span class="atl-pill atl-pill--yes">Stays</span></td>
+                            <td data-label="A Legendary Ocean"><span class="atl-pill atl-pill--yes">Stays</span></td>
+                            <td data-label="Atlantis" class="atl-col-hero"><span class="atl-pill atl-pill--part">To the GY, then back</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="atl-choose">
+                <div class="atl-panel">
+                    <h3><i class="fas fa-archway" aria-hidden="true"></i> Play Atlantis when&hellip;</h3>
+                    <ul class="atl-list">
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>You're making Levia-Dragoon or Neo-Daedalus Rage this turn.</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>You have Daedalus Maelstrom Set: its summon negate needs Atlantis on your field.</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>Your opponent relies on Level 4s for Rank 4s, or on exact Synchro totals.</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>You want Call of Atlantis to negate a monster, which only works with Atlantis on your field.</span></li>
+                    </ul>
+                </div>
+                <div class="atl-panel">
+                    <h3><i class="fas fa-water" aria-hidden="true"></i> Play A Legendary Ocean when&hellip;</h3>
+                    <ul class="atl-list">
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>Kairyu-Shin or Warchief needs a Normal Summon without a Tribute, and no Atlantis monster is on the field yet.</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>Kairyu-Shin is your only other "Umi" source. A Legendary Ocean turns its lock on by itself.</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>You're sweeping with Neo-Daedalus Rage on your opponent's turn and want your Field Spell to stay on the field.</span></li>
+                        <li><i class="fas fa-check atl-yes" aria-hidden="true"></i><span>You want +200 ATK/DEF on every WATER monster.</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="atl-label atl-subhead">Swapping between them</h3>
+            <ol class="atl-flow">
+                <li><strong>Advent of Atlantis places either one.</strong> A Legendary Ocean is always treated as "Umi", even in the Deck, so it counts as the "Umi" option. That's why the Kairyu-Shin line on the Umi page runs Advent.</li>
+                <li><strong>A new Field Spell replaces the old one.</strong> Activating Atlantis from your hand, or placing it with a second Advent, sends A Legendary Ocean to the GY. Normal Summon Kairyu-Shin first, while A Legendary Ocean is still making it Level 4.</li>
+                <li><strong>Atlantis can take the zone back from the GY.</strong> With A Legendary Ocean in your Field Zone, you control "Umi", so Atlantis's GY effect can place it and send A Legendary Ocean to the GY.</li>
+                <li><strong>Sea Stealth Attack brings A Legendary Ocean back.</strong> When it's activated, it can activate Umi or A Legendary Ocean from your hand or GY. It can't fetch Atlantis, which isn't "Umi".</li>
+            </ol>
+
+            <h3 class="atl-label atl-subhead">Level math</h3>
+            <div class="atl-table-wrap" role="region" aria-labelledby="atl-levels-caption" tabindex="0">
+                <table class="atl-table atl-table--center">
+                    <caption id="atl-levels-caption" class="atl-sr-only">Levels under A Legendary Ocean and under Atlantis, City of the Sea Dragon</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Monster</th>
+                            <th scope="col">Printed</th>
+                            <th scope="col">A Legendary Ocean</th>
+                            <th scope="col" class="atl-col-hero">Atlantis, switched on</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Ocean Dragon Lord - Kairyu-Shin, Warchief of Atlantis</th>
+                            <td data-label="Printed">5</td>
+                            <td data-label="A Legendary Ocean">4: Normal Summon without a Tribute</td>
+                            <td data-label="Atlantis, switched on" class="atl-col-hero">4: the same, once a monster that mentions Atlantis is on the field</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Levia-Dragon of Atlantis - Daedalus</th>
+                            <td data-label="Printed">7</td>
+                            <td data-label="A Legendary Ocean">6</td>
+                            <td data-label="Atlantis, switched on" class="atl-col-hero">6. It summons itself anyway.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Siren Vortex, Monster Arms, Electric Jellyfish, Fisherman of Legend</th>
+                            <td data-label="Printed">4</td>
+                            <td data-label="A Legendary Ocean">3</td>
+                            <td data-label="Atlantis, switched on" class="atl-col-hero">3</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Your opponent's non-WATER Level 4</th>
+                            <td data-label="Printed">4</td>
+                            <td data-label="A Legendary Ocean">4</td>
+                            <td data-label="Atlantis, switched on" class="atl-col-hero"><strong>3</strong></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Your opponent's non-WATER Level 8</th>
+                            <td data-label="Printed">8</td>
+                            <td data-label="A Legendary Ocean">8</td>
+                            <td data-label="Atlantis, switched on" class="atl-col-hero"><strong>7</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="atl-note"><strong>Watch your own Xyz plans:</strong> with Atlantis switched on, Siren Vortex and Monster Arms are Level 3, while Warchief and Kairyu-Shin are Level 4.</p>
+        </section>
+
+        <!-- ==================== FIELD ZONE PLANNER ==================== -->
+        <section class="atl-section" id="atl-planner" aria-labelledby="atl-planner-title">
+            <h2 id="atl-planner-title" class="atl-h2">Field Zone Planner</h2>
+            <p class="atl-lede">Pick your Field Spell and what else is face-up on your side. The planner shows which classic Umi effects are on, what Levels come out, and what a Neo-Daedalus Rage sweep would leave. Every check follows the printed text.</p>
+            <div class="atl-planner" data-planner>
+                <div class="atl-presets" role="group" aria-labelledby="atl-presets-label">
+                    <p id="atl-presets-label" class="atl-label">Try a board</p>
+                    <button type="button" class="atl-preset" data-preset="line1" aria-pressed="false">Atlantis end board</button>
+                    <button type="button" class="atl-preset" data-preset="line2" aria-pressed="false">Advent + Kairyu-Shin</button>
+                    <button type="button" class="atl-preset" data-preset="removed" aria-pressed="false">Field Spell destroyed</button>
+                    <button type="button" class="atl-preset" data-preset="classic" aria-pressed="false">Classic: A Legendary Ocean only</button>
+                </div>
+                <div class="atl-inputs" data-planner-controls>
+                    <p class="atl-hint">The interactive planner needs JavaScript. The comparison table above covers every Field Spell.</p>
+                </div>
+                <p class="atl-summary" data-planner-summary aria-live="polite"></p>
+                <ul class="atl-checks" data-planner-checks aria-label="What's on for this board"></ul>
+            </div>
+        </section>
+
+        <!-- ==================== COMBO LINES ==================== -->
+        <section class="atl-section" id="atl-combos" aria-labelledby="atl-combos-title">
+            <h2 id="atl-combos-title" class="atl-h2">Atlantis in the Combo Lines</h2>
+            <p class="atl-lede">The three lines from the Umi guide, each with Atlantis's part in it. They play step by step in the combo simulator below. The Umi page has the full write-ups.</p>
+            <div class="atl-lines">
+                <article class="atl-line" aria-labelledby="atl-line-1">
+                    <p class="atl-kicker">Line 1 &middot; Going first</p>
+                    <h3 id="atl-line-1">Warchief + Siren Vortex into Neo-Daedalus Rage</h3>
+                    <p><strong>Atlantis's part:</strong> Advent places it before any monster is out. It turns 2 monsters into Levia-Dragoon and 3 into Rage, and Rage brings Levia-Dragoon back from the GY.</p>
+                    <div class="atl-line-actions">
+                        <button type="button" class="atl-btn" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i> Play</button>
+                        <a class="atl-link" href="Umi%20Deck%20Analysis.html#betb-line-1">Full write-up</a>
+                    </div>
+                </article>
+                <article class="atl-line atl-line--legacy" aria-labelledby="atl-line-2">
+                    <p class="atl-kicker">Line 2 &middot; Classic + new</p>
+                    <h3 id="atl-line-2">Advent + Kairyu-Shin: the Lock With a Spare "Umi"</h3>
+                    <p><strong>Atlantis's part:</strong> it isn't in this one. Advent places A Legendary Ocean instead, so Kairyu-Shin is Level 4 in hand. Your next Advent can swap to Atlantis.</p>
+                    <div class="atl-line-actions">
+                        <button type="button" class="atl-btn" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i> Play</button>
+                        <a class="atl-link" href="Umi%20Deck%20Analysis.html#betb-line-2">Full write-up</a>
+                    </div>
+                </article>
+                <article class="atl-line" aria-labelledby="atl-line-3">
+                    <p class="atl-kicker">Line 3 &middot; Going second</p>
+                    <h3 id="atl-line-3">Call + Siren Vortex: Rage Sweep for 8500</h3>
+                    <p><strong>Atlantis's part:</strong> it makes Rage a 3-material Link. Rage's sweep sends it to the GY along with your opponent's field, and it places itself back before you attack.</p>
+                    <div class="atl-line-actions">
+                        <button type="button" class="atl-btn" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play</button>
+                        <a class="atl-link" href="Umi%20Deck%20Analysis.html#betb-line-3">Full write-up</a>
+                    </div>
+                </article>
+            </div>
+            <section class="atl-lab" aria-label="Interactive combo lines">
+                <div id="atl-combo-lab" class="atl-lab-mount">
+                    <p class="atl-lab-loading">Loading the interactive combo lines&hellip;</p>
+                </div>
+            </section>
+        </section>
+
+        <!-- ==================== RULINGS ==================== -->
+        <section class="atl-section" id="atl-rulings" aria-labelledby="atl-rulings-title">
+            <h2 id="atl-rulings-title" class="atl-h2">Rulings and Common Questions</h2>
+            <dl class="atl-qa">
+                <div>
+                    <dt>Is Atlantis, City of the Sea Dragon "Umi"?</dt>
+                    <dd><strong>No.</strong> Kairyu-Shin can't add it, Sea Stealth Attack can't activate it, Electric Jellyfish can't send it, and Neo-Daedalus Rage's sweep sends it to the GY. Everything that needs "Umi" on the field has to get it from another card.</dd>
+                </div>
+                <div>
+                    <dt>Does the Level cut need my own Atlantis monster?</dt>
+                    <dd>Any monster that mentions Atlantis works, on <strong>either</strong> field. With none on the field, nothing changes, even while Atlantis is face-up.</dd>
+                </div>
+                <div>
+                    <dt>Can Levia-Dragoon and one more monster make Neo-Daedalus Rage?</dt>
+                    <dd><strong>No.</strong> With the discount, Rage needs 3 monsters and a Link Monster counts as 1. Levia-Dragoon plus 2 more monsters works.<span class="atl-source">Konami's official database FAQ, 17 Jul 2026.</span></dd>
+                </div>
+                <div>
+                    <dt>Does the discount work for other WATER Links, such as Marincess Coral Anemone?</dt>
+                    <dd><strong>No.</strong> It only covers "Daedalus" Link Monsters: Levia-Dragoon - Daedalus and Azure Ocean Dragon Lord - Neo-Daedalus Rage.</dd>
+                </div>
+                <div>
+                    <dt>When can I use the GY effect?</dt>
+                    <dd>It starts a chain but isn't a Quick Effect, so you use it in your Main Phase, once per turn, while you control "Umi". After a Rage sweep on your opponent's turn, Atlantis waits in the GY until your Main Phase, and Daedalus Maelstrom's summon negate is off until then.</dd>
+                </div>
+                <div>
+                    <dt>Is placing it with Advent of Atlantis the same as activating it?</dt>
+                    <dd><strong>No.</strong> Advent's effect is what gets activated and can be responded to. The Field Spell is placed, not activated, so cards that negate a Spell Card's activation get no chance at Atlantis itself.</dd>
+                </div>
+                <div>
+                    <dt>Can Warchief of Atlantis add Atlantis itself?</dt>
+                    <dd>Some previews say it can. Konami hasn't published a ruling on whether Atlantis counts as a card that mentions itself, so none of our lines rely on it. Advent of Atlantis is the reliable way to put it on the field.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <!-- ==================== BACK TO THE PARENT ARCHETYPE ==================== -->
+        <section class="atl-section" id="atl-parent" aria-labelledby="atl-parent-title">
+            <h2 id="atl-parent-title" class="atl-h2">Back to the Umi Guide</h2>
+            <p class="atl-lede">Atlantis is one card in a wave of eleven. The Umi guide covers the whole engine and the classic lock it grew out of.</p>
+            <div class="atl-parent">
+                <a class="atl-parent-card" href="Umi%20Deck%20Analysis.html#tab-betb">
+                    <h3><i class="fas fa-water" aria-hidden="true"></i> Atlantis &amp; Daedalus tab</h3>
+                    <p>All eleven Beyond the Brave cards in a filterable gallery, which classic cards work with them, a deck list and the weak points.</p>
+                    <span class="atl-parent-go">Open the tab <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </a>
+                <a class="atl-parent-card" href="Umi%20Deck%20Analysis.html">
+                    <h3><i class="fas fa-dragon" aria-hidden="true"></i> Classic Umi Control</h3>
+                    <p>The original Kairyu-Shin lock, the Electric Jellyfish opening, and the three-layer endboard with Sea Stealth Attack.</p>
+                    <span class="atl-parent-go">Read the classic guide <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                </a>
+                <div class="atl-parent-card">
+                    <h3><i class="fas fa-id-card" aria-hidden="true"></i> Card profiles</h3>
+                    <p>The cards that switch Atlantis on, and the ones it works with:</p>
+                    <ul class="atl-parent-links">
+                        <li><a class="atl-link" href="Umi%20Deck%20Analysis.html#card-advent-of-atlantis">Advent of Atlantis</a></li>
+                        <li><a class="atl-link" href="Umi%20Deck%20Analysis.html#card-levia-dragoon">Levia-Dragoon - Daedalus</a></li>
+                        <li><a class="atl-link" href="Umi%20Deck%20Analysis.html#card-neo-daedalus-rage">Neo-Daedalus Rage</a></li>
+                        <li><a class="atl-link" href="Umi%20Deck%20Analysis.html#card-daedalus-maelstrom">Daedalus Maelstrom</a></li>
+                        <li><a class="atl-link" href="Joey%20Series%20Deck%20Analysis.html#cast-fisherman-of-legend">Fisherman of Legend (Joey Series)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Impact Section -->
+        <section class="atl-section">
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSectionByArchetype -->
+            </div>
+        </section>
+
+        <!-- Community Combo Guides -->
+        <section class="atl-section">
+            <div id="community-combos-wrapper"></div>
+        </section>
+    </div>
+
+    <!-- Card art, banlist and the combo simulator (mounted when its section nears the screen). -->
+    <script>
+        (function () {
+            'use strict';
+            const COMBO_MOUNT_ID = 'atl-combo-lab';
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let comboReady = null;
+
+            function mountComboLab() {
+                if (comboReady) return comboReady;
+                const mount = document.getElementById(COMBO_MOUNT_ID);
+                // combo-system.js declares ComboLoader as a top-level class, which
+                // is a global binding but not a property of window.
+                if (!mount || typeof ComboLoader === 'undefined') {
+                    if (mount) mount.innerHTML = '<p class="atl-lab-loading">The interactive combo lines could not load. The Umi guide has the full write-ups.</p>';
+                    comboReady = Promise.resolve(null);
+                    return comboReady;
+                }
+                comboReady = Promise.resolve(ComboLoader.renderComboSystem(COMBO_MOUNT_ID, 'umi')).catch(() => null);
+                return comboReady;
+            }
+
+            const mount = document.getElementById(COMBO_MOUNT_ID);
+            if (mount && 'IntersectionObserver' in window) {
+                const io = new IntersectionObserver(entries => {
+                    if (entries.some(e => e.isIntersecting)) {
+                        io.disconnect();
+                        mountComboLab();
+                    }
+                }, { rootMargin: '600px 0px' });
+                io.observe(mount);
+            } else {
+                mountComboLab();
+            }
+
+            document.querySelectorAll('[data-combo-open]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const num = btn.dataset.comboOpen;
+                    mountComboLab().then(() => {
+                        const option = document.querySelector('#' + COMBO_MOUNT_ID + ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        const lab = document.getElementById(COMBO_MOUNT_ID);
+                        if (lab) lab.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    });
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                if (typeof CardLoader === 'undefined') return;
+                CardLoader.loadCards({ 'atl-card-img-container': 'Atlantis, City of the Sea Dragon' });
+                try {
+                    await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Atlantis, City of the Sea Dragon', {
+                        // The Daedalus cards, Fisherman and the classic Umi cards are
+                        // filed under other archetypes, so list them here.
+                        relatedCards: [
+                            'Levia-Dragon of Atlantis - Daedalus', 'Levia-Dragoon - Daedalus',
+                            'Azure Ocean Dragon Lord - Neo-Daedalus Rage', 'Daedalus Maelstrom',
+                            'Fisherman of Legend', 'Coralianectes, the Luminous Cradle Dragon',
+                            'Umi', 'A Legendary Ocean', 'Ocean Dragon Lord - Kairyu-Shin',
+                            'Electric Jellyfish', 'Fish Sonar', "Kairyu-Shin's Dark Reef", 'Sea Stealth Attack'
+                        ]
+                    });
+                    await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Atlantis, City of the Sea Dragon');
+                    await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Atlantis, City of the Sea Dragon', {
+                        compact: true,
+                        buttonColor: 'from-cyan-600 to-sky-700',
+                        buttonHoverColor: 'from-cyan-700 to-sky-800'
+                    });
+                } catch (err) {
+                    console.error('[Atlantis] Deck resources failed to load', err);
+                }
+            });
+        })();
+    </script>
+
+    <!-- Field Zone planner. Everything it knows is in the config blocks at the top;
+         every rule it applies is printed text: "Umi" on the field for Kairyu-Shin,
+         Electric Jellyfish, Fisherman and Sea Stealth Attack; Atlantis's Level cut
+         only while a monster that mentions it is on the field; its Link discount
+         and Daedalus Maelstrom only while it's in your Field Zone. -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-planner]');
+            if (!root) return;
+            const controls = root.querySelector('[data-planner-controls]');
+            const summary = root.querySelector('[data-planner-summary]');
+            const checks = root.querySelector('[data-planner-checks]');
+
+            const FIELD_SPELLS = [
+                { value: 'atlantis', label: 'Atlantis, City of the Sea Dragon', umi: false },
+                { value: 'alo', label: 'A Legendary Ocean', umi: true },
+                { value: 'umi', label: 'Umi', umi: true },
+                { value: 'none', label: 'Empty', umi: false }
+            ];
+            // umi: named "Umi" while face-up. mentions: a monster that mentions Atlantis.
+            const CARDS = [
+                { id: 'advent', label: 'Advent of Atlantis', umi: true, mentions: false },
+                { id: 'monster', label: 'An Atlantis monster', umi: true, mentions: true, hint: 'Warchief, Monster Arms, Siren Vortex or Levia-Dragon of Atlantis' },
+                { id: 'dragoon', label: 'Levia-Dragoon - Daedalus', umi: true, mentions: true, waterLink: true },
+                { id: 'rage', label: 'Neo-Daedalus Rage', umi: true, mentions: true, waterLink: true },
+                { id: 'kairyu', label: 'Ocean Dragon Lord - Kairyu-Shin', umi: false, mentions: false }
+            ];
+            const PRESETS = {
+                line1: { field: 'atlantis', advent: true, monster: true, dragoon: true, rage: true },
+                line2: { field: 'alo', advent: true, kairyu: true },
+                removed: { field: 'none', advent: true, monster: true, kairyu: true },
+                classic: { field: 'alo', kairyu: true }
+            };
+
+            const state = {};
+            function applyPreset(name) {
+                const preset = PRESETS[name] || {};
+                state.field = preset.field || 'atlantis';
+                CARDS.forEach(c => { state[c.id] = !!preset[c.id]; });
+            }
+
+            function buildControls() {
+                controls.textContent = '';
+
+                const fieldSet = document.createElement('fieldset');
+                fieldSet.className = 'atl-set';
+                const fieldLegend = document.createElement('legend');
+                fieldLegend.textContent = 'Your Field Zone';
+                const fieldOpts = document.createElement('div');
+                fieldOpts.className = 'atl-opts';
+                FIELD_SPELLS.forEach(f => {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'atl-field';
+                    input.value = f.value;
+                    input.dataset.key = 'field';
+                    const text = document.createElement('span');
+                    text.textContent = f.label;
+                    label.append(input, text);
+                    fieldOpts.appendChild(label);
+                });
+                fieldSet.append(fieldLegend, fieldOpts);
+
+                const cardSet = document.createElement('fieldset');
+                cardSet.className = 'atl-set';
+                const cardLegend = document.createElement('legend');
+                cardLegend.textContent = 'Also face-up on your side';
+                const cardOpts = document.createElement('div');
+                cardOpts.className = 'atl-opts';
+                CARDS.forEach(c => {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.value = c.id;
+                    input.dataset.key = c.id;
+                    if (c.hint) input.setAttribute('aria-describedby', 'atl-hint-' + c.id);
+                    const text = document.createElement('span');
+                    text.textContent = c.label;
+                    label.append(input, text);
+                    cardOpts.appendChild(label);
+                });
+                const hint = document.createElement('p');
+                hint.className = 'atl-hint';
+                hint.id = 'atl-hint-monster';
+                hint.textContent = 'An Atlantis monster means Warchief, Monster Arms, Siren Vortex or Levia-Dragon of Atlantis. Your opponent\'s side isn\'t modelled.';
+                cardSet.append(cardLegend, cardOpts, hint);
+
+                controls.append(fieldSet, cardSet);
+            }
+
+            const fieldLabel = v => FIELD_SPELLS.find(f => f.value === v).label;
+
+            function evaluate() {
+                const field = FIELD_SPELLS.find(f => f.value === state.field);
+                const on = CARDS.filter(c => state[c.id]);
+                const umiSources = (field.umi ? [field.label] : []).concat(on.filter(c => c.umi).map(c => c.label));
+                const umiOn = umiSources.length > 0;
+                const mentionOn = on.some(c => c.mentions);
+                const atlantisHere = state.field === 'atlantis';
+                const levelCut = atlantisHere && mentionOn;
+                const waterLink = on.some(c => c.waterLink);
+                const rows = [];
+
+                rows.push(umiOn
+                    ? { status: 'yes', title: '"Umi" on the field', detail: 'From ' + umiSources.join(', ') + '.' }
+                    : { status: 'no', title: '"Umi" on the field', detail: atlantisHere ? 'Atlantis isn\'t "Umi". Add Advent of Atlantis or an Atlantis monster.' : 'No card named "Umi" is face-up on your side.' });
+
+                if (!state.kairyu) {
+                    rows.push({ status: 'na', title: 'Kairyu-Shin\'s lock', detail: 'Kairyu-Shin isn\'t on your field.' });
+                } else if (umiOn) {
+                    rows.push({
+                        status: 'yes',
+                        title: 'Kairyu-Shin\'s lock',
+                        detail: 'Each player can control only 1 face-up non-WATER monster. ' + (umiSources.length > 1
+                            ? 'With ' + umiSources.length + ' "Umi" sources, removing one doesn\'t switch it off.'
+                            : umiSources[0] + ' is your only "Umi": remove it and the lock goes off.')
+                    });
+                } else {
+                    rows.push({ status: 'no', title: 'Kairyu-Shin\'s lock', detail: 'Kairyu-Shin is face-up, but no "Umi" is on the field.' });
+                }
+
+                rows.push(umiOn
+                    ? { status: 'yes', title: 'Electric Jellyfish, Fisherman of Legend, Sea Stealth Attack', detail: 'Jellyfish can negate, Fisherman can come out of your hand, and Sea Stealth Attack has its effects.' }
+                    : { status: 'no', title: 'Electric Jellyfish, Fisherman of Legend, Sea Stealth Attack', detail: 'All three need "Umi" on the field.' });
+
+                if (state.field === 'alo') {
+                    rows.push({ status: 'yes', title: 'Kairyu-Shin or Warchief in your hand', detail: 'Level 4: Normal Summon without a Tribute, thanks to A Legendary Ocean.' });
+                } else if (levelCut) {
+                    rows.push({ status: 'yes', title: 'Kairyu-Shin or Warchief in your hand', detail: 'Level 4: Normal Summon without a Tribute, because Atlantis is on and a monster that mentions it is on the field.' });
+                } else if (atlantisHere) {
+                    rows.push({ status: 'no', title: 'Kairyu-Shin or Warchief in your hand', detail: 'Level 5, 1 Tribute. Atlantis needs a monster that mentions it on the field first, so Special Summon one before you Normal Summon.' });
+                } else {
+                    rows.push({ status: 'no', title: 'Kairyu-Shin or Warchief in your hand', detail: 'Level 5: a Normal Summon needs 1 Tribute.' });
+                }
+
+                if (levelCut) {
+                    rows.push({ status: 'yes', title: 'Your opponent\'s Levels', detail: 'Every monster in their hand and on their field is 1 Level lower. Two Level 4s make a Rank 3, not a Rank 4.' });
+                } else if (state.field === 'alo') {
+                    rows.push({ status: 'na', title: 'Your opponent\'s Levels', detail: 'Only their WATER monsters drop a Level under A Legendary Ocean.' });
+                } else {
+                    rows.push({ status: 'na', title: 'Your opponent\'s Levels', detail: atlantisHere ? 'Unchanged: no monster that mentions Atlantis is on the field.' : 'Unchanged.' });
+                }
+
+                rows.push(atlantisHere
+                    ? { status: 'yes', title: 'Daedalus Link discount', detail: 'Levia-Dragoon from 2 WATER monsters, Neo-Daedalus Rage from 3 monsters.' }
+                    : { status: 'no', title: 'Daedalus Link discount', detail: 'Only while Atlantis is in your Field Zone: Levia-Dragoon needs 3 WATER monsters and Rage needs 4.' });
+
+                if (atlantisHere) {
+                    rows.push({
+                        status: 'yes',
+                        title: 'Daedalus Maelstrom',
+                        detail: waterLink
+                            ? 'Negates a summon, then can destroy every non-WATER monster, because you control a WATER Link Monster.'
+                            : 'Negates a summon. With a WATER Link Monster on your field it would also destroy every non-WATER monster.'
+                    });
+                } else {
+                    rows.push({ status: 'no', title: 'Daedalus Maelstrom', detail: 'Its summon negate needs Atlantis on your field. Its GY effect still works.' });
+                }
+
+                if (atlantisHere) {
+                    rows.push({ status: 'na', title: 'Atlantis from your GY', detail: 'It\'s already in your Field Zone.' });
+                } else if (umiOn) {
+                    rows.push({
+                        status: 'yes',
+                        title: 'Atlantis from your GY',
+                        detail: 'If it\'s in your GY, it can place itself in your Main Phase' + (state.field === 'alo' || state.field === 'umi'
+                            ? ', sending ' + fieldLabel(state.field) + ' to the GY.'
+                            : '.')
+                    });
+                } else {
+                    rows.push({ status: 'no', title: 'Atlantis from your GY', detail: 'It needs a "Umi" you control.' });
+                }
+
+                if (!state.rage) {
+                    rows.push({ status: 'na', title: 'If Neo-Daedalus Rage sweeps now', detail: 'Add Neo-Daedalus Rage to see what its sweep leaves.' });
+                } else {
+                    const stays = umiSources.slice();
+                    const goes = [];
+                    if (atlantisHere) goes.push('Atlantis (it comes back in your Main Phase)');
+                    if (state.kairyu) goes.push('Kairyu-Shin (and its lock with it)');
+                    rows.push({
+                        status: 'yes',
+                        title: 'If Neo-Daedalus Rage sweeps now',
+                        detail: 'Stays on your side: ' + stays.join(', ') + '. ' + (goes.length ? 'Goes to the GY: ' + goes.join('; ') + '. ' : '') + 'Every card on your opponent\'s field that isn\'t "Umi" goes to the GY.'
+                    });
+                }
+
+                const onCount = rows.filter(r => r.status === 'yes').length;
+                return {
+                    rows: rows,
+                    summary: 'Field Zone: ' + field.label + '. "Umi" on the field: ' + (umiOn ? 'yes' : 'no') +
+                        '. Link discount: ' + (atlantisHere ? 'on' : 'off') + '. ' + onCount + ' of ' + rows.length + ' checks on.'
+                };
+            }
+
+            const PILL = { yes: ['atl-pill--yes', 'On'], no: ['atl-pill--no', 'Off'], na: ['atl-pill--na', 'n/a'] };
+
+            function render() {
+                controls.querySelectorAll('input').forEach(input => {
+                    const key = input.dataset.key;
+                    input.checked = key === 'field' ? state.field === input.value : !!state[key];
+                });
+                root.querySelectorAll('[data-preset]').forEach(btn => {
+                    const preset = PRESETS[btn.dataset.preset];
+                    const matches = (preset.field || 'atlantis') === state.field && CARDS.every(c => !!preset[c.id] === !!state[c.id]);
+                    btn.setAttribute('aria-pressed', String(matches));
+                });
+
+                const result = evaluate();
+                summary.textContent = result.summary;
+                checks.textContent = '';
+                result.rows.forEach(row => {
+                    const li = document.createElement('li');
+                    li.className = 'atl-check';
+                    const pill = document.createElement('span');
+                    pill.className = 'atl-pill ' + PILL[row.status][0];
+                    pill.textContent = PILL[row.status][1];
+                    const body = document.createElement('div');
+                    const title = document.createElement('p');
+                    title.className = 'atl-check-title';
+                    title.textContent = row.title;
+                    const detail = document.createElement('p');
+                    detail.className = 'atl-check-detail';
+                    detail.textContent = row.detail;
+                    body.append(title, detail);
+                    li.append(pill, body);
+                    checks.appendChild(li);
+                });
+            }
+
+            buildControls();
+            applyPreset('line1');
+            render();
+
+            controls.addEventListener('change', e => {
+                const input = e.target;
+                if (!input.dataset || !input.dataset.key) return;
+                if (input.dataset.key === 'field') state.field = input.value;
+                else state[input.dataset.key] = input.checked;
+                render();
+            });
+            root.addEventListener('click', e => {
+                const btn = e.target.closest('[data-preset]');
+                if (!btn) return;
+                applyPreset(btn.dataset.preset);
+                render();
+            });
+        })();
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof initCommunityCombos === 'function') initCommunityCombos('community-combos-wrapper', 'Atlantis, City of the Sea Dragon');
+            if (typeof initSynergyTags === 'function') initSynergyTags('Atlantis, City of the Sea Dragon');
+            if (typeof initPageSections === 'function') initPageSections('Atlantis, City of the Sea Dragon');
+        });
+    </script>
+    <!-- Cookie Consent Banner -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+</html>

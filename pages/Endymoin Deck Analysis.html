@@ -306,28 +306,101 @@
             gap: 0.5rem;
         }
 
-        .tab-btn.active {
+        /* State comes from guide-tabs.js (aria-selected / hidden), not classes. */
+        .tab-btn[aria-selected="true"] {
             background: linear-gradient(135deg, #d97706 0%, #facc15 50%, #fbbf24 100%);
             color: #0b0a1d;
-            box-shadow: 
+            box-shadow:
                 0 4px 15px rgba(250, 204, 21, 0.4),
                 0 0 10px rgba(250, 204, 21, 0.2);
             text-shadow: none;
         }
 
-        .tab-btn:hover:not(.active) {
+        .tab-btn:hover:not([aria-selected="true"]) {
             color: #ffffff;
             background-color: rgba(74, 69, 125, 0.25);
         }
 
-        .tab-panel {
-            display: none;
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible {
+            outline: 2px solid #facc15;
+            outline-offset: 3px;
         }
 
-        .tab-panel.active {
-            display: block;
+        /* Following a #tab-betb link focuses the panel; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+
+        .tab-new-badge {
+            padding: 0.125rem 0.375rem;
+            border: 1px solid rgba(250, 204, 21, 0.3);
+            border-radius: 9999px;
+            background: #0b0a1d;
+            color: #facc15;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .tab-panel[hidden] {
+            display: none !important;
+        }
+
+        .tab-panel:not([hidden]) {
             animation: panelFadeIn 0.5s ease-in-out forwards;
         }
+
+        /* Three tabs don't fit one row on phones: wrap them instead of
+           scrolling a strip whose scrollbar is hidden. */
+        @media (max-width: 767px) {
+            .tab-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+                border-radius: 1.25rem;
+            }
+
+            .tab-btn {
+                flex: 1 1 auto;
+                justify-content: center;
+                min-height: 44px;
+                padding: 0.6rem 1rem;
+                font-size: 0.875rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn { transition: none; }
+            .tab-panel:not([hidden]) { animation: none; }
+        }
+
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav-container { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
+
+        .verre-release-note {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.35rem 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed rgba(250, 204, 21, 0.3);
+            font-size: 0.75rem;
+            color: #c7d2fe;
+        }
+
+        .verre-release-note a {
+            color: #facc15;
+            font-weight: 700;
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+
+        .verre-release-note a:hover { color: #fff; }
 
         @keyframes panelFadeIn {
             from {
@@ -343,7 +416,9 @@
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
+    <link rel="stylesheet" href="../assets/css/cross-engine-support.css">
     <script src="../assets/js/follow-archetype.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
 </head>
 <body class="p-4 md:p-8">
     <!-- Yu-Gi-Oh! Themed Home Button -->
@@ -405,20 +480,30 @@
             </div>
         </section>
 
-        <!-- Modern Era Pill Switcher (Segmented Control) -->
+        <!-- NEW SUPPORT HIGHLIGHT (Beyond the Brave): opens the Beyond the Brave tab.
+             Rendered from assets/js/cross-engine-data.js; the Witchcrafter page mounts the same card. -->
+        <section class="max-w-5xl mx-auto mb-10 px-4" aria-label="New support highlight">
+            <div data-cross-engine="beyond-the-brave-verre" data-perspective="endymion" data-variant="teaser" data-xe-target="tab-betb"></div>
+        </section>
+
+        <!-- Guide tabs (guide-tabs.js): Classic and Glorious Gallery are unchanged;
+             Beyond the Brave covers Verre, the Maid of Endymion. The banlist stays below all tabs. -->
         <div class="tab-nav-container animate-fadeIn" style="animation-delay: 0.05s;">
-            <div class="tab-nav">
-                <button class="tab-btn active" id="tab-classic" onclick="switchTab('classic')">
-                    <i class="fas fa-magic"></i> Classic Spell Counters
+            <div class="tab-nav" role="tablist" aria-label="Endymion guide" data-guide-tabs>
+                <button type="button" class="tab-btn" role="tab" id="tab-classic" aria-controls="panel-classic" aria-selected="true">
+                    <i class="fas fa-magic" aria-hidden="true"></i> Classic Spell Counters
                 </button>
-                <button class="tab-btn" id="tab-glorious" onclick="switchTab('glorious')">
-                    <i class="fas fa-crown"></i> Glorious Gallery Support <span class="bg-[#0b0a1d] text-[#facc15] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-1 uppercase border border-[#facc15]/30">New</span>
+                <button type="button" class="tab-btn" role="tab" id="tab-glorious" aria-controls="panel-glorious" aria-selected="false" tabindex="-1">
+                    <i class="fas fa-crown" aria-hidden="true"></i> Glorious Gallery Support <span class="bg-[#0b0a1d] text-[#facc15] text-[10px] font-extrabold px-1.5 py-0.5 rounded-full ml-1 uppercase border border-[#facc15]/30">New</span>
+                </button>
+                <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">
+                    <i class="fas fa-link" aria-hidden="true"></i> Beyond the Brave <span class="tab-new-badge" aria-hidden="true">New</span><span class="xe-sr-only">(new card)</span>
                 </button>
             </div>
         </div>
 
         <!-- Classic Era Tab Panel -->
-        <div id="panel-classic" class="tab-panel active">
+        <div id="panel-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -657,7 +742,7 @@
         </div> <!-- End of Panel Classic -->
 
         <!-- Glorious Gallery Support Wave Tab Panel -->
-        <div id="panel-glorious" class="tab-panel" style="display: none;">
+        <div id="panel-glorious" class="tab-panel" role="tabpanel" aria-labelledby="tab-glorious" tabindex="0" hidden>
             
             <!-- Executive Summary & Era Overview -->
             <section class="mb-10 md:mb-16">
@@ -677,12 +762,12 @@
                 <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Runaway Royal Court: Core Support</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
-                    <!-- The Endymion Empire -->
+                    <!-- Empire of Endymion -->
                     <div class="card p-5 pro-con-card">
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                            <div id="empire-img-container" class="card-image-container card-placeholder">The Endymion Empire</div>
+                            <div id="empire-img-container" class="card-image-container card-placeholder">Empire of Endymion</div>
                             <div class="flex-1">
-                                <h4 class="text-lg font-bold text-yellow-400 mb-1">The Endymion Empire</h4>
+                                <h4 class="text-lg font-bold text-yellow-400 mb-1">Empire of Endymion</h4>
                                 <span class="text-xs bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Continuous Spell</span>
                                 <p class="text-sm text-indigo-200 mt-2">
                                     The ultimate consistency anchor. Upon activation, it adds <strong>Regulus, the Prince of Endymion</strong> or any card mentioning it (such as <strong class="text-accent">Verre</strong>) directly from your Deck. 
@@ -706,7 +791,7 @@
                                     The engine's main combo facilitator. He Special Summons himself from the hand by revealing any other Spellcaster and paying a negligible Life Point cost (Level x 300).
                                 </p>
                                 <ul class="list-disc list-inside text-xs text-indigo-300 mt-2 space-y-1">
-                                    <li><strong>In-Engine Searcher:</strong> On Special Summon, immediately searches any Spell mentioning him (such as <strong class="text-accent">Regulus' Arrow</strong>).</li>
+                                    <li><strong>In-Engine Searcher:</strong> On Special Summon, immediately searches any Spell mentioning him (such as <strong class="text-accent">Arrow of Regulus</strong>).</li>
                                     <li><strong>Battle Protection:</strong> Survives the first battle each turn, remaining on field as Synchro/Xyz/Link material.</li>
                                 </ul>
                             </div>
@@ -745,16 +830,20 @@
                                     <li><strong>Deck searcher:</strong> On Special Summon, searches any Witchcrafter Spell/Trap or the classic <strong class="text-accent">Magical Dimension</strong>.</li>
                                     <li><strong>The Vow Steroid:</strong> Gains an absolute +2300 ATK (boosting ATK to 2800!) while Regulus is on your field or in the Graveyard.</li>
                                 </ul>
+                                <p class="verre-release-note">
+                                    <span><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG: Beyond the Brave, <time datetime="2026-10-08">8 Oct 2026</time>, not Glorious Gallery.</span>
+                                    <a href="#tab-betb">Full cross-archetype analysis</a>
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Regulus' Arrow -->
+                    <!-- Arrow of Regulus -->
                     <div class="card p-5 pro-con-card">
                         <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                            <div id="arrow-img-container" class="card-image-container card-placeholder">Regulus' Arrow</div>
+                            <div id="arrow-img-container" class="card-image-container card-placeholder">Arrow of Regulus</div>
                             <div class="flex-1">
-                                <h4 class="text-lg font-bold text-yellow-400 mb-1">Regulus' Arrow</h4>
+                                <h4 class="text-lg font-bold text-yellow-400 mb-1">Arrow of Regulus</h4>
                                 <span class="text-xs bg-indigo-900/60 border border-indigo-500/30 text-indigo-300 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Quick-Play Spell</span>
                                 <p class="text-sm text-indigo-200 mt-2">
                                     A highly modular, searchable disruption piece. If you control <strong class="text-accent">Regulus</strong>, it negates the activation of any opponent's Normal or Quick-Play Spell card.
@@ -806,14 +895,14 @@
                             </thead>
                             <tbody class="divide-y divide-indigo-900/40">
                                 <tr>
-                                    <td class="py-3 px-4 font-semibold text-white">The Endymion Empire</td>
+                                    <td class="py-3 px-4 font-semibold text-white">Empire of Endymion</td>
                                     <td class="py-3 px-4 text-center text-yellow-400 font-bold">3x</td>
                                     <td class="py-3 px-4 text-indigo-300">The absolute primary starter. Unrestricted searcher that replaces itself instantly and enables go-second extensions.</td>
                                 </tr>
                                 <tr>
                                     <td class="py-3 px-4 font-semibold text-white">Spell Power Mastery</td>
                                     <td class="py-3 px-4 text-center text-yellow-400 font-bold">3x</td>
-                                    <td class="py-3 px-4 text-indigo-300">Legacy searcher that now targets <strong class="text-accent">The Endymion Empire</strong>. Effectively acts as copies 4, 5, and 6 of your main starter.</td>
+                                    <td class="py-3 px-4 text-indigo-300">Legacy searcher that now targets <strong class="text-accent">Empire of Endymion</strong>. Effectively acts as copies 4, 5, and 6 of your main starter.</td>
                                 </tr>
                                 <tr>
                                     <td class="py-3 px-4 font-semibold text-white">Regulus, the Prince of Endymion</td>
@@ -831,7 +920,7 @@
                                     <td class="py-3 px-4 text-indigo-300">High-value extender and negate-dodging asset. Can be clunky if drawn without another Spellcaster to enable her summon.</td>
                                 </tr>
                                 <tr>
-                                    <td class="py-3 px-4 font-semibold text-white">Regulus' Arrow</td>
+                                    <td class="py-3 px-4 font-semibold text-white">Arrow of Regulus</td>
                                     <td class="py-3 px-4 text-center text-yellow-400 font-bold">1x - 2x</td>
                                     <td class="py-3 px-4 text-indigo-300">Searchable quick-play negate and GY recovery tool. Multiple copies prevent "dead searches" in protracted grind games.</td>
                                 </tr>
@@ -910,7 +999,7 @@
                                     <h3 class="text-lg font-bold text-yellow-400">Initiate the Search</h3>
                                 </div>
                                 <p class="text-indigo-200">
-                                    Activate <strong class="text-white">Spell Power Mastery</strong> from your hand. Resolve its effect to search your Deck and add the Continuous Spell <strong class="text-yellow-400">The Endymion Empire</strong> to your hand.
+                                    Activate <strong class="text-white">Spell Power Mastery</strong> from your hand. Resolve its effect to search your Deck and add the Continuous Spell <strong class="text-yellow-400">Empire of Endymion</strong> to your hand.
                                 </p>
                             </div>
                         </div>
@@ -924,14 +1013,14 @@
                     <!-- Step 2 -->
                     <div class="card p-6 combo-step-card w-full">
                         <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
-                            <div id="empire-img-container-glorious" class="card-image-container card-placeholder">The Endymion Empire</div>
+                            <div id="empire-img-container-glorious" class="card-image-container card-placeholder">Empire of Endymion</div>
                             <div>
                                 <div class="flex items-center mb-2">
                                     <span class="bg-yellow-600 text-[#0b0a1d] rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
                                     <h3 class="text-lg font-bold text-yellow-400">Locate the Prince</h3>
                                 </div>
                                 <p class="text-indigo-200">
-                                    Activate <strong class="text-white">The Endymion Empire</strong> in your Spell & Trap Zone. Upon activation, trigger its effect to search your Deck for the key combo piece, <strong class="text-yellow-400">Regulus, the Prince of Endymion</strong>, adding him to your hand.
+                                    Activate <strong class="text-white">Empire of Endymion</strong> in your Spell & Trap Zone. Upon activation, trigger its effect to search your Deck for the key combo piece, <strong class="text-yellow-400">Regulus, the Prince of Endymion</strong>, adding him to your hand.
                                 </p>
                             </div>
                         </div>
@@ -952,7 +1041,7 @@
                                     <h3 class="text-lg font-bold text-yellow-400">Deploy the Prince</h3>
                                 </div>
                                 <p class="text-indigo-200">
-                                    Trigger <strong class="text-accent">Regulus, the Prince of Endymion</strong> in your hand. Reveal any other Spellcaster monster residing in your hand, pay Life Points equal to its Level multiplied by 300, and Special Summon Regulus. On summon, use his effect to search your Deck for <strong class="text-accent">Regulus' Arrow</strong>.
+                                    Trigger <strong class="text-accent">Regulus, the Prince of Endymion</strong> in your hand. Reveal any other Spellcaster monster residing in your hand, pay Life Points equal to its Level multiplied by 300, and Special Summon Regulus. On summon, use his effect to search your Deck for <strong class="text-accent">Arrow of Regulus</strong>.
                                 </p>
                             </div>
                         </div>
@@ -1032,8 +1121,8 @@
                         <ul class="list-disc list-inside text-xs text-indigo-300 space-y-1 pl-2">
                             <li><strong class="text-white">Witchcrafter Vice-Madame:</strong> Triggers Quick Effects to destroy cards, Special Summon from deck, or recur Spells whenever any spell card/effect resolves.</li>
                             <li><strong class="text-white">Regulus, the Prince of Endymion:</strong> Physical body with survival protection, active in GY or field.</li>
-                            <li><strong class="text-white">The Endymion Empire:</strong> Provides destruction protection for your entire field.</li>
-                            <li><strong class="text-white">Regulus' Arrow:</strong> (Set) In-engine spell negation.</li>
+                            <li><strong class="text-white">Empire of Endymion:</strong> Provides destruction protection for your entire field.</li>
+                            <li><strong class="text-white">Arrow of Regulus:</strong> (Set) In-engine spell negation.</li>
                             <li><strong class="text-white">Your Normal Summon:</strong> Completely unused and preserved for secondary engines or extenders!</li>
                         </ul>
                     </div>
@@ -1091,6 +1180,15 @@
 
         </div> <!-- End of Panel Glorious -->
 
+        <!-- Beyond the Brave Tab Panel: Verre, the Maid of Endymion (cross-archetype support).
+             Rendered from assets/js/cross-engine-data.js ('beyond-the-brave-verre'), which the
+             Witchcrafter page shares, so card text and rulings stay identical on both pages. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+            <section class="mb-10 md:mb-16">
+                <div data-cross-engine="beyond-the-brave-verre" data-perspective="endymion"></div>
+            </section>
+        </div> <!-- End of Panel Beyond the Brave -->
+
 
         <!-- TCG Banlist Impact Section -->
         <section class="animate-fadeIn" style="animation-delay: 0.7s;">
@@ -1102,30 +1200,6 @@
         <!-- Deck Resources Section -->
     </div>
     <script>
-        // Global switchTab function for capsule navigation switcher
-        function switchTab(tabId) {
-            const tabs = document.querySelectorAll('.tab-btn');
-            const panels = document.querySelectorAll('.tab-panel');
-            
-            tabs.forEach(tab => {
-                if (tab.id === `tab-${tabId}`) {
-                    tab.classList.add('active');
-                } else {
-                    tab.classList.remove('active');
-                }
-            });
-            
-            panels.forEach(panel => {
-                if (panel.id === `panel-${tabId}`) {
-                    panel.style.display = 'block';
-                    panel.classList.add('active');
-                } else {
-                    panel.style.display = 'none';
-                    panel.classList.remove('active');
-                }
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', async () => {
             // --- MAGICAL BANNER ANIMATION ---
             const canvas = document.getElementById('magic-banner');
@@ -1294,6 +1368,16 @@
                 initPageSections('Endymion');
             });
         </script>
+    <!-- Beyond the Brave cross-archetype panel (Verre), shared with the Witchcrafter page -->
+    <script src="../assets/js/cross-engine-data.js"></script>
+    <script src="../assets/js/cross-engine-support.js"></script>
+    <!-- Guide tabs. Initialised after the cross-engine panel mounts, so #tab-betb and
+         links into the panel open the right tab. The panel's art loads when the tab opens. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            GuideTabs.init();
+        });
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

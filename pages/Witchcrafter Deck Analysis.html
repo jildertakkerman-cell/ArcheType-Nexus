@@ -173,6 +173,94 @@
             z-index: 3;
             text-shadow: 0 0 15px rgba(250, 204, 21, 0.7);
         }
+
+        /* --- Guide tabs (driven by guide-tabs.js) ---
+           Scoped here rather than as Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild. */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #4a4e69;
+        }
+
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: #a5b4fc;
+            font: inherit;
+            font-family: 'Cinzel', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+            background-color: rgba(168, 85, 247, 0.1);
+        }
+
+        .tab-btn[aria-selected="true"] {
+            color: #fde047;
+            border-bottom-color: #facc15;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.45);
+        }
+
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible {
+            outline: 2px solid #facc15;
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+
+        /* Following a #tab-betb link focuses the panel; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: #9333ea;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+
+        .tab-panel[hidden] { display: none !important; }
+
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn { transition: none; }
+        }
+
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -181,7 +269,9 @@
     <script src="../assets/js/synergy-tags.js"></script>
     <script src="../assets/js/page-sections.js"></script>
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
+    <link rel="stylesheet" href="../assets/css/cross-engine-support.css">
     <script src="../assets/js/follow-archetype.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
 </head>
 
 <body class="p-4 md:p-8">
@@ -215,6 +305,21 @@
                 </p>
             </div>
         </section>
+
+        <!-- NEW SUPPORT HIGHLIGHT (Beyond the Brave): opens the Beyond the Brave tab.
+             Rendered from assets/js/cross-engine-data.js; the Endymion page mounts the same card. -->
+        <section class="max-w-4xl mx-auto mb-10 px-4" aria-label="New support highlight">
+            <div data-cross-engine="beyond-the-brave-verre" data-perspective="witchcrafter" data-variant="teaser" data-xe-target="tab-betb"></div>
+        </section>
+
+        <!-- Guide tabs: the original guide lives unchanged in "Classic Analysis";
+             Beyond the Brave support gets its own panel. The banlist and deck search stay below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Witchcrafter guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Beyond the Brave Support <span class="tab-new-badge" aria-hidden="true">New</span><span class="xe-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -501,6 +606,17 @@
             </div>
         </section>
 
+        </div> <!-- End of Classic Analysis panel -->
+
+        <!-- Beyond the Brave: Verre, the Maid of Endymion (cross-archetype support).
+             Rendered from assets/js/cross-engine-data.js ('beyond-the-brave-verre'), which the
+             Endymion page shares, so card text and rulings stay identical on both pages. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+            <section class="mb-10 md:mb-16">
+                <div data-cross-engine="beyond-the-brave-verre" data-perspective="witchcrafter"></div>
+            </section>
+        </div>
+
         <!-- TCG Banlist Status Section -->
         <section class="animate-fadeIn" style="animation-delay: 1s;">
             <h2 class="font-cinzel text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current
@@ -638,6 +754,16 @@
                 initPageSections('Witchcrafter');
             });
         </script>
+    <!-- Beyond the Brave cross-archetype panel (Verre), shared with the Endymion page -->
+    <script src="../assets/js/cross-engine-data.js"></script>
+    <script src="../assets/js/cross-engine-support.js"></script>
+    <!-- Guide tabs. Initialised after the cross-engine panel mounts, so #tab-betb and
+         links into the panel open the right tab. The panel's art loads when the tab opens. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            GuideTabs.init();
+        });
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

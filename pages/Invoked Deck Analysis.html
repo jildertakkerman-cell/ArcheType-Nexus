@@ -14,6 +14,9 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap"
@@ -265,6 +268,525 @@
         .border-chaos { border-color: #c084fc; }
         .bg-chaos { background-color: rgba(192, 132, 252, 0.08); }
     </style>
+    <style>
+        /* ===== Beyond the Brave (BETB) support: third era tab + spotlight =====
+           The era tabs keep this page's own switchTab() and .active / .hidden-content
+           styles; this block only adds to them. Scoped here rather than as Tailwind
+           utilities: output.css is precompiled. Every colour comes from the
+           --betb-* tokens, so the whole block can be recoloured in one place. */
+        :root {
+            --betb-accent: #fb7185;           /* De Anima crimson */
+            --betb-accent-strong: #e11d48;
+            --betb-accent-glow: rgba(225, 29, 72, 0.45);
+            --betb-accent-line: rgba(251, 113, 133, 0.45);
+            --betb-accent-wash: rgba(225, 29, 72, 0.1);
+            --betb-gold: #facc15;             /* Grail gold, same as .text-highlight */
+            --betb-gold-wash: rgba(250, 204, 21, 0.08);
+            --betb-surface: #1c2a4e;          /* same as .card */
+            --betb-surface-raised: #24365f;
+            --betb-surface-sunken: #111a33;
+            --betb-border: #3a508a;
+            --betb-text: #e0e7ff;
+            --betb-muted: #a3aed6;
+            --betb-good: #4ade80;
+            --betb-bad: #f87171;
+        }
+
+        /* Tabs */
+        .tab-btn:focus-visible {
+            outline: 2px solid var(--betb-gold);
+            outline-offset: 3px;
+        }
+        .tab-new-badge {
+            display: inline-block;
+            margin-left: 0.4rem;
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--betb-gold);
+            color: #0b0f19;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            vertical-align: middle;
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Spotlight strip: always visible above the tabs */
+        .betb-spot {
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-accent-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(120% 140% at 0% 0%, var(--betb-accent-wash), transparent 55%),
+                radial-gradient(120% 140% at 100% 100%, var(--betb-gold-wash), transparent 55%),
+                var(--betb-surface-sunken);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        .betb-spot-head { margin-bottom: 1rem; }
+        .betb-spot-title {
+            margin-top: 0.25rem;
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #fff;
+        }
+        .betb-spot-cards { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; }
+        .betb-spot-card {
+            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr);
+            gap: 0.85rem;
+            align-items: start;
+            padding: 0.75rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: rgba(28, 42, 78, 0.6);
+        }
+        .betb-spot-card h3 { font-size: 1rem; font-weight: 700; line-height: 1.3; }
+        .betb-spot-card h3 a { color: #fff; text-decoration: none; border-bottom: 1px dotted var(--betb-accent); }
+        .betb-spot-card h3 a:hover { color: var(--betb-gold); border-bottom-color: var(--betb-gold); }
+        .betb-spot-card p { margin-top: 0.3rem; font-size: 0.85rem; line-height: 1.5; color: var(--betb-text); }
+        .betb-jump { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+        .betb-jump a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 40px;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-sunken);
+            color: var(--betb-text);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, color 0.15s;
+        }
+        .betb-jump a:hover { border-color: var(--betb-accent); color: #fff; }
+        .betb-jump i { color: var(--betb-accent); }
+        .betb-jump .betb-cta { border-color: var(--betb-gold); background: var(--betb-gold); color: #0b0f19; }
+        .betb-jump .betb-cta:hover { color: #0b0f19; background: #fde047; }
+        .betb-jump .betb-cta i { color: inherit; }
+        .betb-spot a:focus-visible,
+        .betb-table a:focus-visible,
+        .betb-table-wrap:focus-visible {
+            outline: 2px solid var(--betb-gold);
+            outline-offset: 2px;
+        }
+
+        /* Panel furniture */
+        .betb-intro {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            line-height: 1.65;
+            color: var(--betb-text);
+            text-align: center;
+        }
+        .betb-intro strong { color: #fff; }
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-sunken);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--betb-text);
+        }
+        .betb-chip i { color: var(--betb-accent); }
+        .betb-chip--tcg { border-color: rgba(250, 204, 21, 0.6); }
+        .betb-chip--tcg i { color: var(--betb-gold); }
+        .betb-pillars { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--betb-accent);
+            filter: drop-shadow(0 0 6px var(--betb-accent-glow));
+        }
+        .betb-callout {
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-gold);
+            border-radius: 0.5rem;
+            background: var(--betb-surface);
+            line-height: 1.6;
+            color: var(--betb-text);
+        }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: var(--betb-gold);
+        }
+        .betb-callout strong { color: #fff; }
+        .betb-note { margin-top: 0.75rem; font-size: 0.8rem; line-height: 1.55; color: var(--betb-muted); }
+        .betb-note strong { color: var(--betb-text); }
+        .betb-note--center { max-width: 46rem; margin: -1.25rem auto 2rem; text-align: center; }
+        .betb-kicker {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--betb-gold);
+        }
+        .betb-label {
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+
+        /* Card art slot. Reserves the card's 59:86 shape so nothing shifts when
+           CardLoader swaps the art in, then drops the empty-slot styling. */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            border: 2px solid var(--betb-border);
+            border-radius: 0.25rem;
+            background: var(--betb-surface-sunken);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            font-size: 0.55rem;
+            line-height: 1.3;
+            letter-spacing: 1px;
+            text-align: center;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        /* CardLoader's not-found fallback nests a full-size placeholder; keep it in the slot. */
+        .betb-art .card-placeholder {
+            min-height: 0;
+            height: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+            letter-spacing: inherit;
+        }
+
+        /* New card entries: art | kicker, name + stats on top, card text
+           full-width below on phones; art spans both rows from tablet up. */
+        .betb-card-list { display: grid; gap: 1.5rem; }
+        .betb-card {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-accent-line);
+            border-radius: 1rem;
+            background: linear-gradient(145deg, var(--betb-surface-raised), var(--betb-surface));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(225, 29, 72, 0.08);
+            scroll-margin-top: 1.5rem;
+        }
+        .betb-card--grail { border-color: rgba(250, 204, 21, 0.4); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(250, 204, 21, 0.06); }
+        .betb-card-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-card-art { grid-area: art; }
+        .betb-card-head { grid-area: head; min-width: 0; }
+        .betb-card-body { grid-area: body; min-width: 0; }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #fff;
+            text-shadow: 0 0 12px var(--betb-accent-glow);
+        }
+        .betb-stats { display: grid; gap: 0.2rem; margin: 0.6rem 0 0; font-size: 0.8rem; }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; font-weight: 600; color: var(--betb-text); }
+        /* Unnumbered card text: materials and activation conditions. */
+        .betb-effect-lead {
+            margin-bottom: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border: 1px dashed var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-sunken);
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: var(--betb-text);
+        }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--betb-text);
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--betb-accent-strong);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-modes { display: grid; gap: 0.35rem; margin: 0.45rem 0 0; padding: 0; list-style: none; }
+        .betb-modes > li { position: relative; padding-left: 1.1rem; }
+        .betb-modes > li::before {
+            content: "";
+            position: absolute;
+            top: 0.6em;
+            left: 0.1rem;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 9999px;
+            background: var(--betb-gold);
+        }
+        .betb-opt {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #c7d2fe;
+        }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-gold);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--betb-gold-wash);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--betb-text);
+        }
+        .betb-role strong { color: var(--betb-gold); }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-sunken);
+        }
+        .betb-glance dt {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+        .betb-glance dd { margin: 0.25rem 0 0; font-size: 0.9rem; font-weight: 700; line-height: 1.35; color: var(--betb-gold); }
+        .betb-glance dd.is-no { color: var(--betb-bad); }
+
+        /* Tables scroll inside their own focusable region on narrow screens
+           instead of forcing the page to scroll sideways. */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-sunken);
+        }
+        .betb-table { width: 100%; min-width: 640px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(58, 80, 138, 0.8);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            background: var(--betb-surface-raised);
+            border-bottom: 2px solid var(--betb-accent-strong);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--betb-accent);
+        }
+        .betb-table tbody th { font-weight: 700; color: #fff; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table a { color: var(--betb-gold); text-decoration: underline; text-underline-offset: 2px; }
+        .betb-mats { display: block; margin-top: 0.2rem; font-size: 0.78rem; font-weight: 400; color: var(--betb-muted); }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin: 0 0.35rem 0.25rem 0;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--yes { border: 1px solid rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: var(--betb-good); }
+        .betb-pill--no { border: 1px solid rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.12); color: var(--betb-bad); }
+        .betb-pill--pick { border: 1px solid rgba(250, 204, 21, 0.4); background: rgba(250, 204, 21, 0.12); color: var(--betb-gold); }
+
+        /* Combo line summaries + interactive combo lab */
+        .betb-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-top: 3px solid var(--betb-accent-strong);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-sunken));
+        }
+        .betb-line--second { border-top-color: var(--betb-gold); }
+        .betb-line h3 { font-size: 1.1rem; font-weight: 700; line-height: 1.3; color: #fff; }
+        .betb-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .betb-line-facts dt {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+        .betb-line-facts dd { margin: 0.15rem 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--betb-text); }
+        .betb-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--betb-border);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--betb-muted);
+        }
+        .betb-line-rule strong { color: var(--betb-gold); }
+        .betb-lab { margin-top: 2rem; }
+        .betb-lab-mount { min-height: 12rem; }
+        .betb-lab-loading { padding: 2rem 1rem; text-align: center; font-size: 0.9rem; color: var(--betb-muted); }
+
+        /* Rules grid */
+        .betb-rules { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-rules > li {
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-accent-strong);
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-sunken));
+        }
+        .betb-rules h3 { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.3rem; font-weight: 700; color: #fff; }
+        .betb-rules h3 i { color: var(--betb-accent); }
+        .betb-rules p { font-size: 0.875rem; line-height: 1.55; color: var(--betb-text); }
+
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid #ef4444;
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface-raised), var(--betb-surface));
+        }
+        .betb-risks i { margin-top: 0.2rem; color: var(--betb-bad); }
+        .betb-risks h3 { margin-bottom: 0.25rem; font-weight: 700; color: #fff; }
+        .betb-risks p { font-size: 0.875rem; line-height: 1.55; color: var(--betb-text); }
+
+        #view-betb section[id] { scroll-margin-top: 1.5rem; }
+
+        @media (min-width: 768px) {
+            .betb-spot { padding: 1.5rem 1.75rem; }
+            .betb-spot-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-card { padding: 1.5rem; }
+            .betb-card-layout {
+                grid-template-columns: 170px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.4rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 960px) {
+            .betb-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn { transition: none; }
+            .tab-btn.active { transform: none; }
+            .visible-content { animation: none; }
+            .betb-jump a { transition: none; }
+        }
+        /* Printing the guide should include every era, not just the open one. */
+        @media print {
+            .tabs-container,
+            .betb-jump,
+            .betb-lab { display: none; }
+            .hidden-content { display: block !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -333,10 +855,43 @@
             </div>
         </section>
 
+        <!-- Beyond the Brave spotlight: always visible. Its links open the Beyond the Brave
+             tab (#betb) or jump to a section inside it; the inline script near the end of
+             the page opens the hidden tab first. -->
+        <aside class="betb-spot" data-pcs-scope="spot" aria-labelledby="betb-spot-title">
+            <div class="betb-spot-head">
+                <p class="betb-kicker"><span class="tab-new-badge">New</span> Beyond the Brave · TCG <time datetime="2026-10-08">8 Oct 2026</time></p>
+                <h2 id="betb-spot-title" class="betb-spot-title">Two New Cards for Aleister</h2>
+            </div>
+            <ul class="betb-spot-cards" role="list">
+                <li class="betb-spot-card">
+                    <div id="betb-spot-deanima-img-container" class="betb-art">Invoked De Anima</div>
+                    <div>
+                        <h3><a href="#betb-deanima">Invoked De Anima</a></h3>
+                        <p>A DARK Fiend Fusion. When it's Special Summoned, it destroys all your opponent's Extra Deck monsters or all their Spells and Traps. Later it banishes itself to negate a GY effect.</p>
+                    </div>
+                </li>
+                <li class="betb-spot-card">
+                    <div id="betb-spot-grail-img-container" class="betb-art">Invocation - "Grail"</div>
+                    <div>
+                        <h3><a href="#betb-grail">Invocation - "Grail"</a></h3>
+                        <p>A Normal Spell that Fusion Summons an Invoked with one material from your Deck, or with one of your opponent's face-up monsters.</p>
+                    </div>
+                </li>
+            </ul>
+            <ul class="betb-jump" role="list" aria-label="Jump into the Beyond the Brave tab">
+                <li><a href="#betb-grail-targets"><i class="fas fa-table" aria-hidden="true"></i> What Grail can summon</a></li>
+                <li><a href="#betb-lines"><i class="fas fa-route" aria-hidden="true"></i> Three new lines</a></li>
+                <li><a href="#betb-rules"><i class="fas fa-gavel" aria-hidden="true"></i> Rulings</a></li>
+                <li><a class="betb-cta" href="#betb">Open the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+            </ul>
+        </aside>
+
         <!-- TABS CONTROLS -->
         <div class="tabs-container flex flex-col md:flex-row justify-center gap-2 md:gap-8 mb-10 border-b border-indigo-500/30 pb-2">
             <button class="tab-btn active" id="btn-chaos" onclick="switchTab('chaos')"><i class="fas fa-star mr-2"></i>Chaos Origins Era (2026)</button>
             <button class="tab-btn" id="btn-core" onclick="switchTab('core')"><i class="fas fa-book mr-2"></i>Burst Protocol Era (2026)</button>
+            <button class="tab-btn" id="btn-betb" onclick="switchTab('betb')" aria-controls="view-betb"><i class="fas fa-wine-glass mr-2" aria-hidden="true"></i>Beyond the Brave (2026)<span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only"> (2 new cards)</span></button>
         </div>
 
         <div id="view-core" class="hidden-content">
@@ -1025,6 +1580,455 @@
 
         </div> <!-- end view-chaos -->
 
+        <!-- VIEW: BEYOND THE BRAVE SUPPORT (Invoked De Anima + Invocation - "Grail").
+             Card text is the official TCG wording. Art and the combo simulator
+             (assets/data/combos/invoked-combos.json) load the first time this tab opens. -->
+        <div id="view-betb" data-pcs-scope="betb" class="hidden-content">
+
+            <!-- What Changed -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-title">
+                <h2 id="betb-title" class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Beyond the Brave: De Anima &amp; Grail</h2>
+                <ul class="betb-release" role="list" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG · Beyond the Brave · <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG · <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">Beyond the Brave gives Aleister a new Fusion Monster and a new Fusion Spell. <strong>Invoked De Anima</strong> destroys your opponent's Extra Deck monsters or their whole backrow when it's Special Summoned, then trades itself for an Aleister from your Deck to negate a GY effect. <strong>Invocation - "Grail"</strong> Fusion Summons with one material from your Deck, or with one of your opponent's monsters. The Chaos Origins and Burst Protocol tabs are unchanged. This tab shows where the two new cards fit into those engines.</p>
+                <p class="betb-note betb-note--center">Early coverage of the OCG release calls them <em>Invoked Dee Anima</em> and <em>Invocation – Chalice</em>. Those are fan translations; this guide uses the TCG names.</p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-layer-group"></i></div>
+                        <h3 class="font-bold text-accent mb-2">Fusion from the Deck</h3>
+                        <p class="text-gray-300 text-sm">Grail's first effect takes one material straight from your Deck. The Attribute you need no longer has to be in your hand or GY, and Mechaba no longer needs a Link Monster to supply the LIGHT.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-bomb"></i></div>
+                        <h3 class="font-bold text-accent mb-2">Two Removals from One Spell</h3>
+                        <p class="text-gray-300 text-sm">Grail's second effect banishes one of your opponent's face-up monsters as material, without targeting or destroying it. When that summon is De Anima, its effect then destroys the rest of their Extra Deck monsters, or all their Spells and Traps.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-sync-alt"></i></div>
+                        <h3 class="font-bold text-accent mb-2">A Negate That Replaces Itself</h3>
+                        <p class="text-gray-300 text-sm">De Anima banishes itself to negate an effect your opponent activates in the GY, and an Aleister takes its place from your Deck. Gamma Summon and Omega Summon can then return De Anima from banishment.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The two new cards -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-cards-title">
+                <h2 id="betb-cards-title" class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">The Two New Cards</h2>
+                <div class="betb-card-list">
+
+                    <article id="betb-deanima" class="betb-card" aria-labelledby="betb-deanima-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-deanima-img-container" class="betb-art">Invoked De Anima</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">New card · Fusion Monster</p>
+                                <h3 id="betb-deanima-name" class="betb-card-name">Invoked De Anima</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card type</dt><dd>Fusion / Effect Monster</dd></div>
+                                    <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                    <div><dt>Type</dt><dd>Fiend</dd></div>
+                                    <div><dt>Level</dt><dd>8</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>2900 / 1500</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <p class="betb-effect-lead">1 "Aleister" monster + 1 monster Special Summoned from the Extra Deck</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>If this card is Special Summoned: You can activate 1 of these effects;
+                                        <ul class="betb-modes" role="list">
+                                            <li>Destroy all monsters your opponent controls that were Special Summoned from the Extra Deck.</li>
+                                            <li>Destroy all Spells/Traps your opponent controls.</li>
+                                        </ul>
+                                    </li>
+                                    <li>When your opponent activates a card effect in the GY (Quick Effect): You can banish this card you control; Special Summon 1 "Aleister" monster from your Deck, and if you do, negate that activated effect.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only use each effect of "Invoked De Anima" once per turn.</p>
+                                <p class="betb-role"><strong>Board breaker and GY interruption.</strong> The first effect works on any Special Summon, not only a Fusion Summon, so The Book of the Law, Gamma Summon, Omega Summon and Super Polymerization all set it off. Going second, it clears whatever Grail didn't banish. Going first, set Invocation - "Sword" or The Book of the Law and summon De Anima on your opponent's turn, after they've committed their Extra Deck monsters. After that, its negate swaps it for an Aleister from your Deck.</p>
+                                <dl class="betb-glance">
+                                    <div><dt>Materials</dt><dd>Any "Aleister" + an Extra Deck monster</dd></div>
+                                    <div><dt>Summon effect</dt><dd>On any Special Summon</dd></div>
+                                    <div><dt>Negate</dt><dd>GY effects only</dd></div>
+                                    <div><dt>Limit</dt><dd>Each effect once per turn</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article id="betb-grail" class="betb-card betb-card--grail" aria-labelledby="betb-grail-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-grail-img-container" class="betb-art">Invocation - "Grail"</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">New card · Fusion Spell</p>
+                                <h3 id="betb-grail-name" class="betb-card-name">Invocation - "Grail"</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card type</dt><dd>Normal Spell</dd></div>
+                                    <div><dt>Summons</dt><dd>"Invoked" Fusion Monsters</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <p class="betb-effect-lead">If you have an "Aleister" monster in your field, GY, or banishment: Activate 1 of these effects;</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>Fusion Summon 1 "Invoked" Fusion Monster from your Extra Deck, by banishing 1 monster in your hand or field and 1 monster in your Deck as material.</li>
+                                    <li>Fusion Summon 1 "Invoked" Fusion Monster from your Extra Deck, by banishing 1 monster you control and 1 face-up monster your opponent controls as material.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only activate 1 "Invocation - "Grail"" per turn.</p>
+                                <p class="betb-role"><strong>Deck fusion going first, removal going second.</strong> Every Grail summon uses exactly two materials and banishes both. The first effect thins your Deck, and what it banishes can come back later as Invocation - "Sword" material. The second effect neither targets nor destroys, so "can't be targeted" and "can't be destroyed" don't stop it. No card in the engine can search it: Aleister the Invoker adds "Invocation" by exact name, and Aleister the Reminiscent and Virakam only find "Invocation" or a Spell that mentions it. Grail's text never mentions it.</p>
+                                <dl class="betb-glance">
+                                    <div><dt>Condition</dt><dd>An "Aleister" on the field, in the GY or banished</dd></div>
+                                    <div><dt>Materials</dt><dd>Exactly 2, both banished</dd></div>
+                                    <div><dt>Searchable</dt><dd class="is-no">No, draw it</dd></div>
+                                    <div><dt>Limit</dt><dd>1 activation per turn</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- What Grail can summon -->
+            <section id="betb-grail-targets" class="mb-10 md:mb-16" aria-labelledby="betb-targets-title">
+                <h2 id="betb-targets-title" class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">What Grail Can Summon</h2>
+                <p class="betb-intro">The first effect reaches every Invoked Fusion Monster except Elysium and Hyperinvoked Aeon. The second reaches all of them, as long as your opponent has the right monster face-up.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-targets-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-targets-caption" class="betb-sr-only">Invoked Fusion Monsters that each effect of Invocation - "Grail" can summon, with example materials</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Invoked Fusion</th>
+                                <th scope="col">Effect 1: your hand or field + your Deck</th>
+                                <th scope="col">Effect 2: your field + their face-up monster</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Mechaba, Purgatrio, Caliga, Raidjin, Cocytus, Magellanica<span class="betb-mats">"Aleister the Invoker" + 1 LIGHT, FIRE, DARK, WIND, WATER or EARTH monster, in that order</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Aleister the Invoker plus the Attribute from your Deck: Virakam is LIGHT, Aiwass is WIND, Aleister the Reminiscent is DARK. It works the other way round too, with Aleister the Invoker coming from the Deck.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister the Invoker plus their face-up monster of that Attribute.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Augoeides<span class="betb-mats">"Aleister the Invoker" + 1 Fusion Monster</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> A Fusion Monster on your field plus Aleister the Invoker from your Deck.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister the Invoker plus their face-up Fusion Monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Magistus Omega<span class="betb-mats">"Aleister the Invoker" + 1 Fusion, Synchro, Xyz or Link Monster</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> One of those on your field plus Aleister the Invoker from your Deck.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister the Invoker plus their face-up Fusion, Synchro, Xyz or Link Monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sorath<span class="betb-mats">1 "Aleister" monster + 1 FIRE or WIND monster</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Any Aleister plus Aiwass from your Deck.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister plus their face-up FIRE or WIND monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Baybarron<span class="betb-mats">1 "Aleister" monster + 1 LIGHT or EARTH monster</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Aleister the Reminiscent plus Virakam from your Deck (Line 2).</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister plus their face-up LIGHT or EARTH monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Oceanus<span class="betb-mats">1 "Aleister" monster + 1 DARK or WATER monster</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Both main-deck Aleisters are DARK, so one on your field and the other from your Deck is enough.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister plus their face-up DARK or WATER monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">De Anima<span class="betb-mats">1 "Aleister" monster + 1 monster Special Summoned from the Extra Deck</span></th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Extra Deck monster on the field plus an Aleister from your Deck.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Aleister plus their face-up Extra Deck monster (Line 3).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Elysium<span class="betb-mats">1 "Invoked" monster + 1 monster Special Summoned from the Extra Deck; must first be Fusion Summoned</span></th>
+                                <td><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span> Nothing in your Deck is an Invoked monster or came from the Extra Deck.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Invoked Fusion Monster plus their face-up Extra Deck monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Hyperinvoked Aeon<span class="betb-mats">2+ Fusion Monsters with different Attributes</span></th>
+                                <td><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span> Your Deck holds no Fusion Monsters.</td>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span> Your Fusion Monster plus their face-up Fusion Monster of another Attribute. With two materials it banishes up to 2 cards; the Extra Deck banish needs 3.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>"Aleister the Invoker" or any "Aleister"?</strong> The six Attribute Fusions, Augoeides and Omega need the name Aleister the Invoker, so Aleister the Reminiscent can't be used for them. Aleister the Invoker of Madness has that name on the field and in the GY. Crowley, the Gifted Magistus is treated as Aleister the Invoker only when used as material face-up, so he has to be on your field, never in your hand or Deck. Sorath, Baybarron, Oceanus and De Anima accept any "Aleister" monster.</p>
+            </section>
+
+            <!-- Ways to summon De Anima -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-routes-title">
+                <h2 id="betb-routes-title" class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Ways to Summon De Anima</h2>
+                <p class="betb-intro">De Anima's summon effect only needs it to be Special Summoned, so many cards can bring it out, several of them on your opponent's turn.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-routes-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-routes-caption" class="betb-sr-only">Cards that Special Summon Invoked De Anima, how they do it, and their limits</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Materials or cost</th>
+                                <th scope="col">Catch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Invocation - "Grail" (effect 1)</th>
+                                <td>Your Extra Deck monster on the field + an Aleister from your Deck</td>
+                                <td>Uses up an Aleister that De Anima's negate needs later.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Invocation - "Grail" (effect 2)</th>
+                                <td>Your Aleister + their face-up Extra Deck monster</td>
+                                <td>Needs them to have an Extra Deck monster face-up. Best going second.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Invocation - "Sword"</th>
+                                <td>Your Extra Deck monster + an Aleister from your field, or returned from any banishment to the GY</td>
+                                <td>A Quick-Play Spell, so you can set it and summon De Anima on your opponent's turn (Line 2).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Invocation</th>
+                                <td>An Aleister from your hand, field or either GY + your Extra Deck monster on the field</td>
+                                <td>It can only banish from your own field, so it can't use your opponent's monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Super Polymerization</th>
+                                <td>Discard 1; your Aleister + their Extra Deck monster, from either field</td>
+                                <td>Neither player can respond to its activation, but it costs a card from your hand.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The Book of the Law</th>
+                                <td>Tribute a non-DARK Invoked monster you control, such as Mechaba or Baybarron</td>
+                                <td>A Quick-Play Spell, one per turn. The summon counts as a Fusion Summon, so De Anima can be returned from banishment later. Aleister the Invoker of Madness searches it.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gamma Summon</th>
+                                <td>Banish an Aleister or a Fusion Monster from your GY; De Anima ignores its Summoning conditions</td>
+                                <td>It's banished in the End Phase, and because it wasn't properly summoned it can't come back. Its summon effect still resolves.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section id="betb-lines" class="mb-10 md:mb-16" aria-labelledby="betb-lines-title">
+                <h2 id="betb-lines-title" class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Combo Lines</h2>
+                <p class="betb-intro">Each line starts from two cards, and every step was checked against the printed text of the cards involved. Pick a line in the simulator below to play it on the board.</p>
+                <div class="betb-lines">
+                    <article class="betb-line" aria-labelledby="betb-line-1">
+                        <p class="betb-kicker">Line 1 · Going first</p>
+                        <h3 id="betb-line-1">Grail Deck Fusion into Mechaba</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Aleister the Invoker, Invocation - "Grail"</dd></div>
+                            <div><dt>Needs</dt><dd>Invocation and a LIGHT monster such as Virakam in the Deck; Invoked Mechaba in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Invoked Mechaba, with Invocation in hand as the Spell it sends. Next turn Invocation returns Aleister, and the turn repeats.</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> The classic Mechaba turn (see the Burst Protocol tab) uses a Link Monster to supply the LIGHT. Grail takes the LIGHT from your Deck instead, which frees that Extra Deck slot for De Anima. Invocation's GY effect brings back the Aleister the Invoker that Grail banished.</p>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-2">
+                        <p class="betb-kicker">Line 2 · Going first</p>
+                        <h3 id="betb-line-2">Reminiscent and Grail into an Opponent's-Turn De Anima</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Aleister the Reminiscent, Invocation - "Grail"</dd></div>
+                            <div><dt>Needs</dt><dd>Invocation - "Sword", Virakam and Gamma Summon in the Deck; a spare Invoked (Magellanica), Baybarron, De Anima and Mechaba in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Baybarron with Sword and Gamma Summon set. On your opponent's turn: De Anima destroys their Extra Deck monsters, Mechaba stays until the End Phase, then Baybarron returns.</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Sword can return banished monsters to the GY as material, so the Reminiscent that Grail banished is still De Anima's "Aleister". Grail properly Fusion Summoned Baybarron, so Gamma Summon can return it from banishment; Mechaba came from Gamma Summon and can't. <strong>Watch for:</strong> removal on Baybarron before you flip Sword. Without an Extra Deck monster on your field, De Anima is off.</p>
+                    </article>
+                    <article class="betb-line betb-line--second" aria-labelledby="betb-line-3">
+                        <p class="betb-kicker">Line 3 · Going second</p>
+                        <h3 id="betb-line-3">Meltdown and Grail Break</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Magical Meltdown, Invocation - "Grail"</dd></div>
+                            <div><dt>Needs</dt><dd>Aleister the Invoker and Invocation in the Deck; De Anima in the Extra Deck; a face-up monster your opponent Special Summoned from the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>De Anima (2900 ATK) after banishing one of their Extra Deck monsters and destroying the rest, with Invocation in hand</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Grail banishes their best monster as material, so it isn't targeted or destroyed. De Anima's summon effect then destroys the rest. With Magical Meltdown on the field, Grail can't be negated, and your opponent can't activate cards or effects when De Anima is Fusion Summoned. <strong>Watch for:</strong> Ash Blossom on Meltdown's search leaves you without an Aleister. Ash on Aleister's own search only costs you Invocation; Grail still resolves.</p>
+                    </article>
+                </div>
+                <section class="betb-lab" aria-label="Interactive combo lines">
+                    <div id="invoked-combo-lab" class="betb-lab-mount">
+                        <p class="betb-lab-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading the interactive combo lines…</p>
+                    </div>
+                    <noscript><p class="betb-lab-loading">The combo simulator needs JavaScript. The three line summaries above list every hand, requirement and end board.</p></noscript>
+                </section>
+            </section>
+
+            <!-- Rules -->
+            <section id="betb-rules" class="mb-10 md:mb-16" aria-labelledby="betb-rules-title">
+                <h2 id="betb-rules-title" class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Rules That Decide Your Turn</h2>
+                <ul class="betb-rules" role="list">
+                    <li>
+                        <h3><i class="fas fa-search-minus" aria-hidden="true"></i> Grail can't be searched</h3>
+                        <p>Aleister the Invoker adds "Invocation" by exact name. Aleister the Reminiscent and Virakam take "Invocation" or a Spell that mentions it, and Grail's text never mentions it. You have to draw it.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-user-check" aria-hidden="true"></i> An Aleister has to be there first</h3>
+                        <p>You need an "Aleister" monster on your field, in your GY or banished before you activate Grail. Sacred Spirit Sword Aiwass's second effect banishes one from your Deck, which is enough on its own. Crowley doesn't count: he's only treated as Aleister the Invoker while he's being used as material.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-equals" aria-hidden="true"></i> Always exactly two materials</h3>
+                        <p>Each Grail effect banishes one monster from each place it names. Hyperinvoked Aeon made this way banishes up to 2 cards but never looks at the Extra Deck, which needs 3 materials.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-link" aria-hidden="true"></i> Any Extra Deck monster counts</h3>
+                        <p>De Anima's second material can be a Fusion, Synchro, Xyz or Link Monster that was Special Summoned from the Extra Deck, including Aleister the Invoker of Madness. The Invoker of Madness is also an Aleister, but one monster can't be both materials.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-layer-group" aria-hidden="true"></i> The negate needs an Aleister in your Deck</h3>
+                        <p>De Anima only negates if it Special Summons an Aleister from your Deck. Grail's first effect, Sacred Spirit Sword Aiwass and Magical Meltdown all take Aleisters from the same Deck, so keep count.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-dungeon" aria-hidden="true"></i> It only answers effects in the GY</h3>
+                        <p>Called by the Grave, D.D. Crow, Ghost Belle and the Bystials' summons aren't activated in the GY, so De Anima can't touch them. It stops your opponent's own GY plays: revivals, recursion and effects that activate from their GY.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-undo-alt" aria-hidden="true"></i> Returning from banishment</h3>
+                        <p>Gamma Summon's GY effect and Omega Summon can return a banished De Anima, and its summon effect triggers again. That only works if it was properly summoned first, by a Fusion Summon or The Book of the Law. One that Gamma Summon's first effect summoned stays banished.</p>
+                    </li>
+                    <li>
+                        <h3><i class="fas fa-hourglass-half" aria-hidden="true"></i> Each effect is once per turn by name</h3>
+                        <p>The destruction effect and the negate are counted separately. If De Anima destroys on your opponent's turn, a copy that returns later that turn can't destroy again, but it can still negate.</p>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Where the new cards meet the classic core -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-core-title">
+                <h2 id="betb-core-title" class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Where the New Cards Meet the Rest of the Engine</h2>
+                <p class="betb-intro">Nothing in the older eras gets replaced. Here is what changes for the cards you already play.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-core-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-core-caption" class="betb-sr-only">How existing Invoked cards interact with Invoked De Anima and Invocation - "Grail"</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">What changes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Invocation</th>
+                                <td>Grail's first effect can banish Aleister the Invoker from your hand, field or Deck, and Invocation's GY effect returns a banished Aleister the Invoker to your hand (Line 1).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Invocation - "Sword"</th>
+                                <td>It returns monsters from any banishment to the GY as material for an Invoked. Whatever Grail banishes, from your Deck or from your opponent's field, becomes Sword material (Line 2).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gamma Summon</th>
+                                <td>Its GY effect triggers whenever a monster is banished face-up. Grail's materials, De Anima's negate cost and Gamma Summon's own End Phase banish all count.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The Book of the Law</th>
+                                <td>Tribute a non-DARK Invoked, such as Mechaba or Baybarron, to summon De Anima on either player's turn.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Invoked Magistus Omega</th>
+                                <td>Both are Super Polymerization targets. Omega needs a Fusion, Synchro, Xyz or Link Monster and banishes one monster; De Anima takes any Extra Deck monster and destroys all of theirs. Grail's first effect also makes Omega from Aleister the Invoker in your Deck.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Magical Meltdown</th>
+                                <td>Adds Aleister the Invoker, and Grail can't be negated while it's on the field (Line 3).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sacred Spirit Sword Aiwass</th>
+                                <td>Its second effect banishes an Aleister from your Deck, which activates Grail without a Normal Summon. Grail's first effect can then use a monster in your hand plus Aleister the Invoker from your Deck.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Aleister the Reminiscent</th>
+                                <td>It counts as an "Aleister", so it's material for De Anima, Baybarron, Sorath and Oceanus, but not for Fusions that need the name Aleister the Invoker.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Where they fit -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-fit-title">
+                <h2 id="betb-fit-title" class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Where They Fit</h2>
+                <p class="betb-intro">The copy counts below are this guide's recommendation.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-fit-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-fit-caption" class="betb-sr-only">Recommended copies of Invocation - "Grail" and Invoked De Anima by deck, with reasons</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Deck</th>
+                                <th scope="col">Our pick</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Invoked (Chaos Origins core)</th>
+                                <td><span class="betb-pill betb-pill--yes">Grail ×2</span> <span class="betb-pill betb-pill--yes">De Anima ×1</span></td>
+                                <td>Grail is a second Fusion Spell that doesn't need a second body. Because you have to draw it, two copies keep it from clogging your hand. One De Anima is enough for Sword, The Book of the Law and Super Polymerization.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Invoked Endymion and other Spellcaster builds</th>
+                                <td><span class="betb-pill betb-pill--yes">Grail ×2</span> <span class="betb-pill betb-pill--yes">De Anima ×1</span></td>
+                                <td>The published Invoked Endymion list built around this support plays the same counts, with three Super Polymerization. See the <a href="Endymoin%20Deck%20Analysis.html">Endymion guide</a> for that engine.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Other decks with a small Aleister engine</th>
+                                <td><span class="betb-pill betb-pill--pick">Grail ×1–2</span> <span class="betb-pill betb-pill--pick">De Anima ×1</span></td>
+                                <td>Aleister, Meltdown and Invocation already give Grail its condition. Its second effect adds a going-second board breaker the engine didn't have.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Decks without Aleister</th>
+                                <td><span class="betb-pill betb-pill--no">Skip</span></td>
+                                <td>Grail can't be activated without an "Aleister" monster, and De Anima needs one as material.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Weak points -->
+            <section class="mb-10 md:mb-16" aria-labelledby="betb-risks-title">
+                <h2 id="betb-risks-title" class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Weak Points to Play Around</h2>
+                <ul class="betb-risks" role="list">
+                    <li>
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <div>
+                            <h3>A Spell you have to draw</h3>
+                            <p>Nothing searches Grail, so some games you won't see it. Build your turn so that it doesn't depend on Grail, and treat Grail as an extra when you draw it.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-users" aria-hidden="true"></i>
+                        <div>
+                            <h3>Only so many Aleisters</h3>
+                            <p>Grail's first effect, Sacred Spirit Sword Aiwass, Meltdown's search and De Anima's negate all take Aleisters from the same Deck. Run out and De Anima can't negate.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-compress-arrows-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>A tight Extra Deck</h3>
+                            <p>De Anima is one more Invoked in an Extra Deck that was already full. Grail's Deck fusion saves the Link Monster the classic Mechaba turn needed, which gives some of that space back.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-eye-slash" aria-hidden="true"></i>
+                        <div>
+                            <h3>Empty or face-down boards</h3>
+                            <p>Grail's second effect needs a face-up monster your opponent controls, so against face-down or no monsters only its first effect is live. De Anima's backrow option still destroys Set Spells and Traps.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="betb-callout mt-6">
+                    <h3 class="betb-callout-title"><i class="fas fa-gavel" aria-hidden="true"></i> Verdict</h3>
+                    <p><strong>Invoked De Anima</strong> gives the engine a board wipe that doesn't depend on Attributes, unlike Elysium's. Going second it breaks boards, and going first it's what Sword or The Book of the Law turns into on your opponent's turn. <strong>Invocation - "Grail"</strong> is a strong Fusion Spell that you can't search: going first it's a Deck fusion, going second it's removal. Play two Grail and one De Anima in Invoked, and keep counting your Aleisters.</p>
+                </div>
+            </section>
+
+        </div> <!-- end view-betb -->
+
         <!-- Current TCG Banlist Status Section (Dynamic, shared across eras) -->
         <section class="mb-10 md:mb-16 mt-16">
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Live TCG Banlist Status
@@ -1065,6 +2069,8 @@
 
             // --- Render Banlist Section ---
             await CardLoader.renderBanlistSection('banlist-status', [
+                'Invoked De Anima',
+                'Invocation - "Grail"',
                 'Aleister the Reminiscent',
                 'Aiwass, Divine Spirit of the Law',
                 'Virakam, the Divine Spirit of Artifice',
@@ -1207,6 +2213,87 @@
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
+    <!-- Beyond the Brave tab (Invoked De Anima + Invocation - "Grail"). Runs before
+         tab-deeplink.js so a #betb link that opens the tab on load also mounts its content. -->
+    <script>
+        (function () {
+            'use strict';
+
+            var PANEL_ID = 'view-betb';          // switchTab('betb') shows #view-betb
+            var COMBO_MOUNT_ID = 'invoked-combo-lab';
+            var COMBO_SLUG = 'invoked';          // assets/data/combos/invoked-combos.json
+            var PANEL_ART = {
+                'betb-deanima-img-container': 'Invoked De Anima',
+                'betb-grail-img-container': 'Invocation - "Grail"'
+            };
+            var SPOT_ART = {
+                'betb-spot-deanima-img-container': 'Invoked De Anima',
+                'betb-spot-grail-img-container': 'Invocation - "Grail"'
+            };
+
+            var artRequested = false;
+            var comboReady = null;
+
+            // Art and the combo simulator are fetched once, the first time the tab opens.
+            function openBetbPanel() {
+                if (!artRequested && typeof CardLoader !== 'undefined') {
+                    artRequested = true;
+                    CardLoader.loadCards(PANEL_ART);
+                }
+                if (!comboReady) {
+                    // combo-system.js declares ComboLoader as a top-level class, which is
+                    // not a property of window, so check it with typeof.
+                    if (typeof ComboLoader === 'undefined') {
+                        var mount = document.getElementById(COMBO_MOUNT_ID);
+                        if (mount) mount.innerHTML = '<p class="betb-lab-loading">The combo simulator could not load. The three line summaries above list every hand, requirement and end board.</p>';
+                        comboReady = Promise.resolve(null);
+                    } else {
+                        comboReady = ComboLoader.renderComboSystem(COMBO_MOUNT_ID, COMBO_SLUG);
+                    }
+                }
+                return comboReady;
+            }
+
+            var tabBtn = document.getElementById('btn-betb');
+            if (tabBtn) tabBtn.addEventListener('click', openBetbPanel);
+
+            // The era buttons are plain toggle buttons styled by .active; mirror that
+            // state as aria-current so screen readers announce which era is showing.
+            // Inline onclick handlers run before these listeners, so .active is current.
+            var eraButtons = document.querySelectorAll('.tabs-container .tab-btn');
+            function syncCurrentEra() {
+                eraButtons.forEach(function (btn) {
+                    if (btn.classList.contains('active')) btn.setAttribute('aria-current', 'true');
+                    else btn.removeAttribute('aria-current');
+                });
+            }
+            eraButtons.forEach(function (btn) { btn.addEventListener('click', syncCurrentEra); });
+            syncCurrentEra();
+
+            // A link to an anchor inside a hidden era (#betb-lines, #betb-grail, #view-betb)
+            // opens that era first; tab-deeplink.js then scrolls to it.
+            function openPanelForHash() {
+                var id = window.location.hash.slice(1);
+                try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+                if (!id || !/^[\w:.-]+$/.test(id)) return;
+                var target = document.getElementById(id);
+                var panel = target && target.closest('[id^="view-"]');
+                if (!panel || !panel.classList.contains('hidden-content')) return;
+                switchTab(panel.id.slice('view-'.length));
+                syncCurrentEra();
+                if (panel.id === PANEL_ID) openBetbPanel();
+            }
+            window.addEventListener('hashchange', openPanelForHash);
+            document.addEventListener('DOMContentLoaded', openPanelForHash);
+
+            // The spotlight above the tabs is always visible, so its art loads with the page.
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof CardLoader !== 'undefined') CardLoader.loadCards(SPOT_ART);
+            });
+        })();
+    </script>
+    <!-- Tab deep links (#betb, #core, #chaos) -->
+    <script src="../assets/js/tab-deeplink.js"></script>
 </body>
 
 </html>

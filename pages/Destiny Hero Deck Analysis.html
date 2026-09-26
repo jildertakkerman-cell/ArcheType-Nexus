@@ -13,6 +13,7 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
@@ -241,6 +242,511 @@
                 font-size: 18px;
             }
         }
+
+        /* --- Guide tabs + Beyond the Brave (BETB) support panel ---
+           Scoped here rather than as Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild.
+           Every colour comes from the --betb-* tokens, so the whole block can
+           be recoloured in one place. */
+        :root {
+            --betb-accent: #a78bfa;           /* violet, same as .text-accent */
+            --betb-accent-strong: #8b5cf6;
+            --betb-accent-glow: rgba(139, 92, 246, 0.5);
+            --betb-accent-line: rgba(167, 139, 250, 0.45);
+            --betb-gold: #fbbf24;             /* clock-face gold for Dark City at Midnight */
+            --betb-gold-wash: rgba(251, 191, 36, 0.08);
+            --betb-surface: #1a1a3a;
+            --betb-surface-raised: #23234a;
+            --betb-surface-sunken: #121130;
+            --betb-border: #3a3a7a;
+            --betb-text: #dde3ff;
+            --betb-muted: #a8acd6;
+            --betb-good: #4ade80;
+            --betb-bad: #f87171;
+        }
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid var(--betb-border);
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: -2px;
+            font: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--betb-muted);
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #fff; background-color: rgba(167, 139, 250, 0.08); }
+        .tab-btn[aria-selected="true"] {
+            color: var(--betb-accent);
+            border-bottom-color: var(--betb-accent-strong);
+            text-shadow: 0 0 10px var(--betb-accent-glow);
+        }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible {
+            outline: 2px solid var(--betb-accent);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there
+           so deep-link visitors don't see the whole guide outlined. */
+        .tab-panel:target:focus-visible { outline: none; }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--betb-gold);
+            color: #0c0a1a;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .betb-intro {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            line-height: 1.65;
+            color: var(--betb-text);
+            text-align: center;
+        }
+        .betb-intro strong { color: #fff; }
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-sunken);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--betb-text);
+        }
+        .betb-chip i { color: var(--betb-accent); }
+        .betb-chip--tcg { border-color: rgba(251, 191, 36, 0.6); }
+        .betb-chip--tcg i { color: var(--betb-gold); }
+        .betb-pillars {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+            color: var(--betb-accent);
+            filter: drop-shadow(0 0 6px var(--betb-accent-glow));
+        }
+        .betb-callout {
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-gold);
+            border-radius: 0.5rem;
+            background: var(--betb-surface);
+            line-height: 1.6;
+            color: var(--betb-text);
+        }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: var(--betb-gold);
+        }
+        .betb-callout strong { color: #fff; }
+        .betb-callout ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .betb-callout li { position: relative; padding-left: 1.1rem; }
+        .betb-callout li::before {
+            content: '';
+            position: absolute;
+            top: 0.6em;
+            left: 0;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 9999px;
+            background: var(--betb-accent-strong);
+            box-shadow: 0 0 6px var(--betb-accent-glow);
+        }
+
+        /* Card art slot. Reserves the card's 59:86 shape so nothing shifts when
+           CardLoader swaps the art in, then drops the empty-slot styling. */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            border: 2px solid var(--betb-border);
+            border-radius: 0.25rem;
+            background: var(--betb-surface-sunken);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.6rem;
+            line-height: 1.3;
+            letter-spacing: 1px;
+            text-align: center;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+            overflow: hidden;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        /* CardLoader's not-found fallback nests a full-size placeholder; keep it in the slot. */
+        .betb-art .card-placeholder {
+            min-height: 0;
+            height: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+            letter-spacing: inherit;
+        }
+
+        /* New card entries: art | kicker, name + stats on top, card text
+           full-width below on phones; art spans both rows from tablet up. */
+        .betb-card-list { display: grid; gap: 1.5rem; }
+        .betb-card {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-accent-line);
+            border-radius: 1rem;
+            background: linear-gradient(145deg, var(--betb-surface-raised), var(--betb-surface));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(139, 92, 246, 0.1);
+        }
+        .betb-card-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-card-art { grid-area: art; }
+        .betb-card-head { grid-area: head; min-width: 0; }
+        .betb-card-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--betb-gold);
+        }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #fff;
+            text-shadow: 0 0 12px var(--betb-accent-glow);
+        }
+        .betb-stats {
+            display: grid;
+            gap: 0.2rem;
+            margin: 0.6rem 0 0;
+            font-size: 0.8rem;
+        }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; font-weight: 600; color: var(--betb-text); }
+        .betb-label {
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-muted);
+        }
+        /* Unnumbered card text: summoning conditions and continuous effects. */
+        .betb-effect-lead {
+            margin-bottom: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border: 1px dashed var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-sunken);
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: var(--betb-text);
+        }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--betb-text);
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--betb-accent-strong);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-opt {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #c4b5fd;
+        }
+        .betb-opt--lead { margin: 0 0 0.6rem; }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-gold);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--betb-gold-wash);
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: var(--betb-text);
+        }
+        .betb-role strong { color: var(--betb-gold); }
+
+        /* Combo walkthrough. The extension list continues the step count. */
+        .betb-steps {
+            display: grid;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-step;
+        }
+        .betb-steps--continued { counter-reset: betb-step 7; }
+        .betb-step {
+            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            padding: 1rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-accent-strong);
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface-raised), var(--betb-surface));
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            counter-increment: betb-step;
+        }
+        .betb-steps--continued .betb-step { border-left-color: var(--betb-gold); }
+        .betb-step-art { position: relative; }
+        .betb-step-art::after {
+            content: counter(betb-step);
+            content: counter(betb-step) / "";
+            position: absolute;
+            top: -0.5rem;
+            left: -0.5rem;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 9999px;
+            background: var(--betb-accent-strong);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 0 10px var(--betb-accent-glow);
+            pointer-events: none;
+        }
+        .betb-steps--continued .betb-step-art::after { background: var(--betb-gold); color: #0c0a1a; }
+        .betb-step-title {
+            margin-bottom: 0.35rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .betb-step p { font-size: 0.9rem; line-height: 1.6; color: var(--betb-text); }
+        .betb-step p strong { color: var(--betb-accent); }
+        .betb-step .betb-step-state {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed var(--betb-border);
+            font-size: 0.8rem;
+            color: var(--betb-muted);
+        }
+        .betb-step-state b { font-weight: 700; color: var(--betb-gold); }
+        .betb-endboard {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-accent-line);
+            border-radius: 0.75rem;
+            background: var(--betb-surface-sunken);
+        }
+        .betb-endboard-title { margin-bottom: 1rem; font-size: 1.125rem; font-weight: 700; color: #fff; }
+        .betb-endboard-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-endboard-grid h4 {
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--betb-accent);
+        }
+        .betb-endboard-grid ul {
+            display: grid;
+            gap: 0.35rem;
+            margin: 0;
+            padding-left: 1.1rem;
+            list-style: disc;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: var(--betb-text);
+        }
+
+        /* Tables scroll inside their own focusable region on narrow screens
+           instead of forcing the page to scroll sideways. */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-sunken);
+        }
+        .betb-table { width: 100%; min-width: 560px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(58, 58, 122, 0.8);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            background: var(--betb-surface-raised);
+            border-bottom: 2px solid var(--betb-accent-strong);
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--betb-accent);
+        }
+        .betb-table tbody th { font-weight: 700; color: #fff; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-copies { font-family: 'Roboto Mono', monospace; font-weight: 700; color: var(--betb-gold); white-space: nowrap; }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--fit { border: 1px solid rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: var(--betb-good); }
+        .betb-pill--order { border: 1px solid rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.12); color: var(--betb-gold); }
+        .betb-pill--clash { border: 1px solid rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.12); color: var(--betb-bad); }
+        .betb-note { margin-top: 0.75rem; font-size: 0.8rem; line-height: 1.55; color: var(--betb-muted); }
+        .betb-note strong { color: var(--betb-text); }
+
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid #ef4444;
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface-raised), var(--betb-surface));
+        }
+        .betb-risks i { margin-top: 0.2rem; color: var(--betb-bad); }
+        .betb-risks h3 { margin-bottom: 0.25rem; font-weight: 700; color: #fff; }
+        .betb-risks p { font-size: 0.875rem; line-height: 1.55; color: var(--betb-text); }
+
+        @media (min-width: 768px) {
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-card { padding: 1.5rem; }
+            .betb-card-layout {
+                grid-template-columns: 150px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.3rem; }
+            .betb-step { grid-template-columns: 96px minmax(0, 1fr); gap: 1.5rem; padding: 1.25rem 1.5rem; }
+            .betb-endboard-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn { transition: none; }
+        }
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -282,6 +788,15 @@
                 </p>
             </div>
         </section>
+
+        <!-- Guide tabs: the original guide lives unchanged in "Classic Analysis";
+             Beyond the Brave support gets its own panel. The banlist stays below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Destiny HERO guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Beyond the Brave Support <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(5 new cards)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.2s;">
@@ -401,7 +916,521 @@
                     <p class="text-purple-200 text-sm">Functions as a one-sided Skill Drain, negating the effects of all face-up monsters the opponent controls. This shuts down most combo and monster-based strategies.</p>
                 </div>
             </div>
-        
+        </section>
+
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== BEYOND THE BRAVE (BETB) SUPPORT TAB ====================
+             Card text matches the card database CardLoader reads. Steps 1-7 of the combo
+             are the core line the new cards are built around; steps 8-9 extend it. Every
+             step was checked against each card's printed text for once-per-turn limits,
+             summoning conditions and Doom Overlord's DARK "HERO" lock. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What Changed -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Beyond the Brave: What Changed</h2>
+                <ul class="betb-release" role="list" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG · Beyond the Brave · <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG · <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">
+                    Beyond the Brave gives Destiny HERO five new cards, all based on cards Aster Phoenix played in the second season of GX. Together they form a Field Spell engine that starts from one Normal Summon. <strong>Doom Overlord</strong> searches <strong>Dark City at Midnight</strong>, the city searches <strong>Dreadnought Servant</strong>, and destroying the city brings out Dreadmaster and then <strong>Dreadnought Master</strong>. <strong>Destro-Dogma</strong> adds a boss that can Fusion Summon on your opponent's turn. The Omni-HERO guide in the <strong>Classic Analysis</strong> tab still applies. This tab covers the new cards, the line they're built around, and where they clash with the classic core.
+                </p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-play"></i></div>
+                        <h3 class="font-bold text-accent mb-2">One Card Starts It</h3>
+                        <p class="text-purple-200 text-sm">Doom Overlord searches the Field Spell, and the Field Spell searches the next piece. Either one alone reaches Dreadnought Master.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
+                        <h3 class="font-bold text-accent mb-2">Clock Tower Prison, Without the Wait</h3>
+                        <p class="text-purple-200 text-sm">Destroying Dark City at Midnight counts as a Clock Tower Prison summon. Dreadmaster arrives on the turn you activate the city instead of after four of your opponent's Standby Phases.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-layer-group"></i></div>
+                        <h3 class="font-bold text-accent mb-2">A Boss That Refills Your Hand</h3>
+                        <p class="text-purple-200 text-sm">Dreadnought Master adds two Destiny HERO cards when it's Special Summoned. Destro-Dogma can Fusion Summon another one on your opponent's turn.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The Five New Cards -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The Five New Cards</h2>
+                <div class="betb-card-list">
+
+                    <article class="betb-card" aria-labelledby="betb-doom-overlord-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-doom-overlord-img" class="betb-art">Destiny HERO - Doom Overlord</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">Starter</p>
+                                <h3 id="betb-doom-overlord-name" class="betb-card-name">Destiny HERO - Doom Overlord</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Type</dt><dd>DARK · Warrior / Effect</dd></div>
+                                    <div><dt>Level</dt><dd>3</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>600 / 800</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>If this card is Normal or Special Summoned: You can target 1 monster your opponent controls; banish it until the next Standby Phase.</li>
+                                    <li>You can send 1 "Destiny HERO" monster from your Deck to the GY; add 1 "Clock Tower Prison" or "Dark City at Midnight" from your Deck or GY to your hand, also you cannot Special Summon for the rest of this turn, except DARK "HERO" monsters.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only use each effect of "Destiny HERO - Doom Overlord" once per turn.</p>
+                                <p class="betb-role"><strong>The Normal Summon that starts everything.</strong> One effect fills the GY, usually with Malicious, and searches the Field Spell. Doom Overlord can also take Dark City back from the GY once the city has been destroyed. Going second, its summon effect clears a monster for your turn, and that monster returns at the next Standby Phase. The lock only applies if you use the search, and it costs the classic core nothing. Faris, Vyon, Cross Crusader, DPE, Plasma and Dark Law are all DARK HEROes, and Fusion Destiny already applies the same lock.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="betb-card" aria-labelledby="betb-dark-city-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-dark-city-img" class="betb-art">Dark City at Midnight</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">Field Spell Engine</p>
+                                <h3 id="betb-dark-city-name" class="betb-card-name">Dark City at Midnight</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Type</dt><dd>Field Spell</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <p class="betb-effect-lead">Each time you Special Summon a Level 8 or higher "Destiny HERO" monster(s): Warrior monsters you control gain 300 ATK.</p>
+                                <p class="betb-opt betb-opt--lead"><i class="fas fa-lock" aria-hidden="true"></i> You can only use each of the following effects of "Dark City at Midnight" once per turn.</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>During your Main Phase, if this card was activated this turn: You can add 1 "Destiny HERO" monster or 1 card that mentions a "Destiny HERO" monster by name from your Deck to your hand.</li>
+                                    <li>If this card is destroyed: You can Special Summon 1 "Destiny HERO" monster from your Deck (this is treated as a Special Summon with "Clock Tower Prison").</li>
+                                </ol>
+                                <p class="betb-role"><strong>A Clock Tower Prison that pays out immediately.</strong> The search only works on the turn you activate the city, so a copy left on the field from an earlier turn won't search again. The bigger payoff is the second effect. Whether you destroy the city or your opponent does, you Special Summon a Destiny HERO from the Deck. If that monster is Dreadmaster, its Clock Tower Prison effect applies. Activating a new Field Spell sends the old one to the GY without destroying it, so replacing the city doesn't trigger the summon.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="betb-card" aria-labelledby="betb-servant-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-servant-img" class="betb-art">Destiny HERO - Dreadnought Servant</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">Extender</p>
+                                <h3 id="betb-servant-name" class="betb-card-name">Destiny HERO - Dreadnought Servant</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Type</dt><dd>DARK · Warrior / Effect</dd></div>
+                                    <div><dt>Level</dt><dd>3</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>400 / 700</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>If you control a "Destiny HERO" monster or a face-up Field Spell: You can Special Summon this card from your hand, then you can destroy 1 card you control, and if you do, add 1 "Polymerization" from your Deck to your hand.</li>
+                                    <li>If you Special Summon a Level 8 "Destiny HERO" monster(s) (except during the Damage Step): You can banish this card from your GY, then target 1 card your opponent controls; place it on top of the Deck.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only use each effect of "Destiny HERO - Dreadnought Servant" once per turn.</p>
+                                <p class="betb-role"><strong>The switch that sets off the city.</strong> Any Destiny HERO or any face-up Field Spell of yours lets it summon itself, so Doom Overlord or Dark City alone is enough. The destroy is optional and can hit any card you control. In the core line it destroys Dark City to summon Dreadmaster, and the Polymerization it adds pays for a Fusion Summon later in the turn. Once Servant is in the GY, the next Level 8 Destiny HERO you Special Summon lets you banish it and put one of your opponent's cards on top of their Deck. Extra Deck monsters go back to the Extra Deck. It needs exactly Level 8: Dreadmaster, Destro-Dogma, Dreadnought Master, DPE, Plasma and Dystopia all qualify. In the Classic line, discarding it to Vision HERO Faris puts it in the GY on your first turn.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="betb-card" aria-labelledby="betb-dreadnought-master-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-dreadnought-master-img" class="betb-art">Destiny HERO - Dreadnought Master</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">Payoff</p>
+                                <h3 id="betb-dreadnought-master-name" class="betb-card-name">Destiny HERO - Dreadnought Master</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Type</dt><dd>DARK · Warrior / Fusion / Effect</dd></div>
+                                    <div><dt>Level</dt><dd>8</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>? / 2800</dd></div>
+                                    <div><dt>Materials</dt><dd>2 Level 5 or higher "Destiny HERO" monsters</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <p class="betb-effect-lead">Must be either Fusion Summoned, or Special Summoned (from your Extra Deck) by Tributing 1 "Destiny HERO - Dreadmaster". You can only Special Summon "Destiny HERO - Dreadnought Master" once per turn this way, no matter which method you use.</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>If this card is Special Summoned: You can add 2 cards from your Deck to your hand, that are "Destiny HERO" monsters and/or mention a "Destiny HERO" monster by name.</li>
+                                    <li>This card's ATK becomes the total original ATK of other "Destiny HERO" monsters in your field and GY.</li>
+                                </ol>
+                                <p class="betb-role"><strong>Two searches on a body that keeps growing.</strong> Tributing a Dreadmaster summons it without Polymerization. Otherwise, Fusion Summon it from two Level 5 or higher Destiny HEROes, such as two copies of Malicious. The search takes any Destiny HERO monster or any card that names one, such as Clock Tower Prison (which names Dreadmaster) or D - Force (which names Plasma). Its ATK counts the field and the GY but not banished cards, so banishing Malicious for its effect or monsters for Destro-Dogma's summon lowers it. The summon limit resets on your opponent's turn, when Destro-Dogma can Fusion Summon a second copy.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="betb-card" aria-labelledby="betb-destro-dogma-name">
+                        <div class="betb-card-layout">
+                            <div class="betb-card-art">
+                                <div id="betb-destro-dogma-img" class="betb-art">Destiny HERO - Destro-Dogma</div>
+                            </div>
+                            <div class="betb-card-head">
+                                <p class="betb-kicker">Boss</p>
+                                <h3 id="betb-destro-dogma-name" class="betb-card-name">Destiny HERO - Destro-Dogma</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Type</dt><dd>DARK · Warrior / Effect</dd></div>
+                                    <div><dt>Level</dt><dd>8</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>3400 / 2400</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-card-body">
+                                <p class="betb-label">Card text</p>
+                                <p class="betb-effect-lead">Cannot be Normal Summoned/Set. Must be Special Summoned (from your hand or GY) by banishing 3 Warrior and/or DARK monsters from your GY. You can only Special Summon "Destiny HERO - Destro-Dogma" once per turn this way.</p>
+                                <ol class="betb-effects" role="list">
+                                    <li>If Summoned this way: You can activate this effect; during the next Standby Phase, inflict 2000 damage to your opponent.</li>
+                                    <li>Once per turn, when your opponent activates a card or effect (Quick Effect): You can Fusion Summon 1 Warrior or DARK Fusion Monster from your Extra Deck, by shuffling its materials from your hand, field, and/or GY into the Deck.</li>
+                                </ol>
+                                <p class="betb-role"><strong>A 3400 ATK boss that Fusion Summons on your opponent's turn.</strong> It doesn't need your Normal Summon and can come back from the GY. It does need three Warrior or DARK monsters in the GY first, so it comes out mid-combo or on a later turn rather than as an opener. Its Quick Effect Fusion Summons without Polymerization and can use materials from the GY. It answers on either turn, even to a hand trap during your own combo. Good targets are DPE (a Level 6 or higher HERO plus a Destiny HERO) or a second Dreadnought Master. It has to be Special Summoned its own way first, so Dark City at Midnight can't summon it from the Deck.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- Core combo walkthrough -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Core Combo: The Midnight Line</h2>
+                <p class="betb-intro">This is the line the new cards are built around. It starts from one card, <strong>Destiny HERO - Doom Overlord</strong>, and ends with a Polymerization and Dreadnought Master's two searches in hand.</p>
+                <div class="betb-callout mb-8">
+                    <h3 class="betb-callout-title"><i class="fas fa-clipboard-check" aria-hidden="true"></i> What the line needs</h3>
+                    <ul role="list">
+                        <li><strong>In the Deck:</strong> 2 Destiny HERO - Malicious, Dark City at Midnight, Dreadnought Servant, Destiny HERO - Dreadmaster and Polymerization. <strong>In the Extra Deck:</strong> Dreadnought Master.</li>
+                        <li><strong>Only DARK HEROes after step 2:</strong> Doom Overlord's search locks you into DARK "HERO" Special Summons for the rest of the turn, and every monster in this line is one.</li>
+                        <li><strong>Opening Dark City instead of Doom Overlord:</strong> start at step 4. You skip Malicious but keep your Normal Summon, and without Doom Overlord's search there's no lock.</li>
+                    </ul>
+                </div>
+                <ol class="betb-steps" role="list">
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-1-img" class="betb-art">Destiny HERO - Doom Overlord</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Normal Summon Doom Overlord</h3>
+                            <p>Normal Summon <strong>Destiny HERO - Doom Overlord</strong>. If your opponent has a monster, its summon effect can banish it until the next Standby Phase. Going first, skip this effect.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-2-img" class="betb-art">Dark City at Midnight</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Malicious to the GY, the City to Your Hand</h3>
+                            <p>Use Doom Overlord's second effect: send <strong>Destiny HERO - Malicious</strong> from the Deck to the GY and add <strong>Dark City at Midnight</strong> to your hand. From here on, you can only Special Summon DARK HERO monsters this turn.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord. <b>Hand:</b> Dark City. <b>GY:</b> Malicious.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-3-img" class="betb-art">Destiny HERO - Malicious</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Malicious Summons Malicious</h3>
+                            <p>Banish Malicious from the GY to Special Summon the second <strong>Malicious</strong> from the Deck.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord, Malicious. <b>Hand:</b> Dark City. <b>Banished:</b> Malicious.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-4-img" class="betb-art">Destiny HERO - Dreadnought Servant</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">The City Searches the Servant</h3>
+                            <p>Activate <strong>Dark City at Midnight</strong>. It was activated this turn, so its Main Phase effect adds <strong>Destiny HERO - Dreadnought Servant</strong> from the Deck.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord, Malicious, Dark City. <b>Hand:</b> Servant.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-5-img" class="betb-art">Polymerization</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">The Servant Destroys the City</h3>
+                            <p>Special Summon <strong>Dreadnought Servant</strong> from your hand, which you can do because you control a Destiny HERO and a face-up Field Spell. Use its effect to destroy Dark City at Midnight and add <strong>Polymerization</strong> from the Deck.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord, Malicious, Servant. <b>Hand:</b> Polymerization. <b>GY:</b> Dark City.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-6-img" class="betb-art">Destiny HERO - Dreadmaster</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Dreadmaster Rises From the Deck</h3>
+                            <p>The city was destroyed, so its effect Special Summons <strong>Destiny HERO - Dreadmaster</strong> from the Deck. That counts as a Clock Tower Prison summon, so Dreadmaster's own effect applies. It destroys every monster you control that isn't a Destiny HERO (there are none here), then can revive up to 2 Destiny HEROes from the GY. In this exact line the GY has none to revive (see the sequencing tip below). For the rest of the turn, Destiny HEROes you control can't be destroyed.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord, Malicious, Servant, Dreadmaster (1800 ATK). <b>Hand:</b> Polymerization.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-7-img" class="betb-art">Destiny HERO - Dreadnought Master</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Tribute Dreadmaster for Dreadnought Master</h3>
+                            <p>Tribute Dreadmaster to Special Summon <strong>Destiny HERO - Dreadnought Master</strong> from the Extra Deck, with no Polymerization needed. Its summon effect adds 2 cards from the Deck that are Destiny HERO monsters or name one. Its ATK is the total original ATK of your other Destiny HEROes on the field and in the GY: 1800 here.</p>
+                            <p class="betb-step-state"><b>Field:</b> Doom Overlord, Malicious, Servant, Dreadnought Master. <b>Hand:</b> Polymerization + 2 searched cards. <b>Summons this turn:</b> 5.</p>
+                        </div>
+                    </li>
+                </ol>
+                <div class="betb-endboard">
+                    <h3 class="betb-endboard-title">Result</h3>
+                    <div class="betb-endboard-grid">
+                        <div>
+                            <h4>Your field</h4>
+                            <ul>
+                                <li>Doom Overlord, Malicious, Dreadnought Servant and Dreadnought Master (1800 ATK).</li>
+                                <li>Destiny HEROes you control can't be destroyed for the rest of this turn.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Your hand</h4>
+                            <ul>
+                                <li>Polymerization.</li>
+                                <li>Dreadnought Master's 2 searches, such as Destro-Dogma and a Doom Overlord for next turn.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>What it cost</h4>
+                            <ul>
+                                <li>Your Normal Summon.</li>
+                                <li>The DARK HERO lock for the rest of the turn.</li>
+                                <li>Five summons, which puts you in range of Nibiru.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="betb-callout mt-6">
+                    <h3 class="betb-callout-title"><i class="fas fa-random" aria-hidden="true"></i> Sequencing tip: hold Malicious</h3>
+                    <p>The core line uses Malicious straight away in step 3. If you wait instead, Dreadmaster revives the first Malicious in step 6 and the second copy stays in the Deck for later. If Dreadmaster's effect is negated, Malicious is still in the GY and you can use it then. The risk is GY disruption, such as D.D. Crow, while it waits.</p>
+                </div>
+            </section>
+
+            <!-- Extension into the classic board -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Extension: Back Into the Classic Board</h2>
+                <p class="betb-intro">Steps 8 and 9 continue past the core line. They use the Polymerization and one search to bring back the classic <strong>Destroyer Phoenix Enforcer</strong> and add Destro-Dogma. They assume Dreadnought Master searched <strong>Destro-Dogma</strong> in step 7.</p>
+                <ol class="betb-steps betb-steps--continued" role="list">
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-8-img" class="betb-art">Destiny HERO - Destroyer Phoenix Enforcer</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Polymerization Into DPE</h3>
+                            <p>Activate <strong>Polymerization</strong>. Use Malicious (a Level 6 HERO) and Doom Overlord (a Destiny HERO) from the field to Fusion Summon <strong>Destiny HERO - Destroyer Phoenix Enforcer</strong>. DPE is a DARK HERO, so the lock allows it. The materials still count toward Dreadnought Master from the GY, and DPE's 2500 raises it to 4300.</p>
+                            <p class="betb-step-state"><b>Field:</b> Servant, Dreadnought Master (4300 ATK), DPE. <b>GY:</b> Dark City, Dreadmaster, Malicious, Doom Overlord.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-9-img" class="betb-art">Destiny HERO - Destro-Dogma</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Destro-Dogma From the Hand</h3>
+                            <p>Banish Dreadmaster, Malicious and Doom Overlord from the GY. All three are DARK Warriors, which pays the cost to Special Summon <strong>Destiny HERO - Destro-Dogma</strong> from your hand. Activate its effect for 2000 damage during the next Standby Phase. The three banished monsters no longer count for Dreadnought Master, but Destro-Dogma's 3400 on the field more than covers them, and Dreadnought Master ends at 6300.</p>
+                            <p class="betb-step-state"><b>Field:</b> Servant, Dreadnought Master (6300 ATK), DPE, Destro-Dogma. <b>Hand:</b> the second search. <b>Summons this turn:</b> 7.</p>
+                        </div>
+                    </li>
+                </ol>
+                <div class="betb-endboard">
+                    <h3 class="betb-endboard-title">Extended End Board</h3>
+                    <div class="betb-endboard-grid">
+                        <div>
+                            <h4>Your field</h4>
+                            <ul>
+                                <li>Dreadnought Master (6300 ATK).</li>
+                                <li>Destro-Dogma (3400 ATK) and DPE (2500 ATK).</li>
+                                <li>Dreadnought Servant.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Opponent's turn</h4>
+                            <ul>
+                                <li>DPE's Quick Effect destroys 1 card you control and 1 card on the field.</li>
+                                <li>Destro-Dogma answers a card or effect they activate with a Fusion Summon. The Dreadnought Master limit has reset, so a second copy can search 2 more cards.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Damage</h4>
+                            <ul>
+                                <li>2000 at your opponent's Standby Phase from Destro-Dogma.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Fit with the classic core -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Where the New Cards Meet the Classic Core</h2>
+                <p class="betb-intro">The classic Omni-HERO core is nearly all DARK HEROes, so Doom Overlord's lock rarely gets in the way. The real conflict is Dreadmaster: when Dark City summons it, it destroys every monster you control that isn't a <strong>Destiny</strong> HERO.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-fit-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-fit-caption" class="betb-sr-only">How each piece of the classic Omni-HERO core works alongside the Beyond the Brave Destiny HERO cards</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Classic piece</th>
+                                <th scope="col">Fit</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Destroyer Phoenix Enforcer, Plasma</th>
+                                <td><span class="betb-pill betb-pill--fit"><i class="fas fa-check" aria-hidden="true"></i> Fits</span></td>
+                                <td>Both are Level 8 Destiny HEROes. Each one sets off Dreadnought Servant's GY effect and Dark City's 300 ATK boost and adds to Dreadnought Master's ATK. Servant's Polymerization makes DPE directly, and Dreadnought Master can search D - Force, which adds Plasma.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Fusion Destiny</th>
+                                <td><span class="betb-pill betb-pill--fit"><i class="fas fa-check" aria-hidden="true"></i> Fits</span></td>
+                                <td>It applies the same DARK HERO lock, so playing it alongside Doom Overlord costs nothing extra. It can also Fusion Summon Dreadnought Master from two Level 5 or higher Destiny HEROes in your hand or Deck. That uses the turn's only Dreadnought Master summon, and Fusion Destiny destroys it during the End Phase of the next turn.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Vision HERO Faris, Vyon</th>
+                                <td><span class="betb-pill betb-pill--order"><i class="fas fa-sort-amount-down" aria-hidden="true"></i> Sequence it</span></td>
+                                <td>Both are DARK HEROes, so the lock allows them. Faris can discard Dreadnought Servant to load its GY effect, and Vyon can send Malicious to the GY. Neither is a Destiny HERO, though, so a Dreadmaster summoned by Dark City destroys any Vision HERO monster you control. Destroy the city before you commit them, or after they've left the field.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Xtra HERO Cross Crusader</th>
+                                <td><span class="betb-pill betb-pill--order"><i class="fas fa-sort-amount-down" aria-hidden="true"></i> Sequence it</span></td>
+                                <td>Doom Overlord and Dreadnought Servant are both Warriors, so they can be its Link Material, and its Tribute search works with any Destiny HERO. It isn't a Destiny HERO itself, so Dreadmaster destroys it too.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Masked HERO Dark Law</th>
+                                <td><span class="betb-pill betb-pill--order"><i class="fas fa-sort-amount-down" aria-hidden="true"></i> Sequence it</span></td>
+                                <td>Mask Change into Dark Law is allowed under the lock. If your opponent destroys Dark City while Dark Law is on your field, choose a Destiny HERO other than Dreadmaster for the city's summon.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Elemental HERO Stratos</th>
+                                <td><span class="betb-pill betb-pill--clash"><i class="fas fa-times" aria-hidden="true"></i> Competes</span></td>
+                                <td>It can search any of the new Main Deck monsters, but it needs the same Normal Summon as Doom Overlord. Stratos is WIND, so it can't be Special Summoned after Doom Overlord's search either.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Deck Building: Recommended Copies</h2>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-ratios-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-ratios-caption" class="betb-sr-only">Recommended copies of the new Destiny HERO cards and the pieces their line needs, with reasoning</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Copies</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Destiny HERO - Doom Overlord</th>
+                                <td class="betb-copies">3</td>
+                                <td>The one-card starter. On later turns it can also take Dark City back from the GY.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Dark City at Midnight</th>
+                                <td class="betb-copies">2</td>
+                                <td>Doom Overlord already finds it, and a second copy is a starter you can draw. A spare in hand isn't dead: activating it on a later turn replaces the old city and searches again.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Destiny HERO - Dreadnought Servant</th>
+                                <td class="betb-copies">2</td>
+                                <td>Dark City needs one in the Deck to search. A drawn copy can still summon itself off any Destiny HERO or your Field Spell.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Destiny HERO - Destro-Dogma</th>
+                                <td class="betb-copies">1</td>
+                                <td>It needs three Warrior or DARK monsters in the GY, so it's rarely an opener. One copy is enough as a Dreadnought Master search target.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Destiny HERO - Dreadnought Master</th>
+                                <td class="betb-copies">2</td>
+                                <td>Goes in the Extra Deck. You can summon it once per turn, and the limit resets on your opponent's turn, when Destro-Dogma can make the second copy.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Destiny HERO - Dreadmaster</th>
+                                <td class="betb-copies">1</td>
+                                <td>Dark City summons it from the Deck. A drawn copy is hard to use, so keep it at one.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Destiny HERO - Malicious</th>
+                                <td class="betb-copies">2</td>
+                                <td>Doom Overlord sends one to the GY, and its effect summons the other.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Polymerization</th>
+                                <td class="betb-copies">1</td>
+                                <td>Dreadnought Servant searches it, and Vision HERO Vyon can too.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>Build note:</strong> These counts are for a Destiny-focused build. Omni-HERO lists that keep the full Vision HERO package should cut Destro-Dogma and the second Dreadnought Master first, and should sequence around Dreadmaster as described above.</p>
+            </section>
+
+            <!-- Weak points -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Weak Points to Play Around</h2>
+                <ul class="betb-risks" role="list">
+                    <li>
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <div>
+                            <h3>Ash Blossom &amp; Joyous Spring</h3>
+                            <p>Nearly every step searches or summons from the Deck: Doom Overlord's search, Malicious, the city's search, Servant, the city's summon and Dreadnought Master. Ash on Servant hurts most. Servant stays in your hand, the city isn't destroyed, and Dreadmaster never arrives.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-feather-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>Droll &amp; Lock Bird</h3>
+                            <p>Once Doom Overlord's search resolves, Droll stops every later search this turn: the city's, Servant's Polymerization and Dreadnought Master's two cards. Summons from the Deck still work.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ban" aria-hidden="true"></i>
+                        <div>
+                            <h3>Effect Veiler and Infinite Impermanence</h3>
+                            <p>On Doom Overlord, they stop the search that starts the line. On Dreadmaster, they only stop the revive, and you can still Tribute it for Dreadnought Master because that summon is Dreadnought Master's own procedure. Chained to Dreadnought Master's summon effect, they stop the two searches.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-meteor" aria-hidden="true"></i>
+                        <div>
+                            <h3>Nibiru, the Primal Being</h3>
+                            <p>The core line's fifth summon is Dreadnought Master, so Nibiru can respond right after it. Dreadmaster's protection doesn't help, because Nibiru Tributes rather than destroys.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-city" aria-hidden="true"></i>
+                        <div>
+                            <h3>Answers to the city that don't destroy it</h3>
+                            <p>Destroying Dark City gives you a free Destiny HERO from the Deck, so experienced opponents bounce, banish or negate it instead. A city left on the field from an earlier turn can't search again either.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        <div>
+                            <h3>The DARK HERO lock</h3>
+                            <p>After Doom Overlord's search, the only monsters you can Special Summon are DARK HEROes, so generic Link, Xyz and Synchro Monsters are off for the rest of the turn. Hybrid builds that rely on them need to make those plays before Doom Overlord's second effect.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="betb-callout mt-6">
+                    <h3 class="betb-callout-title"><i class="fas fa-gavel" aria-hidden="true"></i> Verdict</h3>
+                    <p>The new cards give Destiny HERO a one-card opener of its own. A single Doom Overlord or Dark City reaches Dreadnought Master and two searches, all within the DARK HERO lock that the classic core already works under. In a Destiny-focused build, play the full package: 3 Doom Overlord, 2 Dark City at Midnight, 2 Dreadnought Servant, 1 Destro-Dogma and 2 Dreadnought Master. In a full Omni-HERO list, plan the Dark City turn carefully. Dreadmaster destroys every monster you control that isn't a Destiny HERO, including the Vision HEROes and Cross Crusader.</p>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
 
         <!-- TCG Banlist Impact Section -->
         <section>
@@ -571,6 +1600,34 @@
                 initPageSections('Destiny HERO');
             });
         </script>
+
+    <!-- Guide tabs: Beyond the Brave art is only fetched the first time that tab opens. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-betb': [
+                    {
+                        'betb-doom-overlord-img': 'Destiny HERO - Doom Overlord',
+                        'betb-dark-city-img': 'Dark City at Midnight',
+                        'betb-servant-img': 'Destiny HERO - Dreadnought Servant',
+                        'betb-dreadnought-master-img': 'Destiny HERO - Dreadnought Master',
+                        'betb-destro-dogma-img': 'Destiny HERO - Destro-Dogma'
+                    },
+                    {
+                        'betb-step-1-img': 'Destiny HERO - Doom Overlord',
+                        'betb-step-2-img': 'Dark City at Midnight',
+                        'betb-step-3-img': 'Destiny HERO - Malicious',
+                        'betb-step-4-img': 'Destiny HERO - Dreadnought Servant',
+                        'betb-step-5-img': 'Polymerization',
+                        'betb-step-6-img': 'Destiny HERO - Dreadmaster',
+                        'betb-step-7-img': 'Destiny HERO - Dreadnought Master',
+                        'betb-step-8-img': 'Destiny HERO - Destroyer Phoenix Enforcer',
+                        'betb-step-9-img': 'Destiny HERO - Destro-Dogma'
+                    }
+                ]
+            }
+        });
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

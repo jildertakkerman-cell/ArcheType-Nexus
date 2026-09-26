@@ -13,6 +13,7 @@
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <script src="../assets/js/community-combos.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -405,6 +406,895 @@
         .text-chaos { color: #c084fc; }
         .border-chaos { border-color: #c084fc; }
     </style>
+    <style>
+        /* ===== Guide tabs + Clown Crew Cappello spotlight =====
+           Added next to the original styles, which are left as they were. The
+           original guide sits unchanged in the "Classic Analysis" tab, and the
+           .tab-btn / .tab-btn.active rules above already style the buttons.
+           The nc-* family mirrors the Gogogo page's new-card components,
+           recoloured to the circus palette. */
+        .cc-tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .cc-tab-nav .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 44px;
+        }
+
+        /* guide-tabs.js marks the open tab with aria-selected; give it the
+           look of this page's original .tab-btn.active rule. */
+        .cc-tab-nav .tab-btn[aria-selected="true"] {
+            background: linear-gradient(180deg, #7c3aed 0%, #1e0f33 100%);
+            color: white;
+            border-color: #f43f5e;
+            box-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .tab-new-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: #f43f5e;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .tab-panel[hidden] {
+            display: none !important;
+        }
+
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .cc-spot-cta:focus-visible,
+        .cc-tag:focus-visible,
+        .nc-toc a:focus-visible,
+        .nc-link:focus-visible {
+            outline: 2px solid #fbbf24;
+            outline-offset: 3px;
+        }
+
+        .tab-panel:focus-visible {
+            border-radius: 1rem;
+        }
+
+        .cc-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Deep-link targets land clear of the fixed home button */
+        [id^="cc-"],
+        #cappello {
+            scroll-margin-top: 1.5rem;
+        }
+
+        @media (max-width: 639px) {
+            .cc-tab-nav {
+                flex-wrap: nowrap;
+                gap: 0.5rem;
+            }
+
+            .cc-tab-nav .tab-btn {
+                flex: 1 1 0;
+                flex-wrap: wrap;
+                padding: 0.65rem 0.5rem;
+                font-size: 0.78rem;
+                letter-spacing: 0.5px;
+            }
+        }
+
+        /* Card art slot: a placeholder until CardLoader drops the image in */
+        .cc-art-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 59 / 86;
+            padding: 0.5rem;
+            border: 1px dashed #9333ea;
+            border-radius: 0.5rem;
+            background-color: #1a0f2e;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .cc-art-slot:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+        }
+
+        /* CardLoader's own not-found fallback nests a .card-placeholder */
+        .cc-art-slot .card-placeholder {
+            min-height: 0;
+            height: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+        }
+
+        /* ----- Spotlight strip (always visible, above the tabs) ----- */
+        .cc-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid #582a8a;
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 10% 0%, rgba(251, 191, 36, 0.14) 0%, transparent 55%),
+                linear-gradient(135deg, #1e0f33 0%, #160b24 100%);
+            box-shadow: 0 8px 30px rgba(88, 42, 138, 0.35);
+        }
+
+        .cc-spot-art {
+            grid-area: art;
+        }
+
+        .cc-spot-head {
+            grid-area: head;
+            min-width: 0;
+        }
+
+        .cc-spot-body {
+            grid-area: body;
+            min-width: 0;
+        }
+
+        .cc-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: #d8b4fe;
+        }
+
+        .cc-spot-title {
+            font-family: 'Rye', serif;
+            font-size: 1.35rem;
+            line-height: 1.2;
+            color: #fff;
+            text-shadow: 0 0 12px rgba(244, 63, 94, 0.55);
+        }
+
+        .cc-spot-stats {
+            margin-top: 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #fbbf24;
+        }
+
+        .cc-spot-hook {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #e9d5ff;
+        }
+
+        .cc-spot-label {
+            margin: 1rem 0 0.5rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+
+        .cc-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .cc-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid #582a8a;
+            border-radius: 9999px;
+            background: rgba(30, 15, 51, 0.85);
+            color: #f3e8ff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+        }
+
+        .cc-tag i {
+            font-size: 0.75rem;
+            color: #fbbf24;
+        }
+
+        .cc-tag-counter i {
+            color: #fb7185;
+        }
+
+        .cc-tag-role {
+            font-weight: 400;
+            color: #c4b5fd;
+        }
+
+        .cc-tag:hover {
+            border-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .cc-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid #f43f5e;
+            border-radius: 0.5rem;
+            background: linear-gradient(180deg, #7c3aed 0%, #1e0f33 100%);
+            color: #fff;
+            font-family: 'Rye', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            box-shadow: 0 0 18px rgba(244, 63, 94, 0.3);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .cc-spot-cta:hover {
+            box-shadow: 0 0 26px rgba(244, 63, 94, 0.5);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 639px) {
+            .cc-tags {
+                gap: 0.4rem;
+            }
+
+            .cc-tag {
+                gap: 0.35rem;
+                min-height: 34px;
+                padding: 0.3rem 0.65rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (min-width: 640px) {
+            .cc-spot {
+                grid-template-columns: 132px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                row-gap: 0.75rem;
+                padding: 1.5rem;
+            }
+
+            .cc-spot-title {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* ----- New-card components (nc-*) ----- */
+        .nc-lede {
+            max-width: 46rem;
+            margin: 0 auto 1.25rem;
+            text-align: center;
+            color: #e9d5ff;
+            line-height: 1.6;
+        }
+
+        .nc-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .nc-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 9999px;
+            background: #1e0f33;
+            border: 1px solid #582a8a;
+            color: #e9d5ff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .nc-chip i {
+            color: #fbbf24;
+        }
+
+        .nc-chip-live {
+            border-color: #f43f5e;
+            background: rgba(244, 63, 94, 0.14);
+            color: #fff;
+        }
+
+        .nc-toc {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.4rem 1rem;
+            margin: 0 auto 2rem;
+            padding: 0;
+            list-style: none;
+            font-size: 0.8rem;
+        }
+
+        .nc-toc a {
+            color: #d8b4fe;
+            text-decoration: none;
+            border-bottom: 1px dotted #7c3aed;
+        }
+
+        .nc-toc a:hover {
+            color: #fff;
+            border-bottom-color: #f43f5e;
+        }
+
+        .nc-link {
+            color: #fbbf24;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dotted #fbbf24;
+        }
+
+        .nc-link:hover {
+            color: #fff;
+        }
+
+        /* Card profile: title on top, art beside the effect breakdown */
+        .nc-card {
+            display: grid;
+            grid-template-columns: 160px minmax(0, 1fr);
+            grid-template-areas: "title title" "art body";
+            column-gap: 1.5rem;
+            row-gap: 1rem;
+            align-items: start;
+        }
+
+        .nc-card > h3 {
+            grid-area: title;
+        }
+
+        .nc-art {
+            grid-area: art;
+        }
+
+        .nc-body,
+        .nc-card > .cms-section {
+            grid-area: body;
+            min-width: 0;
+        }
+
+        /* page-sections.js wraps the card body (not the art) in .cms-section
+           for community edits; the rule above keeps that wrapper in the body
+           cell instead of letting it auto-place under the art. */
+
+        @media (max-width: 640px) {
+            .nc-card {
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-areas: "title" "art" "body";
+            }
+
+            .nc-art {
+                width: 160px;
+                margin: 0 auto;
+            }
+        }
+
+        .nc-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .nc-stat {
+            padding: 0.22rem 0.5rem;
+            border-radius: 0.35rem;
+            background: #1e0f33;
+            border: 1px solid #582a8a;
+            color: #fbbf24;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .nc-row {
+            border-left: 2px solid #582a8a;
+            padding-left: 0.8rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .nc-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .nc-row-label {
+            display: block;
+            margin-bottom: 0.2rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: #fb7185;
+        }
+
+        .nc-row p {
+            margin: 0;
+            font-size: 0.87rem;
+            line-height: 1.5;
+            color: #f3e8ff;
+        }
+
+        /* Verbatim card text */
+        .nc-cardtext {
+            margin-bottom: 1rem;
+            padding: 0.9rem 1.1rem;
+            border-left: 3px solid #fbbf24;
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: rgba(30, 15, 51, 0.7);
+            font-size: 0.85rem;
+            line-height: 1.65;
+            color: #e9d5ff;
+        }
+
+        .nc-cardtext-bullet {
+            display: block;
+            padding-left: 1rem;
+            text-indent: -1rem;
+        }
+
+        /* Impact tiles */
+        .nc-tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .nc-tile {
+            padding: 0.95rem;
+            border: 1px solid #3b1f5e;
+            border-radius: 0.7rem;
+            background: rgba(30, 15, 51, 0.6);
+        }
+
+        .nc-tile-head {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .nc-tile-ico {
+            flex: 0 0 1.9rem;
+            height: 1.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            font-size: 0.8rem;
+        }
+
+        .nc-tile-down .nc-tile-ico {
+            background: rgba(251, 113, 133, 0.15);
+            color: #fb7185;
+        }
+
+        .nc-tile-plan .nc-tile-ico {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+
+        .nc-tile h4 {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .nc-tile p {
+            margin: 0;
+            font-size: 0.83rem;
+            line-height: 1.45;
+            color: #e9d5ff;
+        }
+
+        /* Combo flow: reuses the Classic tab's .combo-step-card chain */
+        .nc-flow-tag {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+
+        .nc-endboard {
+            padding: 1.25rem;
+            border: 1px solid #fbbf24;
+            border-radius: 1rem;
+            background: rgba(251, 191, 36, 0.06);
+            box-shadow: 0 0 22px rgba(251, 191, 36, 0.12);
+        }
+
+        .nc-endboard-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .nc-endboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 0.75rem 1.25rem;
+            margin: 0;
+        }
+
+        .nc-endboard-grid dt {
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: #c4b5fd;
+        }
+
+        .nc-endboard-grid dd {
+            margin: 0.1rem 0 0;
+            font-size: 0.87rem;
+            line-height: 1.4;
+            color: #fff;
+        }
+
+        .nc-endboard-note {
+            margin-top: 0.95rem;
+            padding-top: 0.85rem;
+            border-top: 1px solid rgba(251, 191, 36, 0.3);
+            font-size: 0.83rem;
+            line-height: 1.5;
+            color: #e9d5ff;
+        }
+
+        /* Inline note strip */
+        .nc-note {
+            display: flex;
+            gap: 0.65rem;
+            margin-top: 1.25rem;
+            padding: 0.8rem 0.95rem;
+            border-radius: 0.6rem;
+            background: rgba(251, 191, 36, 0.08);
+            border-left: 3px solid #fbbf24;
+            font-size: 0.87rem;
+            line-height: 1.5;
+            color: #e9d5ff;
+        }
+
+        .nc-note > i {
+            margin-top: 0.2rem;
+            color: #fbbf24;
+        }
+
+        /* Two decision menus: what to send, what to call */
+        .nc-menus {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 900px) {
+            .nc-menus {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .nc-menu-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .nc-menu-step {
+            flex: 0 0 1.75rem;
+            height: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            border: 1px solid #fbbf24;
+            background: #1e0f33;
+            color: #fbbf24;
+            font-size: 0.8rem;
+        }
+
+        .nc-menu-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .nc-syn {
+            padding: 0.9rem 1rem;
+            border: 1px solid #3b1f5e;
+            border-left-width: 4px;
+            border-radius: 0.7rem;
+            background: rgba(30, 15, 51, 0.6);
+        }
+
+        .nc-syn-key {
+            border-left-color: #fbbf24;
+        }
+
+        .nc-syn-good {
+            border-left-color: #34d399;
+        }
+
+        .nc-syn-mid {
+            border-left-color: #a78bfa;
+        }
+
+        .nc-syn-badge {
+            display: inline-block;
+            margin-bottom: 0.45rem;
+            padding: 0.16rem 0.5rem;
+            border-radius: 0.3rem;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+
+        .nc-syn-key .nc-syn-badge {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.55);
+            color: #fcd34d;
+        }
+
+        .nc-syn-good .nc-syn-badge {
+            background: rgba(52, 211, 153, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.5);
+            color: #6ee7b7;
+        }
+
+        .nc-syn-mid .nc-syn-badge {
+            background: rgba(167, 139, 250, 0.14);
+            border: 1px solid rgba(167, 139, 250, 0.5);
+            color: #c4b5fd;
+        }
+
+        .nc-syn h4 {
+            margin: 0 0 0.35rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #fff;
+        }
+
+        .nc-syn p {
+            margin: 0;
+            font-size: 0.84rem;
+            line-height: 1.45;
+            color: #e9d5ff;
+        }
+
+        .nc-syn-take {
+            display: block;
+            margin-top: 0.55rem;
+            padding-top: 0.55rem;
+            border-top: 1px solid rgba(88, 42, 138, 0.6);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: #fcd34d;
+        }
+
+        /* Lock check: what survives, what doesn't */
+        .nc-lock-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .nc-lock-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .nc-lock {
+            padding: 1rem 1.1rem;
+            border: 1px solid #3b1f5e;
+            border-radius: 0.7rem;
+            background: rgba(30, 15, 51, 0.6);
+        }
+
+        .nc-lock h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+        }
+
+        .nc-lock-yes h4 {
+            color: #6ee7b7;
+        }
+
+        .nc-lock-no h4 {
+            color: #fda4af;
+        }
+
+        .nc-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .nc-list li {
+            position: relative;
+            margin-bottom: 0.7rem;
+            padding-left: 1.4rem;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: #e9d5ff;
+        }
+
+        .nc-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .nc-list li > i:first-child {
+            position: absolute;
+            top: 0.25rem;
+            left: 0;
+            font-size: 0.8rem;
+        }
+
+        .nc-lock-yes .nc-list li > i:first-child {
+            color: #34d399;
+        }
+
+        .nc-lock-no .nc-list li > i:first-child {
+            color: #fb7185;
+        }
+
+        .nc-list strong {
+            color: #fff;
+        }
+
+        /* Failure modes */
+        .nc-fails {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .nc-fail {
+            display: flex;
+            gap: 0.7rem;
+            align-items: flex-start;
+            padding: 0.85rem 0.95rem;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 0.6rem;
+            background: rgba(244, 63, 94, 0.06);
+        }
+
+        .nc-fail > i {
+            flex: 0 0 1rem;
+            margin-top: 0.2rem;
+            color: #fb7185;
+            font-size: 0.85rem;
+        }
+
+        .nc-fail b {
+            display: block;
+            margin-bottom: 0.15rem;
+            font-size: 0.87rem;
+            color: #fda4af;
+        }
+
+        .nc-fail span {
+            font-size: 0.83rem;
+            line-height: 1.45;
+            color: #e9d5ff;
+        }
+
+        /* Verdict */
+        .nc-verdict {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.9rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .nc-verdict-yes {
+            background: rgba(52, 211, 153, 0.14);
+            border: 1px solid #34d399;
+            color: #6ee7b7;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cc-tag,
+            .cc-spot-cta {
+                transition: none;
+            }
+
+            .cc-tag:hover,
+            .cc-spot-cta:hover {
+                transform: none;
+            }
+        }
+
+        /* Printing the guide includes every tab, not just the open one */
+        @media print {
+            .cc-tab-nav,
+            .cc-spot-cta {
+                display: none;
+            }
+
+            .tab-panel[hidden] {
+                display: block !important;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <script src="../assets/js/text-utils.js"></script>
     <script src="../assets/js/deck-dock.js" defer></script>
@@ -452,6 +1342,43 @@
                 </div>
             </div>
         </section>
+
+        <!-- New Card Spotlight: always visible. Each synergy tag opens the Cappello tab
+             at the matching section; the full write-up lives in that tab. -->
+        <aside class="cc-spot" data-pcs-scope="spot" aria-labelledby="cc-spot-title">
+            <div class="cc-spot-art">
+                <div id="cc-spot-img-container" class="cc-art-slot">Clown Crew Cappello</div>
+            </div>
+            <div class="cc-spot-head">
+                <p class="cc-spot-kicker"><span class="tab-new-badge">New card</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="cc-spot-title" class="cc-spot-title">Clown Crew Cappello</h2>
+                <p class="cc-spot-stats">Level 5 &middot; LIGHT &middot; Beast-Warrior &middot; Pendulum Scale 7</p>
+            </div>
+            <div class="cc-spot-body">
+                <p class="cc-spot-hook">The troupe's first Pendulum Monster. From the Pendulum Zone it sends a Clown Crew
+                    card to the GY and Special Summons itself. When it's Tributed, it brings the next performer onto the
+                    stage. On its own, it gets you to Biancaviso.</p>
+                <p id="cc-spot-tags-label" class="cc-spot-label">Synergy tags</p>
+                <ul class="cc-tags" aria-labelledby="cc-spot-tags-label">
+                    <li><a class="cc-tag" href="#cc-send-finale"><i class="fas fa-search" aria-hidden="true"></i> Finale <span class="cc-tag-role">starter</span></a></li>
+                    <li><a class="cc-tag" href="#cc-line"><i class="fas fa-hat-wizard" aria-hidden="true"></i> Biancaviso <span class="cc-tag-role">Tribute</span></a></li>
+                    <li><a class="cc-tag" href="#cc-send-newface"><i class="fas fa-theater-masks" aria-hidden="true"></i> New Face <span class="cc-tag-role">free Trap</span></a></li>
+                    <li><a class="cc-tag" href="#cc-call-diabolo"><i class="fas fa-redo" aria-hidden="true"></i> Diabolo <span class="cc-tag-role">next act</span></a></li>
+                    <li><a class="cc-tag" href="#cc-impact-colour"><i class="fas fa-palette" aria-hidden="true"></i> Matinee Operatics <span class="cc-tag-role">6th type</span></a></li>
+                    <li><a class="cc-tag cc-tag-counter" href="#cc-matchups"><i class="fas fa-ban" aria-hidden="true"></i> Pendulum decks <span class="cc-tag-role">counter</span></a></li>
+                </ul>
+                <button type="button" class="cc-spot-cta" data-open-panel="cappello">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- Guide tabs: the original guide lives unchanged in "Classic Analysis";
+             the Cappello write-up gets its own panel. -->
+        <div class="cc-tab-nav" role="tablist" aria-label="Clown Crew guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-cappello" aria-controls="cappello" aria-selected="false" tabindex="-1">Cappello Spotlight <span class="tab-new-badge" aria-hidden="true">New</span><span class="cc-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
         <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -783,6 +1710,515 @@
             </div>
         </section>
 
+        </div>
+        <!-- /tab-classic -->
+
+        <!-- ==================== CLOWN CREW CAPPELLO TAB ====================
+             Stats and effect text are the official TCG print. The one-card line was checked
+             step by step against the printed text of every card in it: costs vs. effects,
+             chain order, once-per-turn clauses and what Ash Blossom can reach. -->
+        <div id="cappello" data-pcs-scope="cappello" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-cappello" tabindex="0" hidden>
+
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">New Card Spotlight: Clown Crew Cappello</h2>
+                <p class="nc-lede">
+                    Clown Crew has always cheated Ritual, Fusion, Synchro, Xyz and Link performers onto the stage, but it
+                    never had a Pendulum of its own. <strong class="text-accent">Cappello</strong> is that Pendulum, and
+                    it's a one-card starter. From the Pendulum Zone it puts a Clown Crew card in the GY and itself on
+                    the field. When it's Tributed, it brings out the next performer.
+                </p>
+                <div class="nc-meta">
+                    <span class="nc-chip nc-chip-live"><i class="fas fa-globe-americas" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; 8 Oct 2026</span>
+                    <span class="nc-chip"><i class="fas fa-torii-gate" aria-hidden="true"></i> OCG &middot; OCG Structures Vol. 12 promo &middot; 3 Jul 2026</span>
+                </div>
+                <nav aria-label="On this tab">
+                    <ul class="nc-toc">
+                        <li><a href="#cc-profile">The card</a></li>
+                        <li><a href="#cc-impact">What changes</a></li>
+                        <li><a href="#cc-line">One-card line</a></li>
+                        <li><a href="#cc-menus">Send &amp; call</a></li>
+                        <li><a href="#cc-lock">The lock</a></li>
+                        <li><a href="#cc-build">Deck-building</a></li>
+                        <li><a href="#cc-matchups">Matchups</a></li>
+                        <li><a href="#cc-fails">Risks</a></li>
+                        <li><a href="#cc-verdict">Verdict</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Card profile -->
+                <div id="cc-profile" class="card p-6 mb-6 nc-card">
+                    <h3 class="text-xl font-bold text-white">Clown Crew Cappello</h3>
+                    <div class="nc-art">
+                        <div id="cc-profile-img-container" class="cc-art-slot">Clown Crew Cappello</div>
+                    </div>
+                    <div class="nc-body">
+                        <div class="nc-stats">
+                            <span class="nc-stat">Level 5</span>
+                            <span class="nc-stat">LIGHT</span>
+                            <span class="nc-stat">Beast-Warrior</span>
+                            <span class="nc-stat">Pendulum &middot; Scale 7</span>
+                            <span class="nc-stat">1900 / 800</span>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">Pendulum Effect &middot; your Main Phase</span>
+                            <p>Send 1 non-Pendulum Clown Crew card from the Deck to the GY, then Special Summon Cappello
+                                from the Pendulum Zone. It doesn't use your Normal Summon or need a second card.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">On the field</span>
+                            <p>Your opponent's monsters lose 1500 DEF while you control a Tribute Summoned monster.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">When Tributed &middot; choose one</span>
+                            <p>Special Summon a non-Pendulum Clown Crew monster from the Deck or Extra Deck, ignoring its
+                                Summoning conditions. <em>Or</em> shuffle every Pendulum Monster on the field and in both
+                                face-up Extra Decks into the Deck.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">The catch</span>
+                            <p>Once the Pendulum Effect resolves, you can't activate the effects of monsters Special
+                                Summoned from the Deck or Extra Deck for the rest of that turn and all of the next.
+                                <a class="nc-link" href="#cc-lock">What that stops</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verbatim card text -->
+                <div class="card p-6 mb-6">
+                    <h3 class="text-xl font-bold text-white mb-4">The Text, Verbatim</h3>
+                    <span class="nc-row-label">Pendulum Effect &middot; Scale 7</span>
+                    <p class="nc-cardtext">During your Main Phase: You can send 1 non-Pendulum "Clown Crew" card from your
+                        Deck to the GY, and if you do, Special Summon this card, also until the end of the next turn after
+                        this effect resolves, you cannot activate the effect of monsters Special Summoned from the Deck or
+                        Extra Deck. You can only use this effect of "Clown Crew Cappello" once per turn.</p>
+                    <span class="nc-row-label">Monster Effect</span>
+                    <p class="nc-cardtext">Monsters your opponent controls lose 1500 DEF while you control a Tribute Summoned
+                        monster. If this card is Tributed: You can activate 1 of these effects (but you can only use each
+                        effect of "Clown Crew Cappello" once per turn);
+                        <span class="nc-cardtext-bullet">&#9679; Shuffle all Pendulum Monsters from the face-up Extra Decks
+                            and the field into the Deck.</span>
+                        <span class="nc-cardtext-bullet">&#9679; Special Summon 1 non-Pendulum "Clown Crew" monster from
+                            your Deck or Extra Deck, ignoring its Summoning conditions.</span></p>
+                    <div class="nc-note">
+                        <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                        <span><strong>"If this card is Tributed" covers every Tribute.</strong> That includes Finale's
+                            GY cost, Rehearsal's cost, Malabarisme's GY cost and any Tribute Summon, whether Cappello is
+                            in the hand or on the field. Tributed from the field, it goes to the face-up Extra Deck, and
+                            the effect still triggers there.</span>
+                    </div>
+                    <div class="nc-note">
+                        <i class="fas fa-language" aria-hidden="true"></i>
+                        <span><strong>A note on names.</strong> This tab uses the official TCG names. The Classic Analysis
+                            was written from early translations, so its <em>Drish</em> is Dristy, <em>Diablo</em> is
+                            Diabolo and <em>Flare</em> is Flair.</span>
+                    </div>
+                </div>
+
+                <!-- Impact tiles -->
+                <div id="cc-impact" class="card p-6 mb-6">
+                    <h3 class="text-xl font-bold text-white mb-4">What Actually Changes</h3>
+                    <div class="nc-tiles">
+                        <div class="nc-tile">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-play" aria-hidden="true"></i></span>
+                                <h4>A one-card starter</h4>
+                            </div>
+                            <p>Put it in the Pendulum Zone and it sends Finale. The monster Finale needs to Tribute is
+                                Cappello itself. The line below reaches Biancaviso from this one card.</p>
+                        </div>
+                        <div id="cc-impact-colour" class="nc-tile">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-palette" aria-hidden="true"></i></span>
+                                <h4>The sixth type</h4>
+                            </div>
+                            <p>Matinee Operatics draws 1 card for each type Tributed that turn (Ritual, Fusion, Synchro,
+                                Xyz, Pendulum and Link). Clown Crew cards can now cover all six. Biancaviso, Finale and
+                                Dristy all accept Cappello as a Pendulum.</p>
+                        </div>
+                        <div class="nc-tile">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-redo" aria-hidden="true"></i></span>
+                                <h4>It comes back</h4>
+                            </div>
+                            <p>After a Tribute from the field, Cappello waits face-up in the Extra Deck. Matinee
+                                Operatics and Malabarisme can summon it from there, or from the Deck. From the Extra Deck
+                                it needs the Extra Monster Zone or a zone a Link Monster points to.</p>
+                        </div>
+                        <div class="nc-tile">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-cut" aria-hidden="true"></i></span>
+                                <h4>Foolish Burial Goods comes out</h4>
+                            </div>
+                            <p>Lists played it to put Finale in the GY. Cappello does the same job and leaves a monster
+                                on the field.</p>
+                        </div>
+                        <div class="nc-tile nc-tile-down">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-lock" aria-hidden="true"></i></span>
+                                <h4>Generic Extra Deck picks go quiet</h4>
+                            </div>
+                            <p>The lock blanks S:P Little Knight, Enigmaster Packbit and similar picks for two turns.
+                                Anything you need from them has to happen before Cappello resolves.</p>
+                        </div>
+                        <div class="nc-tile nc-tile-down">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-eye-slash" aria-hidden="true"></i></span>
+                                <h4>The DEF drop needs it to stay</h4>
+                            </div>
+                            <p>The &minus;1500 DEF only applies while Cappello is on the field, and most lines Tribute it
+                                right away. It's a bonus, not a reason to play the card.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The one-card line (same chain layout as the Classic tab's Core Routine) -->
+            <section id="cc-line" class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">The One-Card Line</h2>
+                <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">Start with Cappello in hand and your Normal
+                    Summon unused. The only other cards it needs are Finale in the Deck and Diabolo in the Extra
+                    Deck.</p>
+                <div class="flex flex-col items-center gap-6">
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cc-step-1-img-container" class="card-image-container cc-art-slot">Clown Crew Cappello</div>
+                        <div>
+                            <span class="nc-flow-tag">Main Phase &middot; Pendulum Effect</span>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">1</span>
+                                <h3 class="text-lg font-bold text-gold">Scale Cappello, Send Finale</h3>
+                            </div>
+                            <p class="text-purple-200">Activate <strong class="text-accent">Cappello</strong> in the
+                                Pendulum Zone. Its Pendulum Effect sends <strong class="text-accent">Clown Crew
+                                Finale</strong> from the Deck to the GY and Special Summons Cappello to the field.</p>
+                        </div>
+                    </div>
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cc-step-2-img-container" class="card-image-container cc-art-slot">Clown Crew Finale</div>
+                        <div>
+                            <span class="nc-flow-tag">Chain link 1 &middot; Finale in the GY</span>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">2</span>
+                                <h3 class="text-lg font-bold text-gold">Tribute Cappello to Finale</h3>
+                            </div>
+                            <p class="text-purple-200">Activate Finale's GY effect. As the cost, banish it and Tribute
+                                Cappello. Finale will add <strong class="text-accent">Clown Crew Biancaviso</strong> from
+                                the Deck, because Biancaviso's Level 7 is different from Cappello's Level 5.</p>
+                        </div>
+                    </div>
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cc-step-3-img-container" class="card-image-container cc-art-slot">Clown Crew Diabolo</div>
+                        <div>
+                            <span class="nc-flow-tag">Chain link 2 &middot; Cappello's trigger</span>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">3</span>
+                                <h3 class="text-lg font-bold text-gold">Cappello Calls the Next Act</h3>
+                            </div>
+                            <p class="text-purple-200">Cappello was Tributed, so its trigger goes on the chain above
+                                Finale. It resolves first: Special Summon <strong class="text-accent">Clown Crew
+                                Diabolo</strong> from the Extra Deck, ignoring its Summoning conditions. Then Finale
+                                resolves and Biancaviso goes to your hand.</p>
+                        </div>
+                    </div>
+                    <div class="w-full flex justify-center">
+                        <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <div class="card p-6 combo-step-card w-full max-w-2xl flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="cc-step-4-img-container" class="card-image-container cc-art-slot">Clown Crew Biancaviso</div>
+                        <div>
+                            <span class="nc-flow-tag">Normal Summon &middot; Tribute Summon</span>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#1e0f33] border border-gold text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3 flex-shrink-0">4</span>
+                                <h3 class="text-lg font-bold text-gold">Tribute Summon Biancaviso</h3>
+                            </div>
+                            <p class="text-purple-200">Tribute Summon <strong class="text-accent">Biancaviso</strong> by
+                                Tributing Diabolo, a Fusion Monster. Biancaviso draws 1 card, or negates 1 face-up card
+                                your opponent controls. Diabolo's own trigger Sets <strong class="text-accent">Clown Crew
+                                Soiree Operations</strong> from the Deck.</p>
+                        </div>
+                    </div>
+                    <div class="nc-endboard w-full max-w-2xl">
+                        <p class="nc-endboard-title"><i class="fas fa-flag-checkered" aria-hidden="true"></i> Where one card leaves you</p>
+                        <dl class="nc-endboard-grid">
+                            <div><dt>Field</dt><dd>Biancaviso, Tribute Summoned</dd></div>
+                            <div><dt>Hand</dt><dd>+1 card from Biancaviso's draw</dd></div>
+                            <div><dt>Spell &amp; Trap Zone</dt><dd>Soiree Operations, Set for the opponent's turn</dd></div>
+                            <div><dt>Extra Deck</dt><dd>Cappello, face-up and ready to return</dd></div>
+                        </dl>
+                        <p class="nc-endboard-note">If Matinee Operatics is also on the field, its End Phase draw counts
+                            the two types you Tributed (Pendulum and Fusion), so it draws 2 more.</p>
+                    </div>
+                </div>
+                <div class="nc-note max-w-2xl mx-auto">
+                    <i class="fas fa-random" aria-hidden="true"></i>
+                    <span><strong>Already holding Biancaviso?</strong> Send
+                        <a class="nc-link" href="#cc-send-newface">Clown Crew New Face</a> instead of Finale. New Face
+                        places itself face-up, and Biancaviso is Tribute Summoned straight off Cappello.</span>
+                </div>
+            </section>
+
+            <!-- Decision menus -->
+            <section id="cc-menus" class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Two Choices Every Time</h2>
+                <p class="text-purple-200 mb-8 text-center max-w-2xl mx-auto">Cappello asks you two questions: what to
+                    send when it enters, and what to call when it leaves. What you pick decides the rest of the
+                    turn.</p>
+                <div class="nc-menus">
+                    <div id="cc-send">
+                        <h3 class="nc-menu-title"><span class="nc-menu-step" aria-hidden="true">1</span> What the Pendulum Effect sends</h3>
+                        <div class="nc-menu-list">
+                            <div id="cc-send-finale" class="nc-syn nc-syn-key">
+                                <span class="nc-syn-badge">Default send</span>
+                                <h4>Clown Crew Finale</h4>
+                                <p>Its GY effect Tributes Cappello to search Biancaviso or Flair, and that Tribute sets off
+                                    Cappello's trigger. This is the one-card line.</p>
+                                <span class="nc-syn-take">Use it whenever you still need Biancaviso.</span>
+                            </div>
+                            <div id="cc-send-newface" class="nc-syn nc-syn-good">
+                                <span class="nc-syn-badge">Biancaviso already in hand</span>
+                                <h4>Clown Crew New Face</h4>
+                                <p>When it's sent from the Deck, it places itself face-up on your field. After that, each
+                                    Tribute Summon destroys Spells/Traps equal to the monsters Tributed. Each Standby
+                                    Phase it shuffles 3 Clown Crew cards back into the Deck and draws 1.</p>
+                                <span class="nc-syn-take">Removal and card draw, set up on your first turn.</span>
+                            </div>
+                            <div id="cc-send-soiree" class="nc-syn nc-syn-good">
+                                <span class="nc-syn-badge">Extra summon</span>
+                                <h4>Clown Crew Soiree Operations</h4>
+                                <p>During the Main Phase, its GY effect banishes it to Tribute Summon a Clown Crew
+                                    monster. Cappello can be the Tribute.</p>
+                                <span class="nc-syn-take">A second Tribute Summon in the same turn.</span>
+                            </div>
+                            <div id="cc-send-malabarisme" class="nc-syn nc-syn-mid">
+                                <span class="nc-syn-badge">Slow</span>
+                                <h4>Clown Crew Malabarisme</h4>
+                                <p>Its GY bounce can't be used the turn it gets there, so it only pays off from your
+                                    next turn.</p>
+                                <span class="nc-syn-take">Only once the other three are used up.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="cc-call">
+                        <h3 class="nc-menu-title"><span class="nc-menu-step" aria-hidden="true">2</span> What Cappello calls when Tributed</h3>
+                        <div class="nc-menu-list">
+                            <div id="cc-call-diabolo" class="nc-syn nc-syn-key">
+                                <span class="nc-syn-badge">Default call</span>
+                                <h4>Clown Crew Diabolo</h4>
+                                <p>Tribute it next and it Sets a Clown Crew Trap from the Deck. While it's on the field,
+                                    your Tribute Summoned monsters deal double piercing damage.</p>
+                                <span class="nc-syn-take">Turns the one-card line into a Set Trap too.</span>
+                            </div>
+                            <div id="cc-call-meteor" class="nc-syn nc-syn-good">
+                                <span class="nc-syn-badge">Protection</span>
+                                <h4>Clown Crew Meteor</h4>
+                                <p>While it's on the field, your opponent can't activate cards or effects when you Tribute
+                                    Summon. When Tributed, it adds a Clown Crew card from the GY to your hand.</p>
+                                <span class="nc-syn-take">Keep it on the field and Tribute something else.</span>
+                            </div>
+                            <div id="cc-call-fiends" class="nc-syn nc-syn-good">
+                                <span class="nc-syn-badge">Damage</span>
+                                <h4>Clown Crew Fiends</h4>
+                                <p>Tribute Summoned monsters gain 1000 ATK while it's on the field. When Tributed, it Sets
+                                    a Clown Crew Spell from the Deck.</p>
+                                <span class="nc-syn-take">Does the same as Diabolo, but Sets a Spell instead.</span>
+                            </div>
+                            <div id="cc-call-dristy" class="nc-syn nc-syn-good">
+                                <span class="nc-syn-badge">Hand loop</span>
+                                <h4>Clown Crew Dristy</h4>
+                                <p>Tribute Summoned monsters can attack twice. When Tributed, every player with a hand
+                                    shuffles it into the Deck and redraws the same number of cards. That's the Droll &amp;
+                                    Lock Bird loop from the <a class="nc-link" href="#tab-classic">Classic Analysis</a>.</p>
+                                <span class="nc-syn-take">Cappello can bring it out on your turn, ready for that loop.</span>
+                            </div>
+                            <div id="cc-call-flair" class="nc-syn nc-syn-mid">
+                                <span class="nc-syn-badge">Situational</span>
+                                <h4>Clown Crew Flair</h4>
+                                <p>When Tributed, it changes 1 Effect Monster to face-down Defense Position, or shuffles
+                                    every Ritual Monster on the field and in the GYs into the Deck.</p>
+                                <span class="nc-syn-take">Gives Diabolo a Defense Position monster to pierce.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lock check -->
+            <section class="mb-10 md:mb-16">
+                <div id="cc-lock" class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-2">What the Lock Actually Stops</h3>
+                    <p class="text-purple-200 text-sm mb-5">Once the Pendulum Effect resolves, you can't activate the
+                        effects of monsters Special Summoned from the Deck or Extra Deck for the rest of that turn and
+                        all of the next. Matinee Operatics, Malabarisme and Soiree Operations apply the same lock, so
+                        most lists already play around it.</p>
+                    <div class="nc-lock-grid">
+                        <div class="nc-lock nc-lock-yes">
+                            <h4><i class="fas fa-check-circle" aria-hidden="true"></i> Still works</h4>
+                            <ul class="nc-list">
+                                <li><i class="fas fa-check" aria-hidden="true"></i> <strong>Tribute Summoned
+                                        monsters.</strong> Biancaviso, Vanity's Ruler and Vanity's Fiend aren't Special
+                                    Summoned.</li>
+                                <li><i class="fas fa-check" aria-hidden="true"></i> <strong>Performers' continuous
+                                        effects.</strong> Dristy's second attack, Fiends' ATK boost, Meteor's protection
+                                    and Diabolo's piercing damage don't activate, so the lock doesn't touch them.</li>
+                                <li><i class="fas fa-check" aria-hidden="true"></i> <strong>"If this card is Tributed"
+                                        effects.</strong> They activate after the performer has left the field.</li>
+                                <li><i class="fas fa-check" aria-hidden="true"></i> <strong>Spells, Traps and hand
+                                        traps.</strong> The lock only applies to monsters Special Summoned from the Deck or
+                                    Extra Deck.</li>
+                            </ul>
+                        </div>
+                        <div class="nc-lock nc-lock-no">
+                            <h4><i class="fas fa-ban" aria-hidden="true"></i> Switched off</h4>
+                            <ul class="nc-list">
+                                <li><i class="fas fa-times" aria-hidden="true"></i> <strong>Generic Extra Deck
+                                        picks.</strong> S:P Little Knight, Enigmaster Packbit and Super Starslayer TY-PHON -
+                                    Sky Crisis can't activate their effects.</li>
+                                <li><i class="fas fa-times" aria-hidden="true"></i> <strong>Monsters summoned before
+                                        Cappello.</strong> The lock covers them too. Use their effects before the Pendulum
+                                    Effect resolves.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Deck-building -->
+            <section class="mb-10 md:mb-16">
+                <div id="cc-build" class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Deck-Building</h3>
+                    <div class="nc-tiles">
+                        <div class="nc-tile nc-tile-plan">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-layer-group" aria-hidden="true"></i></span>
+                                <h4>Play 3</h4>
+                            </div>
+                            <p>It's a starter, so play the maximum. A second copy isn't dead: it's still a Pendulum
+                                Monster in hand for Finale's GY effect or Rehearsal to Tribute.</p>
+                        </div>
+                        <div class="nc-tile nc-tile-plan">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-cut" aria-hidden="true"></i></span>
+                                <h4>Cut Foolish Burial Goods</h4>
+                            </div>
+                            <p>Its only job was putting Finale in the GY. That slot can go to a hand trap or another
+                                Tribute Summon target.</p>
+                        </div>
+                        <div class="nc-tile nc-tile-plan">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-arrows-alt-h" aria-hidden="true"></i></span>
+                                <h4>No second Pendulum Scale</h4>
+                            </div>
+                            <p>The deck never Pendulum Summons. Cappello's Pendulum Effect works on its own, whatever is
+                                in the other Pendulum Zone.</p>
+                        </div>
+                        <div class="nc-tile nc-tile-plan">
+                            <div class="nc-tile-head">
+                                <span class="nc-tile-ico"><i class="fas fa-search" aria-hidden="true"></i></span>
+                                <h4>One Finale is enough</h4>
+                            </div>
+                            <p>Cappello fetches Finale from the Deck, so the opener doesn't need you to draw it. Early
+                                lists with 3 Cappello ran a single Finale.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Matchups -->
+            <section class="mb-10 md:mb-16">
+                <div id="cc-matchups" class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">Matchups: The Other Two Effects</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="nc-row">
+                            <span class="nc-row-label">When Tributed &middot; anti-Pendulum mode</span>
+                            <p>Instead of calling a performer, shuffle every Pendulum Monster on the field and in both
+                                face-up Extra Decks into the Deck. That's the pile
+                                <a class="nc-link" href="Pendulum%20Magician%20Deck%20Analysis.html">Pendulum Magician</a>,
+                                <a class="nc-link" href="Odd-Eyes%20Deck%20Analysis.html">Odd-Eyes</a>,
+                                <a class="nc-link" href="Performapal%20Deck%20Analysis.html">Performapal</a>,
+                                <a class="nc-link" href="Majespecter%20Deck%20Analysis.html">Majespecter</a> and
+                                <a class="nc-link" href="Dracoslayer%20Deck%20Analysis.html">Dracoslayer</a> Pendulum
+                                Summon from every turn. Biancaviso's Quick Effect lets you Tribute Summon during the
+                                opponent's Main Phase, and Cappello can be the Tribute, so the shuffle can hit halfway
+                                through their turn. It hits your
+                                own face-up Cappellos too, but they just go back into your Deck.</p>
+                        </div>
+                        <div class="nc-row">
+                            <span class="nc-row-label">On the field &middot; &minus;1500 DEF</span>
+                            <p>While Cappello and a Tribute Summoned monster are both on your field, your opponent's
+                                monsters lose 1500 DEF. Add Diabolo's double piercing damage and Biancaviso (2500 ATK)
+                                attacking a 2000 DEF monster deals 4000 damage instead of 1000. Flair's Tributed effect
+                                can turn a monster face-down in Defense Position to give you a target.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Failure modes -->
+            <section class="mb-10 md:mb-16">
+                <div id="cc-fails" class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">What Stops It</h3>
+                    <div class="nc-fails">
+                        <div class="nc-fail">
+                            <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                            <span><b>Ash Blossom has three windows.</b> It can hit the Pendulum Effect (it sends from
+                                the Deck), Finale's search, and Cappello's trigger when it summons from the Deck. Call
+                                your performer from the Extra Deck to close one of them.</span>
+                        </div>
+                        <div class="nc-fail">
+                            <i class="fas fa-wind" aria-hidden="true"></i>
+                            <span><b>Removal on the Pendulum Zone.</b> Cosmic Cyclone or Ghost Ogre &amp; Snow Rabbit on
+                                the activation keeps Cappello off the field. Finale then needs a different monster to
+                                Tribute.</span>
+                        </div>
+                        <div class="nc-fail">
+                            <i class="fas fa-dove" aria-hidden="true"></i>
+                            <span><b>Droll &amp; Lock Bird.</b> After your first search, Finale can't add from the Deck
+                                any more. Cappello's summons still work, and Finale can still take a monster from the
+                                GY.</span>
+                        </div>
+                        <div class="nc-fail">
+                            <i class="fas fa-redo" aria-hidden="true"></i>
+                            <span><b>One Pendulum Effect per turn.</b> The Pendulum Effect is once per turn, so a second
+                                copy can't repeat the opener. Treat extra copies as Tribute material.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Verdict -->
+            <section class="mb-10 md:mb-16">
+                <div id="cc-verdict" class="card p-6">
+                    <h3 class="text-xl font-bold text-white mb-3">Verdict</h3>
+                    <span class="nc-verdict nc-verdict-yes"><i class="fas fa-check" aria-hidden="true"></i> Play 3 &middot; core starter</span>
+                    <p class="text-purple-200 mb-3">Cappello is what the deck was missing. On its own it puts Finale in
+                        the GY, gives Finale a monster to Tribute, and brings on the next performer as it leaves. The lock
+                        is the same one Matinee Operatics and Malabarisme already apply, so Cappello adds no new
+                        restriction.</p>
+                    <p class="text-purple-200">When it was revealed, players picked out the Finale pairing straight away.
+                        The anti-Pendulum mode is a bonus. It does nothing in most games, but it's a hard swing against
+                        Pendulum decks.</p>
+                </div>
+            </section>
+        </div>
+        <!-- /cappello -->
+
         <!-- TCG Banlist Impact Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.7s;">
             <div id="banlist-status">
@@ -938,6 +2374,56 @@
                 initSynergyTags('Clown Crew');
                 initPageSections('Clown Crew');
             });
+        </script>
+
+        <!-- Guide tabs (shared assets/js/guide-tabs.js) + Cappello spotlight -->
+        <script>
+            GuideTabs.init({
+                panelArt: {
+                    cappello: [{
+                        'cc-profile-img-container': 'Clown Crew Cappello',
+                        'cc-step-1-img-container': 'Clown Crew Cappello',
+                        'cc-step-2-img-container': 'Clown Crew Finale',
+                        'cc-step-3-img-container': 'Clown Crew Diabolo',
+                        'cc-step-4-img-container': 'Clown Crew Biancaviso'
+                    }]
+                }
+            });
+
+            (function () {
+                // The spotlight is always on screen, so its art loads with the page.
+                if (window.CardLoader) CardLoader.loadCards({ 'cc-spot-img-container': 'Clown Crew Cappello' });
+
+                const tablist = document.querySelector('[data-guide-tabs]');
+                if (!tablist) return;
+                const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+                // Open the panel holding an in-page link's target before the browser
+                // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+                // when the same synergy tag is clicked twice.
+                document.addEventListener('click', e => {
+                    const link = e.target.closest('a[href^="#"]');
+                    if (!link || link.hash.length < 2) return;
+                    let target = null;
+                    try {
+                        target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                    } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                    const panel = target && target.closest('[role="tabpanel"]');
+                    const tab = panel && panel.hidden && tabFor(panel.id);
+                    if (tab) tab.click();
+                });
+
+                const cta = document.querySelector('[data-open-panel]');
+                if (!cta) return;
+                cta.addEventListener('click', () => {
+                    const tab = tabFor(cta.dataset.openPanel);
+                    if (!tab) return;
+                    tab.click();
+                    tab.focus({ preventScroll: true });
+                    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+                });
+            })();
         </script>
 </body>
 

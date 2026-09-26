@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Umi: A control archetype centered around the Umi field spell, featuring WATER monsters that gain power from the field and utilize floodgates and disruption mechanics for strategic control.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Umi%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
     <title>Umi Deck Guide: The Legendary Ocean Control</title>
     <script src="../assets/js/google-analytics.js"></script>
     <!-- Tailwind CSS -->
@@ -24,6 +25,10 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
 
     <style>
         /* Base styling */
@@ -218,6 +223,860 @@
         }
         /* --- END Card Popup --- */
     </style>
+    <style>
+        /* ===== Guide tabs + Atlantis & Daedalus (Beyond the Brave) =====
+           Added next to the original styles, which are left as they were. The
+           original guide sits unchanged in the "Classic Umi Control" tab. Scoped
+           classes rather than Tailwind utilities: output.css is precompiled, so
+           utilities not already in it would need a rebuild. Every colour below
+           comes from the --betb-* tokens. */
+        :root {
+            --betb-primary: #22d3ee;            /* the classic guide's cyan, one step deeper */
+            --betb-primary-soft: #a5f3fc;       /* the classic guide's accent */
+            --betb-primary-line: rgba(34, 211, 238, 0.4);
+            --betb-primary-wash: rgba(34, 211, 238, 0.12);
+            --betb-gold: #fbbf24;               /* the sunken city's gold */
+            --betb-gold-soft: #fde68a;
+            --betb-gold-wash: rgba(251, 191, 36, 0.1);
+            --betb-ok: #4ade80;
+            --betb-ok-wash: rgba(74, 222, 128, 0.12);
+            --betb-warn: #fbbf24;
+            --betb-warn-wash: rgba(251, 191, 36, 0.12);
+            --betb-danger: #f87171;
+            --betb-danger-wash: rgba(248, 113, 113, 0.12);
+            --betb-surface: #172a4d;            /* the classic guide's card blue */
+            --betb-surface-deep: #0f1d38;
+            --betb-inset: #0a1426;
+            --betb-border: #2b4984;
+            --betb-text: #dbeafe;
+            --betb-muted: #93a8cc;
+            --betb-heading: #ffffff;
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--betb-border);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--betb-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #fff; background-color: var(--betb-primary-wash); }
+        .tab-btn[aria-selected="true"] {
+            border-bottom-color: var(--betb-primary);
+            color: var(--betb-primary-soft);
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.45);
+        }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--betb-gold);
+            color: #111;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .betb-spot-cta:focus-visible,
+        .betb-tag:focus-visible,
+        .betb-filter:focus-visible,
+        .betb-tile:focus-visible,
+        .betb-link:focus-visible,
+        .betb-xlink:focus-visible,
+        .betb-table-wrap:focus-visible {
+            outline: 2px solid var(--betb-gold);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+        /* Deep-link targets land clear of the fixed home button. */
+        [id^="betb-"],
+        [id^="card-"] { scroll-margin-top: 1.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.78rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Card art slot: holds the 59:86 card shape until CardLoader
+           swaps the image in, then drops the empty-slot styling. ----- */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--betb-primary-line);
+            border-radius: 0.35rem;
+            background: var(--betb-inset);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            color: var(--betb-primary-soft);
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        /* CardLoader's not-found fallback nests a full-size .card-placeholder. */
+        .betb-art .card-placeholder {
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+        }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .betb-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, var(--betb-gold-wash) 0%, transparent 55%),
+                linear-gradient(135deg, var(--betb-surface) 0%, var(--betb-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.12);
+        }
+        .betb-spot-art { grid-area: art; }
+        .betb-spot-head { grid-area: head; min-width: 0; }
+        .betb-spot-body { grid-area: body; min-width: 0; }
+        .betb-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--betb-gold-soft);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .betb-spot-title {
+            color: var(--betb-heading);
+            font-size: 1.25rem;
+            font-weight: 800;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(34, 211, 238, 0.45);
+        }
+        .betb-spot-stats {
+            margin-top: 0.35rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .betb-spot-hook { color: var(--betb-text); font-size: 0.95rem; line-height: 1.6; }
+        .betb-spot-hook strong { color: var(--betb-heading); }
+        .betb-spot-label,
+        .betb-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .betb-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .betb-tag i { color: var(--betb-primary); }
+        .betb-tag:hover { border-color: var(--betb-primary); background: var(--betb-primary-wash); }
+        .betb-tag-role { color: var(--betb-muted); font-size: 0.7rem; font-weight: 600; }
+        .betb-spot-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; margin-top: 1.1rem; }
+        .betb-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--betb-primary);
+            border-radius: 9999px;
+            background: var(--betb-primary-wash);
+            color: #fff;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .betb-spot-cta:hover { background: rgba(34, 211, 238, 0.25); box-shadow: 0 0 16px rgba(34, 211, 238, 0.35); }
+        .betb-xlink {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 44px;
+            color: var(--betb-gold-soft);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: underline dotted;
+            text-underline-offset: 4px;
+        }
+        .betb-xlink:hover { color: #fff; }
+
+        /* ----- Tab intro ----- */
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-deep);
+            color: var(--betb-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .betb-chip i { color: var(--betb-primary-soft); }
+        .betb-chip--tcg { border-color: rgba(251, 191, 36, 0.55); }
+        .betb-chip--tcg i { color: var(--betb-gold); }
+        .betb-h2 {
+            margin-bottom: 1rem;
+            color: var(--betb-heading);
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.25;
+            text-align: center;
+        }
+        .betb-intro,
+        .betb-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--betb-text);
+            line-height: 1.65;
+            text-align: center;
+        }
+        .betb-intro strong,
+        .betb-lede strong { color: var(--betb-heading); }
+        .betb-pillars { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-pillar {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 1rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            text-align: center;
+        }
+        .betb-pillar h3 { margin-bottom: 0.5rem; color: var(--betb-primary-soft); font-weight: 700; }
+        .betb-pillar p { color: var(--betb-text); font-size: 0.875rem; line-height: 1.6; }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            color: var(--betb-gold);
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.45));
+        }
+        .betb-callout {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-gold);
+            border-radius: 0.5rem;
+            background: var(--betb-surface);
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .betb-callout strong { color: var(--betb-heading); }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+            color: var(--betb-gold-soft);
+            font-weight: 700;
+        }
+        .betb-toc {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 2.5rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        /* ----- Card gallery: filter chips + tiles + one profile at a time.
+           Without JavaScript the filters stay hidden, every profile shows and
+           the tiles are plain jump links. ----- */
+        .betb-filters {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 0.75rem;
+        }
+        .betb-filters[hidden] { display: none !important; }
+        .betb-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 40px;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: var(--betb-muted);
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+        }
+        .betb-filter:hover { border-color: var(--betb-primary-soft); color: #fff; }
+        .betb-filter[aria-pressed="true"] { border-color: var(--betb-primary); background: var(--betb-primary-wash); color: #fff; }
+        .betb-filter-count {
+            min-width: 1.4rem;
+            padding: 0 0.35rem;
+            border-radius: 9999px;
+            background: var(--betb-surface-deep);
+            color: var(--betb-gold);
+            font-size: 0.72rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .betb-gallery-status {
+            min-height: 1.25rem;
+            margin: 0 0 1rem;
+            color: var(--betb-muted);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        /* Tiles: a swipeable strip on phones, a grid from tablets up. */
+        .betb-tiles {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 96px;
+            gap: 0.6rem;
+            margin: 0 0 1.5rem;
+            padding: 0.25rem 0.25rem 0.75rem;
+            list-style: none;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x proximity;
+            scrollbar-width: thin;
+            scrollbar-color: var(--betb-border) transparent;
+        }
+        .betb-tiles > li { scroll-snap-align: start; }
+        .betb-tiles > li[hidden] { display: none; }
+        .betb-tile {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            height: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.6rem;
+            background: linear-gradient(160deg, var(--betb-surface), var(--betb-surface-deep));
+            color: var(--betb-text);
+            text-decoration: none;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .betb-tile:hover { border-color: var(--betb-primary-soft); transform: translateY(-2px); }
+        .betb-tile[aria-current="true"] {
+            border-color: var(--betb-primary);
+            box-shadow: 0 0 0 1px var(--betb-primary), 0 6px 20px rgba(34, 211, 238, 0.2);
+        }
+        .betb-tile-art {
+            position: relative;
+            display: block;
+            aspect-ratio: 59 / 86;
+            overflow: hidden;
+            border-radius: 0.3rem;
+            background: var(--betb-inset);
+            box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.8);
+        }
+        .betb-tile-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .betb-tile-fallback {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.35rem;
+            color: var(--betb-muted);
+            font-size: 0.55rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .betb-tile-art img + .betb-tile-fallback { display: none; }
+        .betb-tile-badge {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: rgba(10, 20, 38, 0.9);
+            color: var(--betb-primary-soft);
+            font-size: 0.62rem;
+            box-shadow: 0 0 0 1px var(--betb-primary-line);
+        }
+        .betb-tile-name { color: var(--betb-heading); font-size: 0.72rem; font-weight: 700; line-height: 1.25; }
+        .betb-tile-type { color: var(--betb-muted); font-size: 0.66rem; line-height: 1.25; }
+
+        .betb-profile {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 24px rgba(34, 211, 238, 0.08);
+        }
+        .betb-profile + .betb-profile { margin-top: 1.25rem; }
+        .betb-profile[hidden] { display: none; }
+        .betb-profile-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-profile-art { grid-area: art; }
+        .betb-profile-head { grid-area: head; min-width: 0; }
+        .betb-profile-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            color: var(--betb-gold-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            color: var(--betb-heading);
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+        .betb-stats { display: grid; gap: 0.2rem; margin-top: 0.6rem; font-size: 0.8rem; }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; color: #e5e7eb; font-weight: 600; }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.55;
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--betb-primary);
+            color: #04121a;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-effect-tag {
+            display: inline-block;
+            margin-right: 0.4rem;
+            padding: 0 0.45rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.3rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            vertical-align: 0.1em;
+        }
+        .betb-opt { margin-top: 0.6rem; color: var(--betb-muted); font-size: 0.8rem; line-height: 1.5; }
+        .betb-opt i { margin-right: 0.35rem; color: var(--betb-gold); }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-gold);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--betb-gold-wash);
+            color: #e5e7eb;
+            font-size: 0.875rem;
+            line-height: 1.55;
+        }
+        .betb-role p + p { margin-top: 0.5rem; }
+        .betb-role strong { color: var(--betb-gold-soft); }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-inset);
+        }
+        .betb-glance dt {
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-glance dd {
+            margin: 0.25rem 0 0;
+            color: var(--betb-primary-soft);
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        /* ----- Tables stack into labelled cards below 640px instead of making
+           the page scroll sideways. ----- */
+        .betb-table-wrap {
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-deep);
+        }
+        .betb-table { width: 100%; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(43, 73, 132, 0.7);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            border-bottom: 2px solid var(--betb-primary);
+            background: var(--betb-surface);
+            color: var(--betb-primary-soft);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .betb-table tbody th { color: var(--betb-heading); font-weight: 700; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table td strong { color: var(--betb-heading); }
+        @media (max-width: 639px) {
+            .betb-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .betb-table,
+            .betb-table tbody,
+            .betb-table tr,
+            .betb-table th,
+            .betb-table td { display: block; width: 100%; }
+            .betb-table tr { padding: 0.5rem 0; border-bottom: 1px solid var(--betb-border); }
+            .betb-table tbody tr:last-child { border-bottom: none; }
+            .betb-table th,
+            .betb-table td { padding: 0.35rem 0.85rem; border-bottom: none; }
+            .betb-table td[data-label]::before {
+                content: attr(data-label);
+                display: block;
+                margin-bottom: 0.15rem;
+                color: var(--betb-muted);
+                font-size: 0.66rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+        }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--yes  { border-color: rgba(74, 222, 128, 0.4); background: var(--betb-ok-wash); color: var(--betb-ok); }
+        .betb-pill--part { border-color: rgba(251, 191, 36, 0.4); background: var(--betb-warn-wash); color: var(--betb-warn); }
+        .betb-pill--no   { border-color: rgba(248, 113, 113, 0.4); background: var(--betb-danger-wash); color: var(--betb-danger); }
+        .betb-note { margin-top: 0.75rem; color: var(--betb-muted); font-size: 0.8rem; line-height: 1.55; }
+        .betb-note strong { color: var(--betb-text); }
+        .betb-link {
+            color: var(--betb-primary-soft);
+            font-weight: 700;
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+        .betb-link:hover { color: #fff; }
+
+        /* ----- Combo line summaries + the interactive combo lab ----- */
+        .betb-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-top: 3px solid var(--betb-primary);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-line--legacy { border-top-color: var(--betb-gold); }
+        .betb-line h3 { color: var(--betb-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+        .betb-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .betb-line-facts dt {
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-line-facts dd { margin: 0.15rem 0 0; color: var(--betb-text); font-size: 0.85rem; line-height: 1.5; }
+        .betb-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--betb-border);
+            color: var(--betb-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .betb-line-rule strong { color: var(--betb-gold-soft); }
+        .betb-line-play {
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 40px;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--betb-primary);
+            border-radius: 9999px;
+            background: var(--betb-primary-wash);
+            color: #fff;
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .betb-line-play:hover { background: rgba(34, 211, 238, 0.25); }
+        .betb-line-play:focus-visible { outline: 2px solid var(--betb-gold); outline-offset: 2px; }
+        .betb-lab { margin-top: 2rem; }
+        .betb-lab-mount { min-height: 12rem; }
+        .betb-lab-loading { padding: 2rem 1rem; color: var(--betb-muted); font-size: 0.9rem; text-align: center; }
+
+        /* ----- Deck building ----- */
+        .betb-build { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-build-card {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-build-card h3 { margin-bottom: 0.25rem; color: var(--betb-heading); font-weight: 700; }
+        .betb-build-sub { margin-bottom: 0.9rem; color: var(--betb-muted); font-size: 0.8rem; line-height: 1.5; }
+        .betb-ratio { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .betb-ratio > li {
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr);
+            gap: 0.6rem;
+            align-items: baseline;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(43, 73, 132, 0.6);
+        }
+        .betb-ratio > li:last-child { padding-bottom: 0; border-bottom: 0; }
+        .betb-ratio-count { color: var(--betb-gold); font-size: 0.95rem; font-weight: 800; text-align: right; }
+        .betb-ratio-name { color: var(--betb-heading); font-size: 0.875rem; font-weight: 700; }
+        .betb-ratio-role { display: block; color: var(--betb-text); font-size: 0.8rem; font-weight: 400; line-height: 1.45; }
+        .betb-ratio-group {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-ratio-group:first-of-type { margin-top: 0; }
+
+        /* ----- Failure modes ----- */
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-danger);
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-risks i { margin-top: 0.2rem; color: var(--betb-danger); }
+        .betb-risks h3 { margin-bottom: 0.25rem; color: var(--betb-heading); font-weight: 700; }
+        .betb-risks p { color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+
+        /* ----- Cross-link to the Atlantis, City of the Sea Dragon page ----- */
+        .betb-crosslink {
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: center;
+            padding: 1.25rem;
+            border: 1px solid rgba(251, 191, 36, 0.45);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 100% 0%, var(--betb-gold-wash) 0%, transparent 60%),
+                linear-gradient(135deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-crosslink h3 { color: var(--betb-heading); font-size: 1.1rem; font-weight: 800; line-height: 1.3; }
+        .betb-crosslink p { margin-top: 0.35rem; color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+
+        @media (min-width: 640px) {
+            .betb-tiles {
+                grid-auto-flow: row;
+                grid-auto-columns: auto;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.85rem;
+                overflow: visible;
+                padding: 0;
+            }
+            .betb-crosslink { grid-template-columns: 96px minmax(0, 1fr); padding: 1.5rem; }
+        }
+        @media (min-width: 768px) {
+            .betb-spot {
+                grid-template-columns: 150px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                padding: 1.5rem;
+            }
+            .betb-spot-title { font-size: 1.5rem; }
+            .betb-h2 { font-size: 1.875rem; }
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-profile { padding: 1.75rem; }
+            .betb-profile-layout {
+                grid-template-columns: 180px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.4rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-build { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .betb-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+            .betb-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn,
+            .betb-tag,
+            .betb-spot-cta,
+            .betb-filter,
+            .betb-tile { transition: none; }
+            .betb-tile:hover { transform: none; }
+        }
+        /* Printing the guide should include every tab and every card profile. */
+        @media print {
+            .tab-nav,
+            .betb-spot-cta,
+            .betb-filters,
+            .betb-tiles,
+            .betb-line-play,
+            .betb-lab { display: none !important; }
+            .tab-panel[hidden],
+            .betb-profile[hidden] { display: block !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -260,6 +1119,46 @@
                 </p>
             </div>
         </section>
+
+        <!-- ==================== NEW SUPPORT SPOTLIGHT (Beyond the Brave) ====================
+             Always visible, above the guide tabs. Each chip opens the Atlantis & Daedalus
+             tab at that card's profile; the full write-up lives there. -->
+        <aside class="betb-spot" data-pcs-scope="spot" aria-labelledby="betb-spot-title">
+            <div class="betb-spot-art">
+                <div id="betb-spot-img-container" class="betb-art">Atlantis, City of the Sea Dragon</div>
+            </div>
+            <div class="betb-spot-head">
+                <p class="betb-spot-kicker"><span class="tab-new-badge">11 new cards</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="betb-spot-title" class="betb-spot-title">Atlantis &amp; Daedalus</h2>
+                <p class="betb-spot-stats">7 WATER monsters &middot; 3 Spells &middot; 1 Trap</p>
+            </div>
+            <div class="betb-spot-body">
+                <p class="betb-spot-hook">Daedalus finally has an archetype. Beyond the Brave doesn't add another Field Spell treated as "Umi". Instead, <strong>six of the seven new monsters and a Continuous Spell are named "Umi" while they're on the field</strong>. Kairyu-Shin's lock and Electric Jellyfish's negate now survive when your Field Spell is removed. The new Field Spell, <strong>Atlantis, City of the Sea Dragon</strong>, cuts one material from the Daedalus Link Monsters and places itself back from the GY while you control "Umi".</p>
+                <p id="betb-spot-tags-label" class="betb-spot-label">Jump to a card</p>
+                <ul class="betb-tags" aria-labelledby="betb-spot-tags-label">
+                    <li><a class="betb-tag" href="#card-atlantis-city"><i class="fas fa-archway" aria-hidden="true"></i> Atlantis, City of the Sea Dragon <span class="betb-tag-role">Field Spell</span></a></li>
+                    <li><a class="betb-tag" href="#card-neo-daedalus-rage"><i class="fas fa-water" aria-hidden="true"></i> Neo-Daedalus Rage <span class="betb-tag-role">board sweep</span></a></li>
+                    <li><a class="betb-tag" href="#card-levia-dragoon"><i class="fas fa-hand-paper" aria-hidden="true"></i> Levia-Dragoon <span class="betb-tag-role">hand reset</span></a></li>
+                    <li><a class="betb-tag" href="#card-advent-of-atlantis"><i class="fas fa-sun" aria-hidden="true"></i> Advent of Atlantis <span class="betb-tag-role">places the field</span></a></li>
+                    <li><a class="betb-tag" href="#card-fisherman-of-legend"><i class="fas fa-fish" aria-hidden="true"></i> Fisherman of Legend <span class="betb-tag-role">hand trap</span></a></li>
+                </ul>
+                <div class="betb-spot-actions">
+                    <button type="button" class="betb-spot-cta" data-open-panel="tab-betb">See all 11 cards <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+                    <a class="betb-xlink" href="Atlantis,%20City%20of%20the%20Sea%20Dragon%20Deck%20Analysis.html"><i class="fas fa-archway" aria-hidden="true"></i> Atlantis Field Spell deep dive</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Umi Control panel;
+             the Beyond the Brave cards get their own panel. The banlist and deck
+             resources stay below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Umi guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Umi Control</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Atlantis &amp; Daedalus <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new cards)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16">
@@ -478,6 +1377,815 @@
             </div>
         </section>        
 
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== ATLANTIS & DAEDALUS (BEYOND THE BRAVE) TAB ====================
+             Card text is the official printed text. Every combo step was checked against the
+             printed text of each card in it; the step-by-step lines live in
+             assets/data/combos/umi-combos.json and play in the combo simulator. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What changed -->
+            <section class="mb-10 md:mb-16" id="betb-intro" aria-labelledby="betb-intro-title">
+                <h2 id="betb-intro-title" class="betb-h2">Beyond the Brave: Atlantis &amp; Daedalus</h2>
+                <ul class="betb-release" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">
+                    Eleven cards turn the Umi toolbox into a deck of its own. The new Field Spell is <strong>Atlantis, City of the Sea Dragon</strong>, and it is <em>not</em> "Umi". The "Umi" names now sit on six of the new monsters and on <strong>Advent of Atlantis</strong>, the Continuous Spell that places Atlantis. So the classic cards that ask for "Umi" on the field keep working after your Field Spell is gone, and Atlantis itself comes back from the GY. The Kairyu-Shin lock, the Fundamental Sequence and the endboard in the <strong>Classic Umi Control</strong> tab are unchanged. This tab covers the new cards, which classic cards work with them, and three new lines in the combo simulator.
+                </p>
+                <div class="betb-pillars">
+                    <div class="betb-pillar">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-water"></i></div>
+                        <h3>"Umi" on the Monsters</h3>
+                        <p>Warchief, Monster Arms, Siren Vortex, Levia-Dragon of Atlantis and both Daedalus Link Monsters are named "Umi" on the field, and Advent is named "Umi" in the Spell &amp; Trap Zone. Kairyu-Shin's lock and Electric Jellyfish's negate only need one of them.</p>
+                    </div>
+                    <div class="betb-pillar">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-link"></i></div>
+                        <h3>One Material Fewer</h3>
+                        <p>With Atlantis in your Field Zone, Levia-Dragoon - Daedalus needs 2 WATER monsters instead of 3, and Neo-Daedalus Rage needs 3 monsters instead of 4. With the discount, each Link Monster used as material counts as just one.</p>
+                    </div>
+                    <div class="betb-pillar">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-wind"></i></div>
+                        <h3>Removal That Sends</h3>
+                        <p>Levia-Dragon of Atlantis and Neo-Daedalus Rage send cards to the GY without targeting or destroying them. Rage's Quick Effect clears every card that isn't "Umi", which on your side is almost everything except Atlantis.</p>
+                    </div>
+                </div>
+                <div class="betb-callout">
+                    <p class="betb-callout-title"><i class="fas fa-book-open" aria-hidden="true"></i> Why Daedalus, and why now?</p>
+                    <p>Levia-Dragon - Daedalus reached the TCG in 2004. Structure Deck: Fury from the Deep paired it with A Legendary Ocean and introduced its evolved form, Ocean Dragon Lord - Neo-Daedalus, but it was never an archetype. More than twenty years later, it gets a Level 7 retrain, two Link forms and a Field Spell of its own. The original still has a place here: Advent of Atlantis can add it, because it's a Level 7 Sea Serpent.</p>
+                </div>
+            </section>
+
+            <!-- In this tab -->
+            <nav aria-label="In this tab">
+                <ul class="betb-toc">
+                    <li><a class="betb-tag" href="#betb-gallery"><i class="fas fa-th-large" aria-hidden="true"></i> The 11 cards</a></li>
+                    <li><a class="betb-tag" href="#betb-umi"><i class="fas fa-water" aria-hidden="true"></i> What counts as "Umi"</a></li>
+                    <li><a class="betb-tag" href="#betb-legacy"><i class="fas fa-history" aria-hidden="true"></i> Classic cards</a></li>
+                    <li><a class="betb-tag" href="#betb-combos"><i class="fas fa-play" aria-hidden="true"></i> Combo lines</a></li>
+                    <li><a class="betb-tag" href="#betb-build"><i class="fas fa-layer-group" aria-hidden="true"></i> Deck list</a></li>
+                    <li><a class="betb-tag" href="#betb-risks"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Weak points</a></li>
+                </ul>
+            </nav>
+
+            <!-- Card gallery: filter chips + tiles + one profile at a time -->
+            <section class="mb-10 md:mb-16" id="betb-gallery" aria-labelledby="betb-gallery-title" data-gallery>
+                <h2 id="betb-gallery-title" class="betb-h2">The Eleven Cards</h2>
+                <p class="betb-lede">Filter by Main Deck monsters, Spells &amp; Traps or boss monsters, or show only the cards named "Umi" on the field. Pick a card for its full text and its job in the deck. Card text is the official printed text.</p>
+
+                <div class="betb-filters" role="group" aria-label="Filter the eleven cards" data-gallery-filters hidden>
+                    <button type="button" class="betb-filter" data-filter="all" aria-pressed="true">All <span class="betb-filter-count">11</span></button>
+                    <button type="button" class="betb-filter" data-filter="monster" aria-pressed="false">Main Deck monsters <span class="betb-filter-count">5</span></button>
+                    <button type="button" class="betb-filter" data-filter="spelltrap" aria-pressed="false">Spells &amp; Traps <span class="betb-filter-count">4</span></button>
+                    <button type="button" class="betb-filter" data-filter="boss" aria-pressed="false"><i class="fas fa-crown" aria-hidden="true"></i> Boss monsters <span class="betb-filter-count">3</span></button>
+                    <button type="button" class="betb-filter" data-filter="umi" aria-pressed="false"><i class="fas fa-water" aria-hidden="true"></i> Named "Umi" <span class="betb-filter-count">7</span></button>
+                </div>
+                <p class="betb-gallery-status" role="status" data-gallery-status></p>
+
+                <ul class="betb-tiles" role="list" aria-label="Card gallery">
+                    <li><a class="betb-tile" href="#card-atlantis-city" data-kinds="spelltrap" data-card="Atlantis, City of the Sea Dragon">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Atlantis, City of the Sea Dragon</span></span>
+                        <span class="betb-tile-name">Atlantis, City of the Sea Dragon</span>
+                        <span class="betb-tile-type">Field Spell</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-levia-dragon-of-atlantis" data-kinds="monster boss umi" data-card="Levia-Dragon of Atlantis - Daedalus">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Levia-Dragon of Atlantis - Daedalus</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Levia-Dragon of Atlantis - Daedalus</span>
+                        <span class="betb-tile-type">Level 7 &middot; boss</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-warchief-of-atlantis" data-kinds="monster umi" data-card="Warchief of Atlantis">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Warchief of Atlantis</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Warchief of Atlantis</span>
+                        <span class="betb-tile-type">Level 5 &middot; starter</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-siren-vortex-of-atlantis" data-kinds="monster umi" data-card="Siren Vortex of Atlantis">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Siren Vortex of Atlantis</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Siren Vortex of Atlantis</span>
+                        <span class="betb-tile-type">Level 4 &middot; starter</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-monster-arms-of-atlantis" data-kinds="monster umi" data-card="Monster Arms of Atlantis">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Monster Arms of Atlantis</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Monster Arms of Atlantis</span>
+                        <span class="betb-tile-type">Level 4 &middot; negate</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-fisherman-of-legend" data-kinds="monster" data-card="Fisherman of Legend">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Fisherman of Legend</span></span>
+                        <span class="betb-tile-name">Fisherman of Legend</span>
+                        <span class="betb-tile-type">Level 4 &middot; hand trap</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-levia-dragoon" data-kinds="boss umi" data-card="Levia-Dragoon - Daedalus">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Levia-Dragoon - Daedalus</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Levia-Dragoon - Daedalus</span>
+                        <span class="betb-tile-type">Link-3 &middot; boss</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-neo-daedalus-rage" data-kinds="boss umi" data-card="Azure Ocean Dragon Lord - Neo-Daedalus Rage">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Azure Ocean Dragon Lord - Neo-Daedalus Rage</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Neo-Daedalus Rage</span>
+                        <span class="betb-tile-type">Link-4 &middot; boss</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-advent-of-atlantis" data-kinds="spelltrap umi" data-card="Advent of Atlantis">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Advent of Atlantis</span><span class="betb-tile-badge"><i class="fas fa-water" aria-hidden="true"></i><span class="betb-sr-only">Named Umi on the field</span></span></span>
+                        <span class="betb-tile-name">Advent of Atlantis</span>
+                        <span class="betb-tile-type">Continuous Spell</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-call-of-atlantis" data-kinds="spelltrap" data-card="Call of Atlantis">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Call of Atlantis</span></span>
+                        <span class="betb-tile-name">Call of Atlantis</span>
+                        <span class="betb-tile-type">Normal Spell</span>
+                    </a></li>
+                    <li><a class="betb-tile" href="#card-daedalus-maelstrom" data-kinds="spelltrap" data-card="Daedalus Maelstrom">
+                        <span class="betb-tile-art"><span class="betb-tile-fallback">Daedalus Maelstrom</span></span>
+                        <span class="betb-tile-name">Daedalus Maelstrom</span>
+                        <span class="betb-tile-type">Counter Trap</span>
+                    </a></li>
+                </ul>
+
+                <div class="betb-viewer" data-gallery-viewer>
+
+                    <!-- 1. Atlantis, City of the Sea Dragon -->
+                    <article class="betb-profile" id="card-atlantis-city" aria-labelledby="pf-atlantis-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-atlantis-img-container" class="betb-art">Atlantis, City of the Sea Dragon</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Field Spell</p>
+                                <h3 id="pf-atlantis-name" class="betb-card-name">Atlantis, City of the Sea Dragon</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Spell / Field</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>Never</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Levels</span>While a monster that mentions "Atlantis, City of the Sea Dragon" is on the field, the Levels of all monsters in both players' hands and on the field are reduced by 1.</li>
+                                    <li><span class="betb-effect-tag">Links</span>When you Link Summon a "Daedalus" Link Monster, you can reduce the total number of materials by 1 (from Link Rating and from mentioned materials).</li>
+                                    <li><span class="betb-effect-tag">GY</span>If this card is in your GY and you control "Umi": You can place this card face-up on your field.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use this effect of "Atlantis, City of the Sea Dragon" once per turn. (The GY effect.)</p>
+                                <div class="betb-role">
+                                    <p><strong>The Field Spell the engine is built around.</strong> Its Link discount is what lets two monsters become Levia-Dragoon and three become Neo-Daedalus Rage. It isn't "Umi", so Rage's sweep sends it to the GY too, and it places itself back from the GY in your Main Phase as long as any "Umi" is left on your field.</p>
+                                    <p>It shares the Field Zone with A Legendary Ocean. <a class="betb-link" href="Atlantis,%20City%20of%20the%20Sea%20Dragon%20Deck%20Analysis.html#atl-interaction">When to play which</a> is on the Atlantis page.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Put on the field by</dt><dd>Advent of Atlantis</dd></div>
+                                    <div><dt>Level cut needs</dt><dd>A monster that mentions it</dd></div>
+                                    <div><dt>Link discount</dt><dd>Daedalus Links only</dd></div>
+                                    <div><dt>Comes back</dt><dd>From the GY, once per turn</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 2. Levia-Dragon of Atlantis - Daedalus -->
+                    <article class="betb-profile" id="card-levia-dragon-of-atlantis" aria-labelledby="pf-levia-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-levia-img-container" class="betb-art">Levia-Dragon of Atlantis - Daedalus</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Main Deck boss</p>
+                                <h3 id="pf-levia-name" class="betb-card-name">Levia-Dragon of Atlantis - Daedalus</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Effect Monster</dd></div>
+                                    <div><dt>Level</dt><dd>7</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Sea Serpent</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>2600 / 1500</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while on the field.</li>
+                                    <li><span class="betb-effect-tag">Hand</span>If you control "Atlantis, City of the Sea Dragon" or "Umi": You can Special Summon this card from your hand.</li>
+                                    <li><span class="betb-effect-tag">Field</span>You can send up to 3 face-up "Umi" you control to the GY; add that many cards that mention "Atlantis, City of the Sea Dragon" from your Deck to your hand, except Level 7 monsters, then you can send 1 card on the field to the GY.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each of these effects of "Levia-Dragon of Atlantis - Daedalus" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>The search hub and the removal.</strong> It summons itself for free next to any "Umi", and it can pay its own cost, because it's "Umi" on the field. Each "Umi" you send adds one card: Advent, Call, Maelstrom or another Atlantis monster. The last part sends any card on the field to the GY with no target and no destruction.</p>
+                                    <p>Sending Siren Vortex as the cost also triggers Siren's GY effect, so the cost pays for itself.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Found by</dt><dd>Advent's GY effect, Call, Fish Sonar</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>On the field</dd></div>
+                                    <div><dt>Adds</dt><dd>1 card per "Umi" sent, up to 3</dd></div>
+                                    <div><dt>Removal</dt><dd>Send to GY, no target</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 3. Warchief of Atlantis -->
+                    <article class="betb-profile" id="card-warchief-of-atlantis" aria-labelledby="pf-warchief-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-warchief-img-container" class="betb-art">Warchief of Atlantis</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Main Deck monster</p>
+                                <h3 id="pf-warchief-name" class="betb-card-name">Warchief of Atlantis</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Effect Monster</dd></div>
+                                    <div><dt>Level</dt><dd>5</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Sea Serpent</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>2100 / 1400</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while on the field.</li>
+                                    <li><span class="betb-effect-tag">Hand</span>You can discard this card; add 1 Spell/Trap that mentions "Atlantis, City of the Sea Dragon" from your Deck to your hand.</li>
+                                    <li><span class="betb-effect-tag">GY</span>If you control "Umi" and this card is in your GY: You can Special Summon this card.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each of these effects of "Warchief of Atlantis" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>The one-card start.</strong> Discard it for Advent of Atlantis, activate Advent, and Advent is already "Umi", so Warchief comes straight back from the GY. It can also add Call of Atlantis or Daedalus Maelstrom.</p>
+                                    <p>It's Level 5. A Legendary Ocean makes it Level 4 in your hand. Atlantis only does that once a monster that mentions Atlantis is already on the field.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Adds</dt><dd>Advent, Call or Maelstrom</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>On the field</dd></div>
+                                    <div><dt>Comes back</dt><dd>Needs "Umi" you control</dd></div>
+                                    <div><dt>Speed</dt><dd>Your Main Phase only</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 4. Siren Vortex of Atlantis -->
+                    <article class="betb-profile" id="card-siren-vortex-of-atlantis" aria-labelledby="pf-siren-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-siren-img-container" class="betb-art">Siren Vortex of Atlantis</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Main Deck monster</p>
+                                <h3 id="pf-siren-name" class="betb-card-name">Siren Vortex of Atlantis</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Effect Monster</dd></div>
+                                    <div><dt>Level</dt><dd>4</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Sea Serpent</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>1400 / 1800</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while on the field.</li>
+                                    <li><span class="betb-effect-tag">Summon</span>If this card is Normal or Special Summoned: You can send 1 card that mentions "Atlantis, City of the Sea Dragon" from your Deck to the GY, except "Siren Vortex of Atlantis".</li>
+                                    <li><span class="betb-effect-tag">GY</span>If this card is sent to the GY and you control "Umi": You can Special Summon 1 WATER monster from your hand.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each of these effects of "Siren Vortex of Atlantis" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>The engine's GY setup.</strong> Its best targets: <strong>Advent of Atlantis</strong>, whose GY effect adds a Level 7 Sea Serpent; <strong>Monster Arms</strong>, which can negate from the GY; <strong>Daedalus Maelstrom</strong>, whose GY effect sends a monster to the GY; and <strong>Warchief</strong>, which comes back on its own.</p>
+                                    <p>Its GY effect works whenever it goes there with "Umi" still on your field, as a cost, as a material or to your opponent's removal. So it makes a good cost for Levia-Dragon of Atlantis or Neo-Daedalus Rage.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Found by</dt><dd>Call, Fish Sonar, Levia-Dragon</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>On the field</dd></div>
+                                    <div><dt>Sends</dt><dd>Advent, Monster Arms, Maelstrom</dd></div>
+                                    <div><dt>In the GY</dt><dd>Summons 1 WATER from hand</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 5. Monster Arms of Atlantis -->
+                    <article class="betb-profile" id="card-monster-arms-of-atlantis" aria-labelledby="pf-arms-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-arms-img-container" class="betb-art">Monster Arms of Atlantis</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Main Deck monster</p>
+                                <h3 id="pf-arms-name" class="betb-card-name">Monster Arms of Atlantis</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Effect Monster</dd></div>
+                                    <div><dt>Level</dt><dd>4</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Sea Serpent</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>1500 / 1200</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while on the field.</li>
+                                    <li><span class="betb-effect-tag">Summon</span>If this card is Normal or Special Summoned: You can target 1 monster that mentions "Atlantis, City of the Sea Dragon" in your GY; Special Summon it in Defense Position.</li>
+                                    <li><span class="betb-effect-tag">Quick Effect</span>When your opponent activates a monster effect (Quick Effect): You can banish this card from your field or GY, and send 1 face-up "Umi" you control to the GY; negate that activated effect.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each of these effects of "Monster Arms of Atlantis" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>An extender that's also a negate.</strong> On summon it brings back Siren Vortex, Warchief or Levia-Dragon of Atlantis from the GY, in Defense Position, so never a Link Monster. On your opponent's turn it negates a monster effect, and it can do that <strong>from the GY</strong>. If Siren sends it there, your opponent faces a negate they can't see on the field.</p>
+                                    <p>The negate also costs a face-up "Umi". Keep at least one spare on the field, and don't count Atlantis, which isn't one.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Revives</dt><dd>An Atlantis monster, in Defense</dd></div>
+                                    <div><dt>Negates</dt><dd>Any monster effect</dd></div>
+                                    <div><dt>From</dt><dd>Field or GY</dd></div>
+                                    <div><dt>Cost</dt><dd>Banish itself + 1 "Umi"</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 6. Fisherman of Legend -->
+                    <article class="betb-profile" id="card-fisherman-of-legend" aria-labelledby="pf-fisher-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-fisher-img-container" class="betb-art">Fisherman of Legend</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Main Deck monster &middot; shared with Dark Time Wizard</p>
+                                <h3 id="pf-fisher-name" class="betb-card-name">Fisherman of Legend</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Effect Monster</dd></div>
+                                    <div><dt>Level</dt><dd>4</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Warrior</dd></div>
+                                    <div><dt>ATK / DEF</dt><dd>1850 / 1600</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Hand</span>If your opponent activates a monster effect on the field, or when an opponent's monster declares an attack, and "Umi" or a card that mentions "Dark Time Wizard" (except "Fisherman of Legend") is on the field (except during the Damage Step): Special Summon this card from your hand.</li>
+                                    <li><span class="betb-effect-tag">Summon</span>If this card is Special Summoned: You can target 1 monster your opponent controls; destroy it, also during the End Phase of this turn, return this card from the field to the hand.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each effect of "Fisherman of Legend" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>A hand trap that destroys.</strong> It's a new take on The Legendary Fisherman, and it only needs "Umi" somewhere on the field. With the Atlantis monsters and Advent on your side, that's almost every turn. It destroys the monster, returns to your hand in the End Phase, and is ready for the next turn.</p>
+                                    <p>It isn't named "Umi" and doesn't mention Atlantis, so it's not part of the Atlantis engine. Kairyu-Shin's Dark Reef and Fish Sonar can both get it. It's also part of Joey's new deck: see <a class="betb-link" href="Joey%20Series%20Deck%20Analysis.html#cast-fisherman-of-legend">Fisherman on the Joey Series page</a>.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Found by</dt><dd>Fish Sonar, Dark Reef</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>No</dd></div>
+                                    <div><dt>Turns on with</dt><dd>"Umi" on either field</dd></div>
+                                    <div><dt>Speed</dt><dd>Your opponent's turn</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 7. Levia-Dragoon - Daedalus -->
+                    <article class="betb-profile" id="card-levia-dragoon" aria-labelledby="pf-dragoon-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-dragoon-img-container" class="betb-art">Levia-Dragoon - Daedalus</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Extra Deck boss</p>
+                                <h3 id="pf-dragoon-name" class="betb-card-name">Levia-Dragoon - Daedalus</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Link Monster</dd></div>
+                                    <div><dt>Link</dt><dd>3 (bottom-left, bottom, bottom-right)</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Sea Serpent</dd></div>
+                                    <div><dt>ATK</dt><dd>2600</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Materials</span>3 WATER monsters</li>
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while on the field.</li>
+                                    <li><span class="betb-effect-tag">Summon</span>If this card is Link Summoned: You can Special Summon 1 monster that mentions "Atlantis, City of the Sea Dragon" from your Deck.</li>
+                                    <li><span class="betb-effect-tag">Quick Effect</span>During the Main Phase (Quick Effect): You can send 1 face-up "Umi" you control to the GY; discard your opponent's entire hand, and if you do, they draw the same number of cards. Neither player can activate cards or effects in response to this effect's activation.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each of these effects of "Levia-Dragoon - Daedalus" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>The Link-3 you make from 2 monsters.</strong> With Atlantis on the field it needs only 2 WATER monsters, and it replaces one of them from the Deck. That leaves you three bodies for Neo-Daedalus Rage.</p>
+                                    <p>Its hand reset can't be responded to. Use it at the start of your opponent's Main Phase to throw away the combo pieces they kept, or on your turn to clear hand traps before you start. They draw the same number back, so it trades their chosen hand for a random one. Discarding helps decks with GY effects, so watch who you use it against.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Materials</dt><dd>2 WATER with Atlantis</dd></div>
+                                    <div><dt>On summon</dt><dd>1 Atlantis monster from Deck</dd></div>
+                                    <div><dt>Hand reset</dt><dd>Main Phase, no responses</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>On the field</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 8. Azure Ocean Dragon Lord - Neo-Daedalus Rage -->
+                    <article class="betb-profile" id="card-neo-daedalus-rage" aria-labelledby="pf-rage-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-rage-img-container" class="betb-art">Azure Ocean Dragon Lord - Neo-Daedalus Rage</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Extra Deck boss</p>
+                                <h3 id="pf-rage-name" class="betb-card-name">Azure Ocean Dragon Lord - Neo-Daedalus Rage</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Link Monster</dd></div>
+                                    <div><dt>Link</dt><dd>4 (top, bottom-left, bottom, bottom-right)</dd></div>
+                                    <div><dt>Attribute / Type</dt><dd>WATER / Sea Serpent</dd></div>
+                                    <div><dt>ATK</dt><dd>2900</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Materials</span>4 monsters</li>
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while on the field.</li>
+                                    <li><span class="betb-effect-tag">Summon</span>If this card is Link Summoned: You can Special Summon up to 3 monsters that mention "Atlantis, City of the Sea Dragon" from your GY to your zone this card points to, also you cannot Special Summon for the rest of this turn.</li>
+                                    <li><span class="betb-effect-tag">Quick Effect</span>Once per turn (Quick Effect): You can send 1 face-up "Umi" you control to the GY; send all cards on the field to the GY, except "Umi".</li>
+                                </ol>
+                                <div class="betb-role">
+                                    <p><strong>A sweep that spares your board.</strong> Every card of yours in the engine except Atlantis is named "Umi", so Rage sends your opponent's field to the GY, face-down cards included, and leaves yours. It doesn't target or destroy, so protection doesn't save their cards. It works on either player's turn.</p>
+                                    <p><strong>Summon it to an Extra Monster Zone.</strong> Only from there do its three bottom arrows point at your Main Monster Zones, so it can bring 3 monsters back. It can bring back Levia-Dragoon, since that mentions Atlantis too. Make it your last summon, because nothing else can be Special Summoned after its revival.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Materials</dt><dd>3 monsters with Atlantis</dd></div>
+                                    <div><dt>On summon</dt><dd>Up to 3 back from the GY</dd></div>
+                                    <div><dt>Sweep</dt><dd>Quick Effect, once per turn</dd></div>
+                                    <div><dt>Survives it</dt><dd>Only cards named "Umi"</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 9. Advent of Atlantis -->
+                    <article class="betb-profile" id="card-advent-of-atlantis" aria-labelledby="pf-advent-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-advent-img-container" class="betb-art">Advent of Atlantis</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Continuous Spell</p>
+                                <h3 id="pf-advent-name" class="betb-card-name">Advent of Atlantis</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Spell / Continuous</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>In the Spell &amp; Trap Zone</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Name</span>This card's name becomes "Umi" while in the Spell &amp; Trap Zone.</li>
+                                    <li><span class="betb-effect-tag">Field</span>During your Main Phase: You can place 1 "Atlantis, City of the Sea Dragon" or "Umi" from your Deck, face-up in your Field Zone.</li>
+                                    <li><span class="betb-effect-tag">GY</span>If this card is sent to the GY: You can add 1 Level 7 Sea Serpent monster from your Deck to your hand.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each of these effects of "Advent of Atlantis" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>Two "Umi" from one card.</strong> Advent is "Umi" itself, and it places a Field Spell. It can place Atlantis, Umi or <strong>A Legendary Ocean</strong>, which is always treated as "Umi" even in the Deck. Pick A Legendary Ocean when you want Kairyu-Shin Normal Summoned without a Tribute (Line 2).</p>
+                                    <p>Its GY effect triggers however it gets there: Siren sends it from the Deck, or it's the "Umi" you send for Levia-Dragon, Dark Reef, Electric Jellyfish or Rage. It adds Levia-Dragon of Atlantis, the original Levia-Dragon - Daedalus, or Coralianectes, the Luminous Cradle Dragon.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Places</dt><dd>Atlantis, Umi or A Legendary Ocean</dd></div>
+                                    <div><dt>Found by</dt><dd>Warchief, Levia-Dragon</dd></div>
+                                    <div><dt>In the GY</dt><dd>Adds a Level 7 Sea Serpent</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>Face-up on the field</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 10. Call of Atlantis -->
+                    <article class="betb-profile" id="card-call-of-atlantis" aria-labelledby="pf-call-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-call-img-container" class="betb-art">Call of Atlantis</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Normal Spell</p>
+                                <h3 id="pf-call-name" class="betb-card-name">Call of Atlantis</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Spell / Normal</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>No</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Spell</span>Add 1 monster that mentions "Atlantis, City of the Sea Dragon" from your Deck to your hand, then if you control "Atlantis, City of the Sea Dragon", you can negate the effects of 1 Effect Monster your opponent controls, until the end of this turn.</li>
+                                    <li><span class="betb-effect-tag">GY</span>If you control "Umi": You can banish this card from your GY; WATER monsters you control gain 500 ATK/DEF.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use each effect of "Call of Atlantis" once per turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>A search that can also negate.</strong> It adds any Atlantis monster: Siren Vortex to start, Monster Arms to extend, or Levia-Dragon to push. With Atlantis already on the field, it also negates one of your opponent's Effect Monsters until the end of the turn without targeting it.</p>
+                                    <p>Its GY effect adds 500 ATK/DEF to all your WATER monsters, with no end date. That's the difference between 7000 and 8500 damage in Line 3.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Adds</dt><dd>Any Atlantis monster</dd></div>
+                                    <div><dt>Negate</dt><dd>Only with Atlantis on field</dd></div>
+                                    <div><dt>In the GY</dt><dd>+500 ATK/DEF to WATER</dd></div>
+                                    <div><dt>Found by</dt><dd>Warchief, Levia-Dragon</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 11. Daedalus Maelstrom -->
+                    <article class="betb-profile" id="card-daedalus-maelstrom" aria-labelledby="pf-maelstrom-name">
+                        <div class="betb-profile-layout">
+                            <div class="betb-profile-art"><div id="pf-maelstrom-img-container" class="betb-art">Daedalus Maelstrom</div></div>
+                            <div class="betb-profile-head">
+                                <p class="betb-kicker">Counter Trap</p>
+                                <h3 id="pf-maelstrom-name" class="betb-card-name">Daedalus Maelstrom</h3>
+                                <dl class="betb-stats">
+                                    <div><dt>Card</dt><dd>Trap / Counter</dd></div>
+                                    <div><dt>Named "Umi"</dt><dd>No</dd></div>
+                                </dl>
+                            </div>
+                            <div class="betb-profile-body">
+                                <p class="betb-label">Card text</p>
+                                <ol class="betb-effects" role="list">
+                                    <li><span class="betb-effect-tag">Trap</span>When your opponent would Normal or Special Summon a monster(s), while you control "Atlantis, City of the Sea Dragon": Negate the Summon, and if you do, destroy that monster(s), then if you control a WATER Link Monster, you can destroy all monsters on the field, except WATER monsters.</li>
+                                    <li><span class="betb-effect-tag">GY</span>You can banish this card from your GY and send 1 face-up "Umi" you control to the GY, then target 1 monster your opponent controls; send it to the GY.</li>
+                                </ol>
+                                <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only use 1 "Daedalus Maelstrom" effect per turn, and only once that turn.</p>
+                                <div class="betb-role">
+                                    <p><strong>A summon negate that can clear the field.</strong> With a Daedalus Link on your field, it also destroys every non-WATER monster, and all of yours are WATER. It only works while <strong>you control Atlantis</strong>. After a Rage sweep on your opponent's turn, Atlantis stays in the GY until your Main Phase, so Maelstrom is off until then.</p>
+                                    <p>Siren can send it straight to the GY. Its GY effect then removes a monster in your Main Phase, which helps going second.</p>
+                                </div>
+                                <dl class="betb-glance">
+                                    <div><dt>Needs</dt><dd>Atlantis on your field</dd></div>
+                                    <div><dt>Bonus</dt><dd>WATER Link: destroy non-WATER</dd></div>
+                                    <div><dt>In the GY</dt><dd>Sends 1 monster to the GY</dd></div>
+                                    <div><dt>Found by</dt><dd>Warchief, Levia-Dragon, Siren</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+
+            <!-- What counts as Umi -->
+            <section class="mb-10 md:mb-16" id="betb-umi" aria-labelledby="betb-umi-title">
+                <h2 id="betb-umi-title" class="betb-h2">What Counts as "Umi" Now</h2>
+                <p class="betb-lede">Kairyu-Shin's lock, Electric Jellyfish's negate, Sea Stealth Attack, Fisherman of Legend and half the new cards check for "Umi" on the field. Here is every card that counts, and what's left after Neo-Daedalus Rage sends everything else to the GY.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-umi-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-umi-caption" class="betb-sr-only">Cards that are named Umi, where, and whether they survive Neo-Daedalus Rage</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Named "Umi"</th>
+                                <th scope="col">After Rage's sweep</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Umi</th>
+                                <td data-label="Named &quot;Umi&quot;">It is "Umi"</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--yes">Stays</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">A Legendary Ocean</th>
+                                <td data-label="Named &quot;Umi&quot;">Everywhere: hand, Deck, GY and field</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--yes">Stays</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sea Stealth II</th>
+                                <td data-label="Named &quot;Umi&quot;">On the field and in the GY</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--yes">Stays</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Advent of Atlantis</th>
+                                <td data-label="Named &quot;Umi&quot;">In the Spell &amp; Trap Zone</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--yes">Stays</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Warchief, Monster Arms, Siren Vortex, Levia-Dragon of Atlantis</th>
+                                <td data-label="Named &quot;Umi&quot;">On the field</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--yes">Stay</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Levia-Dragoon, Neo-Daedalus Rage</th>
+                                <td data-label="Named &quot;Umi&quot;">On the field</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--yes">Stay</span></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Atlantis, City of the Sea Dragon</th>
+                                <td data-label="Named &quot;Umi&quot;">Never</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--part">To the GY</span> Places itself again in your next Main Phase while you control "Umi"</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Kairyu-Shin, Electric Jellyfish, Fisherman of Legend, Call of Atlantis, Daedalus Maelstrom</th>
+                                <td data-label="Named &quot;Umi&quot;">Never</td>
+                                <td data-label="After Rage's sweep"><span class="betb-pill betb-pill--no">To the GY</span> Set Maelstrom and Set Dark Reef go too</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>Note:</strong> the cards the new engine <em>searches</em> are named by Atlantis, not "Umi". Kairyu-Shin can't add Atlantis or Advent, and Fish Sonar is the only classic searcher that finds the new monsters, because each of them also mentions "Umi" in its text.</p>
+            </section>
+
+            <!-- Classic card compatibility -->
+            <section class="mb-10 md:mb-16" id="betb-legacy" aria-labelledby="betb-legacy-title">
+                <h2 id="betb-legacy-title" class="betb-h2">Which Classic Umi Cards Work With the New Ones</h2>
+                <p class="betb-lede">Most of the Classic tab's cards get better, because there's more "Umi" on the field. Two don't fit: Warrior of Atlantis and the original Neo-Daedalus.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-legacy-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-legacy-caption" class="betb-sr-only">How each classic Umi card works with the Beyond the Brave cards</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">With the new cards</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Ocean Dragon Lord - Kairyu-Shin</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--yes">Lock is sturdier</span></td>
+                                <td data-label="Why">Its lock only needs "Umi" on the field, so any Atlantis monster or Advent keeps it on after the Field Spell is removed. Its search still adds only "Umi", "Kairyu-Shin" and "Sea Stealth" cards, not Atlantis or Advent.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Electric Jellyfish</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--yes">Stronger</span></td>
+                                <td data-label="Why">Its cost can be a face-up "Umi" on your field. Send Siren Vortex to summon a second WATER monster, or Advent to add a Level 7 Sea Serpent. Its negate needs "Umi" on the field, which is now easy to keep.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Fish Sonar</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--yes">Finds them</span></td>
+                                <td data-label="Why">Every new Main Deck monster mentions "Umi" and is Level 7 or lower, so Fish Sonar adds any of them, Levia-Dragon of Atlantis and Fisherman included.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Kairyu-Shin's Dark Reef</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--yes">Stronger</span></td>
+                                <td data-label="Why">Send Advent as the cost to add a Level 7 Sea Serpent, and summon any 2 new monsters from the Deck, because they mention "Umi". Monster Arms and Siren Vortex bring their summon effects with them.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sea Stealth Attack</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--part">Partly</span></td>
+                                <td data-label="Why">Its activation brings back Umi or A Legendary Ocean from the hand or GY, but not Atlantis. Its protection covers Atlantis and Advent. Its battle effect counts WATER monsters whose original Level is 5 or higher, such as Warchief and Levia-Dragon of Atlantis, but not the Link Monsters.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">A Legendary Ocean</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--part">Shares the zone</span></td>
+                                <td data-label="Why">It and Atlantis use the same Field Zone. Advent can place either one. Play A Legendary Ocean when you need Kairyu-Shin or Warchief Normal Summoned without a Tribute. See the <a class="betb-link" href="Atlantis,%20City%20of%20the%20Sea%20Dragon%20Deck%20Analysis.html#atl-interaction">Field Spell comparison</a>.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Rage of Kairyu-Shin</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--part">Partly</span></td>
+                                <td data-label="Why">It destroys up to 1 monster for each of your WATER monsters whose original Level is 5 or higher. Levia-Dragon of Atlantis and Warchief count. Link Monsters have no Level, so they don't.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Levia-Dragon - Daedalus</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--yes">Works</span></td>
+                                <td data-label="Why">Advent's GY effect adds it as a Level 7 Sea Serpent. For its wipe it can send an Atlantis monster or Advent as the "Umi" instead of your Field Spell. The wipe destroys all other cards on the field, yours included.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Ocean Dragon Lord - Neo-Daedalus</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--no">Needs the original</span></td>
+                                <td data-label="Why">It can only be summoned by Tributing "Levia-Dragon - Daedalus". Levia-Dragon of Atlantis has a different name, and on the field its name is "Umi".</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Warrior of Atlantis</th>
+                                <td data-label="With the new cards"><span class="betb-pill betb-pill--no">Not part of it</span></td>
+                                <td data-label="Why">It only adds A Legendary Ocean, and it doesn't mention Atlantis, City of the Sea Dragon, so Call of Atlantis can't add it.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="mb-10 md:mb-16" id="betb-combos" aria-labelledby="betb-combos-title">
+                <h2 id="betb-combos-title" class="betb-h2">Combo Lines</h2>
+                <p class="betb-lede">Three two-card lines: a full Atlantis board going first, the classic Kairyu-Shin lock rebuilt with Advent, and a going-second sweep. Each one plays step by step in the combo simulator below.</p>
+                <div class="betb-lines">
+                    <article class="betb-line" aria-labelledby="betb-line-1">
+                        <p class="betb-kicker">Line 1 &middot; Going first</p>
+                        <h3 id="betb-line-1">Warchief + Siren Vortex into Neo-Daedalus Rage</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Warchief of Atlantis, Siren Vortex of Atlantis</dd></div>
+                            <div><dt>Needs in the Deck</dt><dd>2 Advent of Atlantis, Atlantis, Levia-Dragon of Atlantis, Monster Arms, a second Warchief</dd></div>
+                            <div><dt>End board</dt><dd>Neo-Daedalus Rage, Levia-Dragoon, Levia-Dragon of Atlantis, Monster Arms, Warchief, Advent and Atlantis</dd></div>
+                            <div><dt>On their turn</dt><dd>Rage's sweep, Levia-Dragoon's hand reset, Monster Arms' negate</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Advent is "Umi" as soon as it's face-up, so Warchief can come back before any monster is on the field. Atlantis then turns the two Links into a 2-monster and a 3-monster summon. <strong>Watch for:</strong> Ash Blossom on Warchief's search stops Advent, and Siren's Deck send is a second Ash target.</p>
+                        <button type="button" class="betb-line-play" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i> Play Line 1</button>
+                    </article>
+                    <article class="betb-line betb-line--legacy" aria-labelledby="betb-line-2">
+                        <p class="betb-kicker">Line 2 &middot; Classic + new</p>
+                        <h3 id="betb-line-2">Advent + Kairyu-Shin: the Lock With a Spare "Umi"</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Advent of Atlantis, Ocean Dragon Lord - Kairyu-Shin</dd></div>
+                            <div><dt>Needs in the Deck</dt><dd>A Legendary Ocean, Kairyu-Shin's Dark Reef, Electric Jellyfish, Fisherman of Legend, Levia-Dragon of Atlantis</dd></div>
+                            <div><dt>End board</dt><dd>Kairyu-Shin's lock and a Set Dark Reef. On their turn: Electric Jellyfish, and Fisherman of Legend destroying a monster</dd></div>
+                            <div><dt>On their turn</dt><dd>Jellyfish's negate, Fisherman's destroy, a Level 7 added for your turn</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Advent can place A Legendary Ocean, which makes Kairyu-Shin Level 4 in your hand, and Advent is a second "Umi" if the Field Spell is removed. <strong>Watch for:</strong> Kairyu-Shin's search is a Deck effect, so Ash Blossom can stop it. Dark Reef limits you to WATER monsters until the end of your next turn, which doesn't matter here.</p>
+                        <button type="button" class="betb-line-play" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i> Play Line 2</button>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-3">
+                        <p class="betb-kicker">Line 3 &middot; Going second</p>
+                        <h3 id="betb-line-3">Call + Siren Vortex: Rage Sweep for 8500</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Call of Atlantis, Siren Vortex of Atlantis</dd></div>
+                            <div><dt>Needs in the Deck</dt><dd>Monster Arms, 2 Advent of Atlantis, Levia-Dragon of Atlantis, Atlantis</dd></div>
+                            <div><dt>Result</dt><dd>Your opponent's field sent to the GY, then 3400 + 3100 + 2000 = 8500 direct damage</dd></div>
+                            <div><dt>Before the sweep</dt><dd>Levia-Dragon sends 1 card to the GY, such as a floodgate or a Set Trap</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> nothing in the line targets or destroys your opponent's cards, so protection on their board doesn't help. Call of Atlantis's +500 turns 7000 into 8500. <strong>Watch for:</strong> Infinite Impermanence or Effect Veiler on Rage before the sweep resolves, and Ash on Siren's send or Advent's search.</p>
+                        <button type="button" class="betb-line-play" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play Line 3</button>
+                    </article>
+                </div>
+                <section class="betb-lab" aria-label="Interactive combo lines">
+                    <div id="umi-combo-lab" class="betb-lab-mount">
+                        <p class="betb-lab-loading">Loading the interactive combo lines&hellip;</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16" id="betb-build" aria-labelledby="betb-build-title">
+                <h2 id="betb-build-title" class="betb-h2">Building Atlantis Umi</h2>
+                <p class="betb-lede">These are our starting ratios, not a sourced list. Beyond the Brave isn't out in the TCG until 8 Oct 2026, so expect them to change. The OCG sample deck runs Bahamut Shark and Maxx "C", which are both Forbidden in the TCG, so they're left out here.</p>
+                <div class="betb-build">
+                    <article class="betb-build-card" aria-labelledby="betb-build-main">
+                        <h3 id="betb-build-main">Main Deck (40)</h3>
+                        <p class="betb-build-sub">The full Atlantis engine, the classic cards that still pull their weight, and interaction.</p>
+                        <p class="betb-ratio-group">Atlantis &amp; Daedalus (20)</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Levia-Dragon of Atlantis - Daedalus <span class="betb-ratio-role">Free summon, search and removal. Advent finds it from the GY.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Warchief of Atlantis <span class="betb-ratio-role">One-card start into Advent, then comes back.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Siren Vortex of Atlantis <span class="betb-ratio-role">Sends Advent, Monster Arms or Maelstrom; summons from the GY.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Monster Arms of Atlantis <span class="betb-ratio-role">Revives, then negates from the field or GY.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Advent of Atlantis <span class="betb-ratio-role">Places the Field Spell and is "Umi" on its own.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Call of Atlantis <span class="betb-ratio-role">Adds any Atlantis monster; +500 from the GY.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Atlantis, City of the Sea Dragon <span class="betb-ratio-role">One for Advent to place, one to draw.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Daedalus Maelstrom <span class="betb-ratio-role">Warchief and Levia-Dragon add it when you need it.</span></span></li>
+                        </ul>
+                        <p class="betb-ratio-group">Classic Umi and friends (8)</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Fish Sonar <span class="betb-ratio-role">Adds any new monster, or Coralianectes.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Coralianectes, the Luminous Cradle Dragon <span class="betb-ratio-role">From the same set. When it's added to your hand other than by drawing, it summons itself and another WATER monster from your hand, and it stops your opponent targeting your WATER Link Monsters while you control "Umi". Advent and Fish Sonar both find it.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Ocean Dragon Lord - Kairyu-Shin <span class="betb-ratio-role">The lock, now backed by every "Umi" on your field.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Electric Jellyfish <span class="betb-ratio-role">Turns any face-up "Umi" into a summon.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Fisherman of Legend <span class="betb-ratio-role">Hand trap that destroys, then returns to hand.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Kairyu-Shin's Dark Reef <span class="betb-ratio-role">Two monsters from the Deck on their turn.</span></span></li>
+                        </ul>
+                        <p class="betb-ratio-group">Interaction (12)</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Ash Blossom &amp; Joyous Spring</span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Infinite Impermanence</span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Dominus Impulse <span class="betb-ratio-role">Its drawback only stops LIGHT, EARTH and WIND effects; this deck is all WATER.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Effect Veiler</span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Droll &amp; Lock Bird</span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Called by the Grave</span></li>
+                        </ul>
+                    </article>
+                    <article class="betb-build-card" aria-labelledby="betb-build-extra">
+                        <h3 id="betb-build-extra">Extra Deck</h3>
+                        <p class="betb-build-sub">The two Daedalus Links do most of the work; fill the rest with generic Link Monsters.</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Azure Ocean Dragon Lord - Neo-Daedalus Rage <span class="betb-ratio-role">3 monsters with Atlantis; the board sweep.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Levia-Dragoon - Daedalus <span class="betb-ratio-role">2 WATER monsters with Atlantis; replaces one from the Deck.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Marincess Coral Anemone <span class="betb-ratio-role">2 WATER monsters; revives Siren Vortex or Monster Arms (1500 ATK or less).</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Mediclius the Extraordinary Power Patron <span class="betb-ratio-role">A WATER Link-3 from a Daedalus Link plus 2 more monsters. See the <a class="betb-link" href="Power%20Patron%20Deck%20Analysis.html#tab-betb">Power Patron page</a>.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Worldsea Dragon Zealantis</span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">S:P Little Knight</span></li>
+                        </ul>
+                        <p class="betb-note"><strong>Rank 4s:</strong> while Atlantis is lowering Levels, Siren Vortex and Monster Arms are Level 3, and Warchief and Kairyu-Shin are Level 4. Plan any Xyz Summon around that.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Failure modes -->
+            <section class="mb-10 md:mb-16" id="betb-risks" aria-labelledby="betb-risks-title">
+                <h2 id="betb-risks-title" class="betb-h2">Where It Goes Wrong</h2>
+                <ul class="betb-risks">
+                    <li>
+                        <i class="fas fa-ban" aria-hidden="true"></i>
+                        <div>
+                            <h3>The GY is the engine</h3>
+                            <p>Siren's summon, Advent's search, Warchief's return, Rage's revival and Atlantis coming back all start in the GY. Macro Cosmos shuts off all of them at once. Called by the Grave on Advent or Siren in the GY stops one step.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hourglass-end" aria-hidden="true"></i>
+                        <div>
+                            <h3>Rage ends your summoning</h3>
+                            <p>Once Rage's revival resolves, you can't Special Summon for the rest of the turn. Summon Levia-Dragoon and everything else before it.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-broom" aria-hidden="true"></i>
+                        <div>
+                            <h3>The sweep hits your own cards too</h3>
+                            <p>Kairyu-Shin, Electric Jellyfish, Fisherman, any Set Trap and Atlantis itself aren't "Umi", so Rage sends them to the GY too. Atlantis comes back only in your Main Phase, and Daedalus Maelstrom needs it, so a sweep on your opponent's turn switches Maelstrom off until your turn.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <div>
+                            <h3>Ash Blossom on the first search</h3>
+                            <p>Warchief's search, Siren's Deck send and Advent's placement all touch the Deck. Stopped early, the line stalls with no Field Spell and no Link discount. With two starters in hand, lead with the one you can afford to lose.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-tint-slash" aria-hidden="true"></i>
+                        <div>
+                            <h3>WATER mirrors</h3>
+                            <p>Kairyu-Shin's lock and Maelstrom's field wipe only hit non-WATER monsters. Against Marincess, Mermail or another WATER deck, lean on Rage's sweep and Levia-Dragon's sends instead.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Cross-link to the Atlantis page -->
+            <section class="mb-10 md:mb-16" id="betb-atlantis-page" aria-labelledby="betb-atlantis-page-title">
+                <div class="betb-crosslink">
+                    <div id="betb-xlink-img-container" class="betb-art">Atlantis, City of the Sea Dragon</div>
+                    <div>
+                        <p class="betb-kicker">Card deep dive</p>
+                        <h3 id="betb-atlantis-page-title">Atlantis, City of the Sea Dragon has its own page</h3>
+                        <p>Every effect in detail, the official Link-discount ruling, a side-by-side with Umi and A Legendary Ocean, and a Field Zone planner that shows which classic effects are on for any board.</p>
+                        <a class="betb-xlink" href="Atlantis,%20City%20of%20the%20Sea%20Dragon%20Deck%20Analysis.html"><i class="fas fa-arrow-right" aria-hidden="true"></i> Open the Atlantis page</a>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
+
         <!-- TCG Banlist Impact Section -->
         <section>
             <div id="banlist-status">
@@ -581,7 +2289,13 @@
 
             // Render banlist section
             await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Umi', {
-                relatedCards: ['Gozen match', 'There can be only one', 'Toadally awesome']
+                relatedCards: ['Gozen match', 'There can be only one', 'Toadally awesome',
+                    // Beyond the Brave: filed under "Atlantis, City of the Sea Dragon",
+                    // "Daedalus" and "Dark Time Wizard", so ?archetype=Umi misses them.
+                    'Atlantis, City of the Sea Dragon', 'Levia-Dragon of Atlantis - Daedalus',
+                    'Warchief of Atlantis', 'Monster Arms of Atlantis', 'Siren Vortex of Atlantis',
+                    'Levia-Dragoon - Daedalus', 'Azure Ocean Dragon Lord - Neo-Daedalus Rage',
+                    'Call of Atlantis', 'Advent of Atlantis', 'Daedalus Maelstrom', 'Fisherman of Legend']
             });
 
             // Render compact deck resources in header
@@ -604,6 +2318,229 @@
                 initPageSections('Umi');
             });
         </script>
+    <!-- Atlantis & Daedalus card gallery. Without JavaScript every profile shows and
+         the tiles are jump links. With it, one profile shows at a time, the filters
+         work, and a #card-... link (from the spotlight or the Atlantis page) opens
+         that card. Runs before GuideTabs.init so a deep-linked profile is already
+         visible when the tab scrolls to it. -->
+    <script>
+        const UmiGallery = (function () {
+            'use strict';
+            const root = document.querySelector('[data-gallery]');
+            if (!root) return null;
+            const filterBar = root.querySelector('[data-gallery-filters]');
+            const filterBtns = Array.from(filterBar.querySelectorAll('[data-filter]'));
+            const status = root.querySelector('[data-gallery-status]');
+            const viewer = root.querySelector('[data-gallery-viewer]');
+            const tiles = Array.from(root.querySelectorAll('.betb-tile'));
+            const idOf = tile => tile.getAttribute('href').slice(1);
+            const profiles = tiles.map(tile => document.getElementById(idOf(tile)));
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let current = idOf(tiles[0]);
+
+            // On phones the tiles are a swipe strip; bring the chosen tile into view.
+            // Waits a frame: after a deep link the tab panel is only shown once
+            // GuideTabs has handled the same hash.
+            function revealTile(tile) {
+                requestAnimationFrame(() => {
+                    const strip = tile.closest('.betb-tiles');
+                    if (strip.scrollWidth <= strip.clientWidth) return;
+                    const sr = strip.getBoundingClientRect();
+                    const tr = tile.getBoundingClientRect();
+                    if (tr.left < sr.left || tr.right > sr.right) {
+                        strip.scrollTo({ left: strip.scrollLeft + tr.left - sr.left - 8, behavior: reduce.matches ? 'auto' : 'smooth' });
+                    }
+                });
+            }
+
+            function select(id, { reveal = false } = {}) {
+                current = id;
+                tiles.forEach(tile => {
+                    if (idOf(tile) === id) { tile.setAttribute('aria-current', 'true'); revealTile(tile); }
+                    else tile.removeAttribute('aria-current');
+                });
+                profiles.forEach(p => { p.hidden = p.id !== id; });
+                if (reveal) {
+                    const top = viewer.getBoundingClientRect().top;
+                    if (top < 0 || top > window.innerHeight * 0.7) {
+                        viewer.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    }
+                }
+            }
+
+            function applyFilter(kind) {
+                filterBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === kind)));
+                let shown = 0;
+                let first = null;
+                tiles.forEach(tile => {
+                    const match = kind === 'all' || tile.dataset.kinds.split(' ').includes(kind);
+                    tile.parentElement.hidden = !match;
+                    if (match) { shown++; if (!first) first = tile; }
+                });
+                status.textContent = 'Showing ' + shown + ' of ' + tiles.length + ' cards';
+                const active = tiles.find(t => idOf(t) === current);
+                if (active && active.parentElement.hidden && first) select(idOf(first));
+            }
+
+            // Shows the profile that holds `target`, clearing a filter that hides its tile.
+            function openFor(target) {
+                const profile = target && profiles.find(p => p.contains(target));
+                if (!profile) return false;
+                const tile = tiles.find(t => idOf(t) === profile.id);
+                if (tile && tile.parentElement.hidden) applyFilter('all');
+                select(profile.id);
+                return true;
+            }
+
+            filterBar.hidden = false;
+            filterBar.addEventListener('click', e => {
+                const btn = e.target.closest('[data-filter]');
+                if (btn) applyFilter(btn.dataset.filter);
+            });
+            root.addEventListener('click', e => {
+                const tile = e.target.closest('.betb-tile');
+                if (!tile) return;
+                e.preventDefault();
+                select(idOf(tile), { reveal: true });
+                history.replaceState(history.state, '', '#' + idOf(tile));
+            });
+
+            function openFromHash() {
+                let target = null;
+                try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (err) { /* malformed hash */ }
+                openFor(target);
+            }
+            // Registered before GuideTabs so the profile is visible when it scrolls.
+            window.addEventListener('hashchange', openFromHash);
+
+            select(current);
+            applyFilter('all');
+            openFromHash();
+
+            // Tile thumbnails: plain <img> tags from the CardLoader URL, so a tap on
+            // a tile selects the card instead of opening the card popup.
+            let artLoaded = false;
+            function loadTileArt() {
+                if (artLoaded || !window.CardLoader || typeof CardLoader.getCardImageUrl !== 'function') return;
+                artLoaded = true;
+                tiles.forEach(tile => {
+                    const slot = tile.querySelector('.betb-tile-art');
+                    CardLoader.getCardImageUrl(tile.dataset.card).then(url => {
+                        if (!url) return;
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        img.decoding = 'async';
+                        slot.prepend(img);
+                    }).catch(() => { /* keep the text fallback */ });
+                });
+            }
+            return { loadTileArt, openFor };
+        })();
+    </script>
+
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + the new-support spotlight. The
+         Atlantis & Daedalus tab's art and the combo simulator load only the first
+         time that tab opens. -->
+    <script>
+        (function () {
+            'use strict';
+            const COMBO_MOUNT_ID = 'umi-combo-lab';
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let comboReady = null;
+
+            function mountComboLab() {
+                if (comboReady) return comboReady;
+                const mount = document.getElementById(COMBO_MOUNT_ID);
+                // combo-system.js declares ComboLoader as a top-level class, which
+                // is a global binding but not a property of window.
+                if (!mount || typeof ComboLoader === 'undefined') {
+                    if (mount) mount.innerHTML = '<p class="betb-lab-loading">The interactive combo lines could not load. The line summaries above still list every hand, requirement and end board.</p>';
+                    comboReady = Promise.resolve(null);
+                    return comboReady;
+                }
+                comboReady = Promise.resolve(ComboLoader.renderComboSystem(COMBO_MOUNT_ID, 'umi')).catch(() => null);
+                return comboReady;
+            }
+
+            GuideTabs.init({
+                panelArt: {
+                    'tab-betb': [
+                        {
+                            'pf-atlantis-img-container': 'Atlantis, City of the Sea Dragon',
+                            'pf-levia-img-container': 'Levia-Dragon of Atlantis - Daedalus',
+                            'pf-warchief-img-container': 'Warchief of Atlantis',
+                            'pf-siren-img-container': 'Siren Vortex of Atlantis',
+                            'pf-arms-img-container': 'Monster Arms of Atlantis',
+                            'pf-fisher-img-container': 'Fisherman of Legend'
+                        },
+                        {
+                            'pf-dragoon-img-container': 'Levia-Dragoon - Daedalus',
+                            'pf-rage-img-container': 'Azure Ocean Dragon Lord - Neo-Daedalus Rage',
+                            'pf-advent-img-container': 'Advent of Atlantis',
+                            'pf-call-img-container': 'Call of Atlantis',
+                            'pf-maelstrom-img-container': 'Daedalus Maelstrom',
+                            'betb-xlink-img-container': 'Atlantis, City of the Sea Dragon'
+                        }
+                    ]
+                },
+                panelInit: {
+                    'tab-betb': function () {
+                        if (UmiGallery) UmiGallery.loadTileArt();
+                        mountComboLab();
+                    }
+                }
+            });
+
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'betb-spot-img-container': 'Atlantis, City of the Sea Dragon' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel (and gallery profile) holding an in-page link's target
+            // before the browser scrolls to it. guide-tabs.js reacts to hashchange,
+            // which doesn't fire when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('[role="tabpanel"]');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+                if (UmiGallery) UmiGallery.openFor(target);
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (cta) {
+                cta.addEventListener('click', () => {
+                    const tab = tabFor(cta.dataset.openPanel);
+                    if (!tab) return;
+                    tab.click();
+                    tab.focus({ preventScroll: true });
+                    tablist.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                });
+            }
+
+            // "Play Line N" selects that line in the combo simulator.
+            document.querySelectorAll('[data-combo-open]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const num = btn.dataset.comboOpen;
+                    mountComboLab().then(() => {
+                        const option = document.querySelector('#' + COMBO_MOUNT_ID + ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        const mount = document.getElementById(COMBO_MOUNT_ID);
+                        if (mount) mount.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    });
+                });
+            });
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

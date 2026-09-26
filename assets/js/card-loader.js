@@ -881,10 +881,68 @@ window.CardLoader = (function () {
         });
     }
 
+    // The injected form's <section>; set once loadSuggestionForm has run.
+    let suggestionSection = null;
+    let suggestionFormLoad = null;
+
     /**
-     * Fetches and injects the suggestion form into the page.
+     * Fetches and injects the suggestion form into the page (once; later calls
+     * share the first load).
      */
-    async function loadSuggestionForm() {
+    function loadSuggestionForm() {
+        if (!suggestionFormLoad) suggestionFormLoad = injectSuggestionForm();
+        return suggestionFormLoad;
+    }
+
+    function pageSuggestionTitle() {
+        const h1 = document.querySelector('h1');
+        return h1 ? h1.innerText : document.title;
+    }
+
+    function setSuggestionFormOpen(open) {
+        const toggleBtn = document.getElementById('toggle-form-btn');
+        const formContainer = document.getElementById('suggestion-form-container');
+        formContainer.style.display = open ? 'block' : 'none';
+        toggleBtn.innerHTML = open
+            ? '<i class="fas fa-times mr-2"></i> Hide Suggestion Form'
+            : '<i class="fas fa-edit mr-2"></i> Suggest an Improvement';
+    }
+
+    /**
+     * Opens the page's suggestion form right after `anchor` (instead of at the
+     * bottom of the page), with `context` naming the block in page_context so
+     * the suggestion arrives saying what it's about. Hiding the form sends it
+     * back to the bottom with the plain page title again. Used by the
+     * [data-suggest] links on blocks that can't be edited in place: checkers,
+     * combo labs, cross-engine panels.
+     */
+    async function openSuggestionForm(context, anchor) {
+        await loadSuggestionForm();
+        if (!suggestionSection) return;
+        if (anchor) anchor.after(suggestionSection);
+
+        const title = pageSuggestionTitle();
+        document.getElementById('form-page-context').value = context ? `${title} — ${context}` : title;
+        const textarea = document.getElementById('suggestion-text');
+        textarea.placeholder = context
+            ? `What would you improve in "${context}"?`
+            : "e.g., 'The combo section is missing a key line...'";
+        setSuggestionFormOpen(true);
+        textarea.focus({ preventScroll: true });
+        suggestionSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Delegated, so links rendered after load (combo guides, cross-engine
+    // panels) work without wiring. [data-suggest-anchor] marks the block the
+    // form should open after; otherwise it opens right after the link's parent.
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('[data-suggest]');
+        if (!link) return;
+        event.preventDefault();
+        openSuggestionForm(link.dataset.suggest, link.closest('[data-suggest-anchor]') || link.parentElement);
+    });
+
+    async function injectSuggestionForm() {
         // Non-content utility pages ("suggest an edit to THIS page" doesn't
         // make sense on a directory listing, the moderator-only admin panel,
         // or a user's own replay library) — same opt-out convention as the
@@ -895,8 +953,10 @@ window.CardLoader = (function () {
         }
 
         // Check if form already exists to prevent duplicates
-        if (document.getElementById('toggle-form-btn')) {
+        const existingToggle = document.getElementById('toggle-form-btn');
+        if (existingToggle) {
             console.log('Suggestion form already loaded, skipping injection.');
+            suggestionSection = existingToggle.closest('section') || existingToggle.parentElement;
             return;
         }
 
@@ -926,23 +986,21 @@ window.CardLoader = (function () {
                 return;
             }
 
+            suggestionSection = formSection;
+
             toggleBtn.addEventListener('click', () => {
                 const isHidden = formContainer.style.display === 'none';
-                if (isHidden) {
-                    formContainer.style.display = 'block';
-                    toggleBtn.innerHTML = '<i class="fas fa-times mr-2"></i> Hide Suggestion Form';
-                } else {
-                    formContainer.style.display = 'none';
-                    toggleBtn.innerHTML = '<i class="fas fa-edit mr-2"></i> Suggest an Improvement';
+                setSuggestionFormOpen(isHidden);
+                // Opened under a block by openSuggestionForm: hiding it sends
+                // it back to the bottom as the plain page-wide form.
+                if (!isHidden && formSection.parentElement !== injectionPoint) {
+                    injectionPoint.appendChild(formSection);
+                    contextField.value = pageSuggestionTitle();
+                    document.getElementById('suggestion-text').placeholder = "e.g., 'The combo section is missing a key line...'";
                 }
             });
 
-            let pageTitle = document.title;
-            const h1 = document.querySelector('h1');
-            if (h1) {
-                pageTitle = h1.innerText;
-            }
-            contextField.value = pageTitle;
+            contextField.value = pageSuggestionTitle();
 
         } catch (error) {
             console.error('Failed to load suggestion form:', error);
@@ -1179,8 +1237,13 @@ window.CardLoader = (function () {
         attachPopupHandler(container, cardName, !isMobile);
 
         try {
-            if (cardDataCache[cardName]) {
-                displayCardImage(cardDataCache[cardName], container);
+            // fetchCardData() caches records without hosted_image_url (popups and
+            // cropped-art lookups go through it too), so only short-circuit on a
+            // record that already has one. Otherwise fetchCardData() returns the
+            // cached record without a network call and the URL is added below.
+            const cached = cardDataCache[cardName];
+            if (cached && cached.hosted_image_url) {
+                displayCardImage(cached, container);
                 return;
             }
 
@@ -1670,10 +1733,22 @@ window.CardLoader = (function () {
             'Gagaga Girl - Cell Phone Subtraction': 'Gagaga Girl - Zero Zero Call',
             'The Endymion Empire': 'Endymion Empire',
             'Endymion Empire': 'The Endymion Empire',
+            // Endymion: official TCG names (Konami) vs. the pre-release translations the API still uses
+            'Empire of Endymion': 'Endymion Empire',
+            'Arrow of Regulus': "Regulus' Arrow",
+            "Regulus' Arrow": 'Arrow of Regulus',
             'Magia Magic - Thunder of Judgment': 'Magia Magic – Thunder of Judgment',
             'Magia Magic – Thunder of Judgment': 'Magia Magic - Thunder of Judgment',
             'Stellarnova Binding': 'Stellarnova Bonds',
-            'Stellarnova Bonds': 'Stellarnova Binding'
+            'Stellarnova Bonds': 'Stellarnova Binding',
+            // Ashtra: official TCG names (Konami) vs. the pre-release translations the API still uses
+            'Mikumari the Barrier Ashtra': 'Mikumari the Banisher Ashtra',
+            'Mikumari the Banisher Ashtra': 'Mikumari the Barrier Ashtra',
+            'Ashtrashen - Gate to the Worlds Beyond': 'Ashtrashen - Gateway to the Worlds Beyond',
+            'Ashtrashen - Gateway to the Worlds Beyond': 'Ashtrashen - Gate to the Worlds Beyond',
+            // Number: the Supabase row still carries the pre-release name (same passcode 16908882)
+            'Number 104: Masquerade V': 'Number 104: Masquerade Vain',
+            'Number 104: Masquerade Vain': 'Number 104: Masquerade V'
         };
 
         async function attemptFetch(name) {
@@ -3024,6 +3099,10 @@ window.CardLoader = (function () {
     async function preloadCards(cardNames) {
         const promises = cardNames.map(async (cardName) => {
             if (cardDataCache[cardName]) return;
+            // Placeholders ("Any card your opponent controls", "dummy-0") aren't real
+            // cards: loadCard shows them as a card back, so there's nothing to fetch.
+            const lowerName = String(cardName).toLowerCase();
+            if (lowerName.startsWith('dummy-') || lowerName.startsWith('any ')) return;
 
             try {
                 const cardInfo = await fetchCardData(cardName);
@@ -4566,6 +4645,7 @@ window.CardLoader = (function () {
         configure,
         showPopup,
         showPopupByName,
+        openSuggestionForm,
         renderDeckSearchSection,
         renderDeckResourcesCompact,
         cardDataCache,

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Power Patron: A Tier 0 multi-dimensional archetype centered on protagonist Medius the Pure.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Power%20Patron%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
     <title>Power Patron Deck Guide: The Divine Convergence</title>
     <script src="../assets/js/google-analytics.js"></script>
     <!-- Tailwind CSS -->
@@ -24,6 +25,10 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <!-- Mediclius (Beyond the Brave) tab: the combo simulator -->
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
 
     <style>
         :root {
@@ -280,6 +285,1305 @@
             }
         }
     </style>
+
+    <style>
+        /* ===== Mediclius (Beyond the Brave) =====
+           Added in its own block so the original styles above stay as they were.
+           The write-up is a fifth "Tactical Operations" tab (#tab-betb) that uses
+           the page's own switchTab() buttons, plus a spotlight above the Pantheon.
+           Every colour below comes from the --mc-* tokens. */
+        :root {
+            /* Read by the combo simulator's theme detection. */
+            --accent-color: #ffd700;
+
+            --mc-gold: #ffd700;
+            --mc-gold-soft: #fde68a;
+            --mc-gold-line: rgba(255, 215, 0, 0.35);
+            --mc-gold-wash: rgba(255, 215, 0, 0.08);
+            --mc-water: #22d3ee;
+            --mc-water-soft: #a5f3fc;
+            --mc-water-line: rgba(34, 211, 238, 0.4);
+            --mc-water-wash: rgba(34, 211, 238, 0.08);
+            --mc-wipe: #fb7185;
+            --mc-wipe-soft: #fecdd3;
+            --mc-wipe-line: rgba(251, 113, 133, 0.45);
+            --mc-wipe-wash: rgba(251, 113, 133, 0.08);
+            --mc-ok: #4ade80;
+            --mc-ok-line: rgba(74, 222, 128, 0.45);
+            --mc-ok-wash: rgba(74, 222, 128, 0.1);
+            --mc-surface: #0f1014;
+            --mc-surface-deep: #0a0b0f;
+            --mc-inset: #07080b;
+            --mc-border: #2a2d36;
+            --mc-border-strong: #3b3f4a;
+            --mc-text: #e2e8f0;
+            --mc-muted: #94a3b8;
+        }
+
+        /* --- The fifth tab (#tab-betb) --- */
+        .mc-tab > .mc-section:last-child {
+            margin-bottom: 0;
+        }
+
+        /* The tab box keeps its original p-6 padding; on phones the panel
+           borrows back some of it so the planner board has room. */
+        @media (max-width: 639px) {
+            .mc-tab {
+                margin-inline: -0.75rem;
+            }
+
+            .mc-tab .mc-panel,
+            .mc-tab .mc-profile,
+            .mc-tab .mc-line,
+            .mc-tab .mc-verdict {
+                padding: 0.9rem;
+            }
+
+            .mc-tab .mc-board {
+                padding: 0.7rem 0.4rem;
+            }
+
+            .mc-tab .mc-board-row {
+                gap: 0.25rem;
+            }
+        }
+
+        @media (max-width: 479px) {
+            .mc-zone-word,
+            .mc-slot-name {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+            }
+
+            .mc-slot-arrows {
+                letter-spacing: 0;
+            }
+        }
+
+        .tab-new-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--mc-water);
+            color: #04262c;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .tab-btn:focus-visible,
+        .mc-spot-cta:focus-visible,
+        .mc-tag:focus-visible,
+        .mc-toc a:focus-visible,
+        .mc-link:focus-visible,
+        .mc-zone:focus-visible,
+        .mc-chip-btn:focus-visible,
+        .mc-add:focus-visible,
+        .mc-remove:focus-visible,
+        .mc-planner input:focus-visible,
+        .mc-planner select:focus-visible {
+            outline: 2px solid var(--mc-water);
+            outline-offset: 3px;
+        }
+
+        .mc-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* --- Always-visible spotlight above the tabs --- */
+        .mc-spot {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--mc-water-line);
+            border-top: 3px solid var(--mc-water);
+            border-radius: 0.9rem;
+            background:
+                radial-gradient(circle at 12% 0%, var(--mc-water-wash), transparent 60%),
+                linear-gradient(145deg, var(--mc-surface), var(--mc-surface-deep));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        .mc-spot-art {
+            width: 8.5rem;
+            margin: 0 auto;
+        }
+
+        .mc-art-slot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 59 / 86;
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px dashed var(--mc-border-strong);
+            border-radius: 0.4rem;
+            background: var(--mc-inset);
+            color: var(--mc-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .mc-art-slot:has(img) {
+            aspect-ratio: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+        }
+
+        .mc-spot-kicker,
+        .mc-kicker,
+        .mc-label {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--mc-water-soft);
+        }
+
+        .mc-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mc-spot-title {
+            margin: 0.35rem 0 0.25rem;
+            font-size: 1.4rem;
+            line-height: 1.25;
+            color: #fff;
+        }
+
+        .mc-spot-stats {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--mc-muted);
+        }
+
+        .mc-spot-hook {
+            margin: 0.75rem 0 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--mc-text);
+        }
+
+        .mc-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0.5rem 0 1.1rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .mc-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 36px;
+            padding: 0.3rem 0.75rem;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 9999px;
+            background: var(--mc-inset);
+            color: var(--mc-text);
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .mc-tag i {
+            color: var(--mc-water);
+        }
+
+        .mc-tag:hover {
+            border-color: var(--mc-water);
+            color: #fff;
+        }
+
+        .mc-tag-role {
+            font-size: 0.68rem;
+            color: var(--mc-muted);
+        }
+
+        .mc-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--mc-gold);
+            border-radius: 0.5rem;
+            background: var(--mc-gold-wash);
+            color: var(--mc-gold);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .mc-spot-cta:hover {
+            background: var(--mc-gold);
+            color: #111;
+        }
+
+        @media (min-width: 640px) {
+            .mc-spot {
+                grid-template-columns: 8.5rem 1fr;
+                padding: 1.5rem;
+            }
+
+            .mc-spot-art {
+                grid-row: span 2;
+                margin: 0;
+            }
+        }
+
+        /* --- Panel layout --- */
+        .mc-section {
+            margin-bottom: 3.5rem;
+            scroll-margin-top: 1.5rem;
+        }
+
+        .mc-h2 {
+            margin-bottom: 1rem;
+            font-size: 1.6rem;
+            line-height: 1.25;
+            text-align: center;
+            color: #fff;
+        }
+
+        .mc-h3,
+        .mc-card-name,
+        .mc-pillar h4,
+        .mc-tile h4,
+        .mc-line h4 {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.05em;
+        }
+
+        .mc-h3 {
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+            line-height: 1.3;
+            color: #fff;
+        }
+
+        .mc-intro {
+            max-width: 48rem;
+            margin: 0 auto 1.75rem;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            text-align: center;
+            color: var(--mc-muted);
+        }
+
+        .mc-intro strong {
+            color: var(--mc-text);
+        }
+
+        .mc-panel {
+            padding: 1.25rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.8rem;
+            background: linear-gradient(145deg, var(--mc-surface), var(--mc-surface-deep));
+        }
+
+        .mc-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .mc-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 9999px;
+            background: var(--mc-inset);
+            color: var(--mc-text);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .mc-chip i {
+            color: var(--mc-gold);
+        }
+
+        .mc-chip--tcg i {
+            color: var(--mc-water);
+        }
+
+        .mc-pillars {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .mc-pillar {
+            padding: 1.25rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.8rem;
+            background: var(--mc-surface);
+            text-align: center;
+        }
+
+        .mc-pillar-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.75rem;
+            height: 2.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--mc-water-line);
+            border-radius: 9999px;
+            background: var(--mc-water-wash);
+            color: var(--mc-water);
+        }
+
+        .mc-pillar h4 {
+            margin-bottom: 0.4rem;
+            font-size: 1rem;
+            color: var(--mc-gold-soft);
+        }
+
+        .mc-pillar p {
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: var(--mc-muted);
+        }
+
+        .mc-toc {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.4rem 1rem;
+            margin: 1.5rem 0 0;
+            padding: 0;
+            list-style: none;
+            font-size: 0.82rem;
+        }
+
+        .mc-toc a,
+        .mc-link {
+            color: var(--mc-water-soft);
+            text-decoration: underline;
+            text-decoration-color: var(--mc-water-line);
+            text-underline-offset: 3px;
+        }
+
+        .mc-toc a:hover,
+        .mc-link:hover {
+            color: #fff;
+        }
+
+        @media (min-width: 768px) {
+            .mc-pillars {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* --- Card profile --- */
+        .mc-profile {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--mc-water-line);
+            border-radius: 0.9rem;
+            background: linear-gradient(160deg, #0d1519, var(--mc-surface-deep) 55%);
+        }
+
+        .mc-profile-art {
+            width: min(15rem, 100%);
+            margin: 0 auto;
+        }
+
+        .mc-card-name {
+            margin: 0.3rem 0 1rem;
+            font-size: 1.45rem;
+            line-height: 1.25;
+            color: #fff;
+        }
+
+        .mc-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin: 0;
+        }
+
+        .mc-stats div,
+        .mc-glance div {
+            padding: 0.5rem 0.7rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.5rem;
+            background: var(--mc-inset);
+        }
+
+        .mc-stats dt,
+        .mc-glance dt {
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mc-muted);
+        }
+
+        .mc-stats dd,
+        .mc-glance dd {
+            margin: 0.1rem 0 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--mc-text);
+        }
+
+        .mc-arrows {
+            letter-spacing: 0.3em;
+            color: var(--mc-water);
+        }
+
+        .mc-cardtext {
+            margin: 0 0 1rem;
+            padding: 1rem;
+            border: 1px solid var(--mc-border);
+            border-left: 3px solid var(--mc-gold);
+            border-radius: 0.5rem;
+            background: var(--mc-inset);
+        }
+
+        .mc-cardtext-materials {
+            font-style: italic;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--mc-text);
+        }
+
+        .mc-cardtext-lead {
+            margin: 0.5rem 0 0.75rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--mc-text);
+        }
+
+        .mc-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .mc-effects li {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.7rem;
+            align-items: start;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--mc-text);
+        }
+
+        .mc-tier-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.4rem;
+            padding: 0.1rem 0.45rem;
+            border: 1px solid currentColor;
+            border-radius: 0.35rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .mc-tier-badge--1 {
+            color: var(--mc-gold);
+            background: var(--mc-gold-wash);
+        }
+
+        .mc-tier-badge--2 {
+            color: var(--mc-water);
+            background: var(--mc-water-wash);
+        }
+
+        .mc-tier-badge--3 {
+            color: var(--mc-wipe);
+            background: var(--mc-wipe-wash);
+        }
+
+        .mc-role {
+            margin-bottom: 1rem;
+            font-size: 0.92rem;
+            line-height: 1.65;
+            color: var(--mc-muted);
+        }
+
+        .mc-role strong {
+            color: var(--mc-text);
+        }
+
+        .mc-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin: 0;
+        }
+
+        .mc-lore {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--mc-border-strong);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--mc-muted);
+        }
+
+        .mc-lore i {
+            margin-right: 0.35rem;
+            color: var(--mc-gold);
+        }
+
+        @media (min-width: 900px) {
+            .mc-profile {
+                grid-template-columns: 15rem 1fr;
+                padding: 1.75rem;
+            }
+
+            .mc-profile-art {
+                margin: 0;
+            }
+
+            .mc-stats {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .mc-glance {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        /* --- Arrow planner + battle math --- */
+        .mc-planner {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        .mc-planner-step {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .mc-step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: none;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 9999px;
+            background: var(--mc-gold);
+            color: #111;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .mc-board {
+            margin: 0.5rem 0 1rem;
+            padding: 0.9rem 0.6rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.6rem;
+            background:
+                linear-gradient(var(--mc-inset), var(--mc-inset)) padding-box;
+        }
+
+        .mc-board-row {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 0.4rem;
+        }
+
+        .mc-board-row + .mc-board-row {
+            margin-top: 0.5rem;
+        }
+
+        .mc-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 3.4rem;
+            padding: 0.25rem;
+            border-radius: 0.4rem;
+            font-size: 0.66rem;
+            text-align: center;
+        }
+
+        .mc-slot--emz {
+            border: 1px dashed var(--mc-border-strong);
+            color: var(--mc-muted);
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .mc-slot--mediclius {
+            border: 1px solid var(--mc-water);
+            background: var(--mc-water-wash);
+            color: #fff;
+            box-shadow: 0 0 14px rgba(34, 211, 238, 0.2);
+        }
+
+        .mc-slot-name {
+            font-weight: 700;
+            font-size: 0.68rem;
+        }
+
+        .mc-slot-arrows {
+            color: var(--mc-water);
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+        }
+
+        .mc-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.15rem;
+            min-height: 4.2rem;
+            padding: 0.3rem 0.2rem;
+            border: 1px dashed var(--mc-water-line);
+            border-radius: 0.4rem;
+            background: transparent;
+            color: var(--mc-muted);
+            font-size: 0.66rem;
+            line-height: 1.2;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        .mc-zone:hover {
+            border-color: var(--mc-water);
+            color: var(--mc-text);
+        }
+
+        .mc-zone[aria-pressed="true"] {
+            border-style: solid;
+            border-color: var(--mc-water);
+            background: rgba(34, 211, 238, 0.14);
+            color: #fff;
+        }
+
+        .mc-zone-num {
+            font-family: 'Roboto Mono', monospace;
+            font-weight: 700;
+        }
+
+        .mc-zone-state {
+            font-size: 0.62rem;
+        }
+
+        .mc-zone--off {
+            border: 1px dashed var(--mc-border);
+            color: #6b7280;
+            cursor: default;
+        }
+
+        .mc-zone--off:hover {
+            border-color: var(--mc-border);
+            color: #6b7280;
+        }
+
+        .mc-count {
+            margin-bottom: 0.9rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--mc-muted);
+        }
+
+        .mc-count strong {
+            color: var(--mc-water);
+        }
+
+        .mc-tiers {
+            display: grid;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .mc-tier {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 0.7rem;
+            align-items: start;
+            padding: 0.7rem 0.8rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.55rem;
+            background: var(--mc-inset);
+            opacity: 0.55;
+            transition: opacity 0.2s, border-color 0.2s, background 0.2s;
+        }
+
+        .mc-tier.is-live {
+            opacity: 1;
+        }
+
+        .mc-tier--1.is-live {
+            border-color: var(--mc-gold-line);
+            background: var(--mc-gold-wash);
+        }
+
+        .mc-tier--2.is-live {
+            border-color: var(--mc-water-line);
+            background: var(--mc-water-wash);
+        }
+
+        .mc-tier--3.is-live {
+            border-color: var(--mc-wipe-line);
+            background: var(--mc-wipe-wash);
+        }
+
+        .mc-tier-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .mc-tier-text {
+            margin-top: 0.15rem;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: var(--mc-muted);
+        }
+
+        .mc-tier-state {
+            padding: 0.1rem 0.55rem;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 9999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--mc-muted);
+            white-space: nowrap;
+        }
+
+        .mc-tier.is-live .mc-tier-state {
+            border-color: var(--mc-ok-line);
+            background: var(--mc-ok-wash);
+            color: var(--mc-ok);
+        }
+
+        .mc-fieldset {
+            margin: 0 0 1rem;
+            padding: 0;
+            border: 0;
+            min-width: 0;
+        }
+
+        .mc-fieldset > legend {
+            margin-bottom: 0.5rem;
+            padding: 0;
+        }
+
+        .mc-check {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.6rem;
+            align-items: start;
+            padding: 0.45rem 0;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: var(--mc-text);
+            cursor: pointer;
+        }
+
+        .mc-check input {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-top: 0.15rem;
+            accent-color: var(--mc-gold);
+        }
+
+        .mc-check small {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--mc-muted);
+        }
+
+        .mc-check small.is-warning {
+            color: var(--mc-wipe-soft);
+        }
+
+        .mc-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .mc-chip-btn,
+        .mc-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 36px;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 9999px;
+            background: var(--mc-inset);
+            color: var(--mc-text);
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .mc-chip-btn:hover,
+        .mc-add:hover {
+            border-color: var(--mc-gold);
+            color: #fff;
+        }
+
+        .mc-chip-btn[aria-pressed="true"] {
+            border-color: var(--mc-gold);
+            background: var(--mc-gold-wash);
+            color: var(--mc-gold-soft);
+        }
+
+        .mc-add[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .mc-field {
+            display: grid;
+            gap: 0.3rem;
+            margin-bottom: 0.9rem;
+            font-size: 0.8rem;
+            color: var(--mc-muted);
+        }
+
+        .mc-planner input[type="number"],
+        .mc-planner select {
+            width: 100%;
+            min-height: 40px;
+            padding: 0.35rem 0.6rem;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 0.4rem;
+            background: var(--mc-inset);
+            color: var(--mc-text);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .mc-opp-list {
+            display: grid;
+            gap: 0.45rem;
+            margin: 0 0 0.6rem;
+            padding: 0;
+            list-style: none;
+        }
+
+        .mc-opp {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
+            gap: 0.4rem;
+            align-items: end;
+            padding: 0.55rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.5rem;
+            background: var(--mc-surface);
+        }
+
+        .mc-opp-name {
+            grid-column: 1 / -1;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--mc-text);
+        }
+
+        .mc-mini {
+            display: grid;
+            gap: 0.2rem;
+            font-size: 0.68rem;
+            color: var(--mc-muted);
+        }
+
+        .mc-remove {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 0.4rem;
+            background: var(--mc-inset);
+            color: var(--mc-muted);
+            cursor: pointer;
+        }
+
+        .mc-remove:hover {
+            border-color: var(--mc-wipe);
+            color: var(--mc-wipe);
+        }
+
+        .mc-opp-empty {
+            padding: 0.6rem;
+            border: 1px dashed var(--mc-border);
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--mc-muted);
+            text-align: center;
+        }
+
+        .mc-result {
+            margin-top: 0.5rem;
+            padding: 1rem;
+            border: 1px solid var(--mc-gold-line);
+            border-radius: 0.6rem;
+            background: var(--mc-gold-wash);
+        }
+
+        .mc-result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin: 0 0 0.75rem;
+        }
+
+        .mc-result-stats dt {
+            font-size: 0.64rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mc-muted);
+        }
+
+        .mc-result-stats dd {
+            margin: 0.1rem 0 0;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .mc-attack-log {
+            display: grid;
+            gap: 0.3rem;
+            margin: 0 0 0.75rem;
+            padding: 0;
+            list-style: none;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: var(--mc-text);
+        }
+
+        .mc-attack-log li {
+            padding-left: 1rem;
+            text-indent: -1rem;
+        }
+
+        .mc-attack-log li::before {
+            content: "\203A\00a0";
+            color: var(--mc-gold);
+        }
+
+        .mc-attack-log .is-muted {
+            color: var(--mc-muted);
+        }
+
+        .mc-verdict-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--mc-border-strong);
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .mc-verdict-chip.is-lethal {
+            border-color: var(--mc-ok-line);
+            background: var(--mc-ok-wash);
+            color: var(--mc-ok);
+        }
+
+        .mc-verdict-chip.is-short {
+            border-color: var(--mc-wipe-line);
+            background: var(--mc-wipe-wash);
+            color: var(--mc-wipe-soft);
+        }
+
+        .mc-note {
+            margin-top: 0.9rem;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: var(--mc-muted);
+        }
+
+        .mc-note strong {
+            color: var(--mc-text);
+        }
+
+        @media (min-width: 900px) {
+            .mc-planner {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+                align-items: start;
+            }
+
+            .mc-opp {
+                grid-template-columns: 6rem minmax(0, 1fr) minmax(0, 1fr) 40px;
+                align-items: center;
+            }
+
+            .mc-opp-name {
+                grid-column: auto;
+            }
+        }
+
+        /* --- Combo lines + simulator mount --- */
+        .mc-lines {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .mc-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--mc-border);
+            border-top: 3px solid var(--mc-gold);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--mc-surface), var(--mc-surface-deep));
+            scroll-margin-top: 1.5rem;
+        }
+
+        .mc-line--first {
+            border-top-color: var(--mc-water);
+        }
+
+        .mc-line--theirs {
+            border-top-color: var(--mc-wipe);
+        }
+
+        .mc-line h4 {
+            font-size: 1.1rem;
+            line-height: 1.3;
+            color: #fff;
+        }
+
+        .mc-line-facts {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+        }
+
+        .mc-line-facts dt {
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mc-muted);
+        }
+
+        .mc-line-facts dd {
+            margin: 0.15rem 0 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--mc-text);
+        }
+
+        .mc-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--mc-border-strong);
+            font-size: 0.8rem;
+            line-height: 1.55;
+            color: var(--mc-muted);
+        }
+
+        .mc-line-rule strong {
+            color: var(--mc-gold-soft);
+        }
+
+        .mc-lab {
+            margin-top: 2rem;
+        }
+
+        .mc-lab-mount {
+            min-height: 12rem;
+        }
+
+        .mc-lab-loading {
+            padding: 2rem 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--mc-muted);
+        }
+
+        @media (min-width: 1024px) {
+            .mc-lines {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        /* --- Rules, fit, counterplay, verdict --- */
+        .mc-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .mc-tile {
+            padding: 1.1rem 1.2rem;
+            border: 1px solid var(--mc-border);
+            border-radius: 0.75rem;
+            background: var(--mc-surface);
+        }
+
+        .mc-tile h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            margin-bottom: 0.45rem;
+            font-size: 0.98rem;
+            line-height: 1.35;
+            color: var(--mc-gold-soft);
+        }
+
+        .mc-tile h4 i {
+            color: var(--mc-water);
+        }
+
+        .mc-tile p {
+            font-size: 0.86rem;
+            line-height: 1.6;
+            color: var(--mc-muted);
+        }
+
+        .mc-tile p + p {
+            margin-top: 0.5rem;
+        }
+
+        .mc-tile strong {
+            color: var(--mc-text);
+        }
+
+        .mc-list {
+            display: grid;
+            gap: 0.7rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .mc-list li {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.65rem;
+            font-size: 0.87rem;
+            line-height: 1.55;
+            color: var(--mc-muted);
+        }
+
+        .mc-list li > i {
+            margin-top: 0.25rem;
+            color: var(--mc-wipe);
+        }
+
+        .mc-list--pro li > i {
+            color: var(--mc-ok);
+        }
+
+        .mc-list strong {
+            color: var(--mc-text);
+        }
+
+        .mc-verdict {
+            padding: 1.5rem;
+            border: 1px solid var(--mc-gold-line);
+            border-radius: 0.9rem;
+            background:
+                radial-gradient(circle at 100% 0%, var(--mc-gold-wash), transparent 55%),
+                var(--mc-surface);
+        }
+
+        .mc-verdict p {
+            font-size: 0.93rem;
+            line-height: 1.7;
+            color: var(--mc-text);
+        }
+
+        .mc-verdict p + p {
+            margin-top: 0.75rem;
+        }
+
+        .mc-verdict-rec {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        @media (min-width: 768px) {
+            .mc-grid--2 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .mc-grid--3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .mc-grid--3 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mc-zone,
+            .mc-tier,
+            .mc-tag,
+            .mc-spot-cta,
+            .mc-chip-btn {
+                transition: none;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -355,6 +1659,34 @@
                 </p>
             </div>
         </section>
+
+        <!-- New Card Spotlight: always visible. Each tag opens the Mediclius tab at the
+             matching section; the full write-up lives in that tab. -->
+        <aside class="mc-spot" data-pcs-scope="spot" aria-labelledby="mc-spot-title">
+            <div class="mc-spot-art">
+                <div id="mc-spot-img-container" class="mc-art-slot">Mediclius the Extraordinary Power Patron</div>
+            </div>
+            <div class="mc-spot-head">
+                <p class="mc-spot-kicker"><span class="tab-new-badge">New card</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="mc-spot-title" class="mc-spot-title">Mediclius the Extraordinary Power Patron</h2>
+                <p class="mc-spot-stats">Link-3 &middot; WATER &middot; Fairy &middot; 3000 ATK &middot; Arrows <span aria-hidden="true">&#8601; &#8595; &#8600;</span><span class="mc-sr-only">bottom-left, bottom, bottom-right</span></p>
+            </div>
+            <div class="mc-spot-body">
+                <p class="mc-spot-hook">Medius's Link-3 form, and a Power Patron boss that grows with its board.
+                    It gains an effect for each monster it points to: at 1 it negates your opponent's monsters and halves
+                    their ATK, at 2 it's unaffected by their activated effects, and at 3 it can banish their whole field on
+                    their turn. The Ars Magna cards triple its ATK to 9000.</p>
+                <p id="mc-spot-tags-label" class="mc-label">Jump to</p>
+                <ul class="mc-tags" aria-labelledby="mc-spot-tags-label">
+                    <li><a class="mc-tag" href="#mc-planner"><i class="fas fa-crosshairs" aria-hidden="true"></i> Arrow planner <span class="mc-tag-role">tiers</span></a></li>
+                    <li><a class="mc-tag" href="#mc-battle"><i class="fas fa-calculator" aria-hidden="true"></i> Battle math <span class="mc-tag-role">9000 ATK</span></a></li>
+                    <li><a class="mc-tag" href="#mc-line-2"><i class="fas fa-chess-board" aria-hidden="true"></i> Three-arrow board <span class="mc-tag-role">going first</span></a></li>
+                    <li><a class="mc-tag" href="#mc-line-3"><i class="fas fa-bolt" aria-hidden="true"></i> Opponent's-turn summon <span class="mc-tag-role">Purification</span></a></li>
+                    <li><a class="mc-tag" href="#mc-counter"><i class="fas fa-ban" aria-hidden="true"></i> Counterplay <span class="mc-tag-role">outs</span></a></li>
+                </ul>
+                <button type="button" class="mc-spot-cta" data-open-panel="tab-betb">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
 
         <!-- The Pantheon (Cards) -->
         <section class="mb-16">
@@ -556,6 +1888,10 @@
                 <button class="tab-btn px-6 py-3 rounded-t-lg font-tech text-sm uppercase tracking-wider ml-1"
                     onclick="switchTab('tactics', 'tab-null-realm', this)">
                     <i class="fas fa-book-dead mr-2"></i>Null Realm Archives
+                </button>
+                <button class="tab-btn px-6 py-3 rounded-t-lg font-tech text-sm uppercase tracking-wider ml-1"
+                    data-tab="tab-betb" onclick="switchTab('tactics', 'tab-betb', this)">
+                    <i class="fas fa-water mr-2" aria-hidden="true"></i>Mediclius <span class="tab-new-badge">New</span>
                 </button>
             </div>
 
@@ -808,6 +2144,432 @@
 
                     </div>
                 </div>
+
+                <!-- TAB 5: Mediclius (Beyond the Brave) -->
+                <!-- ==================== MEDICLIUS (BEYOND THE BRAVE) TAB ====================
+                     Card text is the official printed TCG text. Every combo step was checked
+                     against the printed text of each card in it; the step-by-step lines live
+                     in assets/data/combos/power-patron-combos.json and play in the combo
+                     simulator, which only loads the first time this tab opens. -->
+                <div id="tab-betb" data-pcs-scope="betb" class="tab-content mc-tab" data-tab-group="tactics">
+
+                    <!-- What Changed -->
+                    <section class="mc-section" aria-labelledby="mc-title">
+                        <h3 id="mc-title" class="mc-h2">Beyond the Brave: Mediclius the Extraordinary Power Patron</h3>
+                        <ul class="mc-release" aria-label="Release dates">
+                            <li class="mc-chip mc-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></li>
+                            <li class="mc-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; <time datetime="2026-07-18">18 Jul 2026</time></li>
+                        </ul>
+                        <p class="mc-intro">
+                            Beyond the Brave gives Power Patron a Link boss that scales with its board. <strong>Mediclius the
+                            Extraordinary Power Patron</strong> is a Link-3 whose three arrows all point down, so from the Extra
+                            Monster Zone it looks at three of your Main Monster Zones. Each monster it points to unlocks another
+                            effect. The same set's <strong>Ars Magna</strong> monsters fill those zones for free: they return from
+                            banishment whenever a Link Monster is Special Summoned, and Mediclius's own Link Summon counts. The
+                            Trinity lock and the Pendulum lines in the other tabs are unchanged. This tab covers
+                            Mediclius and how it fits beside them.
+                        </p>
+                        <div class="mc-pillars">
+                            <div class="mc-pillar">
+                                <div class="mc-pillar-icon" aria-hidden="true"><i class="fas fa-arrows-alt-v"></i></div>
+                                <h4>It counts its arrows</h4>
+                                <p>One pointed monster turns on a mass negate, two make it unaffected by your opponent's activated
+                                    effects, and three unlock a Quick Effect that banishes every card they control.</p>
+                            </div>
+                            <div class="mc-pillar">
+                                <div class="mc-pillar-icon" aria-hidden="true"><i class="fas fa-balance-scale-right"></i></div>
+                                <h4>Triple yours, halve theirs</h4>
+                                <p>Its 1+ effect halves your opponent's monsters. The Finite and the Infinite triples its original
+                                    ATK to 9000. A monster at 2000 ATK drops to 1000, so a single attack deals 8000.</p>
+                            </div>
+                            <div class="mc-pillar">
+                                <div class="mc-pillar-icon" aria-hidden="true"><i class="fas fa-hourglass-half"></i></div>
+                                <h4>It can arrive on their turn</h4>
+                                <p>Purification Power Patron can Link Summon it during your opponent's Main Phase. That Link Summon
+                                    returns your banished Ars Magna monsters, so Mediclius shows up with its arrows already
+                                    filled.</p>
+                            </div>
+                        </div>
+                        <nav aria-label="On this tab">
+                            <ul class="mc-toc">
+                                <li><a href="#mc-card">Card</a></li>
+                                <li><a href="#mc-planner">Arrow planner</a></li>
+                                <li><a href="#mc-battle">Battle math</a></li>
+                                <li><a href="#mc-lines">Combo lines</a></li>
+                                <li><a href="#mc-rules">Rulings</a></li>
+                                <li><a href="#mc-fit">Where it fits</a></li>
+                                <li><a href="#mc-counter">Counterplay</a></li>
+                                <li><a href="#mc-verdict">Verdict</a></li>
+                            </ul>
+                        </nav>
+                    </section>
+
+                    <!-- Card Spotlight -->
+                    <section id="mc-card" class="mc-section" aria-labelledby="mc-card-title">
+                        <h3 id="mc-card-title" class="mc-h2">Card Spotlight</h3>
+                        <article class="mc-profile" aria-labelledby="mc-card-name">
+                            <div class="mc-profile-art">
+                                <div id="mc-profile-img-container" class="mc-art-slot">Mediclius the Extraordinary Power Patron</div>
+                            </div>
+                            <div>
+                                <p class="mc-kicker">New card &middot; Extra Deck boss</p>
+                                <h4 id="mc-card-name" class="mc-card-name">Mediclius the Extraordinary Power Patron</h4>
+                                <dl class="mc-stats">
+                                    <div><dt>Card type</dt><dd>Link Monster</dd></div>
+                                    <div><dt>Attribute</dt><dd>WATER</dd></div>
+                                    <div><dt>Type</dt><dd>Fairy</dd></div>
+                                    <div><dt>Link Rating</dt><dd>3</dd></div>
+                                    <div><dt>ATK</dt><dd>3000</dd></div>
+                                    <div><dt>Link Arrows</dt><dd><span class="mc-arrows" aria-hidden="true">&#8601;&#8595;&#8600;</span><span class="mc-sr-only">Bottom-left, bottom and bottom-right</span></dd></div>
+                                </dl>
+
+                                <p class="mc-label" style="margin-top: 1.25rem;">Card text</p>
+                                <div class="mc-cardtext">
+                                    <p class="mc-cardtext-materials">2+ monsters, including a Fusion, Synchro, Xyz, or Link Monster</p>
+                                    <p class="mc-cardtext-lead">Gains these effects based on the number of monsters it points to.</p>
+                                    <ul class="mc-effects">
+                                        <li><span class="mc-tier-badge mc-tier-badge--1">1+</span><span>Once per turn, during your Main Phase: You can negate the effects of all face-up monsters your opponent currently controls, also until the end of this turn, their ATK become halved.</span></li>
+                                        <li><span class="mc-tier-badge mc-tier-badge--2">2+</span><span>Unaffected by your opponent's activated effects.</span></li>
+                                        <li><span class="mc-tier-badge mc-tier-badge--3">3</span><span>Once per opponent's turn (Quick Effect): You can banish this card, also all cards your opponent controls.</span></li>
+                                    </ul>
+                                </div>
+
+                                <p class="mc-role"><strong>A boss that's only as strong as the zones under it.</strong> Mediclius has
+                                    no protection of its own until it points to two monsters, and those monsters have none at all.
+                                    What makes it work in Power Patron is the Ars Magna engine: the three Ars Magna monsters
+                                    Special Summon themselves from banishment when a Link Monster is Special Summoned, and you
+                                    choose which zones they land in. Purification Power Patron is the standard material. As a
+                                    Link-2 it counts as two, so Purification plus any one monster makes Mediclius.</p>
+
+                                <dl class="mc-glance">
+                                    <div><dt>Where it works</dt><dd>Extra Monster Zone</dd></div>
+                                    <div><dt>Zones it reads</dt><dd>3 Main Monster Zones</dd></div>
+                                    <div><dt>Board banish</dt><dd>Needs all 3</dd></div>
+                                    <div><dt>Immunity</dt><dd>Activated effects</dd></div>
+                                </dl>
+
+                                <p class="mc-lore"><i class="fas fa-feather-alt" aria-hidden="true"></i>Mediclius is Medius
+                                    awakened, ready to strike back at the Power Patrons. Its 1+ effect is word for word
+                                    the Quick Effect of <strong>Artmage Finmel</strong>, the friend whose rescue started the story.
+                                    Finmel needs three Monster Types on your field to use it; Mediclius needs one monster under its
+                                    arrows. Early fan translations of the reveal called it "Mediacrius, the Phantom Power
+                                    Patron".</p>
+                            </div>
+                        </article>
+                    </section>
+
+                    <!-- Arrow Planner + Battle Math (interactive) -->
+                    <section id="mc-planner" class="mc-section" aria-labelledby="mc-planner-title">
+                        <h3 id="mc-planner-title" class="mc-h2">Arrow Planner &amp; Battle Math</h3>
+                        <p class="mc-intro">Mediclius never touches Life Points itself: there's no cost to pay and no burn. All of its
+                            damage comes from the ATK swing. Fill the zones under it to see which effects switch on, then add the
+                            Ars Magna bonuses and your opponent's board to check whether the swing is lethal.</p>
+
+                        <div class="mc-planner" data-mc-planner>
+                            <div class="mc-panel">
+                                <h4 class="mc-h3 mc-planner-step"><span class="mc-step-num" aria-hidden="true">1</span>Fill the zones it points to</h4>
+                                <div class="mc-board" role="group" aria-labelledby="mc-board-label">
+                                    <p id="mc-board-label" class="mc-label" style="margin: 0 0 0.6rem 0.2rem;">Your field &middot; Mediclius in the left Extra Monster Zone</p>
+                                    <div class="mc-board-row" aria-hidden="true">
+                                        <span></span>
+                                        <div class="mc-slot mc-slot--mediclius" title="Mediclius">
+                                            <span class="mc-slot-name">Mediclius</span>
+                                            <span class="mc-slot-arrows">&#8601;&#8595;&#8600;</span>
+                                        </div>
+                                        <span></span>
+                                        <div class="mc-slot mc-slot--emz">EMZ</div>
+                                        <span></span>
+                                    </div>
+                                    <div class="mc-board-row">
+                                        <button type="button" class="mc-zone" data-mc-zone="1" aria-pressed="false"><span class="mc-zone-num"><span class="mc-zone-word">Zone </span>1</span><span class="mc-zone-state" data-mc-zone-state>Empty</span></button>
+                                        <button type="button" class="mc-zone" data-mc-zone="2" aria-pressed="true"><span class="mc-zone-num"><span class="mc-zone-word">Zone </span>2</span><span class="mc-zone-state" data-mc-zone-state>Filled</span></button>
+                                        <button type="button" class="mc-zone" data-mc-zone="3" aria-pressed="false"><span class="mc-zone-num"><span class="mc-zone-word">Zone </span>3</span><span class="mc-zone-state" data-mc-zone-state>Empty</span></button>
+                                        <div class="mc-zone mc-zone--off" aria-hidden="true"><span class="mc-zone-num"><span class="mc-zone-word">Zone </span>4</span><span class="mc-zone-state">Off</span></div>
+                                        <div class="mc-zone mc-zone--off" aria-hidden="true"><span class="mc-zone-num"><span class="mc-zone-word">Zone </span>5</span><span class="mc-zone-state">Off</span></div>
+                                    </div>
+                                </div>
+                                <p class="mc-count"><strong data-mc-out="count">1</strong> of 3 pointed zones filled</p>
+                                <ol class="mc-tiers">
+                                    <li class="mc-tier mc-tier--1 is-live" data-mc-tier="1">
+                                        <span class="mc-tier-badge mc-tier-badge--1">1+</span>
+                                        <div>
+                                            <p class="mc-tier-name">Negate and halve</p>
+                                            <p class="mc-tier-text">Once per turn in your Main Phase: negate every face-up monster your opponent controls and halve their ATK until the end of the turn.</p>
+                                        </div>
+                                        <span class="mc-tier-state" data-mc-tier-state>Live</span>
+                                    </li>
+                                    <li class="mc-tier mc-tier--2" data-mc-tier="2">
+                                        <span class="mc-tier-badge mc-tier-badge--2">2+</span>
+                                        <div>
+                                            <p class="mc-tier-name">Unaffected</p>
+                                            <p class="mc-tier-text">Your opponent's activated effects don't apply to Mediclius. The monsters under it are still exposed.</p>
+                                        </div>
+                                        <span class="mc-tier-state" data-mc-tier-state>Off</span>
+                                    </li>
+                                    <li class="mc-tier mc-tier--3" data-mc-tier="3">
+                                        <span class="mc-tier-badge mc-tier-badge--3">3</span>
+                                        <div>
+                                            <p class="mc-tier-name">Board banish</p>
+                                            <p class="mc-tier-text">Once per opponent's turn, as a Quick Effect: banish Mediclius and every card your opponent controls.</p>
+                                        </div>
+                                        <span class="mc-tier-state" data-mc-tier-state>Off</span>
+                                    </li>
+                                </ol>
+                                <p class="mc-sr-only" aria-live="polite" data-mc-out="live"></p>
+                                <p class="mc-note">Zones 4 and 5 aren't pointed to ("Off"), so monsters there don't count. From the right
+                                    Extra Monster Zone it points to zones 3, 4 and 5 instead.</p>
+                            </div>
+
+                            <div id="mc-battle" class="mc-panel" style="scroll-margin-top: 1.5rem;">
+                                <h4 class="mc-h3 mc-planner-step"><span class="mc-step-num" aria-hidden="true">2</span>Run the battle</h4>
+                                <fieldset class="mc-fieldset">
+                                    <legend class="mc-label">Your side</legend>
+                                    <label class="mc-check"><input type="checkbox" data-mc-opt="halve" checked>
+                                        <span>Use Mediclius's 1+ effect first<small data-mc-out="halve-note">Needs at least 1 filled zone.</small></span></label>
+                                    <label class="mc-check"><input type="checkbox" data-mc-opt="finite" checked>
+                                        <span>Banish <strong>Ars Magna the Finite and the Infinite</strong> from your hand<small>Mediclius's original ATK is tripled for the rest of the turn.</small></span></label>
+                                    <label class="mc-check"><input type="checkbox" data-mc-opt="division" checked>
+                                        <span>Banish <strong>Ars Magna the Division and the Union</strong> from your hand<small>Mediclius can make up to 3 attacks on monsters this turn.</small></span></label>
+                                </fieldset>
+
+                                <fieldset class="mc-fieldset">
+                                    <legend class="mc-label">Your opponent</legend>
+                                    <div class="mc-presets" role="group" aria-label="Example boards">
+                                        <button type="button" class="mc-chip-btn" data-mc-preset="two" aria-pressed="true">Two bosses</button>
+                                        <button type="button" class="mc-chip-btn" data-mc-preset="wall" aria-pressed="false">Boss and a wall</button>
+                                        <button type="button" class="mc-chip-btn" data-mc-preset="three" aria-pressed="false">Three monsters</button>
+                                        <button type="button" class="mc-chip-btn" data-mc-preset="empty" aria-pressed="false">Empty field</button>
+                                    </div>
+                                    <label class="mc-field"><span>Their Life Points</span>
+                                        <input type="number" inputmode="numeric" min="0" max="99999" step="50" value="8000" data-mc-lp></label>
+                                    <ul class="mc-opp-list" data-mc-opp-list aria-label="Your opponent's monsters"></ul>
+                                    <button type="button" class="mc-add" data-mc-add><i class="fas fa-plus" aria-hidden="true"></i> Add a monster</button>
+                                    <label class="mc-field" style="margin-top: 0.9rem;"><span>Banish one first with the Finite and the Infinite (needs it on your field)</span>
+                                        <select data-mc-banish></select></label>
+                                </fieldset>
+
+                                <div class="mc-result" aria-live="polite">
+                                    <dl class="mc-result-stats">
+                                        <div><dt>Mediclius ATK</dt><dd data-mc-out="atk">9000</dd></div>
+                                        <div><dt>Attacks</dt><dd data-mc-out="attacks">3</dd></div>
+                                        <div><dt>Damage</dt><dd data-mc-out="damage">0</dd></div>
+                                    </dl>
+                                    <ol class="mc-attack-log" data-mc-out="log"></ol>
+                                    <p class="mc-verdict-chip" data-mc-out="verdict"></p>
+                                </div>
+                                <p class="mc-note">The planner attacks the targets that deal the most damage first. Halving only
+                                    reaches face-up monsters, and it lowers ATK, not DEF. Division and the Union's extra attacks
+                                    can only target monsters, so once their field is empty Mediclius stops. The Finite and the
+                                    Infinite (1000 ATK) can attack too; it isn't counted here.</p>
+                            </div>
+                        </div>
+                        <noscript><p class="mc-lab-loading">The planner needs JavaScript. The tiers it checks are listed in the card text above.</p></noscript>
+                    </section>
+
+                    <!-- Combo lines -->
+                    <section id="mc-lines" class="mc-section" aria-labelledby="mc-lines-title">
+                        <h3 id="mc-lines-title" class="mc-h2">Combo Lines</h3>
+                        <p class="mc-intro">One opening hand, three plans: <strong>Medius the Pure</strong> plus <strong>Ars Magna the
+                            Finite and the Infinite</strong>. Every line follows the same idea: pay Ars Magna costs to banish the
+                            monsters face-up, then let a Link Summon bring them back into the zones Mediclius points to. Each step
+                            was checked against the printed text of the cards involved. Pick a line below to play through it on
+                            the board.</p>
+                        <div class="mc-lines">
+                            <article id="mc-line-1" class="mc-line" aria-labelledby="mc-line-1-title">
+                                <p class="mc-kicker">Line 1 &middot; Going second</p>
+                                <h4 id="mc-line-1-title">9000 ATK Breaker</h4>
+                                <dl class="mc-line-facts">
+                                    <div><dt>Hand</dt><dd>Medius the Pure, Ars Magna the Finite and the Infinite</dd></div>
+                                    <div><dt>Needs</dt><dd>Theorealized Medius, Theorealize Overdrive and the Division and the Union in the Deck; Purification Power Patron and Mediclius in the Extra Deck</dd></div>
+                                    <div><dt>End board</dt><dd>Mediclius at 9000 ATK with up to 3 attacks on monsters, pointing to the Finite and the Infinite. Your opponent's face-up monsters are negated at half ATK, and one of their monsters is banished.</dd></div>
+                                </dl>
+                                <p class="mc-line-rule"><strong>Why it works:</strong> both battle bonuses come from your hand after
+                                    Mediclius is on the field, and the Division and the Union's revive puts a monster under it, which
+                                    is all the 1+ effect needs. <strong>Watch for:</strong> only one arrow is filled, so Mediclius
+                                    isn't unaffected yet. Ash Blossom on Medius's Deck summon, or Nibiru after your fifth summon,
+                                    ends the line.</p>
+                            </article>
+                            <article id="mc-line-2" class="mc-line mc-line--first" aria-labelledby="mc-line-2-title">
+                                <p class="mc-kicker">Line 2 &middot; Going first</p>
+                                <h4 id="mc-line-2-title">Three-Arrow Board</h4>
+                                <dl class="mc-line-facts">
+                                    <div><dt>Hand</dt><dd>Medius the Pure, Ars Magna the Finite and the Infinite</dd></div>
+                                    <div><dt>Needs</dt><dd>Theorealized Medius, the Corruption and the Purification, the Division and the Union, Ars Magna "Citrinitas", Theorealize Past Lull and a second Medius the Pure in the Deck; Purification Power Patron and Mediclius in the Extra Deck</dd></div>
+                                    <div><dt>End board</dt><dd>Mediclius pointing to the Finite and the Infinite, the Corruption and the Purification and Medius the Pure, plus Citrinitas face-up: an unaffected boss, a monster banish and a Spell/Trap banish as Quick Effects, and a full-board banish on their turn</dd></div>
+                                </dl>
+                                <p class="mc-line-rule"><strong>Why it works:</strong> each Ars Magna cost banishes the card face-up,
+                                    so Theorealized Medius adds another Ars Magna card, and the Purification Link Summon calls the
+                                    banished ones back. Citrinitas counts as an Artmage card, which turns on Theorealize Past Lull for
+                                    the third monster. <strong>Watch for:</strong> Mediclius sits on the field for their whole turn,
+                                    so a Kaiju can Tribute it before they make their plays.</p>
+                            </article>
+                            <article id="mc-line-3" class="mc-line mc-line--theirs" aria-labelledby="mc-line-3-title">
+                                <p class="mc-kicker">Line 3 &middot; Going first, pays off on their turn</p>
+                                <h4 id="mc-line-3-title">Opponent's-Turn Mediclius</h4>
+                                <dl class="mc-line-facts">
+                                    <div><dt>Hand</dt><dd>Medius the Pure, Ars Magna the Finite and the Infinite</dd></div>
+                                    <div><dt>Needs</dt><dd>The same Deck and Extra Deck cards as Line 2</dd></div>
+                                    <div><dt>End board</dt><dd>Your turn: Purification Power Patron, Medius the Pure, the Corruption and the Purification and Citrinitas, with the Finite and the Infinite and the Division and the Union banished. Their Main Phase: Mediclius pointing to all three Ars Magna monsters.</dd></div>
+                                </dl>
+                                <p class="mc-line-rule"><strong>Why it works:</strong> Purification's Quick Effect Link Summons in
+                                    either player's Main Phase while you control another DARK Fairy. That Link Summon returns both
+                                    banished Ars Magna monsters, so Mediclius arrives with all three arrows filled and its board
+                                    banish ready that turn. The Corruption and the Purification can banish a Spell/Trap all turn,
+                                    since Purification is a Power Patron Link Monster too. <strong>Watch for:</strong> the Quick
+                                    Effect only works in the Main Phase, so Infinite Impermanence on Purification in their Standby
+                                    Phase stops it.</p>
+                            </article>
+                        </div>
+                        <section class="mc-lab" aria-label="Interactive combo lines">
+                            <div id="power-patron-combo-lab" class="mc-lab-mount">
+                                <p class="mc-lab-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading the interactive combo lines…</p>
+                            </div>
+                        </section>
+                    </section>
+
+                    <!-- Rules -->
+                    <section id="mc-rules" class="mc-section" aria-labelledby="mc-rules-title">
+                        <h3 id="mc-rules-title" class="mc-h2">Rules That Decide Your Turn</h3>
+                        <div class="mc-grid mc-grid--3">
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-arrow-down" aria-hidden="true"></i>Extra Monster Zone only</h4>
+                                <p>All three arrows point down. In a Main Monster Zone they point at your Spell &amp; Trap Zone,
+                                    where monsters never go, so it has no effects there. Link Summon it to an Extra Monster Zone,
+                                    not to a zone another Link Monster points to.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-signal" aria-hidden="true"></i>The count is checked live</h4>
+                                <p>Each tier depends on how many monsters it points to right now. Remove one of three and the board
+                                    banish is gone. Remove two and it's no longer unaffected. The pointed monsters get no
+                                    protection from Mediclius.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-hand-sparkles" aria-hidden="true"></i>Bonuses after the summon</h4>
+                                <p>The Finite and the Infinite's tripled ATK and the Division and the Union's three attacks apply
+                                    to the Power Patron Link Monsters you control. In our lines, you banish them from your hand only
+                                    once Mediclius is on the field.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-door-open" aria-hidden="true"></i>The board banish takes it too</h4>
+                                <p>The 3-arrow Quick Effect banishes Mediclius along with your opponent's cards. After that you no
+                                    longer control a Power Patron Link Monster, so fire the Ars Magna removal effects first. Ars
+                                    Magna "Philosophorum" only returns a Power Patron Link Monster from the GY, so it can't bring a
+                                    banished Mediclius back.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-shield-alt" aria-hidden="true"></i>What "unaffected" doesn't cover</h4>
+                                <p>It only ignores <strong>activated</strong> effects. Tributing it for a Kaiju or Lava Golem isn't
+                                    an effect, so that still works. Their continuous effects still apply, and cards that negate the
+                                    activation of its effect, like Solemn Strike, still negate it.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-user-slash" aria-hidden="true"></i>Medius the Pure isn't a Power Patron card</h4>
+                                <p>Theorealized Medius can only Special Summon itself from your hand if a Power Patron card is on the
+                                    field, and Medius the Pure doesn't count. Use Medius's own effect to Special Summon Theorealized
+                                    Medius from the Deck instead: it is always treated as a Power Patron card.</p>
+                            </div>
+                        </div>
+                        <p class="mc-note" style="text-align: center;"><strong>Also worth knowing:</strong> the zones Mediclius points
+                            to count as linked zones, so a face-up Pendulum Monster from your Extra Deck, such as Vidolium the
+                            Unstable Power Patron of Unity, can be Special Summoned into them.</p>
+                    </section>
+
+                    <!-- Where it fits -->
+                    <section id="mc-fit" class="mc-section" aria-labelledby="mc-fit-title">
+                        <h3 id="mc-fit-title" class="mc-h2">Where It Fits</h3>
+                        <div class="mc-grid mc-grid--2">
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-flask" aria-hidden="true"></i>With the Ars Magna engine</h4>
+                                <p>The three Ars Magna monsters pay their costs by banishing themselves from your hand, then return
+                                    when a Link Monster is Special Summoned. Mediclius is the Power Patron Link Monster their removal
+                                    and battle effects ask for, and its own Link Summon is what brings them back. The <a
+                                        class="mc-link" href="Ars%20Magna%20Deck%20Analysis.html">Ars Magna guide</a> covers the
+                                    engine card by card.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-link" aria-hidden="true"></i>With Purification Power Patron</h4>
+                                <p>Purification is a Link-2, so it and one more monster are all Mediclius needs. It also searches a
+                                    Theorealize card when it's Link Summoned with a Power Patron monster in your GY, and its Quick
+                                    Effect lets you make Mediclius on your opponent's turn. Run them together.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-landmark" aria-hidden="true"></i>With the Trinity deities</h4>
+                                <p>Nerva, Jupiter and Junora are Fusion, Xyz and Synchro Monsters, so they can be summoned from the
+                                    Extra Deck to any Main Monster Zone. When you build the lock from the <a class="mc-link"
+                                        href="#tab-new-combo">Vidria Lock tab</a> (in the TCG the Field Spell is Plundered Power
+                                    Patron Plane - Vidolia), place them in the three zones under Mediclius: the lock pieces become
+                                    its three pointed monsters.</p>
+                            </div>
+                            <div class="mc-tile">
+                                <h4><i class="fas fa-globe" aria-hidden="true"></i>Outside Power Patron</h4>
+                                <p>Its materials only ask for one Fusion, Synchro, Xyz or Link Monster, so any deck that makes a
+                                    Link-2 can make it, and every tier works there too. What those decks miss is the Ars Magna
+                                    payoff: without the returning monsters, filling three zones under it is a lot harder.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Counterplay -->
+                    <section id="mc-counter" class="mc-section" aria-labelledby="mc-counter-title">
+                        <h3 id="mc-counter-title" class="mc-h2">Counterplay &amp; Failure Modes</h3>
+                        <div class="mc-grid mc-grid--2">
+                            <div class="mc-panel">
+                                <h4 class="mc-h3">How opponents beat it</h4>
+                                <ul class="mc-list">
+                                    <li><i class="fas fa-crosshairs" aria-hidden="true"></i><span><strong>Remove what's under it.</strong>
+                                        Destroying or banishing one pointed monster turns off the board banish; two turns off the
+                                        immunity. Those monsters have no protection.</span></li>
+                                    <li><i class="fas fa-dragon" aria-hidden="true"></i><span><strong>Kaiju and Lava Golem.</strong>
+                                        Tributing Mediclius is part of their summon, not an activated effect, so it gets past
+                                        the 2+ immunity.</span></li>
+                                    <li><i class="fas fa-hand-paper" aria-hidden="true"></i><span><strong>Hand traps on the way
+                                        in.</strong> Ash Blossom stops Medius's Deck summon and each Ars Magna search. Droll &amp;
+                                        Lock Bird stops every search after the first. Every line reaches five summons before
+                                        Mediclius points to 2 monsters, so Nibiru, the Primal Being can still clear your field.</span></li>
+                                    <li><i class="fas fa-clock" aria-hidden="true"></i><span><strong>Negating Purification early.</strong>
+                                        In Line 3, Infinite Impermanence on Purification during their Standby Phase stops the Quick
+                                        Link Summon, because that effect only works in the Main Phase.</span></li>
+                                </ul>
+                            </div>
+                            <div class="mc-panel">
+                                <h4 class="mc-h3">Mistakes to avoid</h4>
+                                <ul class="mc-list">
+                                    <li><i class="fas fa-times-circle" aria-hidden="true"></i><span><strong>Summoning it to a Main
+                                        Monster Zone.</strong> It points at nothing there and has no effects.</span></li>
+                                    <li><i class="fas fa-times-circle" aria-hidden="true"></i><span><strong>Board banish first,
+                                        removal second.</strong> Mediclius leaves with their cards, and the Ars Magna removal
+                                        effects need a Power Patron Link Monster on your field.</span></li>
+                                    <li><i class="fas fa-times-circle" aria-hidden="true"></i><span><strong>Halving too late.</strong>
+                                        The 1+ effect only works in your Main Phase and only reaches face-up monsters. Use it before
+                                        the Battle Phase, and use the Finite and the Infinite's banish on face-down monsters.</span></li>
+                                    <li><i class="fas fa-times-circle" aria-hidden="true"></i><span><strong>Filling the wrong
+                                        zones.</strong> From the left Extra Monster Zone it reads zones 1 to 3. Returning Ars Magna
+                                        monsters and Past Lull's Medius should land there.</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Verdict -->
+                    <section id="mc-verdict" class="mc-section" aria-labelledby="mc-verdict-title">
+                        <h3 id="mc-verdict-title" class="mc-h2">Verdict</h3>
+                        <div class="mc-verdict cms-section" data-section-key="mediclius-verdict">
+                            <p>Mediclius is the payoff the Beyond the Brave Medius cards were built around. From Medius the Pure
+                                and one Ars Magna monster, it's a 9000 ATK breaker going second, or going first, a three-arrow
+                                board that is unaffected by your opponent's activated effects and can banish their field on their
+                                turn.</p>
+                            <p>Its limit is the zones under it. Every tier depends on monsters it doesn't protect, so decks with
+                                plenty of removal, or a Kaiju, get around it. Play it as the finisher of the Ars Magna package, not
+                                as a replacement for the Trinity lock.</p>
+                            <ul class="mc-verdict-rec" aria-label="Our recommendation">
+                                <li class="mc-chip"><i class="fas fa-layer-group" aria-hidden="true"></i> Our pick: 1 in the Extra Deck</li>
+                                <li class="mc-chip"><i class="fas fa-link" aria-hidden="true"></i> Pair with 1 Purification Power Patron</li>
+                                <li class="mc-chip mc-chip--tcg"><i class="fas fa-flask" aria-hidden="true"></i> Best with the full Ars Magna package</li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+                <!-- END tab-betb -->
             </div>
         </section>
 
@@ -1100,6 +2862,380 @@
                 initPageSections('Power Patron');
             });
         </script>
+
+    <!-- Mediclius tab (Beyond the Brave). Runs before tab-deeplink.js so a #tab-betb
+         link that opens the tab on load also mounts its content. -->
+    <script>
+        (function () {
+            'use strict';
+
+            var PANEL_ID = 'tab-betb';
+            var COMBO_MOUNT_ID = 'power-patron-combo-lab';
+            var COMBO_SLUG = 'power-patron'; // assets/data/combos/power-patron-combos.json
+            var CARD = 'Mediclius the Extraordinary Power Patron';
+            var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            var tabBtn = document.querySelector('[data-tab="' + PANEL_ID + '"]');
+            var artRequested = false;
+            var comboReady = null;
+
+            // Art and the combo simulator are fetched once, the first time the tab opens.
+            function openBetbPanel() {
+                if (!artRequested && typeof CardLoader !== 'undefined') {
+                    artRequested = true;
+                    CardLoader.loadCards({ 'mc-profile-img-container': CARD });
+                }
+                if (!comboReady) {
+                    var mount = document.getElementById(COMBO_MOUNT_ID);
+                    // combo-system.js declares ComboLoader as a top-level class, which is
+                    // not a property of window, so check it with typeof.
+                    if (typeof ComboLoader === 'undefined') {
+                        if (mount) mount.innerHTML = '<p class="mc-lab-loading">The interactive combo lines could not load. The line summaries above still list every hand, requirement and end board.</p>';
+                        comboReady = Promise.resolve(null);
+                    } else {
+                        comboReady = ComboLoader.renderComboSystem(COMBO_MOUNT_ID, COMBO_SLUG);
+                    }
+                }
+                return comboReady;
+            }
+
+            if (tabBtn) tabBtn.addEventListener('click', openBetbPanel);
+
+            // Open the tab that holds an element, if it's hidden. The page's own
+            // switchTab() needs the button, so press it.
+            function revealTabFor(target) {
+                var panel = target && target.closest('[data-tab-group]');
+                if (!panel || panel === target || panel.classList.contains('active')) return;
+                var btn = document.querySelector('[onclick*="\'' + panel.id + '\'"]');
+                if (btn) btn.click();
+            }
+
+            function targetFromHash(hash) {
+                var id = (hash || '').slice(1);
+                try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+                if (!id || !/^[\w:.-]+$/.test(id)) return null;
+                return document.getElementById(id);
+            }
+
+            // A link to an anchor inside a hidden tab (#mc-planner, #mc-line-3) opens
+            // that tab first; tab-deeplink.js then scrolls to it.
+            function openPanelForHash() {
+                revealTabFor(targetFromHash(window.location.hash));
+            }
+            window.addEventListener('hashchange', openPanelForHash);
+            document.addEventListener('DOMContentLoaded', openPanelForHash);
+
+            // Same for in-page links, before the browser scrolls. hashchange doesn't
+            // fire when the same link is clicked twice.
+            document.addEventListener('click', function (event) {
+                var link = event.target.closest && event.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                revealTabFor(targetFromHash(link.hash));
+            });
+
+            // The spotlight's button opens the tab and brings the tab row into view.
+            var cta = document.querySelector('[data-open-panel="' + PANEL_ID + '"]');
+            if (cta && tabBtn) {
+                cta.addEventListener('click', function () {
+                    tabBtn.click();
+                    tabBtn.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'center' });
+                    tabBtn.focus({ preventScroll: true });
+                });
+            }
+
+            // The spotlight is always on screen, so its art loads with the page.
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof CardLoader !== 'undefined') CardLoader.loadCards({ 'mc-spot-img-container': CARD });
+            });
+
+            /* ---------- Arrow planner + battle math ---------- */
+            var planner = document.querySelector('[data-mc-planner]');
+            if (!planner) return;
+
+            var BASE_ATK = 3000;
+            var MAX_MONSTERS = 5;
+            var PRESETS = {
+                two: [{ pos: 'atk', val: 3000 }, { pos: 'atk', val: 2500 }],
+                wall: [{ pos: 'atk', val: 3000 }, { pos: 'def', val: 2500 }],
+                three: [{ pos: 'atk', val: 3000 }, { pos: 'atk', val: 2800 }, { pos: 'atk', val: 1800 }],
+                empty: []
+            };
+            var TIER_NAMES = { 1: 'negate and halve', 2: 'unaffected', 3: 'board banish' };
+
+            var zoneBtns = Array.prototype.slice.call(planner.querySelectorAll('[data-mc-zone]'));
+            var tierEls = Array.prototype.slice.call(planner.querySelectorAll('[data-mc-tier]'));
+            var opt = {
+                halve: planner.querySelector('[data-mc-opt="halve"]'),
+                finite: planner.querySelector('[data-mc-opt="finite"]'),
+                division: planner.querySelector('[data-mc-opt="division"]')
+            };
+            var lpInput = planner.querySelector('[data-mc-lp]');
+            var oppList = planner.querySelector('[data-mc-opp-list]');
+            var addBtn = planner.querySelector('[data-mc-add]');
+            var banishSel = planner.querySelector('[data-mc-banish]');
+            var presetBtns = Array.prototype.slice.call(planner.querySelectorAll('[data-mc-preset]'));
+            var out = function (key) { return planner.querySelector('[data-mc-out="' + key + '"]'); };
+
+            var monsters = PRESETS.two.map(function (m) { return { pos: m.pos, val: m.val }; });
+            var banishIndex = -1;
+
+            function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+            function toNumber(value, max) {
+                var n = parseInt(value, 10);
+                if (!isFinite(n) || n < 0) return 0;
+                return Math.min(n, max);
+            }
+
+            function escapeText(str) {
+                return String(str).replace(/[&<>"']/g, function (c) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                });
+            }
+
+            function pointedCount() {
+                return zoneBtns.filter(function (b) { return b.getAttribute('aria-pressed') === 'true'; }).length;
+            }
+
+            function setPreset(name) {
+                presetBtns.forEach(function (b) {
+                    b.setAttribute('aria-pressed', String(b.getAttribute('data-mc-preset') === name));
+                });
+            }
+
+            function renderOpponents() {
+                oppList.innerHTML = '';
+                if (!monsters.length) {
+                    var empty = document.createElement('li');
+                    empty.className = 'mc-opp-empty';
+                    empty.textContent = 'No monsters. Mediclius can attack directly once.';
+                    oppList.appendChild(empty);
+                }
+                monsters.forEach(function (m, i) {
+                    var n = i + 1;
+                    var li = document.createElement('li');
+                    li.className = 'mc-opp';
+                    li.innerHTML =
+                        '<span class="mc-opp-name">Monster ' + n + '</span>' +
+                        '<label class="mc-mini"><span>Position</span>' +
+                        '<select data-mc-pos="' + i + '">' +
+                        '<option value="atk"' + (m.pos === 'atk' ? ' selected' : '') + '>Attack</option>' +
+                        '<option value="def"' + (m.pos === 'def' ? ' selected' : '') + '>Defense</option>' +
+                        '</select></label>' +
+                        '<label class="mc-mini"><span data-mc-stat="' + i + '">' + (m.pos === 'atk' ? 'ATK' : 'DEF') + '</span>' +
+                        '<input type="number" inputmode="numeric" min="0" max="99999" step="50" value="' + m.val + '" data-mc-val="' + i + '"></label>' +
+                        '<button type="button" class="mc-remove" data-mc-remove="' + i + '" aria-label="Remove monster ' + n + '">' +
+                        '<i class="fas fa-times" aria-hidden="true"></i></button>';
+                    oppList.appendChild(li);
+                });
+                addBtn.disabled = monsters.length >= MAX_MONSTERS;
+                renderBanishOptions();
+            }
+
+            function renderBanishOptions() {
+                if (banishIndex >= monsters.length) banishIndex = -1;
+                var html = '<option value="-1">None</option>';
+                monsters.forEach(function (m, i) {
+                    html += '<option value="' + i + '"' + (i === banishIndex ? ' selected' : '') + '>Monster ' + (i + 1) +
+                        ' (' + (m.pos === 'atk' ? 'ATK ' : 'DEF ') + fmt(m.val) + ')</option>';
+                });
+                banishSel.innerHTML = html;
+                banishSel.disabled = !monsters.length;
+            }
+
+            function renderTiers(count, announce) {
+                zoneBtns.forEach(function (b) {
+                    var state = b.querySelector('[data-mc-zone-state]');
+                    if (state) state.textContent = b.getAttribute('aria-pressed') === 'true' ? 'Filled' : 'Empty';
+                });
+                var live = [];
+                tierEls.forEach(function (el) {
+                    var tier = Number(el.getAttribute('data-mc-tier'));
+                    var on = tier === 3 ? count === 3 : count >= tier;
+                    el.classList.toggle('is-live', on);
+                    var state = el.querySelector('[data-mc-tier-state]');
+                    if (state) state.textContent = on ? 'Live' : 'Off';
+                    if (on) live.push(TIER_NAMES[tier]);
+                });
+                out('count').textContent = count;
+                if (announce) {
+                    out('live').textContent = 'Mediclius points to ' + count + (count === 1 ? ' monster. ' : ' monsters. ') +
+                        (live.length ? 'Live: ' + live.join(', ') + '.' : 'No effects are live.');
+                }
+            }
+
+            function renderBattle(count) {
+                var halveLive = opt.halve.checked && count >= 1;
+                var medAtk = BASE_ATK * (opt.finite.checked ? 3 : 1);
+                var maxAttacks = opt.division.checked ? 3 : 1;
+                var lp = toNumber(lpInput.value, 99999);
+
+                var note = out('halve-note');
+                if (opt.halve.checked && count < 1) {
+                    note.textContent = 'Off: Mediclius points to no monsters. Fill a zone in step 1.';
+                    note.classList.add('is-warning');
+                } else {
+                    note.textContent = 'Needs at least 1 filled zone.';
+                    note.classList.remove('is-warning');
+                }
+
+                var log = [];
+                var total = 0;
+                var attacksText;
+                var targets = monsters
+                    .map(function (m, i) {
+                        var eff = m.pos === 'atk' && halveLive ? Math.ceil(m.val / 2) : m.val;
+                        return { n: i + 1, pos: m.pos, val: m.val, eff: eff };
+                    })
+                    .filter(function (t) { return t.n - 1 !== banishIndex; });
+
+                if (banishIndex >= 0 && banishIndex < monsters.length) {
+                    log.push({ text: 'The Finite and the Infinite banishes Monster ' + (banishIndex + 1) + ' before battle.', muted: true });
+                }
+
+                if (!targets.length) {
+                    total = medAtk;
+                    attacksText = '1 direct';
+                    log.push({ text: 'Direct attack: ' + fmt(medAtk) + ' damage.' });
+                    if (maxAttacks > 1) {
+                        log.push({ text: "The Division and the Union's extra attacks can only target monsters, so there's just the one.", muted: true });
+                    }
+                } else {
+                    attacksText = String(maxAttacks);
+                    // Attack-position monsters it can beat, weakest first (most damage).
+                    var hits = targets
+                        .filter(function (t) { return t.pos === 'atk' && t.eff < medAtk; })
+                        .sort(function (a, b) { return a.eff - b.eff; })
+                        .slice(0, maxAttacks);
+                    hits.forEach(function (t, i) {
+                        var dmg = medAtk - t.eff;
+                        total += dmg;
+                        var atkText = halveLive && t.eff !== t.val ? 'ATK ' + fmt(t.val) + ' → ' + fmt(t.eff) : 'ATK ' + fmt(t.eff);
+                        log.push({ text: 'Attack ' + (i + 1) + ': Monster ' + t.n + ' (' + atkText + '), ' + fmt(dmg) + ' damage.' });
+                    });
+                    var left = maxAttacks - hits.length;
+                    var walls = targets
+                        .filter(function (t) { return t.pos === 'def' && t.val < medAtk; })
+                        .slice(0, left);
+                    walls.forEach(function (t, i) {
+                        log.push({ text: 'Attack ' + (hits.length + i + 1) + ': Monster ' + t.n + ' in Defense Position (DEF ' + fmt(t.val) + '), destroyed, no damage.', muted: true });
+                    });
+                    var blocked = targets.filter(function (t) {
+                        return (t.pos === 'atk' && t.eff >= medAtk) || (t.pos === 'def' && t.val >= medAtk);
+                    });
+                    blocked.forEach(function (t) {
+                        log.push({ text: 'Monster ' + t.n + ' matches or beats ' + fmt(medAtk) + ' ATK, so attacking it deals no damage. Banish it with the Finite and the Infinite instead.', muted: true });
+                    });
+                    if (!hits.length && !walls.length && !blocked.length) {
+                        log.push({ text: 'No attack deals damage.', muted: true });
+                    }
+                    var cleared = hits.length + walls.length === targets.length;
+                    if (cleared && hits.length + walls.length < maxAttacks) {
+                        log.push({ text: "Their field is empty after that, but the extra attacks can only target monsters.", muted: true });
+                    }
+                }
+
+                out('atk').textContent = fmt(medAtk);
+                out('attacks').textContent = attacksText;
+                out('damage').textContent = fmt(total);
+                out('log').innerHTML = log.map(function (entry) {
+                    return '<li' + (entry.muted ? ' class="is-muted"' : '') + '>' + escapeText(entry.text) + '</li>';
+                }).join('');
+
+                var verdict = out('verdict');
+                var lethal = total >= lp;
+                verdict.classList.toggle('is-lethal', lethal);
+                verdict.classList.toggle('is-short', !lethal);
+                verdict.innerHTML = lethal
+                    ? '<i class="fas fa-check" aria-hidden="true"></i> Lethal: ' + fmt(total) + ' damage into ' + fmt(lp) + ' LP'
+                    : '<i class="fas fa-times" aria-hidden="true"></i> Not lethal: ' + fmt(lp - total) + ' LP short';
+            }
+
+            function update(announce) {
+                var count = pointedCount();
+                renderTiers(count, announce);
+                renderBattle(count);
+            }
+
+            zoneBtns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+                    update(true);
+                });
+            });
+
+            [opt.halve, opt.finite, opt.division].forEach(function (input) {
+                input.addEventListener('change', function () { update(false); });
+            });
+            lpInput.addEventListener('input', function () { update(false); });
+
+            presetBtns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var name = b.getAttribute('data-mc-preset');
+                    monsters = PRESETS[name].map(function (m) { return { pos: m.pos, val: m.val }; });
+                    banishIndex = -1;
+                    setPreset(name);
+                    renderOpponents();
+                    update(false);
+                });
+            });
+
+            addBtn.addEventListener('click', function () {
+                if (monsters.length >= MAX_MONSTERS) return;
+                monsters.push({ pos: 'atk', val: 2000 });
+                setPreset(null);
+                renderOpponents();
+                update(false);
+                var inputs = oppList.querySelectorAll('[data-mc-val]');
+                if (inputs.length) inputs[inputs.length - 1].focus();
+            });
+
+            // Row edits update the numbers in place, so the field being typed in keeps focus.
+            oppList.addEventListener('input', function (event) {
+                var valIdx = event.target.getAttribute('data-mc-val');
+                if (valIdx === null) return;
+                monsters[Number(valIdx)].val = toNumber(event.target.value, 99999);
+                setPreset(null);
+                renderBanishOptions();
+                update(false);
+            });
+
+            oppList.addEventListener('change', function (event) {
+                var posIdx = event.target.getAttribute('data-mc-pos');
+                if (posIdx === null) return;
+                var i = Number(posIdx);
+                monsters[i].pos = event.target.value;
+                var label = oppList.querySelector('[data-mc-stat="' + i + '"]');
+                if (label) label.textContent = monsters[i].pos === 'atk' ? 'ATK' : 'DEF';
+                setPreset(null);
+                renderBanishOptions();
+                update(false);
+            });
+
+            oppList.addEventListener('click', function (event) {
+                var btn = event.target.closest('[data-mc-remove]');
+                if (!btn) return;
+                var i = Number(btn.getAttribute('data-mc-remove'));
+                monsters.splice(i, 1);
+                if (banishIndex === i) banishIndex = -1;
+                else if (banishIndex > i) banishIndex -= 1;
+                setPreset(null);
+                renderOpponents();
+                update(false);
+                (oppList.querySelector('[data-mc-remove]') || addBtn).focus();
+            });
+
+            banishSel.addEventListener('change', function () {
+                banishIndex = Number(banishSel.value);
+                update(false);
+            });
+
+            renderOpponents();
+            update(false);
+        })();
+    </script>
+    <!-- Tab deep links (#tab-betb, #tab-new-combo and friends) -->
+    <script src="../assets/js/tab-deeplink.js"></script>
 </body>
 
 </html>

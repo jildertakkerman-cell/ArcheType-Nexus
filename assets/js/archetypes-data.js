@@ -5081,6 +5081,37 @@ const archetypes = [
 
     },
     {
+        name: 'Ars Magna',
+        description: "A five-card Beyond the Brave engine whose Level 8 monsters return from banishment on every Link Summon, turning Power Patron Link Monsters into repeatable removal on the opponent's turn.",
+        filepath: 'pages/Ars Magna Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="arsMagnaBg" cx="50%" cy="50%" r="60%">
+                            <stop offset="0%" stop-color="#1f1a26"/>
+                            <stop offset="100%" stop-color="#08070b"/>
+                        </radialGradient>
+                        <radialGradient id="arsMagnaCore" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#fde68a"/>
+                            <stop offset="60%" stop-color="#e8c060"/>
+                            <stop offset="100%" stop-color="#b8892c" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <!-- Transmutation circle: the trio (Fusion, Synchro, Xyz) around Mediclius -->
+                    <circle cx="50" cy="50" r="46" fill="url(#arsMagnaBg)" stroke="#e8c060" stroke-width="2"/>
+                    <circle cx="50" cy="50" r="38" fill="none" stroke="#e8c060" stroke-opacity="0.45" stroke-width="1" stroke-dasharray="2 3"/>
+                    <path d="M50 20 L76 65 L24 65 Z" fill="none" stroke="#e8c060" stroke-opacity="0.8" stroke-width="1.6"/>
+                    <circle cx="50" cy="50" r="15" fill="none" stroke="#e8c060" stroke-opacity="0.6" stroke-width="1.2"/>
+                    <circle cx="50" cy="20" r="5" fill="#c084fc"/>
+                    <circle cx="76" cy="65" r="5" fill="#f87171"/>
+                    <circle cx="24" cy="65" r="5" fill="#34d399"/>
+                    <circle cx="50" cy="50" r="8" fill="url(#arsMagnaCore)"/>
+                    <circle cx="50" cy="50" r="2.5" fill="#60a5fa"/>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+    {
         name: 'Artifact',
         description: 'A control engine that Special Summons its monsters from the S/T Zone to disrupt opponents.',
         filepath: 'pages/Artifact Deck Analysis.html',
@@ -5200,6 +5231,40 @@ const archetypes = [
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
+
+    },
+    {
+        name: 'Ashtra',
+        description: 'A ten-card Trap-Synchro archetype that converts face-down cards into Level 1 Tuners, free Level 7/8 Special Summons, and two Synchro bosses.',
+        filepath: 'pages/Ashtra Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="ashtra-torii-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ff7a6e"/>
+                            <stop offset="100%" stop-color="#8e2a2a"/>
+                        </linearGradient>
+                        <radialGradient id="ashtra-halo-grad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#d4af6a" stop-opacity="0.55"/>
+                            <stop offset="100%" stop-color="#d4af6a" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="46" fill="#17152a"/>
+                    <circle cx="50" cy="48" r="34" fill="url(#ashtra-halo-grad)"/>
+                    <g stroke="#cfd8ea" stroke-width="0.9" opacity="0.5" fill="none">
+                        <path d="M50 18 L50 82 M22 50 L78 50 M30 30 L70 70 M70 30 L30 70"/>
+                        <circle cx="50" cy="50" r="12"/>
+                        <circle cx="50" cy="50" r="22"/>
+                        <circle cx="50" cy="50" r="31"/>
+                    </g>
+                    <g fill="url(#ashtra-torii-grad)">
+                        <rect x="20" y="28" width="60" height="6" rx="2"/>
+                        <rect x="26" y="38" width="48" height="5" rx="2"/>
+                        <rect x="32" y="34" width="6" height="42" rx="2"/>
+                        <rect x="62" y="34" width="6" height="42" rx="2"/>
+                    </g>
+                </svg>`,
+        firstReleaseDate: '2026-07-18',
+        latestReleaseDate: '2026-07-18',
 
     },
     {
@@ -5483,6 +5548,37 @@ const archetypes = [
                     <rect x="65" y="88" width="8" height="2" rx="1" fill="#0891b2" opacity="0.8">
                         <animate attributeName="width" values="3;8;3" dur="2s" repeatCount="indefinite"/>
                     </rect>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+    {
+        name: 'Atlantis, City of the Sea Dragon',
+        description: "The Beyond the Brave Field Spell behind the Daedalus deck: it lowers every Level, cuts a material from the Daedalus Link Monsters, and returns from the GY while the Atlantis monsters, all named \"Umi\" on the field, keep Kairyu-Shin's lock alive.",
+        filepath: 'pages/Atlantis, City of the Sea Dragon Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="atlantis-city-bg" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0b2a44"/>
+                            <stop offset="100%" stop-color="#041120"/>
+                        </linearGradient>
+                        <linearGradient id="atlantis-city-gold" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#fde68a"/>
+                            <stop offset="100%" stop-color="#b8892c"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- The sunken city under a sea-dragon's arc -->
+                    <circle cx="50" cy="50" r="46" fill="url(#atlantis-city-bg)" stroke="#f5c451" stroke-width="2"/>
+                    <path d="M18 44 Q50 8 82 44" fill="none" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round"/>
+                    <circle cx="82" cy="44" r="2.6" fill="#22d3ee"/>
+                    <g fill="url(#atlantis-city-gold)">
+                        <path d="M22 76 V60 H28 V52 L31 46 L34 52 V60 H38 V76 Z"/>
+                        <path d="M38 76 V58 Q50 38 62 58 V76 Z"/>
+                        <path d="M62 76 V60 H66 V52 L69 46 L72 52 V60 H78 V76 Z"/>
+                    </g>
+                    <rect x="46" y="64" width="8" height="12" rx="4" fill="#041120"/>
+                    <path d="M14 80 Q26 74 38 80 T62 80 T86 80" fill="none" stroke="#a5f3fc" stroke-opacity="0.7" stroke-width="1.6"/>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
@@ -5965,6 +6061,32 @@ const archetypes = [
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
+
+    },
+    {
+        name: "Barian's",
+        description: "The Seven Barian Emperors' Chaos Xyz deck: Umbral Horror monsters rank up without Rank-Up-Magic into CXyz Hope Chaos Barian Dragon, a boss that stops searching while Barian's Seventh Untopia caps the Extra Deck.",
+        filepath: "pages/Barian's Deck Analysis.html",
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="barians-bg" cx="50%" cy="50%" r="60%">
+                            <stop offset="0%" stop-color="#2a0f1a"/>
+                            <stop offset="100%" stop-color="#0a0709"/>
+                        </radialGradient>
+                        <radialGradient id="barians-core" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#ff5a70"/>
+                            <stop offset="100%" stop-color="#ff5a70" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <!-- Barian crest: seven points for the Seven Emperors and Numbers 101-107 -->
+                    <circle cx="50" cy="50" r="46" fill="url(#barians-bg)" stroke="#ff5a70" stroke-width="2"/>
+                    <polygon points="50.0,14.0 65.6,82.4 21.9,27.6 85.1,58.0 14.9,58.0 78.1,27.6 34.4,82.4" fill="none" stroke="#ff5a70" stroke-width="1.6" stroke-linejoin="round"/>
+                    <polygon points="50.0,14.0 85.1,58.0 34.4,82.4 21.9,27.6 78.1,27.6 65.6,82.4 14.9,58.0" fill="none" stroke="#a878ff" stroke-opacity="0.7" stroke-width="1" stroke-linejoin="round"/>
+                    <circle cx="50" cy="50" r="12" fill="url(#barians-core)"/>
+                    <path d="M50 42 L54 50 L50 58 L46 50 Z" fill="#ff5a70"/>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: '2026-07-18',
 
     },
     // --- BATTERYMAN ENTRY ---
@@ -12262,6 +12384,32 @@ const archetypes = [
 
     },
     {
+        name: 'Garbage',
+        description: "Dr. Faker's DARK Fiends that pay Life Points for Level 5 bodies to build Number 53: Heart-eartH, now with Garbage Golem, a free Level 4 that adds removal and recycles Xyz materials.",
+        filepath: 'pages/Garbage Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="garbage-bg" cx="50%" cy="60%" r="60%">
+                            <stop offset="0%" stop-color="#1c2319"/>
+                            <stop offset="100%" stop-color="#0b0d0a"/>
+                        </radialGradient>
+                        <radialGradient id="garbage-heart-glow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#fb7185" stop-opacity="0.7"/>
+                            <stop offset="100%" stop-color="#fb7185" stop-opacity="0"/>
+                        </radialGradient>
+                    </defs>
+                    <!-- Scrap heap with the Heart-eartH core above it -->
+                    <circle cx="50" cy="50" r="46" fill="url(#garbage-bg)" stroke="#a3e635" stroke-width="2"/>
+                    <path d="M18 74 L30 56 L40 62 L50 48 L60 60 L70 54 L82 74 Z" fill="#3a4633" stroke="#a3e635" stroke-opacity="0.6" stroke-width="1.2" stroke-linejoin="round"/>
+                    <path d="M28 70 L36 64 M46 67 L54 59 M62 69 L70 63" stroke="#c2410c" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="50" cy="33" r="16" fill="url(#garbage-heart-glow)"/>
+                    <path d="M50 42 C44 37 40 34 40 30 C40 27 42.5 25 45 25 C47 25 49 26.5 50 28 C51 26.5 53 25 55 25 C57.5 25 60 27 60 30 C60 34 56 37 50 42 Z" fill="#e11d48" stroke="#fecdd3" stroke-width="0.8"/>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+    {
         name: 'Gate Guardian',
         description: 'A classic control archetype that evolved from its nostalgic origins into a sophisticated deck, manipulating its three guardian pieces to summon powerful fusion monsters.',
         filepath: 'pages/Gate Guardian Deck Analysis.html',
@@ -17096,6 +17244,44 @@ const archetypes = [
                                 <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.4s" repeatCount="indefinite"/>
                             </polygon>
                         </g>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+
+    {
+        name: 'Joey Series',
+        description: "Joey Wheeler's coin tosses, dice and Battle City legends, rebuilt in Beyond the Brave around Dark Time Wizard: a Quick-Play search-or-gamble that summons Red-Eyes Black Dragon Exceed whichever way the coin lands.",
+        filepath: 'pages/Joey Series Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="joey-bg" cx="50%" cy="45%" r="60%">
+                            <stop offset="0%" stop-color="#2a2138"/>
+                            <stop offset="100%" stop-color="#0c0a10"/>
+                        </radialGradient>
+                        <radialGradient id="joey-coin" cx="35%" cy="30%" r="75%">
+                            <stop offset="0%" stop-color="#ffe3a1"/>
+                            <stop offset="45%" stop-color="#f2b53a"/>
+                            <stop offset="100%" stop-color="#b7791f"/>
+                        </radialGradient>
+                    </defs>
+                    <!-- Time Wizard clock face behind a spinning coin, with a die -->
+                    <circle cx="50" cy="50" r="46" fill="url(#joey-bg)" stroke="#f2b53a" stroke-width="2"/>
+                    <circle cx="50" cy="46" r="32" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="2 6.4" opacity="0.8"/>
+                    <line x1="50" y1="46" x2="50" y2="20" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" opacity="0.7">
+                        <animateTransform attributeName="transform" type="rotate" values="360 50 46;0 50 46" dur="10s" repeatCount="indefinite"/>
+                    </line>
+                    <ellipse cx="50" cy="46" rx="17" ry="17" fill="url(#joey-coin)" stroke="#7c4a03" stroke-width="1.5">
+                        <animate attributeName="rx" values="17;2;17" dur="2.4s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <rect x="62" y="62" width="20" height="20" rx="4" fill="#f5f1ea" stroke="#be123c" stroke-width="1" transform="rotate(12 72 72)"/>
+                    <g fill="#be123c" transform="rotate(12 72 72)">
+                        <circle cx="67" cy="67" r="1.8"/>
+                        <circle cx="72" cy="72" r="1.8"/>
+                        <circle cx="77" cy="77" r="1.8"/>
+                    </g>
+                    <text x="50" y="93" text-anchor="middle" font-size="9" fill="#f2b53a" font-weight="bold">JOEY</text>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,

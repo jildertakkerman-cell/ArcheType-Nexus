@@ -1144,7 +1144,7 @@ class ComboGuide {
 
             // --- VOTE BAR ---
             const voteBarDiv = document.createElement('div');
-            voteBarDiv.innerHTML = this.voteBarHtml(comboId, accent, textMain, theme.isDarkMode);
+            voteBarDiv.innerHTML = this.voteBarHtml(comboId, accent, textMain, theme.isDarkMode, combo.title);
             guideContainer.appendChild(voteBarDiv.firstElementChild);
 
             if (combo.steps) {
@@ -1318,10 +1318,17 @@ class ComboGuide {
      * (`${archetypeSlug}-${comboKey}`). Starts disabled/loading; the caller's
      * votesPromise patches in the real score/breakdown and enabled state
      * once Supabase responds (see ComboGuide.render and _applyVoteState).
+     *
+     * Ends with a "Suggest an improvement" link: a vote says a line is off,
+     * the page's suggestion form (CardLoader.openSuggestionForm, opened right
+     * under this bar) says how. No sign-in needed for that one.
      */
-    static voteBarHtml(comboId, accent, textMain, isDark) {
+    static voteBarHtml(comboId, accent, textMain, isDark, comboTitle) {
+        // Titles are trusted JSON but may carry markup; the context is plain text.
+        const context = `Combo guide: ${String(comboTitle || comboId).replace(/<[^>]*>/g, '')}`
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         return `
-            <div style="padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;
+            <div data-suggest-anchor style="padding:0.75rem 1.5rem; display:flex; align-items:center; gap:0.85rem; flex-wrap:wrap;
                         border-bottom:1px solid ${accent}30; background-color: ${isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.4)'};">
                 <span style="font-size:0.78rem; color:${textMain}; opacity:0.75; flex-shrink:0;">Was this guide helpful?</span>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -1363,6 +1370,14 @@ class ComboGuide {
                         <i class="fab fa-google"></i>
                     </button>
                 </span>
+                <button type="button" data-suggest="${context}"
+                        style="margin-left:auto; display:inline-flex; align-items:center; gap:0.4rem; padding:0.25rem 0;
+                               background:none; border:none; color:${accent}; font-size:0.78rem; font-weight:600;
+                               cursor:pointer; font-family:inherit;"
+                        onmouseover="this.style.textDecoration='underline'"
+                        onmouseout="this.style.textDecoration='none'">
+                    <i class="fas fa-edit" style="font-size:0.72rem;"></i> Suggest an improvement
+                </button>
             </div>`;
     }
 
@@ -1904,6 +1919,15 @@ class DuelSimulator {
             return;
         }
 
+        // A card that moves on its own (detached as a cost, revived, etc.) is no
+        // longer material, so it must not follow its old Xyz Monster around.
+        if (this.materials) {
+            Object.values(this.materials).forEach(list => {
+                const idx = list.indexOf(cardId);
+                if (idx !== -1) list.splice(idx, 1);
+            });
+        }
+
         // Auto-resolve Spell/Trap zone collisions to prevent stacking
         const stZones = ['zone-s1', 'zone-s2', 'zone-s3', 'zone-s4', 'zone-s5'];
         if (stZones.includes(targetZoneId)) {
@@ -2248,6 +2272,8 @@ class DuelSimulator {
         this.currentStep = 0;
         this.tokenLayer.innerHTML = '';
         this.cards = {};
+        // Clear Xyz attachments too, or a replayed combo drags stale materials along
+        this.materials = {};
         this.logEl.innerHTML = '';
         this.clearLastEffect();
         if (typeof window.CardLoader !== 'undefined') window.CardLoader.hideCardPreview();

@@ -13,6 +13,7 @@
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <script src="../assets/js/community-combos.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -339,6 +340,410 @@
                 font-size: 18px;
             }
         }
+
+        /* --- Guide tabs + Beyond the Brave (BETB) support panel ---
+           Scoped here rather than as Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild.
+           Gold stands for LIGHT and purple for DARK, as in the rest of the page. */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #404040;
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: -2px;
+            font: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #a3a3a3;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.2s, background-color 0.2s;
+        }
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #eab308, #a855f7);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tab-btn:hover { color: #f5f5f5; background-color: rgba(168, 85, 247, 0.08); }
+        .tab-btn[aria-selected="true"] { color: #f5f5f5; }
+        .tab-btn[aria-selected="true"]::after { opacity: 1; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible {
+            outline: 2px solid #eab308;
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: #eab308;
+            color: #1a1a1a;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .betb-meta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid #a855f7;
+            border-radius: 9999px;
+            background: rgba(168, 85, 247, 0.15);
+            color: #f5f5f5;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-chip i { color: #eab308; }
+        .betb-intro {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: #e5e7eb;
+            text-align: center;
+        }
+        .betb-pillars {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        .betb-pillars h3 { margin-bottom: 0.5rem; font-weight: 700; color: #f5f5f5; }
+        .betb-pillars p { font-size: 0.875rem; line-height: 1.55; color: #e5e7eb; }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+            color: #eab308;
+        }
+
+        /* LIGHT / DARK attribute tags used in stat lines and combo states */
+        .betb-attr {
+            display: inline-block;
+            padding: 0 0.4rem;
+            border: 1px solid;
+            border-radius: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.05em;
+            vertical-align: 0.1em;
+        }
+        .betb-attr--light { border-color: #eab308; background: rgba(234, 179, 8, 0.15); color: #fde047; }
+        .betb-attr--dark { border-color: #a855f7; background: rgba(168, 85, 247, 0.18); color: #d8b4fe; }
+
+        .betb-callout {
+            padding: 1rem 1.25rem;
+            border: 1px solid #737373;
+            border-left: 4px solid #a855f7;
+            border-radius: 0.75rem;
+            background: #262626;
+            color: #e5e7eb;
+        }
+        .betb-callout--gold { border-left-color: #eab308; }
+        .betb-callout + .betb-callout,
+        .betb-endboard + .betb-callout,
+        .betb-risks + .betb-callout { margin-top: 1.5rem; }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #f5f5f5;
+        }
+        .betb-callout-title i { color: #eab308; }
+        .betb-callout p + p { margin-top: 0.6rem; }
+        .betb-callout strong { color: #fff; }
+        .betb-callout ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .betb-callout li { position: relative; padding-left: 1.1rem; }
+        .betb-callout li::before {
+            content: '';
+            position: absolute;
+            top: 0.6em;
+            left: 0;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, #eab308 50%, #a855f7 50%);
+        }
+
+        /* New card entry: art | name + stats on top, card text full-width below
+           on phones; art spans both rows from tablet up. */
+        .betb-card {
+            padding: 1.25rem;
+            border: 1px solid #737373;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #1f1a26 0%, #262626 60%, #26231a 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        .betb-card-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-card-art { grid-area: art; }
+        .betb-card-head { grid-area: head; min-width: 0; }
+        .betb-card-body { grid-area: body; min-width: 0; }
+        .betb-card .card-placeholder { min-height: 140px; font-size: 0.65rem; }
+        .betb-card-name { font-size: 1.125rem; font-weight: 700; line-height: 1.3; color: #fff; }
+        .betb-stats {
+            display: grid;
+            gap: 0.2rem;
+            margin-top: 0.6rem;
+            font-size: 0.8rem;
+        }
+        .betb-stats > div { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.4rem; }
+        .betb-stats dt { color: #a3a3a3; }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; color: #f5f5f5; font-weight: 600; }
+        .betb-label {
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #a3a3a3;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #e5e7eb;
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: #a855f7;
+            color: #1a1a1a;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-opt {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #d8b4fe;
+        }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid #eab308;
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: rgba(234, 179, 8, 0.08);
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: #f5f5f5;
+        }
+        .betb-role strong { color: #fde047; }
+
+        /* Combo walkthrough */
+        .betb-step-optional {
+            margin-left: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #a3a3a3;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .betb-step-state {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: #d4d4d4;
+        }
+        .betb-step-state b { color: #f5f5f5; font-weight: 700; }
+        .betb-endboard {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid #737373;
+            border-radius: 1rem;
+            background: #262626;
+        }
+        .betb-endboard-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-endboard-grid h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #f5f5f5;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-endboard-grid h3 i { color: #eab308; }
+        .betb-endboard-grid ul {
+            display: grid;
+            gap: 0.4rem;
+            margin: 0;
+            padding-left: 1.1rem;
+            list-style: disc;
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: #e5e7eb;
+        }
+
+        /* Tables scroll inside their own focusable region on narrow screens
+           instead of forcing the page to scroll sideways. */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid #737373;
+            border-radius: 0.75rem;
+            background: #262626;
+        }
+        .betb-table { width: 100%; min-width: 560px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid #404040;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            background: #1a1a1a;
+            border-bottom: 2px solid #a855f7;
+            font-size: 0.75rem;
+            color: #d8b4fe;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .betb-table tbody th { color: #fff; font-weight: 700; }
+        .betb-table td { color: #e5e7eb; }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        /* On phones a stacking table turns each row into a small card (name and
+           verdict on top, reason below) so nothing hides off to the side. */
+        @media (max-width: 639px) {
+            .betb-table--stack { min-width: 0; }
+            .betb-table--stack thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+            }
+            .betb-table--stack tbody tr {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                column-gap: 0.75rem;
+                border-bottom: 1px solid #404040;
+            }
+            .betb-table--stack tbody tr:last-child { border-bottom: none; }
+            .betb-table--stack tbody th,
+            .betb-table--stack tbody td { display: block; border-bottom: none; }
+            .betb-table--stack tbody td:last-child { grid-column: 1 / -1; padding-top: 0; }
+        }
+        .betb-verdict { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; white-space: nowrap; }
+        .betb-verdict--ok { color: #34d399; }
+        .betb-verdict--no { color: #f87171; }
+        .betb-note { margin-top: 0.75rem; font-size: 0.8rem; color: #a3a3a3; }
+
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid #a3a3a3;
+            border-radius: 0.75rem;
+            background: #404040;
+        }
+        .betb-risks i { margin-top: 0.2rem; color: #ef4444; }
+        .betb-risks h3 { margin-bottom: 0.25rem; font-weight: 700; color: #fff; }
+        .betb-risks p { font-size: 0.875rem; line-height: 1.55; color: #e5e7eb; }
+
+        @media (min-width: 768px) {
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-card { padding: 1.5rem; }
+            .betb-card-layout {
+                grid-template-columns: 136px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card .card-placeholder { min-height: 198px; }
+            .betb-endboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn,
+            .tab-btn::after { transition: none; }
+        }
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -382,6 +787,15 @@
                 </p>
             </div>
         </section>
+
+        <!-- Guide tabs: the original guide lives unchanged in "Classic Analysis";
+             Beyond the Brave support gets its own panel. -->
+        <div class="tab-nav" role="tablist" aria-label="Chaos guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Beyond the Brave Support <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16">
@@ -625,14 +1039,286 @@
                         removal and powerful protection effects.</p>
                 </div>
             </div>
+        </section>
 
+        </div>
+        <!-- END tab-classic -->
 
-            <!-- TCG Banlist Impact Section -->
-            <section>
-                <div id="banlist-status">
-                    <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+        <!-- ==================== BEYOND THE BRAVE (BETB) SUPPORT TAB ====================
+             Card stats and effect text are the printed text. Every line was checked against
+             the printed text of Chaospawn Bishop, Chaos Archfiend and Chaos Angel, including
+             Chaos Angel's "original Attributes" wording. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What Changed -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Beyond the Brave: Chaospawn Bishop</h2>
+                <div class="betb-meta">
+                    <span class="betb-chip"><i class="fas fa-globe-americas" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; 9 Oct 2026</span>
+                </div>
+                <p class="betb-intro">
+                    <strong class="text-dark">Chaospawn Bishop</strong> is a Level 4 DARK Fiend Tuner built on the same LIGHT/DARK split as the rest of the deck. One Normal Summon puts a DARK copy and a LIGHT copy on the field, and together they make <strong class="text-dark">Chaos Archfiend</strong>. Until now, the route to Archfiend went through P.U.N.K., The Zombie Vampire and Bystial. The original guide, including that line, is unchanged in the <strong>Classic Analysis</strong> tab.
+                </p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-yin-yang"></i></div>
+                        <h3>Both Attributes From One Card</h3>
+                        <p>Bishop Special Summons a second copy of itself, and that copy becomes LIGHT. You get a DARK body and a LIGHT body without any other card.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-bolt"></i></div>
+                        <h3>Chaos Archfiend in Three Summons</h3>
+                        <p>The LIGHT copy is the Tuner and the DARK copy is the non-Tuner, which is exactly what Chaos Archfiend needs. Archfiend is only your third summon of the turn, well short of the five that Nibiru needs.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-clone"></i></div>
+                        <h3>No Dead Draws</h3>
+                        <p>The second copy can come from your hand, Deck or GY, so drawing two isn't a brick. Bishop summons its copy instead of adding it to your hand, so Droll &amp; Lock Bird doesn't stop it.</p>
+                    </div>
                 </div>
             </section>
+
+            <!-- The New Card -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The New Card</h2>
+                <article class="betb-card" aria-labelledby="betb-bishop-name">
+                    <div class="betb-card-layout">
+                        <div class="betb-card-art">
+                            <div id="betb-bishop-img" class="card-placeholder">Chaospawn Bishop</div>
+                        </div>
+                        <div class="betb-card-head">
+                            <h3 id="betb-bishop-name" class="betb-card-name">Chaospawn Bishop</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Type</dt><dd><span class="betb-attr betb-attr--dark">DARK</span> Fiend / Tuner / Effect</dd></div>
+                                <div><dt>Level</dt><dd>4</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>100 / 1000</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-card-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects" role="list">
+                                <li>If this card you control would be used as Synchro Material, you can treat it as a non-Tuner.</li>
+                                <li>If this card is Normal or Special Summoned: You can Special Summon 1 "Chaospawn Bishop" from your hand, Deck, or GY, and if you do, it becomes LIGHT, also for the rest of this turn, you cannot Special Summon, except LIGHT or DARK monsters, and you cannot Special Summon from the Extra Deck, except Synchro Monsters.</li>
+                            </ol>
+                            <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only use this effect of "Chaospawn Bishop" once per turn.</p>
+                            <p class="betb-role"><strong>A one-card Chaos Archfiend.</strong> Use the LIGHT copy as the Tuner and treat the DARK copy as a non-Tuner. That pair meets Chaos Archfiend's requirement of 1 LIGHT Tuner + 1+ non-Tuner DARK monsters. The LIGHT change only lasts while the copy is on the field, so both copies land in the GY as DARK monsters, where a Bystial can banish them.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Combo walkthrough -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">BETB Combo: Bishop to Chaos Archfiend</h2>
+                <p class="text-gray-200 mb-8 text-center max-w-2xl mx-auto">One card reaches Chaos Archfiend, with an optional climb into Chaos Angel. It takes the place of steps 1 and 2 of the classic combo, the P.U.N.K. bridge.</p>
+                <div class="flex flex-col items-center gap-6">
+                    <!-- Step 1 -->
+                    <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="betb-step-1-img" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaospawn Bishop</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold mr-3">1</span>
+                                <h3 class="text-lg font-bold">Normal Summon Bishop</h3>
+                            </div>
+                            <p class="text-gray-200">Normal Summon <strong class="text-dark">Chaospawn Bishop</strong> and activate its effect.</p>
+                            <p class="betb-step-state"><b>Field:</b> Bishop <span class="betb-attr betb-attr--dark">DARK</span> (Level 4 Tuner).</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center" aria-hidden="true">
+                        <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="betb-step-2-img" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaospawn Bishop</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold mr-3">2</span>
+                                <h3 class="text-lg font-bold">Summon the Second Copy</h3>
+                            </div>
+                            <p class="text-gray-200">Special Summon a second <strong class="text-dark">Chaospawn Bishop</strong> from your Deck. It becomes <strong class="text-light">LIGHT</strong>. For the rest of the turn you can only Special Summon LIGHT or DARK monsters, and only Synchro Monsters from the Extra Deck.</p>
+                            <p class="betb-step-state"><b>Field:</b> Bishop <span class="betb-attr betb-attr--dark">DARK</span> + Bishop <span class="betb-attr betb-attr--light">LIGHT</span>, both Level 4 Tuners.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center" aria-hidden="true">
+                        <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="betb-step-3-img" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaos Archfiend</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold mr-3">3</span>
+                                <h3 class="text-lg font-bold">Synchro Summon Chaos Archfiend</h3>
+                            </div>
+                            <p class="text-gray-200">Use the LIGHT Bishop as the Tuner and treat the DARK Bishop as a non-Tuner to Synchro Summon <strong class="text-dark">Chaos Archfiend</strong> (Level 8).</p>
+                            <p class="betb-step-state"><b>Field:</b> Chaos Archfiend (2500 ATK). <b>GY:</b> 2 Bishops, both <span class="betb-attr betb-attr--dark">DARK</span>.</p>
+                        </div>
+                    </div>
+                    <!-- Arrow -->
+                    <div class="w-full flex justify-center" aria-hidden="true">
+                        <svg class="h-10 w-10 arrow-color animate-fadeIn" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                    </div>
+                    <!-- Step 4 (optional) -->
+                    <div class="card p-6 combo-step-card w-full max-w-md flex flex-col md:flex-row items-center md:items-start gap-4">
+                        <div id="betb-step-4-img" class="w-32 md:w-40 flex-shrink-0 card-placeholder">Chaos Angel</div>
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <span class="bg-[#262626] text-white rounded-full h-8 w-8 flex-shrink-0 flex items-center justify-center font-bold mr-3">4</span>
+                                <h3 class="text-lg font-bold">Climb to Chaos Angel <span class="betb-step-optional">Optional</span></h3>
+                            </div>
+                            <p class="text-gray-200">Special Summon a Level 2 Tuner that fits the lock, such as <strong>Assault Synchron</strong> from your hand (you take 700 damage). With Chaos Archfiend, Synchro Summon <strong class="text-dark">Chaos Angel</strong> (Level 10). When it's Special Summoned, you can target 1 card on the field and banish it, which is removal when you're going second.</p>
+                            <p class="betb-step-state"><b>Field:</b> Chaos Angel (3500 ATK). <b>Protection:</b> DARK effect only. See below.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="betb-endboard">
+                    <div class="betb-endboard-grid">
+                        <div>
+                            <h3><i class="fas fa-shield-alt" aria-hidden="true"></i> Going first: stop at step 3</h3>
+                            <ul>
+                                <li>End on Chaos Archfiend.</li>
+                                <li>If an opponent's card makes it leave the field, Archfiend Special Summons a "Chaos" Synchro Monster from your Extra Deck, such as Chaos Angel. Chaos Angel's summon effect then banishes 1 card.</li>
+                                <li>Chaos Angel summoned this way wasn't Synchro Summoned, so it gets neither Attribute effect.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3><i class="fas fa-fist-raised" aria-hidden="true"></i> Going second: add a Bystial</h3>
+                            <ul>
+                                <li>Special Summon Bystial Magnamhut or Bystial Druiswurm by banishing a LIGHT or DARK monster from either GY. Your Bishops count, and both Bystials are DARK, so the lock allows them.</li>
+                                <li>A card has now been banished this turn, so Chaos Archfiend gains 2000 ATK (4500).</li>
+                                <li>Archfiend can attack every monster your opponent controls, once each, and banishes any monster it destroys by battle.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="betb-callout betb-callout--gold">
+                    <h3 class="betb-callout-title"><i class="fas fa-search" aria-hidden="true"></i> The fine print: Chaos Angel checks printed Attributes</h3>
+                    <p>Chaos Angel gains its effects from the <strong>original</strong> Attributes of its Synchro Materials. Both copies of Bishop are printed <span class="betb-attr betb-attr--dark">DARK</span>, and so is Chaos Archfiend, so the copy that turned LIGHT still counts as DARK here. A Chaos Angel made from these cards only gets the DARK effect: monsters you control cannot be destroyed by battle. To also get the LIGHT effect, one of its materials has to be a monster printed <span class="betb-attr betb-attr--light">LIGHT</span>.</p>
+                    <p>Chaos Archfiend works differently. It checks each material's Attribute as it is on the field, so the LIGHT copy does count as its LIGHT Tuner.</p>
+                </div>
+            </section>
+
+            <!-- Living with the lock -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Living With the Lock</h2>
+                <p class="betb-intro">Once Bishop's effect resolves, you can only Special Summon LIGHT or DARK monsters, and only Synchro Monsters from the Extra Deck, for the rest of the turn. Here's how that affects the cards this guide uses.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-lock-caption" tabindex="0">
+                    <table class="betb-table betb-table--stack">
+                        <caption id="betb-lock-caption" class="betb-sr-only">Which Chaos cards can still be Special Summoned or used after Chaospawn Bishop's effect resolves</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">After Bishop</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Chaos Archfiend, Chaos Angel</th>
+                                <td><span class="betb-verdict betb-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Allowed</span></td>
+                                <td>DARK Synchro Monsters.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Bystial Magnamhut, Bystial Druiswurm</th>
+                                <td><span class="betb-verdict betb-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Allowed</span></td>
+                                <td>DARK monsters Special Summoned from the hand.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Chaos Space</th>
+                                <td><span class="betb-verdict betb-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Allowed</span></td>
+                                <td>A Spell. The lock only limits Special Summons.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Noh-P.U.N.K. Ze Amin and the other Level 3 P.U.N.K. Tuners</th>
+                                <td><span class="betb-verdict betb-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Blocked</span></td>
+                                <td>EARTH monsters.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The Zombie Vampire</th>
+                                <td><span class="betb-verdict betb-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Blocked</span></td>
+                                <td>An Xyz Monster. Only Synchros can come from the Extra Deck.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Crystal Wing Synchro Dragon</th>
+                                <td><span class="betb-verdict betb-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Blocked</span></td>
+                                <td>A Synchro Monster, but WIND. The same goes for Baronne de Fleur.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note">The lock starts when Bishop's effect resolves, so anything you did earlier in the turn is unaffected. If the effect is negated, none of it applies, including the lock.</p>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Deck Building Notes</h2>
+                <div class="betb-callout">
+                    <ul role="list">
+                        <li><strong>Run 3 Chaospawn Bishop.</strong> The three copies are the whole engine. There's no other piece to fit in, and drawing two isn't a brick because the first can summon the second from your hand.</li>
+                        <li><strong>Treat Bishop and the P.U.N.K. bridge as separate routes to Archfiend.</strong> Once Bishop's effect resolves, Ze Amin and The Zombie Vampire can't be summoned that turn.</li>
+                        <li><strong>For the Chaos Angel climb, add a Level 2 Tuner that fits the lock.</strong> Assault Synchron works: its own restriction also allows only Synchro Monsters from the Extra Deck.</li>
+                        <li><strong>Favour LIGHT and DARK Synchros in the Extra Deck.</strong> Chaos Archfiend and Chaos Angel are already there. WIND Synchros can't be summoned on a Bishop turn.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Weak points -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Weak Points to Play Around</h2>
+                <ul class="betb-risks" role="list">
+                    <li>
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <div>
+                            <h3>Hand traps on the summon effect</h3>
+                            <p>Ash Blossom can negate Bishop's effect, because it can Special Summon from the Deck. Effect Veiler and Infinite Impermanence negate it on the field. Either way you keep one Level 4 DARK Tuner, and since the effect was negated the lock never starts, so the rest of your hand can still make a Synchro play.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        <div>
+                            <h3>The lock cuts off the classic line</h3>
+                            <p>After Bishop resolves, Ze Amin, The Zombie Vampire and WIND Synchros are off the table for the turn. In practice, pick one route to Archfiend per turn.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ban" aria-hidden="true"></i>
+                        <div>
+                            <h3>Synchro floodgates</h3>
+                            <p>Dimensional Barrier declaring Synchro stops Chaos Archfiend and Chaos Angel from being Special Summoned for the rest of the turn. Bishop's lock leaves you no Xyz or Link plays to fall back on.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>No LIGHT protection on its own</h3>
+                            <p>A Chaos Angel made from Bishops and Chaos Archfiend doesn't get the effect that shields your Synchros from opponent's monster effects, so those effects can still answer it.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="betb-callout">
+                    <h3 class="betb-callout-title"><i class="fas fa-gavel" aria-hidden="true"></i> Verdict</h3>
+                    <p>Chaospawn Bishop gives Chaos a one-card route to Chaos Archfiend built on the deck's own LIGHT/DARK theme, with no bodies borrowed from P.U.N.K. It doesn't stack with the classic line: once it resolves, P.U.N.K., The Zombie Vampire and WIND Synchros are gone for the turn, and on its own it won't give Chaos Angel full protection. Use it as a compact alternative engine. It's at its best going second, where Archfiend and a Bystial attack every monster your opponent controls at 4500 ATK.</p>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
+
+        <!-- TCG Banlist Impact Section (outside the tabs, so it shows on both) -->
+        <section class="mb-10 md:mb-16">
+            <div id="banlist-status">
+                <!-- Banlist section will be populated by CardLoader.renderBanlistSection -->
+            </div>
         </section>
 
         <!-- Deck Resources Section -->
@@ -680,6 +1366,24 @@
                 initCommunityCombos('community-combos-wrapper', 'Chaos');
                 initSynergyTags('Chaos');
                 initPageSections('Chaos');
+            });
+        </script>
+
+        <!-- Guide tabs: Beyond the Brave art is only fetched the first time that tab opens. -->
+        <script>
+            GuideTabs.init({
+                panelArt: {
+                    'tab-betb': [
+                        { 'betb-bishop-img': 'Chaospawn Bishop' },
+                        // Second batch reuses the first batch's cached card data.
+                        {
+                            'betb-step-1-img': 'Chaospawn Bishop',
+                            'betb-step-2-img': 'Chaospawn Bishop',
+                            'betb-step-3-img': 'Chaos Archfiend',
+                            'betb-step-4-img': 'Chaos Angel'
+                        }
+                    ]
+                }
             });
         </script>
     <!-- Cookie Consent Banner -->

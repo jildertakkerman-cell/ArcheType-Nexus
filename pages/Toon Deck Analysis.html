@@ -19,6 +19,7 @@
     <script src="../assets/js/page-sections.js"></script>
     <script src="../assets/js/combo-system.js"></script>
     <script src="../assets/js/combo-sounds.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link rel="stylesheet" href="../assets/css/combo-selector.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -164,6 +165,872 @@
         }
 
     </style>
+    <style>
+        /* ===== Guide tabs + Cartoon Shade (Beyond the Brave) =====
+           Added next to the original styles, which are left as they were. The
+           original guide sits unchanged in the "Classic Analysis" tab. Scoped
+           classes rather than Tailwind utilities: output.css is precompiled, so
+           utilities not already in it would need a rebuild. Every colour below
+           comes from the --betb-* tokens, which reuse the page's comic palette;
+           the *-text variants are the darker shades that pass 4.5:1 on white. */
+        :root {
+            --betb-ink: #1f2937;
+            --betb-paper: #ffffff;
+            --betb-sky: #f0f8ff;              /* the page's AliceBlue */
+            --betb-cyan: #e0ffff;             /* the page's LightCyan */
+            --betb-blue: #3b82f6;
+            --betb-blue-text: #1d4ed8;
+            --betb-amber: #f59e0b;
+            --betb-amber-wash: #fef3c7;
+            --betb-fuchsia: #d946ef;
+            --betb-fuchsia-text: #a21caf;
+            --betb-shade: #5b21b6;            /* Cartoon Shade's violet */
+            --betb-shade-soft: #ede9fe;
+            --betb-ok: #047857;
+            --betb-ok-wash: #d1fae5;
+            --betb-warn: #b45309;
+            --betb-warn-wash: #fef3c7;
+            --betb-danger: #b91c1c;
+            --betb-danger-wash: #fee2e2;
+            --betb-text: #374151;
+            --betb-muted: #4b5563;
+            --betb-line: #cbd5e1;
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 0 0 2.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 4px dotted var(--betb-fuchsia);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 48px;
+            padding: 0.5rem 1.25rem;
+            border: 3px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.2rem;
+            letter-spacing: 1.5px;
+            line-height: 1.1;
+            box-shadow: 4px 4px 0 var(--betb-ink);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
+        }
+        .tab-btn:hover { background: var(--betb-sky); transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--betb-ink); }
+        .tab-btn[aria-selected="true"] {
+            background: var(--betb-amber);
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--betb-ink);
+        }
+        .tab-new-badge {
+            padding: 2px 7px;
+            border-radius: 9999px;
+            background: var(--betb-shade);
+            color: #fff;
+            font-family: 'Comic Neue', cursive;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .betb-spot-cta:focus-visible,
+        .betb-tag:focus-visible,
+        .betb-preset:focus-visible,
+        .betb-link:focus-visible,
+        .betb-art:focus-visible,
+        .betb-table-wrap:focus-visible {
+            outline: 3px solid var(--betb-shade);
+            outline-offset: 3px;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+        /* Deep-link targets land clear of the fixed home button. */
+        [id^="betb-"] { scroll-margin-top: 5.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                min-width: 0;
+                padding: 0.5rem 0.6rem;
+                font-size: 1rem;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Card art slot: holds the 59:86 card shape until CardLoader
+           swaps the image in, then drops the empty-slot styling. ----- */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 3px dotted var(--betb-fuchsia);
+            border-radius: 0.6rem;
+            background: var(--betb-cyan);
+            color: var(--betb-ink);
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-align: center;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border: 3px solid var(--betb-ink);
+            background: none;
+            box-shadow: 4px 4px 0 var(--betb-ink);
+        }
+        /* CardLoader's not-found fallback nests a full-size .card-placeholder. */
+        .betb-art .card-placeholder {
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            font-size: inherit;
+        }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .betb-spot {
+            position: relative;
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 4px solid var(--betb-ink);
+            border-radius: 1.5rem;
+            background:
+                radial-gradient(var(--betb-shade-soft) 1.3px, transparent 1.5px) 0 0 / 14px 14px,
+                var(--betb-paper);
+            box-shadow: 8px 8px 0 var(--betb-shade);
+        }
+        .betb-spot-art { grid-area: art; transform: rotate(-3deg); }
+        .betb-spot-head { grid-area: head; min-width: 0; }
+        .betb-spot-body { grid-area: body; min-width: 0; }
+        .betb-burst {
+            position: absolute;
+            top: -1.4rem;
+            right: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 4.25rem;
+            height: 4.25rem;
+            background: var(--betb-amber);
+            clip-path: polygon(50% 0%, 61% 18%, 82% 10%, 79% 32%, 100% 38%, 84% 54%, 97% 73%, 74% 75%, 70% 97%, 52% 84%, 34% 100%, 28% 78%, 5% 80%, 16% 60%, 0% 42%, 20% 33%, 14% 11%, 37% 17%);
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            transform: rotate(10deg);
+        }
+        .betb-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+            padding-right: 3.5rem;
+            color: var(--betb-shade);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .betb-spot-title {
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.7rem;
+            letter-spacing: 1.5px;
+            line-height: 1.1;
+            text-shadow: 2px 2px 0 #fcd34d;
+        }
+        .betb-spot-stats {
+            margin-top: 0.35rem;
+            color: var(--betb-blue-text);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .betb-spot-hook { color: var(--betb-text); font-size: 1rem; line-height: 1.6; }
+        .betb-spot-hook strong { color: var(--betb-ink); }
+        .betb-spot-label,
+        .betb-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .betb-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 40px;
+            padding: 0.35rem 0.85rem;
+            border: 2px solid var(--betb-ink);
+            border-radius: 9999px;
+            background: var(--betb-paper);
+            color: var(--betb-ink);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background-color 0.15s;
+        }
+        .betb-tag i { color: var(--betb-ok); }
+        .betb-tag:hover { background: var(--betb-amber-wash); }
+        .betb-tag-role { color: var(--betb-muted); font-size: 0.75rem; font-weight: 700; }
+        .betb-tag--counter i { color: var(--betb-danger); }
+        .betb-tag--counter:hover { background: var(--betb-danger-wash); }
+        .betb-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 48px;
+            margin-top: 1.1rem;
+            padding: 0.5rem 1.3rem;
+            border: 3px solid var(--betb-ink);
+            border-radius: 9999px;
+            background: var(--betb-amber);
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.15rem;
+            letter-spacing: 1.2px;
+            box-shadow: 4px 4px 0 var(--betb-ink);
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .betb-spot-cta:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--betb-ink); }
+
+        /* ----- Tab intro ----- */
+        .betb-head { margin-bottom: 1.5rem; text-align: center; }
+        .betb-head h2 { margin-bottom: 0; }
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.85rem;
+            border: 2px solid var(--betb-ink);
+            border-radius: 9999px;
+            background: var(--betb-paper);
+            color: var(--betb-ink);
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .betb-chip i { color: var(--betb-blue-text); }
+        .betb-chip--tcg { background: var(--betb-amber-wash); }
+        .betb-chip--tcg i { color: var(--betb-warn); }
+        .betb-intro,
+        .betb-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--betb-text);
+            font-size: 1.1rem;
+            line-height: 1.65;
+            text-align: center;
+        }
+        .betb-intro strong,
+        .betb-lede strong { color: var(--betb-ink); }
+        .betb-pillars { display: grid; grid-template-columns: 1fr; gap: 1.75rem; }
+        .betb-pillar-icon { margin-bottom: 0.5rem; color: var(--betb-shade); font-size: 1.75rem; }
+        .betb-callout {
+            max-width: 52rem;
+            margin: 2rem auto 0;
+            padding: 1rem 1.25rem;
+            border: 3px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-amber-wash);
+            box-shadow: 5px 5px 0 var(--betb-ink);
+            color: var(--betb-text);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .betb-callout + .betb-callout { margin-top: 1.5rem; }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+        .betb-callout strong { color: var(--betb-ink); }
+
+        /* ----- Panels shared by the profile, finder, checker and cards ----- */
+        .betb-panel {
+            padding: 1.25rem;
+            border: 4px solid var(--betb-blue);
+            border-radius: 1.5rem;
+            background: var(--betb-paper);
+            box-shadow: 8px 8px 0 var(--betb-ink);
+        }
+
+        /* ----- Card profile: art | name + stats on phones, text full width
+           below; art spans both rows from tablet up. ----- */
+        .betb-profile-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-profile-art { grid-area: art; }
+        .betb-profile-head { grid-area: head; min-width: 0; }
+        .betb-profile-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            color: var(--betb-fuchsia-text);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .betb-card-name {
+            margin-top: 0.15rem;
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.6rem;
+            letter-spacing: 1.5px;
+            line-height: 1.15;
+        }
+        .betb-stats { display: grid; gap: 0.2rem; margin-top: 0.5rem; font-size: 0.9rem; }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; color: var(--betb-ink); font-weight: 700; }
+        .betb-effects {
+            display: grid;
+            gap: 0.7rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-effects > li {
+            padding: 0.7rem 0.9rem;
+            border: 2px dashed var(--betb-amber);
+            border-radius: 0.75rem;
+            background: var(--betb-sky);
+            color: var(--betb-text);
+            font-size: 0.98rem;
+            line-height: 1.55;
+        }
+        .betb-effect-tag {
+            display: block;
+            margin-bottom: 0.2rem;
+            color: var(--betb-shade);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.8rem 1rem;
+            border-left: 5px solid var(--betb-shade);
+            border-radius: 0 0.75rem 0.75rem 0;
+            background: var(--betb-shade-soft);
+            color: var(--betb-text);
+            font-size: 0.98rem;
+            line-height: 1.55;
+        }
+        .betb-role strong { color: var(--betb-shade); }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 2px solid var(--betb-ink);
+            border-radius: 0.75rem;
+            background: var(--betb-paper);
+        }
+        .betb-glance dt {
+            color: var(--betb-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-glance dd {
+            margin: 0.25rem 0 0;
+            color: var(--betb-blue-text);
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .betb-rulings {
+            display: grid;
+            gap: 0.4rem;
+            margin: 0.5rem 0 0;
+            padding-left: 1.2rem;
+            color: var(--betb-text);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            list-style: disc;
+        }
+        .betb-rulings strong { color: var(--betb-ink); }
+
+        /* ----- Pills (yes / partly / no) ----- */
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border: 2px solid currentColor;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--yes  { background: var(--betb-ok-wash); color: var(--betb-ok); }
+        .betb-pill--part { background: var(--betb-warn-wash); color: var(--betb-warn); }
+        .betb-pill--no   { background: var(--betb-danger-wash); color: var(--betb-danger); }
+        .betb-pill--ocg  { background: var(--betb-shade-soft); color: var(--betb-shade); }
+
+        /* ----- Search map ----- */
+        .betb-finder { display: grid; gap: 1.25rem; }
+        .betb-finder-picker { min-width: 0; margin: 0; padding: 0; border: 0; }
+        .betb-finder-picker legend { margin-bottom: 0.6rem; padding: 0; }
+        .betb-seg { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+        .betb-seg label { position: relative; display: inline-flex; }
+        .betb-seg input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .betb-seg span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            min-height: 40px;
+            padding: 0.35rem 0.85rem;
+            border: 2px solid var(--betb-ink);
+            border-radius: 9999px;
+            background: var(--betb-paper);
+            color: var(--betb-ink);
+            font-size: 0.88rem;
+            font-weight: 700;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .betb-seg input:hover + span { background: var(--betb-sky); }
+        .betb-seg input:checked + span { background: var(--betb-amber); box-shadow: 3px 3px 0 var(--betb-ink); }
+        .betb-seg input:focus-visible + span { outline: 3px solid var(--betb-shade); outline-offset: 2px; }
+        .betb-finder-group {
+            padding: 1rem 1.1rem;
+            border: 3px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+        }
+        .betb-finder-group[hidden] { display: none; }
+        .betb-finder-group h3 {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.35rem;
+            letter-spacing: 1px;
+        }
+        /* The printed rule, drawn as a speech bubble. */
+        .betb-bubble {
+            position: relative;
+            margin: 0.6rem 0 1.1rem;
+            padding: 0.6rem 0.9rem;
+            border: 2px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-sky);
+            color: var(--betb-text);
+            font-size: 0.95rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+        .betb-bubble::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 1.5rem;
+            width: 16px;
+            height: 16px;
+            border-right: 2px solid var(--betb-ink);
+            border-bottom: 2px solid var(--betb-ink);
+            background: var(--betb-sky);
+            transform: rotate(45deg);
+        }
+        .betb-finder-list { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+        .betb-finder-list > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.3rem 0.75rem;
+            align-items: baseline;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px dashed var(--betb-line);
+            color: var(--betb-text);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .betb-finder-list > li:last-child { padding-bottom: 0; border-bottom: 0; }
+        .betb-finder-list strong { color: var(--betb-ink); }
+
+        /* ----- Protection checker ----- */
+        .betb-check { display: grid; gap: 1.25rem; }
+        .betb-check-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .betb-check-presets .betb-label { width: 100%; margin: 0; }
+        .betb-preset {
+            min-height: 40px;
+            padding: 0.4rem 0.9rem;
+            border: 2px solid var(--betb-ink);
+            border-radius: 9999px;
+            background: var(--betb-paper);
+            color: var(--betb-ink);
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .betb-preset:hover { background: var(--betb-sky); }
+        .betb-preset[aria-pressed="true"] { background: var(--betb-amber); box-shadow: 3px 3px 0 var(--betb-ink); }
+        .betb-check-inputs { display: grid; gap: 1rem; }
+        .betb-check-set {
+            min-width: 0;
+            margin: 0;
+            padding: 0.85rem 1rem 1rem;
+            border: 2px dashed var(--betb-amber);
+            border-radius: 1rem;
+            background: var(--betb-sky);
+        }
+        .betb-check-set legend {
+            padding: 0 0.4rem;
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        .betb-check-hint { margin-top: 0.6rem; color: var(--betb-muted); font-size: 0.85rem; line-height: 1.5; }
+        .betb-check-result {
+            padding: 1rem 1.1rem;
+            border: 3px solid var(--betb-ink);
+            border-left-width: 10px;
+            border-radius: 1rem;
+            background: var(--betb-paper);
+        }
+        .betb-check-result.is-safe { border-left-color: var(--betb-ok); background: var(--betb-ok-wash); }
+        .betb-check-result.is-part { border-left-color: var(--betb-warn); background: var(--betb-warn-wash); }
+        .betb-check-result.is-lost { border-left-color: var(--betb-danger); background: var(--betb-danger-wash); }
+        .betb-check-result.is-na { border-left-color: var(--betb-muted); background: var(--betb-paper); }
+        .betb-check-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+        }
+        .is-safe .betb-check-status i { color: var(--betb-ok); }
+        .is-part .betb-check-status i { color: var(--betb-warn); }
+        .is-lost .betb-check-status i { color: var(--betb-danger); }
+        .betb-check-detail { margin-top: 0.4rem; color: var(--betb-text); font-size: 0.98rem; line-height: 1.55; }
+        .betb-check-notes {
+            display: grid;
+            gap: 0.35rem;
+            margin: 0.6rem 0 0;
+            padding-left: 1.2rem;
+            color: var(--betb-text);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            list-style: disc;
+        }
+        .betb-rules-short { margin-top: 1.5rem; }
+        .betb-rules-short h3 {
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.25rem;
+            letter-spacing: 1px;
+        }
+
+        /* ----- Partner cards ----- */
+        .betb-kin { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-kin-card {
+            display: grid;
+            grid-template-columns: 76px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            padding: 1rem;
+            border: 3px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+            box-shadow: 5px 5px 0 var(--betb-blue);
+        }
+        .betb-kin-card h3 { margin-bottom: 0.15rem; color: var(--betb-ink); font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+        .betb-kin-meta { margin-bottom: 0.4rem; color: var(--betb-blue-text); font-size: 0.8rem; font-weight: 700; }
+        .betb-kin-card p { color: var(--betb-text); font-size: 0.95rem; line-height: 1.55; }
+        .betb-kin-card strong { color: var(--betb-shade); }
+
+        /* ----- Combo line summaries + the interactive combo lab ----- */
+        .betb-lines { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 3px solid var(--betb-ink);
+            border-top: 10px solid var(--betb-shade);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+            box-shadow: 5px 5px 0 var(--betb-ink);
+        }
+        .betb-line--classic { border-top-color: var(--betb-blue); }
+        .betb-line h3 { color: var(--betb-ink); font-family: 'Bangers', cursive; font-size: 1.35rem; letter-spacing: 1px; line-height: 1.2; }
+        .betb-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .betb-line-facts dt {
+            color: var(--betb-muted);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-line-facts dd { margin: 0.15rem 0 0; color: var(--betb-text); font-size: 0.95rem; line-height: 1.5; }
+        .betb-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 2px dashed var(--betb-amber);
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .betb-line-rule strong { color: var(--betb-ink); }
+        .betb-lab { margin-top: 2rem; }
+        .betb-lab-mount { min-height: 12rem; }
+        .betb-lab-loading { padding: 2rem 1rem; color: var(--betb-muted); font-size: 1rem; text-align: center; }
+
+        /* ----- Tables scroll inside their own focusable region on narrow
+           screens instead of making the page scroll sideways. ----- */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 3px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+            box-shadow: 6px 6px 0 var(--betb-ink);
+        }
+        .betb-table { width: 100%; min-width: 620px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px dashed var(--betb-line);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            border-bottom: 3px solid var(--betb-ink);
+            background: var(--betb-amber);
+            color: var(--betb-ink);
+            font-family: 'Bangers', cursive;
+            font-size: 1.05rem;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+        .betb-table tbody th { color: var(--betb-ink); font-weight: 700; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:nth-child(even) > * { background: var(--betb-sky); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table td strong { color: var(--betb-ink); }
+        .betb-note { margin-top: 1rem; color: var(--betb-muted); font-size: 0.9rem; line-height: 1.55; text-align: center; }
+        .betb-link {
+            color: var(--betb-blue-text);
+            font-weight: 700;
+            text-decoration: underline dashed;
+            text-underline-offset: 3px;
+        }
+        .betb-link:hover { color: var(--betb-fuchsia-text); }
+
+        /* ----- Deck building ----- */
+        .betb-build { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        .betb-build-card {
+            padding: 1.25rem;
+            border: 3px solid var(--betb-ink);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+            box-shadow: 5px 5px 0 var(--betb-fuchsia);
+        }
+        .betb-build-card h3 { margin-bottom: 0.25rem; color: var(--betb-ink); font-family: 'Bangers', cursive; font-size: 1.35rem; letter-spacing: 1px; }
+        .betb-build-sub { margin-bottom: 0.9rem; color: var(--betb-muted); font-size: 0.9rem; line-height: 1.5; }
+        .betb-ratio { display: grid; gap: 0.55rem; margin: 0; padding: 0; list-style: none; }
+        .betb-ratio > li {
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr);
+            gap: 0.6rem;
+            align-items: baseline;
+            padding-bottom: 0.55rem;
+            border-bottom: 1px dashed var(--betb-line);
+        }
+        .betb-ratio > li:last-child { padding-bottom: 0; border-bottom: 0; }
+        .betb-ratio-count {
+            color: var(--betb-shade);
+            font-family: 'Bangers', cursive;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-align: right;
+        }
+        .betb-ratio-name { color: var(--betb-ink); font-size: 0.98rem; font-weight: 700; }
+        .betb-ratio-role { display: block; color: var(--betb-text); font-size: 0.9rem; font-weight: 400; line-height: 1.45; }
+        .betb-ratio-group {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-fuchsia-text);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ----- Failure modes ----- */
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 3px solid var(--betb-ink);
+            border-left: 10px solid var(--betb-danger);
+            border-radius: 1rem;
+            background: var(--betb-paper);
+        }
+        .betb-risks i { margin-top: 0.25rem; color: var(--betb-danger); }
+        .betb-risks h3 { margin-bottom: 0.25rem; color: var(--betb-ink); font-weight: 700; }
+        .betb-risks p { color: var(--betb-text); font-size: 0.95rem; line-height: 1.55; }
+
+        /* On phones the compatibility table stacks each row (card and verdict
+           on one line, the reason below) instead of scrolling sideways. */
+        @media (max-width: 639px) {
+            .betb-table--stack { min-width: 0; }
+            .betb-table--stack thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+            }
+            .betb-table--stack tbody tr {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                align-items: center;
+                column-gap: 0.75rem;
+                padding: 0.75rem 0.9rem;
+                border-bottom: 1px dashed var(--betb-line);
+            }
+            .betb-table--stack tbody tr:last-child { border-bottom: none; }
+            .betb-table--stack tbody th,
+            .betb-table--stack tbody td { padding: 0; border-bottom: none; background: none; }
+            .betb-table--stack tbody tr:nth-child(even) { background: var(--betb-sky); }
+            .betb-table--stack tbody td:last-child { grid-column: 1 / -1; margin-top: 0.4rem; }
+        }
+        @media (min-width: 640px) {
+            .betb-kin { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 768px) {
+            .betb-spot {
+                grid-template-columns: 150px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                padding: 1.5rem 1.75rem;
+            }
+            .betb-spot-title { font-size: 2.2rem; }
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-panel { padding: 1.75rem; }
+            .betb-profile-layout {
+                grid-template-columns: 190px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 2rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-build { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .betb-check-inputs { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+            .betb-kin { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .betb-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn,
+            .betb-tag,
+            .betb-spot-cta,
+            .betb-preset,
+            .betb-seg span { transition: none; }
+            .tab-btn:hover,
+            .betb-spot-cta:hover { transform: none; }
+        }
+        /* Printing the guide should include every tab and every search map
+           card, not just the open ones. */
+        @media print {
+            .tab-nav,
+            .betb-spot-cta,
+            .betb-check-presets,
+            .betb-finder-picker { display: none; }
+            .tab-panel[hidden],
+            .betb-finder-group[hidden] { display: block !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
@@ -197,6 +1064,43 @@
                 </p>
             </div>
         </section>
+
+        <!-- ==================== NEW CARD SPOTLIGHT (Beyond the Brave) ====================
+             Always visible, above the guide tabs. Each quick-fact chip opens the
+             New Support tab at the matching section; the full write-up lives there. -->
+        <aside class="betb-spot" data-pcs-scope="spot" aria-labelledby="betb-spot-title">
+            <span class="betb-burst" aria-hidden="true">New!</span>
+            <div class="betb-spot-art">
+                <div id="betb-spot-img-container" class="betb-art">Cartoon Shade</div>
+            </div>
+            <div class="betb-spot-head">
+                <p class="betb-spot-kicker"><span class="tab-new-badge">New card</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="betb-spot-title" class="betb-spot-title">Cartoon Shade</h2>
+                <p class="betb-spot-stats">Level 1 &middot; DARK &middot; Illusion &middot; 0 / 2000</p>
+            </div>
+            <div class="betb-spot-body">
+                <p class="betb-spot-hook">It's not a Toon monster, but its name makes it a "Toon" card (Car<strong>toon</strong>). It Special Summons itself from your hand for free while any monster that can't be Normal Summoned is face-up, on your side or your opponent's, and adds <strong>Toon Dark Magician Girl</strong>. Tribute it for her summon and it returns 2 cards on the field to the hand. She can attack directly the same turn.</p>
+                <p id="betb-spot-tags-label" class="betb-spot-label">Quick facts</p>
+                <ul class="betb-tags" aria-labelledby="betb-spot-tags-label">
+                    <li><a class="betb-tag" href="#betb-src-shade"><i class="fas fa-search" aria-hidden="true"></i> Toon Dark Magician Girl <span class="betb-tag-role">its Toon search</span></a></li>
+                    <li><a class="betb-tag" href="#betb-src-toc"><i class="fas fa-book" aria-hidden="true"></i> Toon Table of Contents <span class="betb-tag-role">adds it</span></a></li>
+                    <li><a class="betb-tag" href="#betb-line-2"><i class="fas fa-undo" aria-hidden="true"></i> Bounce 2 <span class="betb-tag-role">going second</span></a></li>
+                    <li><a class="betb-tag betb-tag--counter" href="#betb-safety"><i class="fas fa-shield-alt" aria-hidden="true"></i> Toon Kingdom <span class="betb-tag-role">doesn't cover it</span></a></li>
+                </ul>
+                <button type="button" class="betb-spot-cta" data-open-panel="tab-betb">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Analysis panel;
+             Cartoon Shade (Beyond the Brave) gets its own New Support panel. The
+             banlist, deck resources and community combos stay below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Toon guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">New Support: Cartoon Shade <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -386,6 +1290,494 @@
             </div>
         </section>      
  
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== CARTOON SHADE (BEYOND THE BRAVE) TAB ====================
+             Card text is the official printed text. Every combo step was checked against
+             the printed text of each card in it, and every card in the three lines is
+             legal in the TCG. The step-by-step lines live in
+             assets/data/combos/toon-cartoon-shade-combos.json and play in the combo
+             simulator. Their keys start at combo3 so they can share the page with the
+             classic simulator's combo1 and combo2. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What changed -->
+            <section class="mb-10 md:mb-16" id="betb-intro">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">New Support: Cartoon Shade</h2>
+                </div>
+                <ul class="betb-release" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">
+                    <strong>Cartoon Shade</strong> is a Level 1 DARK Illusion that fixes two old Toon problems: slow first turns and no clean way to break a board. It adds Toon Dark Magician Girl from the Deck, it's the 1 Tribute her summon needs, and when it's Tributed it returns 1 card on the field to the hand, or 2 once she's out. The Toon Kingdom guide, the core components, the Black Stone playbook and the combo simulator in the <strong>Classic Analysis</strong> tab are unchanged. This tab covers the new card: what finds it and what it finds, what protects it and what doesn't, and three combo lines built from TCG cards.
+                </p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-magic"></i></div>
+                        <h3 class="text-2xl font-bold text-accent mb-2 header-font">Free Body, Real Search</h3>
+                        <p class="text-lg">It Special Summons itself from your hand while any monster that can't be Normal Summoned is face-up. Extra Deck monsters count, on either side of the field. Then it adds Toon Dark Magician Girl.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-undo"></i></div>
+                        <h3 class="text-2xl font-bold text-accent mb-2 header-font">The Tribute She Needs</h3>
+                        <p class="text-lg">Toon Dark Magician Girl needs exactly 1 Tribute while you control Toon World. Tribute Cartoon Shade for her and its effect returns a card on the field to the hand. Her 2000 ATK makes that 2 cards.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-bolt"></i></div>
+                        <h3 class="text-2xl font-bold text-accent mb-2 header-font">Damage the Same Turn</h3>
+                        <p class="text-lg">Most Toons can't attack the turn they're summoned. Toon Dark Magician Girl can, so a going-second turn with Shade is a bounce of 2 plus 2000 direct damage, or 4000 with Horned Saurus.</p>
+                    </div>
+                </div>
+                <div class="betb-callout">
+                    <p class="betb-callout-title"><i class="fas fa-globe-asia" aria-hidden="true"></i> The TCG and OCG differ here</p>
+                    <p>In the OCG, the Field Spell <strong>Toon World the Perfect World</strong> and <strong>Funny Dark Rabbit</strong> drive the deck, and Cartoon Shade can bounce Perfect World back to your hand so it searches again. Neither card has a TCG release date yet (as of 25 Sep 2026), so every line in this tab uses Toon Kingdom and TCG cards. The Peeper's Full Combo in the Classic Analysis tab's simulator is an OCG line that uses both.</p>
+                </div>
+            </section>
+
+            <!-- Card profile -->
+            <section class="mb-10 md:mb-16" id="betb-card">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Card Profile</h2>
+                </div>
+                <article class="betb-panel" aria-labelledby="betb-shade-name">
+                    <div class="betb-profile-layout">
+                        <div class="betb-profile-art">
+                            <div id="betb-profile-img-container" class="betb-art">Cartoon Shade</div>
+                        </div>
+                        <div class="betb-profile-head">
+                            <p class="betb-kicker">Effect Monster &middot; Beyond the Brave</p>
+                            <h3 id="betb-shade-name" class="betb-card-name">Cartoon Shade</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Level</dt><dd>1</dd></div>
+                                <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                <div><dt>Type</dt><dd>Illusion / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>0 / 2000</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-profile-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li><span class="betb-effect-tag">Summoning condition</span>Cannot be Normal Summoned/Set. Must be Special Summoned (from your hand) while a monster that cannot be Normal Summoned/Set is face-up on the field. You can only Special Summon "Cartoon Shade" once per turn this way.</li>
+                                <li><span class="betb-effect-tag">Search</span>If this card is Special Summoned: You can add 1 monster with 2000 ATK or DEF that cannot be Normal Summoned/Set from your Deck to your hand.</li>
+                                <li><span class="betb-effect-tag">Bounce</span>If this card on the field is Tributed: You can target 1 card on the field, or target 2 if you control a monster with 2000 ATK or DEF; return them to the hand.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> a free extender and a removal effect in one card. It needs a face-up monster that can't be Normal Summoned before it can come out, and Toon World on your field before Toon Dark Magician Girl can be summoned. That makes it the second or third card of a combo, not a starter.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Summon</dt><dd>Free, from the hand, once per turn</dd></div>
+                                <div><dt>Needs</dt><dd>A face-up monster that can't be Normal Summoned, either side</dd></div>
+                                <div><dt>Adds (Toon)</dt><dd>Toon Dark Magician Girl</dd></div>
+                                <div><dt>Bounce</dt><dd>1 card, or 2 with a 2000 ATK/DEF monster</dd></div>
+                            </dl>
+                            <p class="betb-label">Rulings in short</p>
+                            <ul class="betb-rulings">
+                                <li><strong>Extra Deck monsters count.</strong> Fusion, Synchro, Xyz and Link Monsters can't be Normal Summoned, and the condition checks both sides of the field. Going second, your opponent's Extra Deck monster is enough.</li>
+                                <li><strong>The summon doesn't start a chain; the search does.</strong> Ash Blossom &amp; Joyous Spring and Droll &amp; Lock Bird can stop the search, not the summon.</li>
+                                <li><strong>Only its own condition can summon it.</strong> "Must be Special Summoned (from your hand)" means no other card can Special Summon it, so it can't be revived from the GY.</li>
+                                <li><strong>The bounce needs a Tribute.</strong> Destroyed, banished or sent to the GY any other way, it does nothing. A Tribute for a summon, like Toon Dark Magician Girl's, counts.</li>
+                                <li><strong>The 2-card check looks at your field when the effect activates.</strong> Shade's own 2000 DEF doesn't count: it's already in the GY by then.</li>
+                                <li><strong>It's a "Toon" card, not a Toon monster.</strong> Toon Table of Contents can add it and Toon Dark Magician can discard it, but Toon Kingdom doesn't protect it.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Search map -->
+            <section class="mb-10 md:mb-16" id="betb-search">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Who Finds Whom</h2>
+                </div>
+                <p class="betb-lede">Cartoon Shade sits in the middle of the Toon search chain: Toon Table of Contents finds it, and it finds Toon Dark Magician Girl. Pick a card to see what it can reach and why.</p>
+                <div class="betb-panel betb-finder" data-search-map>
+                    <fieldset class="betb-finder-picker" data-search-picker hidden>
+                        <legend class="betb-label">Pick a card</legend>
+                        <div class="betb-seg">
+                            <label><input type="radio" name="betb-search" value="toc" checked><span>Toon Table of Contents</span></label>
+                            <label><input type="radio" name="betb-search" value="bookmark"><span>Toon Bookmark</span></label>
+                            <label><input type="radio" name="betb-search" value="shade"><span>Cartoon Shade</span></label>
+                            <label><input type="radio" name="betb-search" value="tdm"><span>Toon Dark Magician</span></label>
+                            <label><input type="radio" name="betb-search" value="saurus"><span>Horned Saurus</span></label>
+                            <label><input type="radio" name="betb-search" value="perfect"><span>Perfect World (OCG)</span></label>
+                        </div>
+                    </fieldset>
+                    <p class="betb-sr-only" aria-live="polite" data-search-status></p>
+
+                    <section class="betb-finder-group" id="betb-src-toc" data-source="toc" data-title="Toon Table of Contents" aria-labelledby="betb-src-toc-title">
+                        <h3 id="betb-src-toc-title">Toon Table of Contents</h3>
+                        <p class="betb-bubble"><span class="betb-sr-only">Printed text: </span>Add 1 "Toon" card from your Deck to your hand.</p>
+                        <ul class="betb-finder-list">
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Cartoon Shade</strong>: its name contains "Toon" (Car-toon), so it counts as a "Toon" card.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Kingdom</strong>: the Field Spell your Toon monsters need.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Dark Magician Girl</strong>: a direct add, if you'd rather not depend on Shade's search.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Table of Contents</strong>: another copy, to thin the Deck.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>The Black Stone of Legend</strong>: no "Toon" in its name.</span></li>
+                        </ul>
+                    </section>
+
+                    <section class="betb-finder-group" id="betb-src-bookmark" data-source="bookmark" data-title="Toon Bookmark" aria-labelledby="betb-src-bookmark-title">
+                        <h3 id="betb-src-bookmark-title">Toon Bookmark</h3>
+                        <p class="betb-bubble"><span class="betb-sr-only">Printed text: </span>Add 1 "Toon World", or 1 card that specifically lists the card "Toon World" in its text, from your Deck to your hand, except "Toon Bookmark".</p>
+                        <ul class="betb-finder-list">
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Kingdom</strong>: its text names Toon World.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Dark Magician Girl</strong>: her summoning condition names Toon World.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Mermaid</strong>: its condition names Toon World too, and it's Shade's cheapest partner.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Terror</strong>: it needs Toon World on your field.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>Cartoon Shade</strong>: its text never mentions Toon World.</span></li>
+                        </ul>
+                    </section>
+
+                    <section class="betb-finder-group" id="betb-src-shade" data-source="shade" data-title="Cartoon Shade" aria-labelledby="betb-src-shade-title">
+                        <h3 id="betb-src-shade-title">Cartoon Shade</h3>
+                        <p class="betb-bubble"><span class="betb-sr-only">Printed text: </span>Add 1 monster with 2000 ATK or DEF that cannot be Normal Summoned/Set from your Deck to your hand.</p>
+                        <ul class="betb-finder-list">
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Dark Magician Girl</strong>: 2000 ATK and can't be Normal Summoned. The only Toon it can add.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>Red-Eyes Toon Dragon</strong>: it has 2000 DEF, but it can be Tribute Summoned, so it doesn't qualify.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>Toon Summoned Skull</strong>: it can't be Normal Summoned, but its stats are 2500 / 1200.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>Parrot Dragon</strong>: 2000 ATK, but it's a Normal Monster that can be Normal Summoned.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Chaos Sorcerer</strong>: 2000 DEF and can't be Normal Summoned. An off-theme option, not a Toon.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Every Main Deck Drytron</strong>: 2000 ATK and can't be Normal Summoned. See <a class="betb-link" href="#betb-other">Cartoon Shade outside Toon</a>.</span></li>
+                        </ul>
+                    </section>
+
+                    <section class="betb-finder-group" id="betb-src-tdm" data-source="tdm" data-title="Toon Dark Magician" aria-labelledby="betb-src-tdm-title">
+                        <h3 id="betb-src-tdm-title">Toon Dark Magician</h3>
+                        <p class="betb-bubble"><span class="betb-sr-only">Printed text: </span>Once per turn: You can discard 1 "Toon" card, then activate 1 of these effects; &bull; Special Summon 1 Toon monster from your Deck, except "Toon Dark Magician", ignoring its Summoning conditions. &bull; Add 1 "Toon" Spell/Trap from your Deck to your hand.</p>
+                        <ul class="betb-finder-list">
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Discard Cartoon Shade</strong>: it's a "Toon" card, and a second copy you can't summon this turn is ideal cost.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>Special Summon Cartoon Shade</strong>: it isn't a Toon monster, and only its own condition can summon it.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Special Summon Toon Mermaid</strong>: it can't be Normal Summoned, so Shade can come out next, and Toon Dark Magician Girl stays in the Deck for Shade to add.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Special Summon Toon Dark Magician Girl</strong>: also lets Shade out, but Shade then has nothing left to add unless you run a second copy.</span></li>
+                        </ul>
+                    </section>
+
+                    <section class="betb-finder-group" id="betb-src-saurus" data-source="saurus" data-title="Horned Saurus" aria-labelledby="betb-src-saurus-title">
+                        <h3 id="betb-src-saurus-title">Horned Saurus</h3>
+                        <p class="betb-bubble"><span class="betb-sr-only">Printed text: </span>If this card is Fusion Summoned: You can place 1 Field Spell from your Deck or GY face-up in your Field Zone.</p>
+                        <ul class="betb-finder-list">
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Toon Kingdom</strong>: it's placed, not activated, so its "banish the top 3 cards" doesn't happen. Its name still becomes Toon World in the Field Zone.</span></li>
+                            <li><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span><span><strong>Toon World</strong>: a Continuous Spell, not a Field Spell.</span></li>
+                            <li><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span><span><strong>Cartoon Shade's condition</strong>: Horned Saurus can't be Normal Summoned, and its 2000 ATK lets Shade's bounce take 2 cards.</span></li>
+                            <li><span class="betb-pill betb-pill--ocg"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG</span><span><strong>Toon World the Perfect World</strong>: a Field Spell, but OCG-only for now.</span></li>
+                        </ul>
+                    </section>
+
+                    <section class="betb-finder-group" id="betb-src-perfect" data-source="perfect" data-title="Toon World the Perfect World (OCG only)" aria-labelledby="betb-src-perfect-title">
+                        <h3 id="betb-src-perfect-title">Toon World the Perfect World <span class="betb-pill betb-pill--ocg">OCG only</span></h3>
+                        <p class="betb-bubble"><span class="betb-sr-only">Printed text: </span>Once per turn: You can add 1 "Toon" card, or 1 card that mentions a "Toon" card's name, from your Deck to your hand. You can only use this effect of "Toon World the Perfect World" thrice per turn.</p>
+                        <ul class="betb-finder-list">
+                            <li><span class="betb-pill betb-pill--ocg"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG</span><span><strong>Cartoon Shade</strong>: a "Toon" card, so Perfect World can add it.</span></li>
+                            <li><span class="betb-pill betb-pill--ocg"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG</span><span><strong>The Perfect World loop</strong>: Tribute Shade for Toon Dark Magician Girl and bounce Perfect World with it. Activated again, it's a new card, so it can search again, up to 3 times a turn. Returning Toon World to the hand doesn't destroy it, so she stays.</span></li>
+                        </ul>
+                    </section>
+                </div>
+            </section>
+
+            <!-- Protection checker -->
+            <section class="mb-10 md:mb-16" id="betb-safety">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Is It Safe?</h2>
+                </div>
+                <p class="betb-lede">Toon Kingdom protects Toon monsters, and Toon Bookmark protects Toon World. Cartoon Shade is neither, and some removal gets past both. Set up your board and your opponent's answer to see what survives.</p>
+                <div class="betb-panel betb-check" data-safety-checker>
+                    <div class="betb-check-presets" role="group" aria-labelledby="betb-check-presets-label">
+                        <p id="betb-check-presets-label" class="betb-label">Try a common case</p>
+                        <button type="button" class="betb-preset" data-preset="duster" aria-pressed="false">Harpie's Feather Duster on Toon Kingdom</button>
+                        <button type="button" class="betb-preset" data-preset="cyclone" aria-pressed="false">Cosmic Cyclone on Toon Kingdom</button>
+                        <button type="button" class="betb-preset" data-preset="imperm" aria-pressed="false">Infinite Impermanence on Cartoon Shade</button>
+                        <button type="button" class="betb-preset" data-preset="matched" aria-pressed="false">Evenly Matched vs. Toon Dark Magician Girl</button>
+                        <button type="button" class="betb-preset" data-preset="perfect" aria-pressed="false">OCG: Perfect World dodge</button>
+                    </div>
+                    <div class="betb-check-inputs" data-check-controls>
+                        <p class="betb-check-hint">The interactive checker needs JavaScript. The rules below cover every case.</p>
+                    </div>
+                    <div class="betb-check-result is-na" data-check-result aria-live="polite"></div>
+                </div>
+                <div class="betb-rules-short">
+                    <h3>The rules in short</h3>
+                    <ul class="betb-rulings">
+                        <li><strong>Toon Kingdom</strong> stops your opponent from targeting your Toon monsters, and lets you banish the top card of your Deck face-down instead of losing one to destruction. It does nothing for itself or for Cartoon Shade.</li>
+                        <li><strong>Toon Bookmark</strong> in the GY can be banished instead when a Toon World you control would be destroyed by a card effect. It doesn't stop banishing or bouncing.</li>
+                        <li><strong>The old Toons</strong>, Toon Dark Magician Girl included, are destroyed only when Toon World is <em>destroyed</em>. If it's banished or returned to the hand, they stay, and her direct attack doesn't need Toon World.</li>
+                        <li><strong>Cartoon Shade</strong> only bounces if it's Tributed. Removing it in response to its search costs you the bounce, but the search still resolves.</li>
+                        <li><strong>Toon World the Perfect World</strong> (OCG only) can banish one of your Toon monsters until an effect finishes resolving, once per monster name per turn.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Supporting cast -->
+            <section class="mb-10 md:mb-16" id="betb-partners">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Shade's Supporting Cast</h2>
+                </div>
+                <p class="betb-lede">Shade needs two things: a face-up monster that can't be Normal Summoned so it can come out, and something to be Tributed for. These cards cover both.</p>
+                <div class="betb-kin">
+                    <article class="betb-kin-card" aria-labelledby="betb-kin-tdmg">
+                        <div id="betb-kin-tdmg-img-container" class="betb-art">Toon Dark Magician Girl</div>
+                        <div>
+                            <h3 id="betb-kin-tdmg">Toon Dark Magician Girl</h3>
+                            <p class="betb-kin-meta">Level 6 &middot; DARK &middot; Spellcaster / Toon &middot; 2000 / 1700</p>
+                            <p>Needs 1 Tribute while you control Toon World, and <strong>Shade is that Tribute</strong>. She has no "cannot attack the turn it's summoned" clause, and her direct attack doesn't need Toon World.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-kin-mermaid">
+                        <div id="betb-kin-mermaid-img-container" class="betb-art">Toon Mermaid</div>
+                        <div>
+                            <h3 id="betb-kin-mermaid">Toon Mermaid</h3>
+                            <p class="betb-kin-meta">Level 4 &middot; WATER &middot; Aqua / Toon &middot; 1400 / 1500</p>
+                            <p>Summons itself from the hand for free while you control Toon World, with no once-per-turn limit, and <strong>can't be Normal Summoned</strong>. Toon Dark Magician can also call it from the Deck.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-kin-retd">
+                        <div id="betb-kin-retd-img-container" class="betb-art">Red-Eyes Toon Dragon</div>
+                        <div>
+                            <h3 id="betb-kin-retd">Red-Eyes Toon Dragon</h3>
+                            <p class="betb-kin-meta">Level 7 &middot; DARK &middot; Dragon / Toon &middot; 2400 / 2000</p>
+                            <p>Its <strong>2000 DEF</strong> means Shade bounces 2 cards even before Toon Dark Magician Girl is out. It can be Tribute Summoned, so it doesn't let Shade out, and Shade can't add it.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-kin-skull">
+                        <div id="betb-kin-skull-img-container" class="betb-art">Toon Summoned Skull</div>
+                        <div>
+                            <h3 id="betb-kin-skull">Toon Summoned Skull</h3>
+                            <p class="betb-kin-meta">Level 6 &middot; DARK &middot; Fiend / Toon &middot; 2500 / 1200</p>
+                            <p>Also needs 1 Tribute under Toon World and can't be Normal Summoned. If Shade's search is stopped, <strong>Skull in hand is still something to Tribute Shade for</strong>, so the bounce still happens.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-kin-saurus">
+                        <div id="betb-kin-saurus-img-container" class="betb-art">Horned Saurus</div>
+                        <div>
+                            <h3 id="betb-kin-saurus">Horned Saurus</h3>
+                            <p class="betb-kin-meta">Level 6 &middot; DARK &middot; Dinosaur / Fusion &middot; 2000 / 1600</p>
+                            <p>Places Toon Kingdom without the banish, lets Shade out as an Extra Deck monster, and its <strong>2000 ATK turns on the 2-card bounce</strong>. It can attack directly the turn it's Special Summoned.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-kin-swamp">
+                        <div id="betb-kin-swamp-img-container" class="betb-art">Sorcerer of the Swamp</div>
+                        <div>
+                            <h3 id="betb-kin-swamp">Sorcerer of the Swamp</h3>
+                            <p class="betb-kin-meta">Level 3 &middot; WATER &middot; Spellcaster &middot; 500 / 1100</p>
+                            <p>Banishes Kaitoptera from the Deck to summon itself. Kaitoptera comes back and adds Polymerization, and the two <strong>make Horned Saurus</strong>. Needs Kaitoptera and Polymerization in the Deck.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="mb-10 md:mb-16" id="betb-combos">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Combo Lines</h2>
+                </div>
+                <p class="betb-lede">Three lines, all with TCG cards. Play each one step by step in the combo simulator below the summaries.</p>
+                <div class="betb-lines">
+                    <article class="betb-line" aria-labelledby="betb-line-1">
+                        <p class="betb-kicker">Line 1 &middot; Two cards &middot; either turn</p>
+                        <h3 id="betb-line-1">Swamp Saurus into Shade</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Sorcerer of the Swamp, Cartoon Shade</dd></div>
+                            <div><dt>Needs</dt><dd>Kaitoptera, Polymerization, Toon Kingdom and Toon Dark Magician Girl in the Deck; Horned Saurus in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Horned Saurus and Toon Dark Magician Girl under Toon Kingdom. Your Normal Summon is unused.</dd></div>
+                            <div><dt>Going second</dt><dd>2 cards returned, then 4000 direct damage</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Horned Saurus places Toon Kingdom without the banish and lets Shade out as an Extra Deck monster. Its 2000 ATK turns on the 2-card bounce by itself. <strong>Watch for:</strong> Ash Blossom on Kaitoptera's add or on Shade's search. Droll &amp; Lock Bird after Kaitoptera's add stops Shade's search.</p>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-2">
+                        <p class="betb-kicker">Line 2 &middot; Two cards &middot; going second</p>
+                        <h3 id="betb-line-2">Bookmark Bounce</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Toon Bookmark, Cartoon Shade</dd></div>
+                            <div><dt>Needs</dt><dd>A face-up Extra Deck monster on your opponent's field; Toon Kingdom and Toon Dark Magician Girl in the Deck</dd></div>
+                            <div><dt>End board</dt><dd>Toon Dark Magician Girl under Toon Kingdom, Toon Bookmark in the GY. Your Normal Summon is unused.</dd></div>
+                            <div><dt>Damage</dt><dd>2 cards returned, then 2000 direct damage</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Shade's condition checks both sides of the field. It adds Toon Dark Magician Girl before Toon Kingdom is activated, so Kingdom's banish can't take her. <strong>Watch for:</strong> a board with no face-up Extra Deck monster. Then Shade needs one of yours, like Toon Mermaid under Toon World.</p>
+                    </article>
+                    <article class="betb-line betb-line--classic" aria-labelledby="betb-line-3">
+                        <p class="betb-kicker">Line 3 &middot; Five cards &middot; going first</p>
+                        <h3 id="betb-line-3">Black Stone Playbook, Plus Shade</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Toon Bookmark, Toon Table of Contents x2, The Black Stone of Legend, Toon Dark Magician</dd></div>
+                            <div><dt>Needs</dt><dd>Toon Kingdom, Cartoon Shade, Red-Eyes Toon Dragon, Toon Mermaid and Toon Dark Magician Girl in the Deck</dd></div>
+                            <div><dt>End board</dt><dd>Toon Kingdom with Red-Eyes Toon Dragon, Toon Dark Magician, Toon Mermaid and Toon Dark Magician Girl; Toon Bookmark in the GY</dd></div>
+                            <div><dt>Next turn</dt><dd>8300 direct damage if your opponent controls no Toon monster</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> it's the Classic Analysis tab's Black Stone line, but Toon Dark Magician calls Toon Mermaid. That gives Shade its face-up monster and leaves Toon Dark Magician Girl in the Deck for Shade to add. <strong>Watch for:</strong> five spots for Ash Blossom (Bookmark, Table of Contents, Black Stone, Toon Dark Magician and Shade), and no negation on the finished board.</p>
+                    </article>
+                </div>
+                <section class="betb-lab" aria-label="Interactive combo lines">
+                    <div id="shade-combo-lab" class="betb-lab-mount">
+                        <p class="betb-lab-loading">Loading the interactive combo lines&hellip;</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Classic card compatibility -->
+            <section class="mb-10 md:mb-16" id="betb-legacy">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Which Classic Toon Cards Work With It</h2>
+                </div>
+                <p class="betb-lede">Cartoon Shade is a "Toon" card by name but not a Toon monster. Cards that ask for a "Toon" card can use it; cards that ask for a Toon monster can't.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-legacy-caption" tabindex="0">
+                    <table class="betb-table betb-table--stack">
+                        <caption id="betb-legacy-caption" class="betb-sr-only">How each classic Toon card works with Cartoon Shade</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">With Cartoon Shade</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Toon Kingdom</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>It's named Toon World on the field, so Toon Dark Magician Girl can be summoned by Tributing Shade. It doesn't protect Shade, which isn't a Toon monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Table of Contents</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>Adds Cartoon Shade, whose name contains "Toon".</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Bookmark</th>
+                                <td><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>Can't add Shade, whose text doesn't mention Toon World. It still adds Toon Kingdom or Toon Dark Magician Girl, and it protects Toon Kingdom from destruction.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Dark Magician</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>Discard a spare Shade as its cost, or Special Summon Toon Mermaid or Toon Dark Magician Girl from the Deck so Shade can come out.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Dark Magician Girl</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>The only Toon that Shade can add, and Shade is the 1 Tribute her summon needs.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Red-Eyes Toon Dragon</th>
+                                <td><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>Its 2000 DEF turns on the 2-card bounce. It can be Tribute Summoned, so on its own it doesn't let Shade out, and Shade can't add it.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Mermaid</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>Summons itself for free while you control Toon World and can't be Normal Summoned: the cheapest way to let Shade out.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Summoned Skull</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>Can't be Normal Summoned, so it lets Shade out, and Shade can be its 1 Tribute instead of Toon Dark Magician Girl's.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Page-Flip</th>
+                                <td><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Works</span></td>
+                                <td>Reveal 3 Toons that can't be Normal Summoned, such as Toon Dark Magician Girl, Toon Mermaid and Toon Summoned Skull. Whichever one your opponent picks lets Shade out.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Black Luster Soldier</th>
+                                <td><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> Doesn't</span></td>
+                                <td>Its summon Tributes Toon monsters whose Levels total 8 or more. Shade isn't a Toon monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Toon Terror</th>
+                                <td><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> Doesn't</span></td>
+                                <td>Needs a Toon monster on your field, and Shade doesn't count. Toon Dark Magician Girl does.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="betb-callout" id="betb-other">
+                    <p class="betb-callout-title"><i class="fas fa-rocket" aria-hidden="true"></i> Cartoon Shade outside Toon</p>
+                    <p>Every Main Deck <strong>Drytron</strong> has 2000 ATK and can't be Normal Summoned, so any face-up Drytron lets Shade out, and Shade can add any of them. Shade can't be the Tribute for a Drytron monster's own effect, which Tributes another Drytron or a Ritual Monster, or for Meteonis Drytron, which Tributes Machines. <strong>Chaos Sorcerer</strong> (2000 DEF) is another legal target.</p>
+                </div>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16" id="betb-build">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">Fitting It Into the Deck</h2>
+                </div>
+                <p class="betb-lede">These counts are our recommendation, not a published list. The classic core stays: Toon Table of Contents, Toon Bookmark, Toon Kingdom, Toon Dark Magician, Red-Eyes Toon Dragon and The Black Stone of Legend.</p>
+                <div class="betb-build">
+                    <div class="betb-build-card">
+                        <h3>Add to the classic build</h3>
+                        <p class="betb-build-sub">What Cartoon Shade needs around it.</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Cartoon Shade<span class="betb-ratio-role">Only one can use its own summon each turn. A second copy is good Toon Dark Magician cost, and Toon Table of Contents works as a third.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Toon Dark Magician Girl<span class="betb-ratio-role">Shade's only Toon target. Two copies keep one in the Deck when you draw the other or Toon Kingdom banishes one.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Toon Mermaid<span class="betb-ratio-role">A free face-up monster for Shade under Toon World, and Toon Dark Magician's pick in Line 3.</span></span></li>
+                            <li><span class="betb-ratio-count">0&ndash;1</span><span class="betb-ratio-name">Toon Summoned Skull<span class="betb-ratio-role">A backup Tribute for Shade if its search is stopped.</span></span></li>
+                        </ul>
+                    </div>
+                    <div class="betb-build-card">
+                        <h3>Optional: Horned Saurus engine</h3>
+                        <p class="betb-build-sub">Lets Shade out without Toon Kingdom in hand, and places Kingdom with no banish.</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Sorcerer of the Swamp<span class="betb-ratio-role">Starts Line 1 from the hand.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Kaitoptera<span class="betb-ratio-role">Banished by Sorcerer; adds Polymerization.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Polymerization<span class="betb-ratio-role">Kaitoptera's add.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Horned Saurus<span class="betb-ratio-role">Extra Deck. Pot of Extravagance banishes random cards from the Extra Deck face-down, so the two don't mix well.</span></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Failure modes -->
+            <section class="mb-10 md:mb-16" id="betb-risks">
+                <div class="betb-head">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-800 text-center header-font heading-underline">What Stops It</h2>
+                </div>
+                <ul class="betb-risks">
+                    <li>
+                        <i class="fas fa-fire" aria-hidden="true"></i>
+                        <div>
+                            <h3>Ash Blossom on the search</h3>
+                            <p>Negate Shade's search and Toon Dark Magician Girl never arrives. Unless you already hold her or Toon Summoned Skull, Shade has nothing to be Tributed for, and the bounce never happens.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-crow" aria-hidden="true"></i>
+                        <div>
+                            <h3>Droll &amp; Lock Bird</h3>
+                            <p>Every line adds a card from the Deck before Shade does. After Droll &amp; Lock Bird, Shade's search can't add anything for the rest of the turn.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-crosshairs" aria-hidden="true"></i>
+                        <div>
+                            <h3>Removal before the Tribute</h3>
+                            <p>Toon Kingdom can't stop your opponent from targeting Shade. If Ghost Ogre &amp; Snow Rabbit or a targeted effect removes it in response to its search, the search still resolves, but the bounce is lost.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                        <div>
+                            <h3>No monster to let it out</h3>
+                            <p>Going first there's no opposing Extra Deck monster. You need Horned Saurus, Toon Mermaid or another monster that can't be Normal Summoned first, or Shade stays in your hand.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-wind" aria-hidden="true"></i>
+                        <div>
+                            <h3>Cosmic Cyclone on Toon Kingdom</h3>
+                            <p>Toon Bookmark only stops destruction. Toon Dark Magician Girl survives a banished Toon Kingdom and still attacks directly, but you can't summon her again until you find another Toon World.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-layer-group" aria-hidden="true"></i>
+                        <div>
+                            <h3>Toon Kingdom's own banish</h3>
+                            <p>Activating Toon Kingdom banishes the top 3 cards of your Deck face-down, which can take Toon Dark Magician Girl. Let Shade add her first, or have Horned Saurus place Kingdom so nothing is banished.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
+
         <!-- TCG Banlist Impact Section -->
         <section>
             <div id="banlist-status">
@@ -445,6 +1837,400 @@
                 initPageSections('Toon');
             });
         </script>
+    <!-- "Who finds whom" search map. Without JavaScript every card's list stays
+         visible; with it, the picker shows one list at a time. It runs before the
+         guide tabs so a #betb-src-* deep link shows its list before the tab
+         script scrolls to it. -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-search-map]');
+            if (!root) return;
+            const picker = root.querySelector('[data-search-picker]');
+            const status = root.querySelector('[data-search-status]');
+            const groups = Array.from(root.querySelectorAll('[data-source]'));
+            if (!picker || !groups.length) return;
+            picker.hidden = false;
+
+            function show(source, announce) {
+                const shown = groups.find(g => g.dataset.source === source);
+                if (!shown) return;
+                groups.forEach(g => { g.hidden = g !== shown; });
+                const input = picker.querySelector('input[value="' + source + '"]');
+                if (input) input.checked = true;
+                if (!announce || !status) return;
+                const count = cls => shown.querySelectorAll('.betb-finder-list .' + cls).length;
+                const parts = [count('betb-pill--yes') + ' yes', count('betb-pill--no') + ' no'];
+                if (count('betb-pill--ocg')) parts.push(count('betb-pill--ocg') + ' OCG only');
+                status.textContent = shown.dataset.title + ': ' + parts.join(', ') + '.';
+            }
+
+            function showFromHash(hash) {
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(hash.slice(1)));
+                } catch (err) { return; /* malformed hash: ignore */ }
+                const group = target && target.closest('[data-source]');
+                if (group && root.contains(group)) show(group.dataset.source, false);
+            }
+
+            picker.addEventListener('change', e => {
+                const input = e.target.closest('input[type="radio"]');
+                if (input) show(input.value, true);
+            });
+            // Spotlight chips link straight to a card's list.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (link && link.hash.length > 1) showFromHash(link.hash);
+            });
+            window.addEventListener('hashchange', () => showFromHash(location.hash));
+
+            show('toc', false);
+            if (location.hash) showFromHash(location.hash);
+        })();
+    </script>
+
+    <!-- "Is it safe?" checker. Everything it knows is in the option lists and
+         evaluate() below, which follow the printed text of Toon Kingdom, Toon
+         Bookmark, Cartoon Shade, the classic Toons and (OCG) Toon World the
+         Perfect World. -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-safety-checker]');
+            if (!root) return;
+            const controls = root.querySelector('[data-check-controls]');
+            const result = root.querySelector('[data-check-result]');
+
+            const GROUPS = [
+                {
+                    key: 'field',
+                    legend: 'Your Field Spell',
+                    options: [
+                        { value: 'kingdom', label: 'Toon Kingdom' },
+                        { value: 'world', label: 'Toon World' },
+                        { value: 'perfect', label: 'Perfect World (OCG)' },
+                        { value: 'none', label: 'None' }
+                    ]
+                },
+                {
+                    key: 'bookmark',
+                    legend: 'Toon Bookmark',
+                    options: [
+                        { value: 'yes', label: 'In your GY' },
+                        { value: 'no', label: 'Not in your GY' }
+                    ]
+                },
+                {
+                    key: 'target',
+                    legend: 'Your opponent hits',
+                    options: [
+                        { value: 'tdmg', label: 'Toon Dark Magician Girl' },
+                        { value: 'retd', label: 'Red-Eyes Toon Dragon' },
+                        { value: 'shade', label: 'Cartoon Shade' },
+                        { value: 'field', label: 'Your Field Spell' }
+                    ]
+                },
+                {
+                    key: 'answer',
+                    legend: 'With',
+                    options: [
+                        { value: 'destroy-target', label: 'Targeted destruction' },
+                        { value: 'destroy-all', label: 'Destruction, no target' },
+                        { value: 'remove-target', label: 'Targeted banish or bounce' },
+                        { value: 'banish-all', label: 'Banish, no target' },
+                        { value: 'negate-target', label: 'Targeted negation' }
+                    ],
+                    hint: 'Lightning Storm and Harpie\'s Feather Duster destroy without targeting. Cosmic Cyclone banishes a Spell by targeting it. Evenly Matched banishes without targeting. Infinite Impermanence and Effect Veiler negate a targeted monster.'
+                }
+            ];
+            const PRESETS = {
+                duster: { field: 'kingdom', bookmark: 'yes', target: 'field', answer: 'destroy-all' },
+                cyclone: { field: 'kingdom', bookmark: 'yes', target: 'field', answer: 'remove-target' },
+                imperm: { field: 'kingdom', bookmark: 'yes', target: 'shade', answer: 'negate-target' },
+                matched: { field: 'kingdom', bookmark: 'yes', target: 'tdmg', answer: 'banish-all' },
+                perfect: { field: 'perfect', bookmark: 'no', target: 'tdmg', answer: 'destroy-target' }
+            };
+            const FIELD_NAMES = {
+                kingdom: 'Toon Kingdom',
+                world: 'Toon World',
+                perfect: 'Toon World the Perfect World'
+            };
+            const MONSTER_NAMES = { tdmg: 'Toon Dark Magician Girl', retd: 'Red-Eyes Toon Dragon' };
+            const TARGETED = ['destroy-target', 'remove-target', 'negate-target'];
+            const TONES = {
+                safe: 'fa-shield-alt',
+                part: 'fa-exclamation-triangle',
+                lost: 'fa-times-circle',
+                na: 'fa-info-circle'
+            };
+
+            const state = {};
+
+            function evaluate(s) {
+                const notes = [];
+                if (s.field === 'perfect') notes.push('Toon World the Perfect World is OCG-only for now: it has no TCG release date yet.');
+
+                if (s.target === 'field') {
+                    const fieldName = FIELD_NAMES[s.field];
+                    if (!fieldName) {
+                        return { tone: 'na', title: 'Nothing to hit', detail: 'There\'s no Toon World on your field in this setup. Pick Toon Kingdom, Toon World or Toon World the Perfect World to test the Field Spell.', notes: [] };
+                    }
+                    if (s.answer === 'negate-target') {
+                        return { tone: 'na', title: 'Doesn\'t apply', detail: 'Infinite Impermanence and Effect Veiler only target monsters, so they can\'t hit ' + fieldName + '.', notes: notes };
+                    }
+                    if (s.answer.indexOf('destroy') === 0) {
+                        if (s.bookmark === 'yes') {
+                            return {
+                                tone: 'safe',
+                                title: fieldName + ' stays',
+                                detail: 'Banish Toon Bookmark from your GY instead. It covers any Toon World you control that would be destroyed by a card effect' + (s.field === 'world' ? '.' : ', and ' + fieldName + ' is named Toon World on the field.'),
+                                notes: notes.concat(['Each Toon Bookmark in the GY covers one destruction.'])
+                            };
+                        }
+                        return {
+                            tone: 'lost',
+                            title: fieldName + ' is destroyed',
+                            detail: 'It has no protection of its own. Toon Dark Magician Girl, Toon Mermaid and Toon Summoned Skull are destroyed with it, because their text destroys them when Toon World on the field is destroyed. Red-Eyes Toon Dragon and Toon Dark Magician stay, but can\'t attack directly without Toon World.',
+                            notes: notes.concat(['A Toon Bookmark in your GY would have saved it.'])
+                        };
+                    }
+                    const extra = [];
+                    if (s.field === 'kingdom') extra.push('Your Toon monsters lose Toon Kingdom\'s protection from targeting and destruction.');
+                    extra.push('Until you find another Toon World, you can\'t summon Toon Dark Magician Girl, so a Cartoon Shade in your hand has nothing to be Tributed for.');
+                    return {
+                        tone: 'part',
+                        title: fieldName + ' is gone, your monsters stay',
+                        detail: 'Toon Bookmark only replaces destruction, so it can\'t help. But leaving the field isn\'t being destroyed: Toon Dark Magician Girl and the other old Toons stay, and her direct attack doesn\'t need Toon World.',
+                        notes: notes.concat(extra)
+                    };
+                }
+
+                if (s.target === 'shade') {
+                    notes.unshift('Cartoon Shade is a "Toon" card by name, not a Toon monster, so no Toon card protects it.');
+                    if (s.field === 'none') notes.push('With no Toon World you can\'t summon Toon Dark Magician Girl, so Shade has nothing to be Tributed for.');
+                    if (s.answer === 'negate-target') {
+                        return { tone: 'part', title: 'Search stopped, bounce still live', detail: 'Negated in response to its search, Shade adds nothing. Its bounce still works: it activates in the GY after you Tribute Shade, and the negation ends when Shade leaves the field.', notes: notes };
+                    }
+                    if (s.answer === 'banish-all') {
+                        return { tone: 'part', title: 'Usually already gone', detail: 'Evenly Matched resolves at the end of the Battle Phase. By then you\'ve normally Tributed Shade. If it\'s still on the field, you choose which of your cards to banish.', notes: notes };
+                    }
+                    return {
+                        tone: 'lost',
+                        title: 'Not protected: the bounce is lost',
+                        detail: 'If Cartoon Shade leaves the field any way other than being Tributed, its bounce never happens. A search that was already activated still resolves.',
+                        notes: notes.concat(['Once the search resolves, summon Toon Dark Magician Girl right away: her summon doesn\'t start a chain.'])
+                    };
+                }
+
+                const name = MONSTER_NAMES[s.target];
+                const isGirl = s.target === 'tdmg';
+                if (s.field === 'perfect') {
+                    return {
+                        tone: 'safe',
+                        title: name + ' dodges it',
+                        detail: 'Before the effect resolves, banish ' + name + ' with Toon World the Perfect World. It comes back right after as a new card, so any earlier negation or ATK change is gone too.',
+                        notes: notes.concat(['Once per monster name per turn: a second effect aimed at the same monster gets through.'])
+                    };
+                }
+                if (s.answer === 'banish-all') {
+                    return {
+                        tone: 'part',
+                        title: 'You choose what goes',
+                        detail: 'No Toon card stops Evenly Matched, because it neither targets nor destroys. You choose which of your cards to banish, though, so you can keep ' + name + ' if you have other cards to give up.',
+                        notes: notes
+                    };
+                }
+                if (s.field === 'kingdom') {
+                    if (TARGETED.indexOf(s.answer) !== -1) {
+                        return { tone: 'safe', title: name + ' is safe', detail: 'Toon Kingdom: your opponent can\'t target Toon monsters you control with card effects, so the effect can\'t pick ' + name + '.', notes: notes };
+                    }
+                    return { tone: 'safe', title: name + ' stays', detail: 'Toon Kingdom: banish the top card of your Deck face-down instead of letting it be destroyed. Every save costs you a card from your Deck.', notes: notes };
+                }
+                const detail = [s.field === 'world'
+                    ? 'The Continuous Spell Toon World has no protective effect, and Toon Bookmark only guards the Toon World card itself.'
+                    : 'With no Toon World on your field, nothing protects it.'];
+                if (s.answer === 'negate-target') {
+                    detail.push(isGirl
+                        ? 'Negated, she can\'t attack directly for the rest of the turn.'
+                        : 'Negated, it loses its direct attack and its summon effect for the rest of the turn.');
+                }
+                if (s.field === 'none') {
+                    notes.push(isGirl
+                        ? 'If she survives, she can still attack directly: that part of her text doesn\'t need Toon World.'
+                        : 'Red-Eyes Toon Dragon can\'t attack directly without Toon World.');
+                }
+                return { tone: 'lost', title: 'Not protected', detail: detail.join(' '), notes: notes };
+            }
+
+            function buildControls() {
+                controls.textContent = '';
+                GROUPS.forEach(group => {
+                    const set = document.createElement('fieldset');
+                    set.className = 'betb-check-set';
+                    const legend = document.createElement('legend');
+                    legend.textContent = group.legend;
+                    const seg = document.createElement('div');
+                    seg.className = 'betb-seg';
+                    group.options.forEach(opt => {
+                        const label = document.createElement('label');
+                        const input = document.createElement('input');
+                        input.type = 'radio';
+                        input.name = 'betb-check-' + group.key;
+                        input.value = opt.value;
+                        input.dataset.key = group.key;
+                        const text = document.createElement('span');
+                        text.textContent = opt.label;
+                        label.append(input, text);
+                        seg.appendChild(label);
+                    });
+                    set.append(legend, seg);
+                    if (group.hint) {
+                        const hint = document.createElement('p');
+                        hint.className = 'betb-check-hint';
+                        hint.textContent = group.hint;
+                        set.appendChild(hint);
+                    }
+                    controls.appendChild(set);
+                });
+            }
+
+            function applyPreset(name) {
+                Object.assign(state, PRESETS[name]);
+            }
+
+            function render() {
+                controls.querySelectorAll('input[type="radio"]').forEach(input => {
+                    input.checked = state[input.dataset.key] === input.value;
+                });
+                root.querySelectorAll('[data-preset]').forEach(btn => {
+                    const preset = PRESETS[btn.dataset.preset];
+                    const matches = Object.keys(preset).every(key => preset[key] === state[key]);
+                    btn.setAttribute('aria-pressed', String(matches));
+                });
+
+                const verdict = evaluate(state);
+                result.className = 'betb-check-result is-' + verdict.tone;
+                result.textContent = '';
+                const status = document.createElement('p');
+                status.className = 'betb-check-status';
+                const icon = document.createElement('i');
+                icon.className = 'fas ' + TONES[verdict.tone];
+                icon.setAttribute('aria-hidden', 'true');
+                status.append(icon, document.createTextNode(' ' + verdict.title));
+                const detail = document.createElement('p');
+                detail.className = 'betb-check-detail';
+                detail.textContent = verdict.detail;
+                result.append(status, detail);
+                if (verdict.notes.length) {
+                    const list = document.createElement('ul');
+                    list.className = 'betb-check-notes';
+                    verdict.notes.forEach(text => {
+                        const li = document.createElement('li');
+                        li.textContent = text;
+                        list.appendChild(li);
+                    });
+                    result.appendChild(list);
+                }
+            }
+
+            controls.addEventListener('change', e => {
+                const input = e.target.closest('input[type="radio"]');
+                if (!input) return;
+                state[input.dataset.key] = input.value;
+                render();
+            });
+            root.addEventListener('click', e => {
+                const btn = e.target.closest('[data-preset]');
+                if (!btn) return;
+                applyPreset(btn.dataset.preset);
+                render();
+            });
+
+            buildControls();
+            applyPreset('duster');
+            render();
+        })();
+    </script>
+
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Cartoon Shade spotlight. The
+         New Support tab's art and its combo simulator only load the first time
+         that tab opens. The classic simulator keeps the default container ids,
+         so this one gets its own. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-betb': [
+                    { 'betb-profile-img-container': 'Cartoon Shade' },
+                    {
+                        'betb-kin-tdmg-img-container': 'Toon Dark Magician Girl',
+                        'betb-kin-mermaid-img-container': 'Toon Mermaid',
+                        'betb-kin-retd-img-container': 'Red-Eyes Toon Dragon',
+                        'betb-kin-skull-img-container': 'Toon Summoned Skull',
+                        'betb-kin-saurus-img-container': 'Horned Saurus',
+                        'betb-kin-swamp-img-container': 'Sorcerer of the Swamp'
+                    }
+                ]
+            },
+            panelInit: {
+                'tab-betb': function () {
+                    const mount = document.getElementById('shade-combo-lab');
+                    if (!mount) return;
+                    // combo-system.js declares ComboLoader as a top-level class, which
+                    // is a global binding but not a property of window.
+                    if (typeof ComboLoader === 'undefined') {
+                        mount.innerHTML = '<p class="betb-lab-loading">The interactive combo lines could not load. The line summaries above still list every hand, requirement and end board.</p>';
+                        return;
+                    }
+                    ComboLoader.renderComboSystem('shade-combo-lab', 'toon-cartoon-shade', {
+                        selectorContainerId: 'shade-combo-selector-container',
+                        guideContainerId: 'shade-combo-guide-container',
+                        selectorOptions: {
+                            selectorId: 'shade-combo-selector',
+                            labelText: 'Select a Cartoon Shade line',
+                            defaultCombo: '3'
+                        }
+                    });
+                }
+            }
+        });
+
+        (function () {
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'betb-spot-img-container': 'Cartoon Shade' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same quick-fact chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('[role="tabpanel"]');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (!cta) return;
+            cta.addEventListener('click', () => {
+                const tab = tabFor(cta.dataset.openPanel);
+                if (!tab) return;
+                tab.click();
+                tab.focus({ preventScroll: true });
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+            });
+        })();
+    </script>
+
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

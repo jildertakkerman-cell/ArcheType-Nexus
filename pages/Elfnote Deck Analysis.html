@@ -314,6 +314,293 @@
     <script src="../assets/js/page-sections.js"></script>
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
     <script src="../assets/js/follow-archetype.js"></script>
+    <!-- Combo simulator for the Beyond the Brave tab (assets/data/combos/elfnote-combos.json) -->
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <!-- Beyond the Brave tab (Movement IV). Scoped enb-* classes; every colour comes from --enb-* tokens. -->
+    <style>
+        :root {
+            --enb-panel: #151522;
+            --enb-panel-2: #1c1c2c;
+            --enb-inset: #0f0f19;
+            --enb-line: rgba(255, 215, 0, 0.22);
+            --enb-line-soft: rgba(255, 255, 255, 0.09);
+            --enb-gold: #ffd700;
+            --enb-gold-soft: #f3d87a;
+            --enb-text: #ececf2;
+            --enb-muted: #b9b9c8;
+            --enb-dim: #9696aa;
+            --enb-fire: #ff9a8a;
+            --enb-water: #7fd0f7;
+            --enb-light: #f7e38a;
+            --enb-wind: #86e3ab;
+            --enb-dark: #c3a8f7;
+            --enb-earth: #dcb784;
+            --enb-new: #7dd3fc;
+            --enb-ok: #86e3ab;
+            --enb-warn: #f7c56b;
+            --enb-bad: #ff8f8f;
+            --enb-lock: rgba(255, 107, 107, 0.16);
+            --enb-point: rgba(125, 211, 252, 0.16);
+            --enb-radius: 12px;
+        }
+
+        /* The era tab row gets a fourth button; let it wrap on phones. */
+        div:has(> #btn-betb) { flex-wrap: wrap; }
+
+        .enb { color: var(--enb-text); }
+        .enb *, .enb-spot * { box-sizing: border-box; }
+        .enb p { line-height: 1.65; }
+        .enb a:not(.enb-btn), .enb-spot a:not(.enb-btn) { color: var(--enb-gold-soft); text-underline-offset: 3px; }
+        .enb :focus-visible, .enb-spot :focus-visible { outline: 2px solid var(--enb-gold); outline-offset: 2px; }
+
+        .enb-section { margin-bottom: 3.5rem; scroll-margin-top: 1.5rem; }
+        .enb-h2 {
+            display: flex; align-items: center; gap: 0.75rem;
+            font-family: 'Cinzel', serif; font-size: clamp(1.3rem, 3.2vw, 1.75rem); color: #fff;
+            border-bottom: 1px solid var(--enb-line); padding-bottom: 0.5rem; margin: 0 0 1rem;
+        }
+        .enb-h2 i { color: var(--enb-gold); font-size: 0.9em; }
+        .enb-h3 { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--enb-gold-soft); margin: 0 0 0.75rem; }
+        .enb-h4 { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0 0 0.4rem; }
+        .enb-kicker { color: var(--enb-muted); max-width: 72ch; margin: 0 0 1.5rem; }
+        .enb-note { color: var(--enb-muted); font-size: 0.9rem; margin-top: 1rem; }
+        .enb-note i { color: var(--enb-gold); margin-right: 0.35rem; }
+
+        .enb-panel {
+            background: var(--enb-panel); border: 1px solid var(--enb-line-soft); border-top: 2px solid var(--enb-gold);
+            border-radius: var(--enb-radius); padding: 1.25rem 1.4rem; margin-bottom: 1.5rem;
+        }
+        .enb-panel > :last-child { margin-bottom: 0; }
+        .enb-panel--new { border-top-color: var(--enb-new); }
+        .enb-inset { background: var(--enb-inset); border: 1px solid var(--enb-line-soft); border-radius: 10px; padding: 1rem 1.1rem; }
+
+        .enb-grid-2, .enb-grid-3 { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+        @media (min-width: 768px) {
+            .enb-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .enb-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        .enb-grid-2 > .enb-panel, .enb-grid-3 > .enb-panel { margin-bottom: 0; }
+        .enb-grid-2 + .enb-panel, .enb-grid-3 + .enb-panel, .enb-panel + .enb-grid-2 { margin-top: 1.5rem; }
+
+        .enb-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; margin: 0 0 1rem; }
+        .enb-chip {
+            font-size: 0.75rem; letter-spacing: 0.04em; padding: 0.3rem 0.7rem; border-radius: 999px;
+            border: 1px solid var(--enb-line-soft); color: var(--enb-muted); background: var(--enb-inset);
+        }
+        .enb-chip--gold { border-color: var(--enb-line); color: var(--enb-gold-soft); }
+        .enb-chip--new { border-color: var(--enb-new); color: var(--enb-new); }
+        .enb-chip--ban { border-color: var(--enb-warn); color: var(--enb-warn); }
+
+        .enb-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; padding: 0.55rem 1rem;
+            border-radius: 8px; border: 1px solid var(--enb-gold); color: var(--enb-gold); background: transparent;
+            font-weight: 600; font-size: 0.9rem; text-decoration: none; cursor: pointer; transition: background 0.2s ease;
+        }
+        .enb-btn:hover { background: rgba(255, 215, 0, 0.1); }
+        .enb-btn--solid { background: var(--enb-gold); color: #16130a; }
+        .enb-btn--solid:hover { background: var(--enb-gold-soft); }
+        .enb-btn-row { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1rem; }
+
+        .enb-ref {
+            background: none; border: 0; padding: 0; font: inherit; color: var(--enb-gold-soft); cursor: pointer;
+            text-decoration: underline dotted; text-underline-offset: 3px;
+        }
+
+        /* ---------- Spotlight strip (above the tabs) ---------- */
+        .enb-spot {
+            display: grid; gap: 1.25rem; grid-template-columns: 1fr; align-items: center;
+            max-width: 64rem; margin: 0 auto 2.5rem; padding: 1.25rem 1.4rem;
+            background: var(--enb-panel); border: 1px solid var(--enb-line); border-radius: var(--enb-radius);
+            color: var(--enb-text);
+        }
+        @media (min-width: 768px) { .enb-spot { grid-template-columns: auto 1fr; } }
+        .enb-spot__art { display: flex; gap: 0.5rem; justify-content: center; }
+        .enb-spot__thumb { width: 74px; }
+        .enb-spot__thumb img { width: 100%; height: auto; display: block; border-radius: 5px; }
+        .enb-spot__thumb .card-placeholder { min-height: 0; aspect-ratio: 59 / 86; font-size: 0.6rem; padding: 0.25rem; }
+        .enb-eyebrow { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--enb-new); margin: 0 0 0.3rem; }
+        .enb-spot__title { font-family: 'Cinzel', serif; font-size: 1.25rem; color: #fff; margin: 0 0 0.4rem; }
+        .enb-spot p { color: var(--enb-muted); margin: 0 0 0.75rem; line-height: 1.6; }
+        .enb-spot__chips { display: flex; flex-wrap: wrap; gap: 0.4rem; list-style: none; padding: 0; margin: 0 0 0.9rem; }
+        .enb-spot__chips a {
+            display: inline-block; font-size: 0.78rem; padding: 0.35rem 0.7rem; border-radius: 999px;
+            border: 1px solid var(--enb-line-soft); background: var(--enb-inset); text-decoration: none;
+        }
+        .enb-spot__chips a:hover { border-color: var(--enb-gold); }
+
+        /* ---------- Overview ---------- */
+        .enb-hero p { color: var(--enb-text); max-width: 78ch; }
+        .enb-tile { background: var(--enb-panel-2); border: 1px solid var(--enb-line-soft); border-radius: 10px; padding: 1rem 1.1rem; }
+        .enb-tile i { color: var(--enb-new); font-size: 1.3rem; margin-bottom: 0.5rem; display: block; }
+        .enb-tile p { color: var(--enb-muted); font-size: 0.92rem; margin: 0; }
+
+        .enb-tier { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+        @media (min-width: 640px) { .enb-tier { grid-template-columns: 7.5rem 1fr; } }
+        .enb-tier__badge {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem;
+            border: 2px solid var(--enb-gold); border-radius: 14px; padding: 0.9rem; background: var(--enb-inset);
+            text-align: center; min-height: 7rem;
+        }
+        .enb-tier__grade { font-family: 'Cinzel', serif; font-size: 2.6rem; line-height: 1; color: var(--enb-gold); }
+        .enb-tier__label { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--enb-muted); }
+        .enb-tier__next { font-size: 0.72rem; color: var(--enb-new); }
+        .enb-meters { list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 0.7rem; }
+        .enb-meter { display: grid; gap: 0.25rem; grid-template-columns: 1fr auto; font-size: 0.88rem; }
+        .enb-meter__name { color: #fff; font-weight: 600; }
+        .enb-meter__score { color: var(--enb-gold-soft); font-variant-numeric: tabular-nums; }
+        .enb-meter__bar { grid-column: 1 / -1; height: 8px; border-radius: 999px; background: var(--enb-inset); border: 1px solid var(--enb-line-soft); overflow: hidden; }
+        .enb-meter__bar span { display: block; height: 100%; width: var(--v); background: linear-gradient(90deg, var(--enb-gold), var(--enb-gold-soft)); }
+        .enb-meter__why { grid-column: 1 / -1; color: var(--enb-muted); font-size: 0.84rem; }
+        .enb-evidence { margin: 0.5rem 0 0; padding-left: 1.1rem; color: var(--enb-muted); font-size: 0.9rem; }
+        .enb-evidence li { margin-bottom: 0.35rem; }
+        .enb-disclaimer { font-size: 0.8rem; color: var(--enb-dim); margin-top: 0.75rem; }
+
+        .enb-toc { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0; padding: 0; list-style: none; }
+        .enb-toc a {
+            display: inline-flex; align-items: center; min-height: 40px; padding: 0.4rem 0.8rem; border-radius: 8px;
+            background: var(--enb-panel); border: 1px solid var(--enb-line-soft); text-decoration: none; font-size: 0.85rem;
+        }
+        .enb-toc a:hover { border-color: var(--enb-gold); }
+
+        /* ---------- Tables ---------- */
+        .enb-table-wrap { overflow-x: auto; }
+        .enb-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .enb-table th, .enb-table td { text-align: left; vertical-align: top; padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--enb-line-soft); }
+        .enb-table thead th { color: var(--enb-gold-soft); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .enb-table tbody th { color: #fff; font-weight: 600; }
+        .enb-table td { color: var(--enb-muted); }
+        .enb-table .enb-num { text-align: center; color: #fff; font-variant-numeric: tabular-nums; }
+        .enb-table tr.enb-group th { color: var(--enb-gold); background: var(--enb-inset); font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; }
+        @media (max-width: 639px) {
+            .enb-table--stack thead { display: none; }
+            .enb-table--stack tr { display: block; padding: 0.6rem 0; border-bottom: 1px solid var(--enb-line-soft); }
+            .enb-table--stack th, .enb-table--stack td { display: block; border: 0; padding: 0.2rem 0; }
+            .enb-table--stack td[data-label]::before {
+                content: attr(data-label); display: block; font-size: 0.7rem; letter-spacing: 0.08em;
+                text-transform: uppercase; color: var(--enb-dim); margin-top: 0.3rem;
+            }
+            .enb-table--stack .enb-num { text-align: left; }
+        }
+
+        .enb-steps { margin: 0; padding-left: 1.2rem; color: var(--enb-muted); }
+        .enb-steps li { margin-bottom: 0.55rem; padding-left: 0.2rem; }
+        .enb-steps strong, .enb-list strong { color: #fff; }
+        .enb-list { list-style: none; margin: 0; padding: 0; color: var(--enb-muted); }
+        .enb-list li { position: relative; padding-left: 1.4rem; margin-bottom: 0.5rem; }
+        .enb-list li::before { content: '\266A'; position: absolute; left: 0; color: var(--enb-gold); }
+        .enb-list--ok li::before { content: '\2713'; color: var(--enb-ok); }
+        .enb-list--bad li::before { content: '\2715'; color: var(--enb-bad); }
+
+        /* Attribute chips */
+        .enb-attrs { display: grid; gap: 0.5rem; grid-template-columns: 1fr; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        @media (min-width: 640px) { .enb-attrs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .enb-attrs li { font-size: 0.88rem; color: var(--enb-muted); padding: 0.5rem 0.7rem; border-radius: 8px; background: var(--enb-inset); border-left: 3px solid var(--attr); }
+        .enb-attrs b { color: var(--attr); margin-right: 0.35rem; }
+        .enb-attr--fire { --attr: var(--enb-fire); }
+        .enb-attr--water { --attr: var(--enb-water); }
+        .enb-attr--light { --attr: var(--enb-light); }
+        .enb-attr--wind { --attr: var(--enb-wind); }
+        .enb-attr--dark { --attr: var(--enb-dark); }
+        .enb-attr--earth { --attr: var(--enb-earth); }
+
+        /* ---------- Stage planner ---------- */
+        .enb-planner__presets { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        .enb-planner__presets button {
+            min-height: 40px; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer;
+            background: var(--enb-inset); color: var(--enb-text); border: 1px solid var(--enb-line-soft);
+        }
+        .enb-planner__presets button:hover, .enb-planner__presets button[aria-pressed="true"] { border-color: var(--enb-gold); color: var(--enb-gold-soft); }
+        .enb-planner__grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+        @media (min-width: 960px) { .enb-planner__grid { grid-template-columns: 19rem 1fr; } }
+        .enb-planner fieldset { border: 1px solid var(--enb-line-soft); border-radius: 10px; padding: 0.8rem 0.9rem 0.4rem; margin: 0 0 0.9rem; min-width: 0; }
+        .enb-planner legend { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--enb-gold-soft); padding: 0 0.35rem; }
+        .enb-field { display: grid; gap: 0.25rem; margin-bottom: 0.6rem; }
+        .enb-field label { font-size: 0.8rem; color: var(--enb-muted); }
+        .enb-field select {
+            width: 100%; min-height: 40px; padding: 0.35rem 0.5rem; border-radius: 8px; font-size: 0.88rem;
+            background: var(--enb-inset); color: var(--enb-text); border: 1px solid var(--enb-line-soft);
+        }
+        .enb-check { display: flex; align-items: center; gap: 0.55rem; min-height: 36px; font-size: 0.86rem; color: var(--enb-text); cursor: pointer; }
+        .enb-check input { width: 18px; height: 18px; accent-color: var(--enb-gold); }
+
+        .enb-board { display: grid; gap: 0.4rem; margin-bottom: 1rem; }
+        .enb-board__label { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--enb-dim); }
+        .enb-board__row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.4rem; }
+        .enb-zone {
+            min-height: 3.6rem; border: 1px dashed var(--enb-line-soft); border-radius: 7px; padding: 0.3rem;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            font-size: 0.68rem; line-height: 1.25; color: var(--enb-dim); position: relative; overflow-wrap: anywhere;
+        }
+        .enb-zone--spacer { border: 0; min-height: 0; }
+        .enb-zone.is-occupied { border-style: solid; color: #fff; background: var(--enb-panel-2); }
+        .enb-zone.is-center { border: 2px solid var(--enb-gold); }
+        .enb-zone.is-locked { background: var(--enb-lock); border-color: var(--enb-bad); color: var(--enb-bad); }
+        .enb-zone.is-pointed { box-shadow: inset 0 0 0 2px var(--enb-new); background: var(--enb-point); }
+        .enb-zone .enb-zone__tag { font-size: 0.6rem; color: var(--enb-dim); }
+        .enb-zone.is-locked .enb-zone__tag { color: var(--enb-bad); }
+        .enb-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.75rem; color: var(--enb-muted); margin: 0 0 1rem; padding: 0; list-style: none; }
+        .enb-legend span { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 3px; margin-right: 0.35rem; vertical-align: -1px; }
+        .enb-legend .l-center { border: 2px solid var(--enb-gold); }
+        .enb-legend .l-lock { background: var(--enb-lock); border: 1px solid var(--enb-bad); }
+        .enb-legend .l-point { background: var(--enb-point); box-shadow: inset 0 0 0 2px var(--enb-new); }
+
+        .enb-readout { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+        .enb-readout li { display: grid; grid-template-columns: 1.3rem 1fr; gap: 0.4rem; font-size: 0.88rem; color: var(--enb-muted); line-height: 1.5; }
+        .enb-readout li::before { font-weight: 700; text-align: center; }
+        .enb-readout .t-ok::before { content: '\2713'; color: var(--enb-ok); }
+        .enb-readout .t-warn::before { content: '!'; color: var(--enb-warn); }
+        .enb-readout .t-off::before { content: '\2715'; color: var(--enb-bad); }
+        .enb-readout .t-info::before { content: '\2022'; color: var(--enb-gold); }
+        .enb-readout b { color: #fff; font-weight: 600; }
+
+        /* ---------- Card gallery ---------- */
+        .enb-filter { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 1.25rem; }
+        .enb-filter button {
+            min-height: 40px; padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 0.84rem; cursor: pointer;
+            background: var(--enb-panel); color: var(--enb-text); border: 1px solid var(--enb-line-soft);
+        }
+        .enb-filter button[aria-pressed="true"] { background: var(--enb-gold); color: #16130a; border-color: var(--enb-gold); font-weight: 700; }
+        .enb-filter__count { font-size: 0.82rem; color: var(--enb-dim); margin-left: auto; }
+        .enb-cards { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+        @media (min-width: 1024px) { .enb-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .enb-card {
+            display: grid; gap: 1rem; grid-template-columns: 96px 1fr; align-items: start; scroll-margin-top: 1.5rem;
+            background: var(--enb-panel); border: 1px solid var(--enb-line-soft); border-left: 3px solid var(--enb-gold);
+            border-radius: var(--enb-radius); padding: 1rem;
+        }
+        .enb-card[hidden] { display: none; }
+        .enb-card--new { border-left-color: var(--enb-new); }
+        @media (min-width: 520px) { .enb-card { grid-template-columns: 120px 1fr; } }
+        .enb-card__art img { width: 100%; height: auto; display: block; border-radius: 6px; }
+        .enb-card__art .card-placeholder { min-height: 0; aspect-ratio: 59 / 86; font-size: 0.65rem; padding: 0.3rem; }
+        .enb-card__name { font-family: 'Cinzel', serif; font-size: 1.05rem; color: #fff; margin: 0 0 0.2rem; }
+        .enb-card__meta { font-size: 0.78rem; color: var(--enb-dim); margin: 0 0 0.5rem; line-height: 1.45; }
+        .enb-card__tags { display: flex; flex-wrap: wrap; gap: 0.35rem; list-style: none; margin: 0 0 0.6rem; padding: 0; }
+        .enb-card__tags li { font-size: 0.7rem; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--enb-line-soft); color: var(--enb-muted); }
+        .enb-card__tags .tag-role { border-color: var(--enb-line); color: var(--enb-gold-soft); }
+        .enb-card__tags .tag-new { border-color: var(--enb-new); color: var(--enb-new); }
+        .enb-card__tags .tag-ban { border-color: var(--enb-warn); color: var(--enb-warn); }
+        .enb-card__read { font-size: 0.9rem; color: var(--enb-text); margin: 0 0 0.5rem; }
+        .enb-card .enb-list { font-size: 0.86rem; }
+        .enb-card .enb-list li { margin-bottom: 0.3rem; }
+        .enb-text { margin-top: 0.6rem; font-size: 0.84rem; }
+        .enb-text summary { cursor: pointer; color: var(--enb-gold-soft); min-height: 32px; display: flex; align-items: center; }
+        .enb-text p { color: var(--enb-muted); background: var(--enb-inset); border-radius: 8px; padding: 0.7rem 0.8rem; margin: 0.4rem 0 0; }
+        @media (max-width: 519px) { .enb-card { grid-template-columns: 1fr; } .enb-card__art { max-width: 120px; } }
+
+        /* ---------- Combo lines ---------- */
+        .enb-line__hand { font-size: 0.82rem; color: var(--enb-dim); margin: -0.4rem 0 0.8rem; }
+        .enb-line__end { margin-top: 0.8rem; font-size: 0.88rem; color: var(--enb-muted); border-top: 1px solid var(--enb-line-soft); padding-top: 0.7rem; }
+        .enb-line__end strong { color: var(--enb-gold-soft); }
+        .enb-lab { margin-top: 1.5rem; scroll-margin-top: 1rem; }
+        .enb-lab__loading { color: var(--enb-dim); font-size: 0.9rem; text-align: center; padding: 1.5rem; border: 1px dashed var(--enb-line-soft); border-radius: 10px; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .enb *, .enb-spot * { transition: none !important; animation: none !important; }
+        }
+    </style>
 </head>
 
 <body class="p-4 md:p-8">
@@ -366,6 +653,31 @@
             </div>
         </section>
 
+        <!-- Beyond the Brave spotlight: always visible, opens Movement IV -->
+        <section class="enb-spot" data-pcs-scope="spot" aria-labelledby="enb-spot-title">
+            <div class="enb-spot__art" aria-hidden="true">
+                <div id="enb-spot-citrinitas-img-container" class="enb-spot__thumb"><div class="card-placeholder">Ars Magna "Citrinitas"</div></div>
+                <div id="enb-spot-tmedius-img-container" class="enb-spot__thumb"><div class="card-placeholder">Theorealized Medius</div></div>
+                <div id="enb-spot-mediclius-img-container" class="enb-spot__thumb"><div class="card-placeholder">Mediclius the Extraordinary Power Patron</div></div>
+            </div>
+            <div>
+                <p class="enb-eyebrow">New · Movement IV · Beyond the Brave · TCG 8 Oct 2026</p>
+                <h2 id="enb-spot-title" class="enb-spot__title">Three Power Patron cards join the concert</h2>
+                <p>Ars Magna "Citrinitas" counts as an Elfnote card, Theorealized Medius counts as a Power Patron
+                    card, and Mediclius points straight down at the columns your Elfnotes already hold. The new
+                    guide covers the center zone, the resource loops, four combo lines and a tier rating.</p>
+                <ul class="enb-spot__chips">
+                    <li><a href="#enb-center">Center &amp; columns</a></li>
+                    <li><a href="#card-citrinitas">Citrinitas</a></li>
+                    <li><a href="#card-theorealized-medius">Theorealized Medius</a></li>
+                    <li><a href="#card-mediclius">Mediclius</a></li>
+                    <li><a href="#enb-combos">4 combo lines</a></li>
+                    <li><a href="#enb-verdict">Tier verdict</a></li>
+                </ul>
+                <a class="enb-btn enb-btn--solid" href="#tab-betb">Open the Beyond the Brave guide <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </div>
+        </section>
+
         <!-- Era Selection Tabs -->
         <div class="flex justify-center gap-3 mb-8">
             <button onclick="switchTab('classic')" id="btn-classic"
@@ -379,6 +691,10 @@
             <button onclick="switchTab('cori')" id="btn-cori"
                 class="tab-btn px-5 py-2.5 rounded-t-lg font-bold text-sm tracking-wider">
                 <i class="fas fa-star mr-2"></i> Movement III: Chaos Origins
+            </button>
+            <button onclick="switchTab('betb')" id="btn-betb"
+                class="tab-btn px-5 py-2.5 rounded-t-lg font-bold text-sm tracking-wider">
+                <i class="fas fa-crown mr-2"></i> Movement IV: Beyond the Brave
             </button>
         </div>
 
@@ -1017,6 +1333,1207 @@
             </section>
         </div>
 
+        <!-- ========================================== -->
+        <!-- TAB: BEYOND THE BRAVE (MOVEMENT IV)        -->
+        <!-- ========================================== -->
+        <div id="tab-betb" data-pcs-scope="betb" class="content-tab enb" aria-labelledby="btn-betb">
+
+            <!-- Executive overview -->
+            <section id="enb-overview" class="enb-section" aria-labelledby="enb-overview-title">
+                <div class="enb-panel enb-hero">
+                    <ul class="enb-chips">
+                        <li class="enb-chip enb-chip--gold">Beyond the Brave · TCG 8 Oct 2026</li>
+                        <li class="enb-chip">OCG 18 Jul 2026</li>
+                        <li class="enb-chip enb-chip--new">Ars Magna "Citrinitas" · Theorealized Medius · Mediclius</li>
+                    </ul>
+                    <h2 id="enb-overview-title" class="enb-h2"><i class="fas fa-crown" aria-hidden="true"></i>Executive Overview: The Patron's Concerto</h2>
+                    <p>Elfnote is a Level 6 Spellcaster engine that plays for one square of the mat: your center Main
+                        Monster Zone. Lucina, Tinia and Fortuna Special Summon themselves only there, Regina calls a
+                        second Elfnote from the Deck when it lands there, and Elfnote Power Patron raises whatever
+                        stands there by 3 Levels and Synchro Summons on the spot. On your opponent's turn, Lucina,
+                        Tinia and Fortuna each switch places with the monster in the center to bounce a monster,
+                        banish a card from the hand, or bounce a Spell/Trap.</p>
+                    <p>Beyond the Brave prints no card with Elfnote in its name, but three of its cards plug straight
+                        into the deck. <strong>Ars Magna "Citrinitas"</strong> is always treated as an Elfnote card,
+                        so Tinia places it face-up from the Deck and it adds Medius the Pure or Theorealized Medius.
+                        <strong>Theorealized Medius</strong> counts as a Power Patron card and summons itself from the
+                        hand whenever Elfnote Power Patron, Junora or a Junoldo in the Pendulum Zone is on the field.
+                        <strong>Mediclius the Extraordinary Power Patron</strong> is the deck's first Link boss: from
+                        an Extra Monster Zone its three arrows point down at the center zone and the two zones on one
+                        side of it.</p>
+                    <p>The result keeps what Elfnote already did well and patches what it didn't. Going first, the
+                        opponent's-turn rotation stays and Mediclius adds a board-wide banish on top. Going second,
+                        the deck's weak spot in player reports so far, Junoldo turns into Junora for a negate on every
+                        face-up card, and Mediclius negates their monsters and halves their ATK, without spending a
+                        single Elfnote Quick Effect.</p>
+                    <p class="enb-note"><i class="fas fa-info-circle" aria-hidden="true"></i>Beyond the Brave reaches
+                        TCG shelves on 8 October 2026. Until then the three cards marked New aren't TCG-legal, and
+                        combo lines 2 and 4 need them.</p>
+                </div>
+
+                <h3 class="enb-h3">What Beyond the Brave changes</h3>
+                <div class="enb-grid-3">
+                    <div class="enb-tile">
+                        <i class="fas fa-scroll" aria-hidden="true"></i>
+                        <h4 class="enb-h4">A Medius from your Spell &amp; Trap Zone</h4>
+                        <p>Citrinitas is an Elfnote Continuous Spell for Tinia and an Elfnote card for Power Patron's
+                            search. Once while it's face-up it adds a "Medius" monster, and on its own it turns on
+                            Theorealize Past Lull.</p>
+                    </div>
+                    <div class="enb-tile">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <h4 class="enb-h4">A search off any Power Patron</h4>
+                        <p>Theorealized Medius drops from the hand next to Elfnote Power Patron, Junora or a Pendulum
+                            Zone Junoldo, and adds a Theorealize Spell/Trap: Past Lull for Medius the Pure, Overdrive
+                            for a revival, or Liberation for a 300 ATK/200 DEF monster.</p>
+                    </div>
+                    <div class="enb-tile">
+                        <i class="fas fa-crosshairs" aria-hidden="true"></i>
+                        <h4 class="enb-h4">A Link boss that reads your columns</h4>
+                        <p>Mediclius's arrows only point at monsters from an Extra Monster Zone, and from there they
+                            always include the center. Three pointed monsters make it unaffected by your opponent's
+                            activated effects and let it banish their whole field once per opponent's turn.</p>
+                    </div>
+                </div>
+
+                <div id="enb-tier-card" class="enb-panel enb-tier" style="margin-top:1.5rem">
+                    <div class="enb-tier__badge" role="img" aria-label="Tier 2, Tier 1 contender from 8 October 2026">
+                        <span class="enb-tier__label">Tier</span>
+                        <span class="enb-tier__grade">2</span>
+                        <span class="enb-tier__next">T1 contender · 8 Oct</span>
+                    </div>
+                    <div>
+                        <h3 class="enb-h3">Our rating: Tier 2 now, Tier 1 contender once Beyond the Brave is legal</h3>
+                        <ul class="enb-meters">
+                            <li class="enb-meter">
+                                <span class="enb-meter__name">Consistency</span><span class="enb-meter__score">4 / 5</span>
+                                <span class="enb-meter__bar"><span style="--v:80%"></span></span>
+                                <span class="enb-meter__why">Lucina alone makes a full board; Medius the Pure and Citrinitas extend almost any second card.</span>
+                            </li>
+                            <li class="enb-meter">
+                                <span class="enb-meter__name">Going first</span><span class="enb-meter__score">4.5 / 5</span>
+                                <span class="enb-meter__bar"><span style="--v:90%"></span></span>
+                                <span class="enb-meter__why">Four opponent's-turn disruptions from one card; Mediclius's banish on top with two.</span>
+                            </li>
+                            <li class="enb-meter">
+                                <span class="enb-meter__name">Going second</span><span class="enb-meter__score">3.5 / 5</span>
+                                <span class="enb-meter__bar"><span style="--v:70%"></span></span>
+                                <span class="enb-meter__why">Up from about 2: Junora's arrival negate plus Mediclius's negate-and-halve.</span>
+                            </li>
+                            <li class="enb-meter">
+                                <span class="enb-meter__name">Resilience</span><span class="enb-meter__score">3 / 5</span>
+                                <span class="enb-meter__bar"><span style="--v:60%"></span></span>
+                                <span class="enb-meter__why">Droll &amp; Lock Bird and Nibiru still end or cripple most turns.</span>
+                            </li>
+                            <li class="enb-meter">
+                                <span class="enb-meter__name">Room for tech</span><span class="enb-meter__score">4 / 5</span>
+                                <span class="enb-meter__bar"><span style="--v:80%"></span></span>
+                                <span class="enb-meter__why">One-card starters leave around 15 slots for hand traps and breakers.</span>
+                            </li>
+                        </ul>
+                        <ul class="enb-evidence">
+                            <li>The TCG list now holds Elfnote Tinia and Prohibited Power Patron Portal - Terminus at one
+                                copy each. Public TCG lists from June 2026 ran three of both.</li>
+                            <li>Master Duel player reports from June 2026 placed the deck between strong rogue and
+                                Tier 3, and named going second as its weak spot.</li>
+                            <li>Two of Beyond the Brave's three cards are going-second tools, and the third is a
+                                going-first finisher.</li>
+                        </ul>
+                        <p class="enb-disclaimer">This is the site's own rating from card power and the evidence above,
+                            not a tournament statistic. The full reasoning is in the <a href="#enb-verdict">verdict</a>.</p>
+                    </div>
+                </div>
+
+                <nav aria-label="In this guide">
+                    <ul class="enb-toc">
+                        <li><a href="#enb-center">1 · Center &amp; columns</a></li>
+                        <li><a href="#enb-loops">2 · Loops &amp; levels</a></li>
+                        <li><a href="#enb-turn1">3 · Turn 1 &amp; recovery</a></li>
+                        <li><a href="#enb-cards">4 · Card breakdown</a></li>
+                        <li><a href="#enb-combos">5 · Combo lines</a></li>
+                        <li><a href="#enb-ratios">6 · Ratios &amp; tech</a></li>
+                        <li><a href="#enb-verdict">7 · Verdict</a></li>
+                    </ul>
+                </nav>
+            </section>
+
+            <!-- 1 · Center stage -->
+            <section id="enb-center" class="enb-section" aria-labelledby="enb-center-title">
+                <h2 id="enb-center-title" class="enb-h2"><i class="fas fa-chess-board" aria-hidden="true"></i>1 · The Center Stage: Positions, Columns and Attributes</h2>
+                <p class="enb-kicker">Every Elfnote decision starts with two questions: what is standing in your center
+                    Main Monster Zone, and what is next to it?</p>
+
+                <div class="enb-grid-2">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">What reads the center zone</h3>
+                        <table class="enb-table enb-table--stack">
+                            <thead><tr><th scope="col">Card</th><th scope="col">Needs the center for</th></tr></thead>
+                            <tbody>
+                                <tr><th scope="row">Lucina · Tinia · Fortuna</th><td data-label="Needs the center for">Their hand summon goes only to the center. Their switch needs a monster there and moves them into it.</td></tr>
+                                <tr><th scope="row">Regina</th><td data-label="Needs the center for">Calls an Elfnote from the Deck only when Normal or Special Summoned to the center.</td></tr>
+                                <tr><th scope="row">Elfnote Power Patron</th><td data-label="Needs the center for">Its +3 Levels can only target the center monster.</td></tr>
+                                <tr><th scope="row">Junora</th><td data-label="Needs the center for">Can treat the center monster as the Tuner for its own Synchro Summon.</td></tr>
+                                <tr><th scope="row">June Pride</th><td data-label="Needs the center for">Its attack lock and its tag-out both work only from the center.</td></tr>
+                                <tr><th scope="row">Strelitzia</th><td data-label="Needs the center for">Its original ATK becomes 3000 only in the center.</td></tr>
+                                <tr><th scope="row">Welcome Home · Plea for Help · Quatrain</th><td data-label="Needs the center for">The center monster can't be destroyed by card effects, can't be targeted by your opponent's card effects, or can't be banished by your opponent's card effects.</td></tr>
+                                <tr><th scope="row">Rhapsodia of Madness</th><td data-label="Needs the center for">While you control a center monster, your opponent's monsters can only attack that one.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">How the switch works</h3>
+                        <ol class="enb-steps">
+                            <li>The Elfnote must be in one of your <strong>other</strong> Main Monster Zones, and the
+                                center must hold a monster.</li>
+                            <li>They trade places: the Elfnote ends in the center and the old center monster takes its
+                                zone. Then the bonus: Lucina returns a Level 6 or lower monster to the hand, Tinia
+                                banishes a random card from the hand face-up until the End Phase, Fortuna returns a
+                                face-up Spell/Trap to the hand.</li>
+                            <li>Each works once per turn and only on your opponent's turn, but they feed each other:
+                                Tinia switches in, Lucina switches with Tinia, Fortuna switches with Lucina. One
+                                monster in the middle and three beside it is three disruptions.</li>
+                            <li>The bonus is optional ("then you can"), so a switch also works as pure repositioning,
+                                for example to change which monster Plea for Help reads.</li>
+                            <li>A negated switch (Infinite Impermanence, Effect Veiler) moves nothing and bounces
+                                nothing.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Column control</h3>
+                    <div class="enb-grid-3">
+                        <div>
+                            <h4 class="enb-h4"><i class="fas fa-lock" aria-hidden="true"></i> Junora's material lock</h4>
+                            <p class="enb-note" style="margin-top:0">Quick Effect, once per turn: until the end of the
+                                turn, your opponent's monsters in the same column as your Elfnote monsters can't be
+                                Fusion, Synchro, Xyz or Link Material. Junora itself isn't an Elfnote monster; June
+                                Pride, Strelitzia, Elfnote Power Patron and Junoldo are. The Extra Monster Zones sit in
+                                columns 2 and 4, so an Elfnote in your second or fourth zone also covers the Extra
+                                Monster Zone above it. The lock doesn't target.</p>
+                        </div>
+                        <div>
+                            <h4 class="enb-h4"><i class="fas fa-arrows-alt-h" aria-hidden="true"></i> Moving on demand</h4>
+                            <p class="enb-note" style="margin-top:0">Elfnotes: Aristeia of Trust moves one of your
+                                face-up monsters to another of your Main Monster Zones once per turn. It's a
+                                Continuous Trap effect, so it works on your opponent's turn: step an Elfnote into the
+                                column of the monster they are about to use. With 3 or more Elfnote monsters it also
+                                negates an opponent's Spell/Trap effect, and destroys that card if you control a
+                                Synchro Monster.</p>
+                        </div>
+                        <div>
+                            <h4 class="enb-h4"><i class="fas fa-crosshairs" aria-hidden="true"></i> Arrows from above</h4>
+                            <p class="enb-note" style="margin-top:0">Mediclius only points at something from an Extra
+                                Monster Zone: from the left one it covers your first three Main Monster Zones, from
+                                the right one the last three. Both include the center. Purification Power Patron's
+                                bottom arrow covers the zone under it, where Theorealize Past Lull's GY effect can
+                                revive a Synchro Monster.</p>
+                        </div>
+                    </div>
+                    <p class="enb-note"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i>June Pride in
+                        the center stops every monster outside a center zone from attacking, yours included. Keep it
+                        out of the center, or skip it, when you need an OTK.</p>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Attribute shifting</h3>
+                    <p class="enb-note" style="margin-top:0">Five Attributes run through the engine, and two different
+                        rules read them.</p>
+                    <ul class="enb-attrs">
+                        <li class="enb-attr--fire"><b>FIRE</b>Lucina, Elfnote Power Patron, Strelitzia, Junora</li>
+                        <li class="enb-attr--water"><b>WATER</b>Tinia, Mediclius</li>
+                        <li class="enb-attr--light"><b>LIGHT</b>Fortuna, June Pride</li>
+                        <li class="enb-attr--wind"><b>WIND</b>Regina</li>
+                        <li class="enb-attr--dark"><b>DARK</b>Junoldo, Medius the Pure, Theorealized Medius, Purification Power Patron</li>
+                    </ul>
+                    <div class="enb-grid-2">
+                        <div class="enb-inset">
+                            <h4 class="enb-h4">Plea for Help reads the center monster's current Attribute</h4>
+                            <table class="enb-table enb-table--stack">
+                                <thead><tr><th scope="col">Center Attribute</th><th scope="col">Plea for Help gains</th></tr></thead>
+                                <tbody>
+                                    <tr><th scope="row">FIRE or EARTH</th><td data-label="Plea for Help gains">Your Synchro Monsters inflict piercing damage.</td></tr>
+                                    <tr><th scope="row">WATER or WIND</th><td data-label="Plea for Help gains">Your other face-up Spells/Traps can't be destroyed by your opponent's card effects.</td></tr>
+                                    <tr><th scope="row">LIGHT or DARK</th><td data-label="Plea for Help gains">You take no battle damage.</td></tr>
+                                </tbody>
+                            </table>
+                            <p class="enb-note">In every mode your opponent can't target the center monster with card
+                                effects. A switch changes the mode mid-turn: Tinia switching in turns on the
+                                Spell/Trap shield, Fortuna switching in turns off battle damage.</p>
+                        </div>
+                        <div class="enb-inset">
+                            <h4 class="enb-h4">Welcome Home and Rhapsodia read original Attributes</h4>
+                            <p class="enb-note" style="margin-top:0">Welcome Home sends a monster and calls an Elfnote
+                                with a <strong>different original Attribute</strong> from the Deck. Rhapsodia sends a
+                                monster and revives one from the GY on the same rule. With FIRE, WATER, LIGHT, WIND and
+                                DARK in the engine there's always a legal pair: FIRE Lucina for LIGHT Fortuna, WATER
+                                Tinia for FIRE Power Patron, WIND Regina for DARK Junoldo.</p>
+                            <p class="enb-note">Theorealize, the Normal Spell, can banish itself from the GY to change
+                                a face-up monster's Type and Attribute until the end of your opponent's turn. That
+                                changes Plea for Help's mode, and it can make a non-Spellcaster the Spellcaster June
+                                Pride asks for. It doesn't touch the original Attribute, so it doesn't help Welcome
+                                Home or Rhapsodia.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive stage planner -->
+                <div id="enb-planner" class="enb-panel enb-panel--new enb-planner" data-stage-planner aria-labelledby="enb-planner-title">
+                    <h3 id="enb-planner-title" class="enb-h3">Stage planner</h3>
+                    <p class="enb-note" style="margin-top:0">Place monsters in your five Main Monster Zones and the
+                        Extra Monster Zone, tick your face-up Continuous cards, and see what the board does on your
+                        opponent's turn. The presets load the combo lines' end boards.</p>
+                    <div class="enb-planner__presets" role="group" aria-label="Load a board" data-planner-presets></div>
+                    <div class="enb-planner__grid">
+                        <form class="enb-planner__controls" data-planner-controls onsubmit="return false">
+                            <noscript><p class="enb-note">The planner needs JavaScript.</p></noscript>
+                        </form>
+                        <div>
+                            <ul class="enb-legend" aria-hidden="true">
+                                <li><span class="l-center"></span>Center zone</li>
+                                <li><span class="l-lock"></span>Locked by Junora</li>
+                                <li><span class="l-point"></span>Pointed to by your Link Monster</li>
+                            </ul>
+                            <div class="enb-board" data-planner-board aria-hidden="true"></div>
+                            <h4 class="enb-h4">What this board does</h4>
+                            <ul class="enb-readout" data-planner-readout aria-live="polite"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2 · Loops and levels -->
+            <section id="enb-loops" class="enb-section" aria-labelledby="enb-loops-title">
+                <h2 id="enb-loops-title" class="enb-h2"><i class="fas fa-sync-alt" aria-hidden="true"></i>2 · Resource Loops, Search Chains and Level Math</h2>
+                <p class="enb-kicker">Nearly every card here finds, revives or refunds another one. The search map shows
+                    who reaches whom; the Beyond the Brave cards are marked New.</p>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Search map</h3>
+                    <div class="enb-table-wrap">
+                        <table class="enb-table enb-table--stack">
+                            <thead><tr><th scope="col">Card</th><th scope="col">Reaches</th><th scope="col">From → to</th></tr></thead>
+                            <tbody>
+                                <tr><th scope="row">Elfnote Lucina</th><td data-label="Reaches">Any "Elfnote" monster except Lucina, Junoldo included</td><td data-label="From → to">Deck → hand</td></tr>
+                                <tr><th scope="row">Elfnote Regina</th><td data-label="Reaches">Any "Elfnote" monster except Regina: Power Patron, Tinia, Junoldo</td><td data-label="From → to">Deck → field, only when it lands in the center</td></tr>
+                                <tr><th scope="row">Elfnote Tinia</th><td data-label="Reaches">An "Elfnote" Continuous Spell: Welcome Home, Plea for Help, Citrinitas (New)</td><td data-label="From → to">Deck → field, face-up</td></tr>
+                                <tr><th scope="row">Elfnote Fortuna</th><td data-label="Reaches">An "Elfnote" Continuous Trap: Aristeia, Rhapsodia, Quatrain</td><td data-label="From → to">Hand or Deck → field, face-up</td></tr>
+                                <tr><th scope="row">Elfnote Power Patron</th><td data-label="Reaches">Any "Elfnote" card: monsters, Spells/Traps, Junoldo, Citrinitas (New)</td><td data-label="From → to">Deck → hand, when sent to the GY as Synchro Material</td></tr>
+                                <tr><th scope="row">Elfnotes: Welcome Home</th><td data-label="Reaches">An "Elfnote" monster with a different original Attribute from the one you send</td><td data-label="From → to">Deck → field, Defense Position</td></tr>
+                                <tr><th scope="row">Ars Magna "Citrinitas" (New)</th><td data-label="Reaches">A "Medius" or "Ars Magna" monster: Medius the Pure, Theorealized Medius</td><td data-label="From → to">Deck → hand, once while face-up</td></tr>
+                                <tr><th scope="row">Medius the Pure</th><td data-label="Reaches">A "Power Patron" monster: Elfnote Power Patron, Junoldo, Theorealized Medius (New)</td><td data-label="From → to">Deck → hand or field</td></tr>
+                                <tr><th scope="row">Theorealized Medius (New)</th><td data-label="Reaches">A "Theorealize" Spell/Trap: Past Lull, Liberation, Overdrive, Theorealize</td><td data-label="From → to">Deck → hand, after it summons itself</td></tr>
+                                <tr><th scope="row">Theorealize Past Lull</th><td data-label="Reaches">Medius the Pure</td><td data-label="From → to">Hand or Deck → field</td></tr>
+                                <tr><th scope="row">Theorealize Liberation</th><td data-label="Reaches">A 300 ATK/200 DEF monster: Elfnote Power Patron, Junoldo</td><td data-label="From → to">Deck → hand or field, while you control Medius the Pure</td></tr>
+                                <tr><th scope="row">Prohibited Power Patron Portal - Terminus</th><td data-label="Reaches">A DARK Fairy: Medius the Pure, Theorealized Medius</td><td data-label="From → to">Deck → hand, after sending a "Power Patron" monster to the GY</td></tr>
+                                <tr><th scope="row">Purification Power Patron</th><td data-label="Reaches">A "Theorealize" card</td><td data-label="From → to">Deck → hand, with a "Power Patron" monster in your GY</td></tr>
+                                <tr><th scope="row">Junoldo</th><td data-label="Reaches">A "Power Patron" or "Elfnote" card</td><td data-label="From → to">Face-up Extra Deck or GY → hand</td></tr>
+                                <tr><th scope="row">Plundered Power Patron Plane - Vidolia</th><td data-label="Reaches">Reveal Junora: Elfnote Power Patron or Junoldo, which mention it</td><td data-label="From → to">Deck → hand or field</td></tr>
+                                <tr><th scope="row">Elfnote June Pride</th><td data-label="Reaches">One "Elfnote" monster each from your hand, Deck and GY</td><td data-label="From → to">→ field</td></tr>
+                                <tr><th scope="row">Elfnote Seraphim Strelitzia</th><td data-label="Reaches">A Level 6 or lower "Elfnote" monster</td><td data-label="From → to">Hand or GY → field</td></tr>
+                                <tr><th scope="row">Elfnotes: Rhapsodia of Madness</th><td data-label="Reaches">An "Elfnote" monster with a different original Attribute</td><td data-label="From → to">GY → field</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="enb-grid-2">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Regina refunds itself</h3>
+                        <p class="enb-note" style="margin-top:0">Sent to the GY as Synchro Material, Regina returns to
+                            your hand. Its effects are once per turn, so on your own turn it's only a card back. On your
+                            opponent's turn all three are fresh: it summons itself from the hand as a Quick Effect, and
+                            if the center is empty it calls another Elfnote from the Deck.</p>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">June Pride's round trip</h3>
+                        <p class="enb-note" style="margin-top:0">The tag-out sends June Pride back to the Extra Deck,
+                            not the GY, so the same copy can be summoned again. It also answers removal by leaving,
+                            with three summons in its place. It can't help in the Battle Phase: the effect is Main
+                            Phase only.</p>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Junoldo's double dip</h3>
+                        <p class="enb-note" style="margin-top:0">In the Pendulum Zone, Junoldo destroys itself when a
+                            Power Patron or Elfnote monster is Special Summoned to your field: draw 2, then discard 1.
+                            A destroyed Pendulum Monster goes to the Extra Deck face-up, which triggers its other
+                            effect: add a Power Patron or Elfnote card from your face-up Extra Deck or GY. Discard an
+                            Elfnote card to the draw and that effect can add it straight back. As a monster, Junoldo
+                            becomes Junora instead, with the same refund afterwards.</p>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Medius never stays gone</h3>
+                        <p class="enb-note" style="margin-top:0">Medius the Pure revives itself from the GY by
+                            shuffling a monster from your hand or field into the Deck (it's banished when it leaves).
+                            Theorealize Overdrive revives it from the GY or banishment, and Past Lull calls a fresh
+                            one. Past Lull's GY effect revives a Fusion, Synchro or Xyz Monster to a zone a Link
+                            Monster points to: June Pride or Junora back under Mediclius. Only one Past Lull effect
+                            per turn, though.</p>
+                    </div>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Level tools</h3>
+                    <table class="enb-table enb-table--stack">
+                        <thead><tr><th scope="col">Tool</th><th scope="col">Change</th><th scope="col">Best use</th></tr></thead>
+                        <tbody>
+                            <tr><th scope="row">Elfnote Power Patron</th><td data-label="Change">+3 to the center monster (Quick Effect, either Main Phase), then Synchro Summon an Elfnote Synchro or Junora at once</td><td data-label="Best use">Level 6 → 9 for June Pride, with Power Patron as the Tuner</td></tr>
+                            <tr><th scope="row">Elfnote Seraphim Strelitzia</th><td data-label="Change">−3 to every Level 4 or higher monster on the field, both sides, until the end of the turn</td><td data-label="Best use">Level 6 → 3 for Junora. It also changes your opponent's Levels mid-turn, which can spoil their Synchro and Xyz Summons.</td></tr>
+                            <tr><th scope="row">Elfnotes: Quatrain of Succession</th><td data-label="Change">A Level 1–4 Tuner Token (Plant/FIRE)</td><td data-label="Best use">The exact Tuner for Strelitzia (Level 1) or June Pride (Level 4)</td></tr>
+                            <tr><th scope="row">Junora</th><td data-label="Change">Treats 1 center monster as the Tuner for its own Synchro Summon</td><td data-label="Best use">Strelitzia in the center as the Tuner</td></tr>
+                            <tr><th scope="row">Theorealize Overdrive (GY)</th><td data-label="Change">A face-up monster becomes any Level from 1 to 10 until the end of the turn</td><td data-label="Best use">Fix a Synchro sum without Power Patron</td></tr>
+                            <tr><th scope="row">Theorealize Liberation (GY)</th><td data-label="Change">A face-up monster becomes a Tuner this turn</td><td data-label="Best use">A second Tuner when Power Patron is spent</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Synchro and Link recipes</h3>
+                    <div class="enb-table-wrap">
+                        <table class="enb-table enb-table--stack">
+                            <thead><tr><th scope="col">Target</th><th scope="col">Recipe</th><th scope="col">Watch out</th></tr></thead>
+                            <tbody>
+                                <tr><th scope="row">Elfnote Seraphim Strelitzia (7)</th><td data-label="Recipe">Elfnote Power Patron (1) + any Level 6 Elfnote · Seraphim Token at Level 1 + a Level 6 Elfnote</td><td data-label="Watch out">Its effect locks you to Synchro Monsters from the Extra Deck for the rest of the turn.</td></tr>
+                                <tr><th scope="row">Elfnote June Pride (10)</th><td data-label="Recipe">Power Patron (1) + the center Elfnote raised to 9 · Seraphim Token at Level 4 + a Level 6 Elfnote</td><td data-label="Watch out">The non-Tuner must be a Spellcaster. All four Main Deck Elfnotes are.</td></tr>
+                                <tr><th scope="row">Junora (10)</th><td data-label="Recipe">Power Patron (1) + a Level 6 Elfnote + an Elfnote cut to 3 by Strelitzia · Strelitzia in the center, cut to 4 and treated as the Tuner, + two Elfnotes cut to 3 · no materials at all: Junoldo's effect</td><td data-label="Watch out">It needs 1 Tuner + 2 non-Tuners: Power Patron + one Level 9 Elfnote is only two materials. The Seraphim Token can't be used for it.</td></tr>
+                                <tr><th scope="row">Junora on your opponent's turn</th><td data-label="Recipe">Strelitzia (off-center) summons an Elfnote and cuts Levels; Power Patron lifts the center Elfnote from 3 to 6; Power Patron (1) + that Elfnote (6) + another Elfnote (3)</td><td data-label="Watch out">Needs Strelitzia and Elfnote Power Patron on the field when their turn starts (Board C below). Junora's arrival then negates every face-up card they control.</td></tr>
+                                <tr><th scope="row">Chaos Angel (10)</th><td data-label="Recipe">Medius the Pure (4, DARK, treated as the Tuner) + Fortuna (6, LIGHT)</td><td data-label="Watch out">With LIGHT and DARK materials it gets both bonuses, and it banishes 1 card when summoned.</td></tr>
+                                <tr><th scope="row">Crystal Wing Synchro Dragon (8)</th><td data-label="Recipe">Elfnote Power Patron (1) + Strelitzia (7)</td><td data-label="Watch out">Its non-Tuner must be a Synchro Monster.</td></tr>
+                                <tr><th scope="row">T.G. Hyper Librarian (5)</th><td data-label="Recipe">Medius the Pure (4) + Elfnote Power Patron (1)</td><td data-label="Watch out">Draws 1 each time a monster is Synchro Summoned while it's face-up. Limited in the TCG.</td></tr>
+                                <tr><th scope="row">Purification Power Patron (Link-2)</th><td data-label="Recipe">Two non-Link Monsters: Medius the Pure + Theorealized Medius</td><td data-label="Watch out">Not while Elfnote Power Patron is face-up, and not after a Welcome Home or Strelitzia effect that turn.</td></tr>
+                                <tr><th scope="row">Mediclius (Link-3)</th><td data-label="Recipe">Purification Power Patron (counts as 2) + 1 monster · June Pride or Junora + 2 monsters</td><td data-label="Watch out">Same locks. Welcome Home's and Strelitzia's end with your turn; Elfnote Power Patron's lasts while it's face-up.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3 · Turn 1 -->
+            <section id="enb-turn1" class="enb-section" aria-labelledby="enb-turn1-title">
+                <h2 id="enb-turn1-title" class="enb-h2"><i class="fas fa-shield-alt" aria-hidden="true"></i>3 · Turn 1 Boards, Hand Disruption and Recovery</h2>
+                <p class="enb-kicker">Elfnote's first turn builds a small board that does most of its work on the
+                    opponent's turn. Count disruptions by what fires on their turn, not by what's on the field.</p>
+
+                <div class="enb-grid-3">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Board A · Lucina alone</h3>
+                        <ul class="enb-list">
+                            <li><strong>June Pride</strong> in the center, safe from destruction by card effects under Welcome Home</li>
+                            <li><strong>Welcome Home</strong> face-up, <strong>Rhapsodia</strong> Set</li>
+                            <li><strong>Regina</strong> in hand; Normal Summon still free</li>
+                        </ul>
+                        <p class="enb-note">Their turn: Rhapsodia revives Tinia and negates a card; June Pride tags out;
+                            Tinia, Lucina and Fortuna switch in. <strong>Four disruptions.</strong></p>
+                        <div class="enb-btn-row">
+                            <a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i>Line 1</a>
+                            <a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i>Their turn</a>
+                        </div>
+                    </div>
+                    <div class="enb-panel enb-panel--new">
+                        <h3 class="enb-h3">Board B · + Theorealized Medius</h3>
+                        <ul class="enb-list">
+                            <li><strong>Junora, Fortuna, June Pride</strong> in your first three zones</li>
+                            <li><strong>Purification Power Patron</strong> in the left Extra Monster Zone, <strong>Medius the Pure</strong> beside it</li>
+                            <li><strong>Welcome Home</strong> and <strong>Rhapsodia</strong> face-up, <strong>Regina</strong> in hand</li>
+                        </ul>
+                        <p class="enb-note">Their turn: Mediclius arrives pointing at three monsters (unaffected by
+                            their activated effects, banishes their field once); Junora locks columns 2 and 3 and the
+                            left Extra Monster Zone; Rhapsodia; Fortuna; June Pride's tag-out.</p>
+                        <div class="enb-btn-row">
+                            <a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i>Line 2</a>
+                        </div>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Board C · the instant Junora</h3>
+                        <p class="enb-note" style="margin-top:0">Take Strelitzia instead of June Pride in Line 1 (a
+                            regular Synchro Summon of Power Patron + Regina), let the first Power Patron add the second,
+                            and Normal Summon it. On their turn: Regina summons itself to the empty center by sending
+                            Welcome Home and calls Fortuna; Strelitzia revives Lucina and cuts every Level by 3; Power
+                            Patron lifts Regina back to 6; Junora = Power Patron (1) + Regina (6) + Fortuna (3). Its
+                            arrival negates every face-up card they control.</p>
+                    </div>
+                </div>
+
+                <div class="enb-grid-2">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Order of operations on their turn</h3>
+                        <ol class="enb-steps">
+                            <li><strong>Tinia early.</strong> A random banish in their Standby Phase, or in response to
+                                their first activation, hits the hand at its fullest. The card comes back at the End
+                                Phase, so it's tempo, not card advantage.</li>
+                            <li><strong>Negate while the Synchro is there.</strong> Rhapsodia's negate needs you to
+                                control a Synchro Monster when it resolves: use it before June Pride tags out.</li>
+                            <li><strong>Tag out in response.</strong> June Pride's return to the Extra Deck is a Quick
+                                Effect: answer targeted removal by leaving, and the three summons replace it.</li>
+                            <li><strong>Hold Regina for an empty center.</strong> With June Pride in the center,
+                                Regina's hand summon lands off-center and calls nothing. Right after the tag-out the
+                                center is free.</li>
+                            <li><strong>Junora once their monsters are down.</strong> The column lock matters after the
+                                summons that set up a Link or Synchro climb. It's once per turn.</li>
+                            <li><strong>Mediclius's tiers ride on the monsters under it.</strong> You can Link Summon it
+                                early and hold the banish: with two or more pointed monsters it's unaffected by their
+                                activated effects. Each monster they remove from under it drops a tier.</li>
+                        </ol>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Quick-effect hand disruption</h3>
+                        <ul class="enb-list">
+                            <li><strong>Tinia</strong> banishes a random card from their hand face-up until the End
+                                Phase. Use it before they spend that hand, on a hand trap or an extender.</li>
+                            <li><strong>Regina</strong> summons itself from your hand at Spell Speed 2, as early as their
+                                Draw Phase. Into an empty center it also calls an Elfnote from the Deck, so a
+                                switch can follow straight away.</li>
+                            <li><strong>Elfnote Power Patron</strong> Synchro Summons in their Main Phase: June Pride,
+                                or Junora with its full-field negate (Board C).</li>
+                            <li><strong>Fortuna</strong> returns a face-up Spell/Trap, including Field Spells and
+                                Continuous floodgates, and <strong>Lucina</strong> a Level 6 or lower monster. Lucina
+                                can't bounce Xyz or Link Monsters: they have no Level.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Recovery: when the combo is interrupted</h3>
+                    <div class="enb-table-wrap">
+                        <table class="enb-table enb-table--stack">
+                            <thead><tr><th scope="col">Interruption</th><th scope="col">What still works</th><th scope="col">Pivot</th></tr></thead>
+                            <tbody>
+                                <tr><th scope="row">Ash Blossom on Lucina's search</th><td data-label="What still works">Lucina stays in the center</td><td data-label="Pivot">Normal Summon Medius the Pure, summon Elfnote Power Patron from the Deck, +3 on Lucina, June Pride.</td></tr>
+                                <tr><th scope="row">Ash Blossom on Regina's Deck summon</th><td data-label="What still works">Regina stays in the center</td><td data-label="Pivot">Medius the Pure summons Power Patron, then June Pride off Regina. Theorealized Medius waits until Power Patron is on the field.</td></tr>
+                                <tr><th scope="row">Droll &amp; Lock Bird after your first search</th><td data-label="What still works">Every Deck summon: Regina, Welcome Home, June Pride, Past Lull, and Medius in summon mode. Junoldo and Regina add from the GY and Extra Deck, which Droll doesn't stop.</td><td data-label="Pivot">Switch Medius to summon mode. Citrinitas and Power Patron's GY search are dead for the turn.</td></tr>
+                                <tr><th scope="row">Infinite Impermanence or Effect Veiler on Elfnote Power Patron</th><td data-label="What still works">Power Patron stays on the field as a Tuner</td><td data-label="Pivot">A regular Synchro Summon: Power Patron (1) + a Level 6 Elfnote = Strelitzia, whose effect revives an Elfnote and keeps the climb going.</td></tr>
+                                <tr><th scope="row">Nibiru, the Primal Being</th><td data-label="What still works">Cards already in hand; Welcome Home doesn't stop Tributes</td><td data-label="Pivot">Do your searching summons first. Don't answer Nibiru with June Pride's tag-out: the monsters it summons are Tributed too.</td></tr>
+                                <tr><th scope="row">Dark Ruler No More</th><td data-label="What still works">Your Spells and Traps; you take no damage for the rest of that turn</td><td data-label="Pivot">No monster effect can respond to it, so June Pride can't dodge. The negation ends with their turn, and your monsters work again on yours.</td></tr>
+                                <tr><th scope="row">Lightning Storm</th><td data-label="What still works">Defense Position monsters</td><td data-label="Pivot">Tag out in response and summon the three in Defense Position: it only destroys Attack Position monsters.</td></tr>
+                                <tr><th scope="row">Evenly Matched</th><td data-label="What still works">Rhapsodia, Regina in hand</td><td data-label="Pivot">It resolves at the end of the Battle Phase, when June Pride's Main Phase tag-out can't be used. Keep a rebuild card in hand.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4 · Card-by-card -->
+            <section id="enb-cards" class="enb-section" aria-labelledby="enb-cards-title" data-enb-gallery>
+                <h2 id="enb-cards-title" class="enb-h2"><i class="fas fa-layer-group" aria-hidden="true"></i>4 · Card-by-Card Breakdown</h2>
+                <p class="enb-kicker">Every Elfnote card, the Power Patron and Theorealize cards that bridge into it, and
+                    the three Beyond the Brave arrivals. Each profile has the official card text under "Card text".
+                    Copy counts are the site's recommendation (section 6).</p>
+
+                <div class="enb-filter" role="group" aria-label="Filter cards">
+                    <button type="button" data-enb-filter="all" aria-pressed="true">All</button>
+                    <button type="button" data-enb-filter="main" aria-pressed="false">Main Deck Elfnote</button>
+                    <button type="button" data-enb-filter="extra" aria-pressed="false">Extra Deck</button>
+                    <button type="button" data-enb-filter="st" aria-pressed="false">Spells &amp; Traps</button>
+                    <button type="button" data-enb-filter="bridge" aria-pressed="false">Power Patron bridge</button>
+                    <button type="button" data-enb-filter="new" aria-pressed="false">New in Beyond the Brave</button>
+                    <span class="enb-filter__count" data-enb-count aria-live="polite">24 cards</span>
+                </div>
+
+                <div class="enb-cards">
+                    <!-- Lucina -->
+                    <article id="card-lucina" class="enb-card" data-enb-card data-groups="main" aria-labelledby="card-lucina-name">
+                        <div id="enb-lucina-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote Lucina</div></div>
+                        <div>
+                            <h3 id="card-lucina-name" class="enb-card__name">Elfnote Lucina</h3>
+                            <p class="enb-card__meta">FIRE · Spellcaster · Level 6 · 2500/1800<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Starter</li><li>Core · 3</li><li>OCG Limited · TCG unlimited</li></ul>
+                            <p class="enb-card__read">The best one-card starter. It summons itself to the center, adds any
+                                Elfnote monster (Regina most turns, Junoldo when you want the Pendulum draw), then waits
+                                for your opponent's turn to switch in and bounce a Level 6 or lower monster.</p>
+                            <ul class="enb-list">
+                                <li>Its hand summon starts no chain, so a hand trap can only stop the search.</li>
+                                <li>It can't bounce Xyz or Link Monsters: they have no Level.</li>
+                                <li>Junoldo is always treated as an Elfnote card, so Lucina can add it.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>You can Special Summon this card (from your hand) to your center Main Monster Zone. You can only Special Summon "Elfnote Lucina" once per turn this way. You can only use each of the following effects of "Elfnote Lucina" once per turn. During your Main Phase: You can add 1 "Elfnote" monster from your Deck to your hand, except "Elfnote Lucina". During your opponent's turn (Quick Effect): You can switch the locations of this card in your Main Monster Zone and the monster in your center Main Monster Zone, then you can return 1 Level 6 or lower monster your opponent controls to the hand.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Tinia -->
+                    <article id="card-tinia" class="enb-card" data-enb-card data-groups="main" aria-labelledby="card-tinia-name">
+                        <div id="enb-tinia-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote Tinia</div></div>
+                        <div>
+                            <h3 id="card-tinia-name" class="enb-card__name">Elfnote Tinia</h3>
+                            <p class="enb-card__meta">WATER · Spellcaster · Level 6 · 2400/1800<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Hand disruption</li><li>Core · 1</li><li class="tag-ban">TCG Limited</li></ul>
+                            <p class="enb-card__read">Places an Elfnote Continuous Spell face-up from the Deck: Welcome
+                                Home, Plea for Help, or now Ars Magna "Citrinitas". On your opponent's turn its switch
+                                banishes a random card from their hand face-up until the End Phase.</p>
+                            <ul class="enb-list">
+                                <li>Placing Citrinitas turns on Past Lull and adds a Medius in the same turn.</li>
+                                <li>The banished card returns at the End Phase: aim it at a hand trap or starter before it's used.</li>
+                                <li>At one copy, most lines call it from the Deck with Regina instead of drawing it.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>You can Special Summon this card (from your hand) to your center Main Monster Zone. You can only Special Summon "Elfnote Tinia" once per turn this way. You can only use each of the following effects of "Elfnote Tinia" once per turn. During your Main Phase: You can place 1 "Elfnote" Continuous Spell from your Deck face-up on your field. During your opponent's turn (Quick Effect): You can switch the locations of this card in your Main Monster Zone and the monster in your center Main Monster Zone, then you can banish (face-up) 1 random card from your opponent's hand, until the End Phase.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Fortuna -->
+                    <article id="card-fortuna" class="enb-card" data-enb-card data-groups="main" aria-labelledby="card-fortuna-name">
+                        <div id="enb-fortuna-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote Fortuna</div></div>
+                        <div>
+                            <h3 id="card-fortuna-name" class="enb-card__name">Elfnote Fortuna</h3>
+                            <p class="enb-card__meta">LIGHT · Spellcaster · Level 6 · 2200/1800<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Trap placer</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">Places an Elfnote Continuous Trap face-up from the hand or Deck, so
+                                the Trap works the turn it arrives with no Set-and-wait. Its switch returns a face-up
+                                Spell/Trap to the hand: Field Spells, Continuous floodgates, Equip Spells.</p>
+                            <ul class="enb-list">
+                                <li>A placed Rhapsodia or Aristeia can be used on your first turn.</li>
+                                <li>It can also return your own Citrinitas, whose search works once each time it's face-up.</li>
+                                <li>LIGHT Fortuna plus DARK Medius the Pure make Chaos Angel with both bonuses.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>You can Special Summon this card (from your hand) to your center Main Monster Zone. You can only Special Summon "Elfnote Fortuna" once per turn this way. You can only use each of the following effects of "Elfnote Fortuna" once per turn. During your Main Phase: You can place 1 "Elfnote" Continuous Trap from your hand or Deck, face-up on your field. During your opponent's turn (Quick Effect): You can switch the locations of this card in your Main Monster Zone and the monster in your center Main Monster Zone, then you can return 1 face-up Spell/Trap on the field to the hand.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Regina -->
+                    <article id="card-regina" class="enb-card" data-enb-card data-groups="main" aria-labelledby="card-regina-name">
+                        <div id="enb-regina-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote Regina</div></div>
+                        <div>
+                            <h3 id="card-regina-name" class="enb-card__name">Elfnote Regina</h3>
+                            <p class="enb-card__meta">WIND · Spellcaster · Level 6 · 2000/1800<br>Blazing Dominion · TCG 7 May 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Engine</li><li>Core · 3</li></ul>
+                            <p class="enb-card__read">The pivot of every line. From the hand it summons itself at Spell
+                                Speed 2 by sending another Elfnote card; in the center it calls any Elfnote from the Deck;
+                                used as Synchro Material it returns to the hand.</p>
+                            <ul class="enb-list">
+                                <li>A face-up Continuous Spell or Trap you've already used is a fine cost.</li>
+                                <li>Its Deck call only happens in the center: with June Pride there, summon it after the tag-out.</li>
+                                <li>Its refund makes it the ideal non-Tuner for June Pride.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>If this card is in your hand (Quick Effect): You can send 1 other "Elfnote" card from your hand or face-up field to the GY; Special Summon this card. If this card is Normal or Special Summoned to the center Main Monster Zone: You can Special Summon 1 "Elfnote" monster from your Deck, except "Elfnote Regina". If this card is sent to the GY as Synchro Material: You can add this card to your hand. You can only use each effect of "Elfnote Regina" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Elfnote Power Patron -->
+                    <article id="card-elfnote-power-patron" class="enb-card" data-enb-card data-groups="main bridge" aria-labelledby="card-elfnote-power-patron-name">
+                        <div id="enb-pp-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote Power Patron</div></div>
+                        <div>
+                            <h3 id="card-elfnote-power-patron-name" class="enb-card__name">Elfnote Power Patron</h3>
+                            <p class="enb-card__meta">FIRE · Fiend · Level 1 Tuner · 300/200<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Tuner · Level +3</li><li>Core · 2</li></ul>
+                            <p class="enb-card__read">The Level 1 Tuner that makes Elfnote a Synchro deck. As a Quick
+                                Effect in either Main Phase it adds 3 Levels to the center monster and Synchro Summons an
+                                Elfnote Synchro or Junora on the spot. As Synchro Material it adds any Elfnote card.</p>
+                            <ul class="enb-list">
+                                <li>While it's face-up you can only summon Synchro Monsters from the Extra Deck: make Link Monsters first, or after it has left.</li>
+                                <li>It has "Power Patron" in its name, so it turns on Theorealized Medius.</li>
+                                <li>At 300/200, Theorealize Liberation fetches it, and Vidolia finds it by revealing Junora.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>You cannot Special Summon from the Extra Deck, except Synchro Monsters. You can only use each of the following effects of "Elfnote Power Patron" once per turn. During the Main Phase (Quick Effect): You can target 1 monster in your center Main Monster Zone; increase its Level by 3 (until the end of this turn), then immediately after this effect resolves, you can Synchro Summon 1 "Elfnote" Synchro Monster or 1 "Junora the Power Patron of Tuning". If this card is sent to the GY as Synchro Material: You can add 1 "Elfnote" card from your Deck to your hand.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Junoldo -->
+                    <article id="card-junoldo" class="enb-card" data-enb-card data-groups="main bridge" aria-labelledby="card-junoldo-name">
+                        <div id="enb-junoldo-img-container" class="enb-card__art"><div class="card-placeholder">Junoldo the Shadespirit Power Patron</div></div>
+                        <div>
+                            <h3 id="card-junoldo-name" class="enb-card__name">Junoldo the Shadespirit Power Patron</h3>
+                            <p class="enb-card__meta">DARK · Fiend · Level 10 · Pendulum Scale 1 · 300/200<br>Blazing Dominion · TCG 7 May 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Draw engine · Junora shortcut</li><li>Core · 2</li></ul>
+                            <p class="enb-card__read">Two cards in one. In the Pendulum Zone it destroys itself when a
+                                Power Patron or Elfnote monster is Special Summoned to your field: draw 2, discard 1. As a
+                                monster, banish the top 3 cards of your Deck face-down to turn it into Junora, treated as a
+                                Synchro Summon. Either way it lands in the Extra Deck face-up and adds a Power Patron or
+                                Elfnote card from there or the GY.</p>
+                            <ul class="enb-list">
+                                <li>Regina, Lucina, Medius the Pure, Liberation and Welcome Home (it's the only DARK Elfnote) all fetch it.</li>
+                                <li>The Junora it makes gets the arrival negate: your best going-second play.</li>
+                                <li>Discard an Elfnote card to its draw and the Extra Deck effect can add it back.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>[ Pendulum Effect ]<br>If a "Power Patron" or "Elfnote" monster(s) is Special Summoned to your field, while this card is in your Pendulum Zone (except during the Damage Step): You can destroy this card, and if you do, draw 2 cards, then discard 1 card. You can only use this effect of "Junoldo the Shadespirit Power Patron" once per turn.<br><br>[ Monster Effect ]<br>(This card is always treated as an "Elfnote" card.)<br>You can banish the top 3 cards of your Deck, face-down; destroy this card, and if you do, Special Summon 1 "Junora the Power Patron of Tuning" from your Extra Deck (this is treated as a Synchro Summon). If this card is added to your Extra Deck face-up: You can add 1 "Power Patron" or "Elfnote" card from your face-up Extra Deck or GY to your hand, except "Junoldo the Shadespirit Power Patron". You can only use each effect of "Junoldo the Shadespirit Power Patron" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- June Pride -->
+                    <article id="card-june-pride" class="enb-card" data-enb-card data-groups="extra" aria-labelledby="card-june-pride-name">
+                        <div id="enb-junepride-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote June Pride</div></div>
+                        <div>
+                            <h3 id="card-june-pride-name" class="enb-card__name">Elfnote June Pride</h3>
+                            <p class="enb-card__meta">LIGHT · Spellcaster · Level 10 Synchro · 3100/1800<br>Chaos Origins · TCG 2 Jul 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Boss · opponent's-turn reload</li><li>Core · 2</li></ul>
+                            <p class="enb-card__read">The deck's own Level 10. In the center, only monsters in center zones
+                                can attack. As a Quick Effect in either Main Phase it returns to the Extra Deck and
+                                summons one Elfnote each from your hand, Deck and GY: that's how one board becomes three
+                                switch disruptions on your opponent's turn.</p>
+                            <ul class="enb-list">
+                                <li>Materials: a Tuner and a Spellcaster. Power Patron + a center Elfnote raised to 9 is the standard.</li>
+                                <li>The tag-out summons from the Deck, so Ash Blossom can negate it.</li>
+                                <li>Its attack lock hits you too: skip it when you need an OTK.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>1 Tuner + 1 non-Tuner Spellcaster monster<br>While this card is in the center Main Monster Zone, neither player can declare attacks, except with monsters in their center Main Monster Zones. During the Main Phase, if this card is in the center Main Monster Zone (Quick Effect): You can return this card to the Extra Deck, and if you do, Special Summon up to 1 "Elfnote" monster each from your hand, Deck, and GY. You can only use this effect of "Elfnote June Pride" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Strelitzia -->
+                    <article id="card-strelitzia" class="enb-card" data-enb-card data-groups="extra" aria-labelledby="card-strelitzia-name">
+                        <div id="enb-strelitzia-img-container" class="enb-card__art"><div class="card-placeholder">Elfnote Seraphim Strelitzia</div></div>
+                        <div>
+                            <h3 id="card-strelitzia-name" class="enb-card__name">Elfnote Seraphim Strelitzia</h3>
+                            <p class="enb-card__meta">FIRE · Plant · Level 7 Synchro · ?/3000<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Level cutter · revive</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">A Quick Effect that summons a Level 6 or lower Elfnote from the hand or
+                                GY, then can cut every Level 4 or higher monster on the field by 3. That turns two Level 6
+                                Elfnotes into the 3s Junora needs, and it can wreck your opponent's Level math mid-turn.</p>
+                            <ul class="enb-list">
+                                <li>Its ATK is 3000 only in the center; elsewhere it's 0.</li>
+                                <li>After its effect: only Synchro Monsters from the Extra Deck for the rest of the turn.</li>
+                                <li>Ending your turn on it sets up the opponent's-turn Junora (Board C).</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>1 Tuner + 1+ non-Tuners<br>This card's original ATK becomes 3000, while in the center Main Monster Zone. During the Main Phase (Quick Effect): You can Special Summon 1 Level 6 or lower "Elfnote" monster from your hand or GY, then you can reduce the Levels of all Level 4 or higher monsters on the field by 3 until the end of this turn, also you cannot Special Summon from the Extra Deck for the rest of this turn, except Synchro Monsters. You can only use this effect of "Elfnote Seraphim Strelitzia" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Junora -->
+                    <article id="card-junora" class="enb-card" data-enb-card data-groups="extra bridge" aria-labelledby="card-junora-name">
+                        <div id="enb-junora-img-container" class="enb-card__art"><div class="card-placeholder">Junora the Power Patron of Tuning</div></div>
+                        <div>
+                            <h3 id="card-junora-name" class="enb-card__name">Junora the Power Patron of Tuning</h3>
+                            <p class="enb-card__meta">FIRE · Fiend · Level 10 Synchro · 3100/3800<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Negate · column lock</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">1 Tuner + 2 non-Tuners, and a center monster may count as the Tuner.
+                                When Synchro Summoned (Junoldo's summon counts) it negates the effects of every face-up
+                                card your opponent controls. Its Quick Effect keeps their monsters in your Elfnotes'
+                                columns out of Fusion, Synchro, Xyz and Link Summons for the turn.</p>
+                            <ul class="enb-list">
+                                <li>Power Patron + a Level 9 is only two materials: that's June Pride, not Junora.</li>
+                                <li>It isn't an Elfnote monster, so it doesn't cover its own column.</li>
+                                <li>It has "Power Patron" in its name: it turns on Theorealized Medius.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>1 Tuner + 2 non-Tuners<br>For this card's Synchro Summon, you can treat 1 monster in your center Main Monster Zone as a Tuner. If this card is Synchro Summoned: You can negate the effects of all face-up cards your opponent controls. (Quick Effect): You can activate this effect; monsters your opponent controls in the same column as the "Elfnote" monster(s) you control cannot be used as material for a Fusion, Synchro, Xyz, or Link Summon, until the end of this turn. You can only use this effect of "Junora the Power Patron of Tuning" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Purification Power Patron -->
+                    <article id="card-purification-power-patron" class="enb-card" data-enb-card data-groups="extra bridge" aria-labelledby="card-purification-power-patron-name">
+                        <div id="enb-purification-img-container" class="enb-card__art"><div class="card-placeholder">Purification Power Patron</div></div>
+                        <div>
+                            <h3 id="card-purification-power-patron-name" class="enb-card__name">Purification Power Patron</h3>
+                            <p class="enb-card__meta">DARK · Fairy · Link-2 · 300 · arrows: top, bottom<br>Chaos Origins · TCG 2 Jul 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Link bridge</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">Link Summoned with a Power Patron monster in your GY, it adds a
+                                Theorealize card. Its Quick Effect Link Summons using itself in either Main Phase, as long
+                                as you control another DARK Fairy. That's how Mediclius arrives on your opponent's turn,
+                                after your own turn's Synchro-only locks have ended.</p>
+                            <ul class="enb-list">
+                                <li>Medius the Pure + Theorealized Medius are the standard materials.</li>
+                                <li>Theorealized Medius counts as a Power Patron monster in the GY for its search.</li>
+                                <li>Keep a DARK Fairy beside it: Overdrive or Medius's own GY effect can supply one.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>2 non-Link Monsters<br>If this card is Link Summoned, and you have a "Power Patron" monster in your GY: You can add 1 "Theorealize" card from your Deck to your hand. During the Main Phase, if you control another DARK Fairy monster, you can (Quick Effect): Immediately after this effect resolves, Link Summon 1 Link Monster using materials you control, including this card. You can only use each effect of "Purification Power Patron" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Mediclius -->
+                    <article id="card-mediclius" class="enb-card enb-card--new" data-enb-card data-groups="extra bridge new" aria-labelledby="card-mediclius-name">
+                        <div id="enb-mediclius-img-container" class="enb-card__art"><div class="card-placeholder">Mediclius the Extraordinary Power Patron</div></div>
+                        <div>
+                            <h3 id="card-mediclius-name" class="enb-card__name">Mediclius the Extraordinary Power Patron</h3>
+                            <p class="enb-card__meta">WATER · Fairy · Link-3 · 3000 · arrows: bottom-left, bottom, bottom-right<br>Beyond the Brave · TCG 8 Oct 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-new">New</li><li class="tag-role">Boss</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">Its power depends on how many monsters it points to, and with only
+                                downward arrows it has to sit in an Extra Monster Zone to point at anything. 1+: in your
+                                Main Phase, negate every face-up monster your opponent controls and halve their ATK. 2+:
+                                unaffected by your opponent's activated effects. 3: once per opponent's turn, banish
+                                itself and every card they control.</p>
+                            <ul class="enb-list">
+                                <li>From the left Extra Monster Zone it covers your zones 1–3, from the right 3–5. Both include the center, so an Elfnote board fills it naturally.</li>
+                                <li>June Pride, Junora and Strelitzia all count as its Synchro material.</li>
+                                <li>Summon it on your opponent's turn (Purification Power Patron, I:P Masquerena) to sidestep your own Synchro-only locks.</li>
+                                <li>Fydraulis Harmonia's lock stops its activated effects: don't run both plans in one game.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>2+ monsters, including a Fusion, Synchro, Xyz, or Link Monster<br>Gains these effects based on the number of monsters it points to.<br>● 1+: Once per turn, during your Main Phase: You can negate the effects of all face-up monsters your opponent currently controls, also until the end of this turn, their ATK become halved.<br>● 2+: Unaffected by your opponent's activated effects.<br>● 3: Once per opponent's turn (Quick Effect): You can banish this card, also all cards your opponent controls.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Welcome Home -->
+                    <article id="card-welcome-home" class="enb-card" data-enb-card data-groups="st" aria-labelledby="card-welcome-home-name">
+                        <div id="enb-welcome-img-container" class="enb-card__art"><div class="card-placeholder">Elfnotes: Welcome Home</div></div>
+                        <div>
+                            <h3 id="card-welcome-home-name" class="enb-card__name">Elfnotes: Welcome Home</h3>
+                            <p class="enb-card__meta">Continuous Spell<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Stage · extender</li><li>Core · 2</li></ul>
+                            <p class="enb-card__read">The center monster can't be destroyed by card effects. Once per turn,
+                                send a monster from your hand or field to call an Elfnote with a different original
+                                Attribute from the Deck in Defense Position; then only Synchro Monsters from the Extra
+                                Deck for the rest of the turn.</p>
+                            <ul class="enb-list">
+                                <li>Tinia places it from the Deck, and once used it's a fine Regina cost.</li>
+                                <li>Send any non-DARK monster to call Junoldo, then turn Junoldo into Junora.</li>
+                                <li>Use it after your Link Summons: its lock lasts only for your turn.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>The monster in your center Main Monster Zone cannot be destroyed by card effects. You can send 1 monster from your hand or field to the GY; Special Summon 1 "Elfnote" monster with a different original Attribute from your Deck in Defense Position, also you cannot Special Summon from the Extra Deck for the rest of this turn, except Synchro Monsters. You can only use this effect of "Elfnotes: Welcome Home" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Plea for Help -->
+                    <article id="card-plea-for-help" class="enb-card" data-enb-card data-groups="st" aria-labelledby="card-plea-for-help-name">
+                        <div id="enb-plea-img-container" class="enb-card__art"><div class="card-placeholder">Elfnotes: A Plea for Help</div></div>
+                        <div>
+                            <h3 id="card-plea-for-help-name" class="enb-card__name">Elfnotes: A Plea for Help</h3>
+                            <p class="enb-card__meta">Continuous Spell<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Protection · mode switch</li><li>Flex · 0–1</li></ul>
+                            <p class="enb-card__read">Your opponent can't target the center monster with card effects, and
+                                the card changes mode with the center monster's Attribute (see Attribute shifting in
+                                section 1). Tinia can place it, but Welcome Home and Citrinitas usually win that slot.</p>
+                            <ul class="enb-list">
+                                <li>A WATER or WIND center (Tinia, Regina) shields your other face-up Spells/Traps from destruction.</li>
+                                <li>A LIGHT or DARK center (Fortuna, June Pride) means no battle damage for you.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>Your opponent cannot target the monster in your center Main Monster Zone with card effects. This card gains the appropriate effects, based on the Attribute(s) of the monster in your center Main Monster Zone.<br>● FIRE or EARTH: If your Synchro Monster attacks a Defense Position monster, inflict piercing battle damage to your opponent.<br>● WATER or WIND: Other face-up Spells/Traps you control cannot be destroyed by your opponent's card effects.<br>● LIGHT or DARK: You take no battle damage.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Aristeia -->
+                    <article id="card-aristeia-of-trust" class="enb-card" data-enb-card data-groups="st" aria-labelledby="card-aristeia-of-trust-name">
+                        <div id="enb-aristeia-img-container" class="enb-card__art"><div class="card-placeholder">Elfnotes: Aristeia of Trust</div></div>
+                        <div>
+                            <h3 id="card-aristeia-of-trust-name" class="enb-card__name">Elfnotes: Aristeia of Trust</h3>
+                            <p class="enb-card__meta">Continuous Trap<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Column control · Spell/Trap negate</li><li>Flex · 0–1</li></ul>
+                            <p class="enb-card__read">Once per turn it moves one of your face-up monsters to another of your
+                                Main Monster Zones, on either player's turn. With 3 or more Elfnote monsters it negates an
+                                opponent's Spell/Trap effect, and destroys that card if you control a Synchro Monster. The
+                                two effects can't be used in the same chain.</p>
+                            <ul class="enb-list">
+                                <li>Fortuna places it face-up, so it's live at once.</li>
+                                <li>A move sets up Junora's columns, Mediclius's arrows, or an empty center for Regina.</li>
+                                <li>Three Elfnote monsters is a real bar, and Junora doesn't count.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>Once per turn: You can target 1 face-up monster you control; move that monster you control to another of your Main Monster Zones. When your opponent activates a Spell/Trap Card, while you control 3 or more "Elfnote" monsters: You can negate that effect, then if you control a Synchro Monster, you can destroy that card. You can only use this effect of "Elfnotes: Aristeia of Trust" once per turn. You cannot activate these effects of "Elfnotes: Aristeia of Trust" in the same Chain.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Rhapsodia -->
+                    <article id="card-rhapsodia-of-madness" class="enb-card" data-enb-card data-groups="st" aria-labelledby="card-rhapsodia-of-madness-name">
+                        <div id="enb-rhapsodia-img-container" class="enb-card__art"><div class="card-placeholder">Elfnotes: Rhapsodia of Madness</div></div>
+                        <div>
+                            <h3 id="card-rhapsodia-of-madness-name" class="enb-card__name">Elfnotes: Rhapsodia of Madness</h3>
+                            <p class="enb-card__meta">Continuous Trap<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Revive · negate</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">While you control a center monster, your opponent's monsters can only
+                                attack that one. Once per turn: send a monster from your hand or field, revive an Elfnote
+                                with a different original Attribute from the GY and, if you control a Synchro Monster,
+                                negate one face-up card your opponent controls until the end of the turn.</p>
+                            <ul class="enb-list">
+                                <li>Use it before June Pride tags out, or the negate has no Synchro to count.</li>
+                                <li>Fortuna places it face-up; Power Patron can add it.</li>
+                                <li>The revived Elfnote can switch straight away on your opponent's turn.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>While you control a monster in your center Main Monster Zone, your opponent's monsters cannot attack, except to attack that monster. You can send 1 monster from your hand or field to the GY, then target 1 "Elfnote" monster in your GY with a different original Attribute; Special Summon it, then if you control a Synchro Monster, you can negate the effects of 1 face-up card your opponent controls until the end of this turn. You can only use this effect of "Elfnotes: Rhapsodia of Madness" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Quatrain -->
+                    <article id="card-quatrain-of-succession" class="enb-card" data-enb-card data-groups="st" aria-labelledby="card-quatrain-of-succession-name">
+                        <div id="enb-quatrain-img-container" class="enb-card__art"><div class="card-placeholder">Elfnotes: Quatrain of Succession</div></div>
+                        <div>
+                            <h3 id="card-quatrain-of-succession-name" class="enb-card__name">Elfnotes: Quatrain of Succession</h3>
+                            <p class="enb-card__meta">Continuous Trap<br>Chaos Origins · TCG 2 Jul 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Tuner maker</li><li>Flex · 0–1</li></ul>
+                            <p class="enb-card__read">The center monster can't be banished by your opponent's effects. Once
+                                per turn: send another Spell/Trap from your hand or field, declare Level 1–4, and summon an
+                                Elfnote Seraphim Token (Plant/Tuner/FIRE) of that Level.</p>
+                            <ul class="enb-list">
+                                <li>While the Token is out you can only summon Elfnote monsters from the Extra Deck: June Pride and Strelitzia yes; Junora, Chaos Angel and Mediclius no.</li>
+                                <li>Token at Level 4 + a Level 6 Elfnote is June Pride; at Level 1, Strelitzia.</li>
+                                <li>It needs a second Spell/Trap as fuel.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>The monster in your center Main Monster Zone cannot be banished by your opponent's card effects. You can send 1 other Spell/Trap from your hand or field to the GY, then declare a Level from 1 to 4; Special Summon 1 "Elfnote Seraphim Token" (Plant/Tuner/FIRE/ATK 0/DEF 0) with the declared Level. While that Token is in the Monster Zone, the player who Summoned it cannot Special Summon from the Extra Deck, except "Elfnote" monsters. You can only use this effect of "Elfnotes: Quatrain of Succession" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Citrinitas -->
+                    <article id="card-citrinitas" class="enb-card enb-card--new" data-enb-card data-groups="st bridge new" aria-labelledby="card-citrinitas-name">
+                        <div id="enb-citrinitas-img-container" class="enb-card__art"><div class="card-placeholder">Ars Magna "Citrinitas"</div></div>
+                        <div>
+                            <h3 id="card-citrinitas-name" class="enb-card__name">Ars Magna "Citrinitas"</h3>
+                            <p class="enb-card__meta">Continuous Spell · always treated as Artmage, DoomZ and Elfnote<br>Beyond the Brave · TCG 8 Oct 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-new">New</li><li class="tag-role">Medius searcher</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">Once while it's face-up, in your Main Phase, it adds a Medius or Ars
+                                Magna monster from the Deck. While you control a Power Patron Link Monster, your monsters
+                                with Ars Magna in their original names can use their effects as Quick Effects.</p>
+                            <ul class="enb-list">
+                                <li>Tinia places it straight from the Deck; Elfnote Power Patron and Junoldo can add it.</li>
+                                <li>Face-up it's an Elfnote card: it turns on Past Lull and is a legal Regina cost.</li>
+                                <li>Its search resets if it leaves the field and comes back, and Fortuna's switch can return it to your hand.</li>
+                                <li>The Ars Magna monsters are their own package: see the <a href="Ars%20Magna%20Deck%20Analysis.html">Ars Magna guide</a>.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>(This card is always treated as an "Artmage", "DoomZ", and "Elfnote" card.)<br>While you control a "Power Patron" Link Monster, you can activate the effects of monsters you control with "Ars Magna" in their original names, as Quick Effects. Once, while this card is face-up on the field, during your Main Phase: You can add 1 "Medius" or "Ars Magna" monster from your Deck to your hand. You can only use this effect of "Ars Magna "Citrinitas"" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Medius the Pure -->
+                    <article id="card-medius-the-pure" class="enb-card" data-enb-card data-groups="bridge" aria-labelledby="card-medius-the-pure-name">
+                        <div id="enb-medius-img-container" class="enb-card__art"><div class="card-placeholder">Medius the Pure</div></div>
+                        <div>
+                            <h3 id="card-medius-the-pure-name" class="enb-card__name">Medius the Pure</h3>
+                            <p class="enb-card__meta">DARK · Fairy · Level 4 · 1800/1800<br>Duelist's Advance · TCG 27 Jun 2025</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Starter · Normal Summon</li><li>Core · 3</li></ul>
+                            <p class="enb-card__read">On Normal or Special Summon it adds or summons a Power Patron monster
+                                from the Deck: Elfnote Power Patron, Junoldo or Theorealized Medius. From the GY it revives
+                                itself by shuffling a monster from your hand or field into the Deck, and is banished when
+                                it leaves.</p>
+                            <ul class="enb-list">
+                                <li>It isn't a Power Patron card itself, so it doesn't turn on Theorealized Medius.</li>
+                                <li>Summon mode beats add mode through Droll &amp; Lock Bird.</li>
+                                <li>As a DARK Level 4 it's the Tuner half of Chaos Angel with Fortuna.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>If this card is Normal or Special Summoned: You can add to your hand, or Special Summon, 1 "Power Patron" monster from your Deck. If this card is in your GY: You can shuffle 1 monster from your hand or face-up field into the Deck, and if you do, Special Summon this card, but banish it when it leaves the field. You can only use each effect of "Medius the Pure" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Theorealized Medius -->
+                    <article id="card-theorealized-medius" class="enb-card enb-card--new" data-enb-card data-groups="bridge new" aria-labelledby="card-theorealized-medius-name">
+                        <div id="enb-tmedius-img-container" class="enb-card__art"><div class="card-placeholder">Theorealized Medius</div></div>
+                        <div>
+                            <h3 id="card-theorealized-medius-name" class="enb-card__name">Theorealized Medius</h3>
+                            <p class="enb-card__meta">DARK · Fairy · Level 4 · 1800/1800 · always treated as Power Patron<br>Beyond the Brave · TCG 8 Oct 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-new">New</li><li class="tag-role">Extender</li><li>Core · 2</li></ul>
+                            <p class="enb-card__read">If a Power Patron card is on the field (Elfnote Power Patron, Junora,
+                                a Junoldo in the Pendulum Zone) it summons itself from the hand and adds a Theorealize
+                                Spell/Trap. When a monster is banished face-up outside the Damage Step, it adds an Ars
+                                Magna card or banishes itself for a Diactorus monster from the Extra Deck.</p>
+                            <ul class="enb-list">
+                                <li>Medius the Pure can summon it from the Deck, but the search only comes with its own hand summon.</li>
+                                <li>It isn't an Elfnote card, so on its own it doesn't enable Past Lull.</li>
+                                <li>With Medius the Pure it's the pair for Purification Power Patron.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>(This card is always treated as a "Power Patron" card.)<br>If a "Power Patron" card is on the field: You can Special Summon this card from your hand, then you can add 1 "Theorealize" Spell/Trap from your Deck to your hand. If a monster is banished face-up (except during the Damage Step): You can activate 1 of these effects;<br>● Add 1 "Ars Magna" card from your Deck to your hand.<br>● Banish this card, and if you do, Special Summon 1 "Diactorus" monster from your Extra Deck.<br>You can only use each effect of "Theorealized Medius" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Past Lull -->
+                    <article id="card-past-lull" class="enb-card" data-enb-card data-groups="bridge st" aria-labelledby="card-past-lull-name">
+                        <div id="enb-pastlull-img-container" class="enb-card__art"><div class="card-placeholder">Theorealize Past Lull</div></div>
+                        <div>
+                            <h3 id="card-past-lull-name" class="enb-card__name">Theorealize Past Lull</h3>
+                            <p class="enb-card__meta">Normal Spell<br>Chaos Origins · TCG 2 Jul 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Protected Medius</li><li>Core · 2</li></ul>
+                            <p class="enb-card__read">With an Artmage, DoomZ or Elfnote card on your field, it summons Medius
+                                the Pure from the hand or Deck, and your opponent can't activate cards or effects when it
+                                is summoned. From the GY it can instead revive a Fusion, Synchro or Xyz Monster to a zone a
+                                Link Monster points to. One Past Lull effect per turn.</p>
+                            <ul class="enb-list">
+                                <li>Theorealized Medius and Purification Power Patron both search it.</li>
+                                <li>Its GY effect puts June Pride or Junora back under Mediclius.</li>
+                                <li>Any face-up Elfnote card enables it, including Welcome Home or Citrinitas.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>If you control an "Artmage", "DoomZ", or "Elfnote" card: You can Special Summon 1 "Medius the Pure" from your hand or Deck. Your opponent cannot activate cards or effects when that monster is Special Summoned. You can banish this card from your GY, then target 1 Fusion, Synchro, or Xyz Monster in your GY; Special Summon it to your zone a Link Monster points to. You can only use 1 "Theorealize Past Lull" effect per turn, and only once that turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Liberation -->
+                    <article id="card-liberation" class="enb-card" data-enb-card data-groups="bridge st" aria-labelledby="card-liberation-name">
+                        <div id="enb-liberation-img-container" class="enb-card__art"><div class="card-placeholder">Theorealize Liberation</div></div>
+                        <div>
+                            <h3 id="card-liberation-name" class="enb-card__name">Theorealize Liberation</h3>
+                            <p class="enb-card__meta">Quick-Play Spell<br>Burst Protocol · TCG 5 Feb 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Tuner fetch</li><li>Flex · 0–1</li></ul>
+                            <p class="enb-card__read">With Medius the Pure on your field, it adds or summons a 300 ATK/200 DEF
+                                monster from the Deck: Elfnote Power Patron or Junoldo. In your Main Phase, banish it from
+                                the GY to make a face-up monster a Tuner for the turn.</p>
+                            <ul class="enb-list">
+                                <li>Set it, and on your opponent's turn it can summon Elfnote Power Patron straight into a Quick Synchro.</li>
+                                <li>Its GY effect gives you a second Tuner when Power Patron is spent.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>If you control "Medius the Pure": Add to your hand or Special Summon 1 monster with 300 ATK/200 DEF from your Deck. During your Main Phase: You can banish this card from your GY, then target 1 face-up monster you control; it is treated as a Tuner this turn. You can only use each effect of "Theorealize Liberation" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Overdrive -->
+                    <article id="card-overdrive" class="enb-card" data-enb-card data-groups="bridge st" aria-labelledby="card-overdrive-name">
+                        <div id="enb-overdrive-img-container" class="enb-card__art"><div class="card-placeholder">Theorealize Overdrive</div></div>
+                        <div>
+                            <h3 id="card-overdrive-name" class="enb-card__name">Theorealize Overdrive</h3>
+                            <p class="enb-card__meta">Quick-Play Spell<br>Doom of Dimensions · TCG 25 Sep 2025</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Medius revive · Level fix</li><li>Core · 1</li></ul>
+                            <p class="enb-card__read">Revives Medius the Pure from the GY or banishment. From the GY, in
+                                your Main Phase, it can set a face-up monster's Level to anything from 1 to 10 until the
+                                end of the turn.</p>
+                            <ul class="enb-list">
+                                <li>Purification Power Patron and Theorealized Medius both search it.</li>
+                                <li>It brings back the DARK Fairy that Purification Power Patron's Quick Effect needs.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>Target 1 "Medius the Pure" in your GY or banishment; Special Summon it. During your Main Phase: You can banish this card from your GY, then target 1 face-up monster you control, and declare a Level from 1 to 10; that monster becomes that Level until the end of this turn. You can only use each effect of "Theorealize Overdrive" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Terminus -->
+                    <article id="card-terminus" class="enb-card" data-enb-card data-groups="bridge st" aria-labelledby="card-terminus-name">
+                        <div id="enb-terminus-img-container" class="enb-card__art"><div class="card-placeholder">Prohibited Power Patron Portal - Terminus</div></div>
+                        <div>
+                            <h3 id="card-terminus-name" class="enb-card__name">Prohibited Power Patron Portal - Terminus</h3>
+                            <p class="enb-card__meta">Normal Spell<br>Blazing Dominion · TCG 7 May 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Medius search</li><li>Core · 1</li><li class="tag-ban">TCG Limited</li></ul>
+                            <p class="enb-card__read">Send a Power Patron monster from the Deck or Extra Deck to the GY, then
+                                add a DARK Fairy: Medius the Pure or Theorealized Medius. For the rest of the turn only
+                                Power Patron monsters can attack. From the GY it banishes a monster your Power Patron
+                                monster battles.</p>
+                            <ul class="enb-list">
+                                <li>Sending Junora or Elfnote Power Patron stocks the GY for Purification Power Patron's search and Junoldo's refund.</li>
+                                <li>Going second, Junora and Mediclius can still attack that turn; your Elfnotes can't.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>Send 1 "Power Patron" monster from your Deck/Extra Deck to the GY, then you can add 1 DARK Fairy monster from your Deck to your hand, also you cannot declare attacks for the rest of this turn, except with "Power Patron" monsters. At the start of the Damage Step, if your "Power Patron" monster battles an opponent's monster: You can banish this card from your GY; banish (face-down) that opponent's monster. You can only use each effect of "Prohibited Power Patron Portal - Terminus" once per turn.</p></details>
+                        </div>
+                    </article>
+
+                    <!-- Vidolia -->
+                    <article id="card-vidolia" class="enb-card" data-enb-card data-groups="bridge st" aria-labelledby="card-vidolia-name">
+                        <div id="enb-vidolia-img-container" class="enb-card__art"><div class="card-placeholder">Plundered Power Patron Plane - Vidolia</div></div>
+                        <div>
+                            <h3 id="card-vidolia-name" class="enb-card__name">Plundered Power Patron Plane - Vidolia</h3>
+                            <p class="enb-card__meta">Field Spell<br>Blazing Dominion · TCG 7 May 2026</p>
+                            <ul class="enb-card__tags"><li class="tag-role">Starter</li><li>Flex · 0–1</li></ul>
+                            <p class="enb-card__read">Reveal a Power Patron monster in your Extra Deck, banish a card from
+                                your hand face-down, then add or summon a monster from the Deck that mentions it. Revealing
+                                Junora finds Elfnote Power Patron or Junoldo. Your opponent's monsters lose 100 ATK for
+                                each banished card.</p>
+                            <ul class="enb-list">
+                                <li>Vidolia summoning Junoldo is a Junora from one card, at the price of a card from your hand.</li>
+                                <li>Its GY lock needs Nerva, Jupiter and Junora together: not an Elfnote plan.</li>
+                            </ul>
+                            <details class="enb-text"><summary>Card text</summary><p>You can reveal 1 "Power Patron" monster in your Extra Deck; banish (face-down) 1 card from your hand, then add to your hand or Special Summon, 1 monster from your Deck that mentions that revealed monster's name (except in its once-per-turn restriction clause). You can only use this effect of "Plundered Power Patron Plane - Vidolia" once per turn. Monsters your opponent controls lose 100 ATK for each banished card. Your opponent cannot activate the effects of cards in the GY, while you control "Nerva the Power Patron of Creation", "Jupiter the Power Patron of Destruction", and "Junora the Power Patron of Tuning".</p></details>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- 5 · Combo lines -->
+            <section id="enb-combos" class="enb-section" aria-labelledby="enb-combos-title">
+                <h2 id="enb-combos-title" class="enb-h2"><i class="fas fa-project-diagram" aria-hidden="true"></i>5 · Combo Lines</h2>
+                <p class="enb-kicker">Four lines, each checked step by step against the official card text and the TCG
+                    list. Every line is in the combo simulator below, one card move per step.</p>
+
+                <div class="enb-grid-2">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Line 1 · One-card Lucina</h3>
+                        <p class="enb-line__hand">Hand: Elfnote Lucina · Normal Summon unused</p>
+                        <ol class="enb-steps">
+                            <li>Lucina to the center; add <strong>Regina</strong>. Regina summons itself by sending Lucina and calls <strong>Tinia</strong>.</li>
+                            <li>Tinia places <strong>Welcome Home</strong>; Welcome Home trades Tinia (WATER) for <strong>Elfnote Power Patron</strong> (FIRE).</li>
+                            <li>Power Patron lifts Regina to 9: <strong>June Pride</strong>. Regina returns to the hand; Power Patron adds <strong>Rhapsodia</strong>. Set it.</li>
+                        </ol>
+                        <p class="enb-line__end"><strong>End:</strong> June Pride (center) · Welcome Home · Rhapsodia Set · Regina in hand.</p>
+                        <div class="enb-btn-row"><a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i>Play line 1</a></div>
+                    </div>
+                    <div class="enb-panel enb-panel--new">
+                        <h3 class="enb-h3">Line 2 · Lucina + Theorealized Medius</h3>
+                        <p class="enb-line__hand">Hand: Elfnote Lucina, Theorealized Medius · Normal Summon unused</p>
+                        <ol class="enb-steps">
+                            <li>Lucina → Regina → <strong>Elfnote Power Patron</strong>, a Power Patron card on the field.</li>
+                            <li><strong>Theorealized Medius</strong> from the hand adds <strong>Past Lull</strong>: Medius the Pure → <strong>Junoldo</strong> → <strong>Junora</strong>. Junoldo returns Lucina.</li>
+                            <li>Power Patron + Regina: <strong>June Pride</strong>; Power Patron adds Welcome Home. Its lock is gone.</li>
+                            <li>Theorealized Medius + Medius: <strong>Purification Power Patron</strong>, which adds Overdrive; Overdrive revives Medius.</li>
+                            <li>Welcome Home last: Lucina for <strong>Fortuna</strong>, which places Rhapsodia. Their turn: <strong>Mediclius</strong> over Junora, Fortuna and June Pride.</li>
+                        </ol>
+                        <p class="enb-line__end"><strong>End:</strong> Junora · Fortuna · June Pride · Purification + Medius · Welcome Home · Rhapsodia, then Mediclius on their turn.</p>
+                        <div class="enb-btn-row"><a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i>Play line 2</a></div>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Line 3 · The rotation (their turn)</h3>
+                        <p class="enb-line__hand">Start: Line 1's end board · a second Lucina in the Deck</p>
+                        <ol class="enb-steps">
+                            <li><strong>Rhapsodia</strong>: send Regina, revive Tinia, negate a card while June Pride still counts as your Synchro.</li>
+                            <li><strong>June Pride</strong> tags out: Regina from the GY to the center, Fortuna from the Deck. Regina calls Lucina.</li>
+                            <li><strong>Tinia</strong> switches in (hand banish), then <strong>Lucina</strong> (monster bounce), then <strong>Fortuna</strong> (Spell/Trap bounce).</li>
+                        </ol>
+                        <p class="enb-line__end"><strong>Result:</strong> four disruptions and four monsters, from a one-card turn.</p>
+                        <div class="enb-btn-row"><a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i>Play line 3</a></div>
+                    </div>
+                    <div class="enb-panel enb-panel--new">
+                        <h3 class="enb-h3">Line 4 · Going second</h3>
+                        <p class="enb-line__hand">Hand: Elfnote Lucina, Medius the Pure</p>
+                        <ol class="enb-steps">
+                            <li>Lucina → Regina → <strong>Junoldo</strong> → <strong>Junora</strong>: every face-up card they control is negated.</li>
+                            <li>Normal Summon Medius the Pure for <strong>Theorealized Medius</strong>; the pair makes <strong>Purification Power Patron</strong>, which adds Overdrive.</li>
+                            <li>Overdrive revives Medius; Purification + Medius: <strong>Mediclius</strong>. Medius's GY effect fills the third pointed zone.</li>
+                            <li>Mediclius negates their monsters and halves their ATK. Attack for 9900.</li>
+                        </ol>
+                        <p class="enb-line__end"><strong>Why no June Pride:</strong> in the center it stops your side monsters from attacking.</p>
+                        <div class="enb-btn-row"><a class="enb-btn" href="#elfnote-combo-lab" data-combo-open="4"><i class="fas fa-play" aria-hidden="true"></i>Play line 4</a></div>
+                    </div>
+                </div>
+
+                <div id="elfnote-combo-lab" class="enb-lab">
+                    <p class="enb-lab__loading">The combo simulator loads when you open this tab.</p>
+                </div>
+            </section>
+
+            <!-- 6 · Ratios -->
+            <section id="enb-ratios" class="enb-section" aria-labelledby="enb-ratios-title">
+                <h2 id="enb-ratios-title" class="enb-h2"><i class="fas fa-balance-scale" aria-hidden="true"></i>6 · Engine Ratios and Generic Tech</h2>
+                <p class="enb-kicker">The site's recommended build for the TCG once Beyond the Brave is out, compared
+                    against two public June 2026 TCG lists. Copy limits follow the current TCG list.</p>
+
+                <div class="enb-grid-2">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Main Deck (40)</h3>
+                        <table class="enb-table">
+                            <thead><tr><th scope="col">Card</th><th scope="col" class="enb-num">Copies</th></tr></thead>
+                            <tbody>
+                                <tr class="enb-group"><th scope="rowgroup" colspan="2">Elfnote engine · 12</th></tr>
+                                <tr><th scope="row">Elfnote Lucina</th><td class="enb-num">3</td></tr>
+                                <tr><th scope="row">Elfnote Regina</th><td class="enb-num">3</td></tr>
+                                <tr><th scope="row">Elfnote Tinia (Limited)</th><td class="enb-num">1</td></tr>
+                                <tr><th scope="row">Elfnote Fortuna</th><td class="enb-num">1</td></tr>
+                                <tr><th scope="row">Elfnote Power Patron</th><td class="enb-num">2</td></tr>
+                                <tr><th scope="row">Junoldo the Shadespirit Power Patron</th><td class="enb-num">2</td></tr>
+                                <tr class="enb-group"><th scope="rowgroup" colspan="2">Power Patron bridge · 10</th></tr>
+                                <tr><th scope="row">Medius the Pure</th><td class="enb-num">3</td></tr>
+                                <tr><th scope="row">Theorealized Medius (New)</th><td class="enb-num">2</td></tr>
+                                <tr><th scope="row">Theorealize Past Lull</th><td class="enb-num">2</td></tr>
+                                <tr><th scope="row">Prohibited Power Patron Portal - Terminus (Limited)</th><td class="enb-num">1</td></tr>
+                                <tr><th scope="row">Theorealize Overdrive</th><td class="enb-num">1</td></tr>
+                                <tr><th scope="row">Ars Magna "Citrinitas" (New)</th><td class="enb-num">1</td></tr>
+                                <tr class="enb-group"><th scope="rowgroup" colspan="2">Elfnote Spells &amp; Traps · 3</th></tr>
+                                <tr><th scope="row">Elfnotes: Welcome Home</th><td class="enb-num">2</td></tr>
+                                <tr><th scope="row">Elfnotes: Rhapsodia of Madness</th><td class="enb-num">1</td></tr>
+                                <tr class="enb-group"><th scope="rowgroup" colspan="2">Non-engine · 15</th></tr>
+                                <tr><th scope="row">Ash Blossom &amp; Joyous Spring</th><td class="enb-num">3</td></tr>
+                                <tr><th scope="row">Mulcharmy Fuwalos</th><td class="enb-num">3</td></tr>
+                                <tr><th scope="row">Infinite Impermanence</th><td class="enb-num">3</td></tr>
+                                <tr><th scope="row">Ghost Belle &amp; Haunted Mansion</th><td class="enb-num">2</td></tr>
+                                <tr><th scope="row">Droll &amp; Lock Bird (Semi-Limited)</th><td class="enb-num">2</td></tr>
+                                <tr><th scope="row">Called by the Grave (Limited)</th><td class="enb-num">1</td></tr>
+                                <tr><th scope="row">Crossout Designator (Limited)</th><td class="enb-num">1</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="enb-panel">
+                            <h3 class="enb-h3">Extra Deck (15)</h3>
+                            <table class="enb-table">
+                                <thead><tr><th scope="col">Card</th><th scope="col" class="enb-num">Copies</th></tr></thead>
+                                <tbody>
+                                    <tr class="enb-group"><th scope="rowgroup" colspan="2">Core · 9</th></tr>
+                                    <tr><th scope="row">Elfnote June Pride</th><td class="enb-num">2</td></tr>
+                                    <tr><th scope="row">Junora the Power Patron of Tuning</th><td class="enb-num">1</td></tr>
+                                    <tr><th scope="row">Elfnote Seraphim Strelitzia</th><td class="enb-num">1</td></tr>
+                                    <tr><th scope="row">Mediclius the Extraordinary Power Patron (New)</th><td class="enb-num">1</td></tr>
+                                    <tr><th scope="row">Purification Power Patron</th><td class="enb-num">1</td></tr>
+                                    <tr><th scope="row">Chaos Angel</th><td class="enb-num">1</td></tr>
+                                    <tr><th scope="row">I:P Masquerena</th><td class="enb-num">1</td></tr>
+                                    <tr><th scope="row">S:P Little Knight</th><td class="enb-num">1</td></tr>
+                                    <tr class="enb-group"><th scope="rowgroup" colspan="2">Flex · pick 6</th></tr>
+                                    <tr><th scope="row">Crystal Wing Synchro Dragon</th><td class="enb-num">0–1</td></tr>
+                                    <tr><th scope="row">Shooting Riser Dragon</th><td class="enb-num">0–1</td></tr>
+                                    <tr><th scope="row">T.G. Hyper Librarian (Limited)</th><td class="enb-num">0–1</td></tr>
+                                    <tr><th scope="row">Black Rose Dragon</th><td class="enb-num">0–1</td></tr>
+                                    <tr><th scope="row">Accel Synchro Stardust Dragon</th><td class="enb-num">0–1</td></tr>
+                                    <tr><th scope="row">Second Junora or Strelitzia</th><td class="enb-num">0–1</td></tr>
+                                    <tr><th scope="row">Second Purification Power Patron</th><td class="enb-num">0–1</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="enb-panel">
+                            <h3 class="enb-h3">Flex Main Deck slots</h3>
+                            <ul class="enb-list">
+                                <li><strong>Fydraulis Harmonia</strong>: a Level 7 Tuner that summons itself when their monster activates an effect. The June lists ran it, but its lock turns off Mediclius and Purification Power Patron until the end of your next turn.</li>
+                                <li><strong>Plundered Power Patron Plane - Vidolia</strong>: a fourth starter (Junoldo into Junora) that costs a card from your hand.</li>
+                                <li><strong>Theorealize Liberation</strong>, <strong>Elfnotes: Quatrain of Succession</strong>, <strong>Elfnotes: A Plea for Help</strong>, <strong>Elfnotes: Aristeia of Trust</strong>: one of each at most, for the matchups in section 7.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Generic tech that fits</h3>
+                    <div class="enb-table-wrap">
+                        <table class="enb-table enb-table--stack">
+                            <thead><tr><th scope="col">Card</th><th scope="col">Why it fits Elfnote</th></tr></thead>
+                            <tbody>
+                                <tr><th scope="row">Chaos Angel</th><td data-label="Why it fits Elfnote">Medius the Pure (DARK) counts as the Tuner and Fortuna (LIGHT) is the non-Tuner: both bonuses, and it banishes a card when summoned.</td></tr>
+                                <tr><th scope="row">I:P Masquerena</th><td data-label="Why it fits Elfnote">Link Summons during your opponent's Main Phase: a second route to Mediclius, which then can't be destroyed by their card effects.</td></tr>
+                                <tr><th scope="row">S:P Little Knight</th><td data-label="Why it fits Elfnote">With June Pride or Junora as material it banishes a card when summoned. Its Quick Effect banishes two face-up monsters, one of them yours, until the End Phase.</td></tr>
+                                <tr><th scope="row">Crystal Wing Synchro Dragon</th><td data-label="Why it fits Elfnote">Elfnote Power Patron + Strelitzia (a Synchro non-Tuner) is exactly Level 8.</td></tr>
+                                <tr><th scope="row">Mulcharmy Fuwalos</th><td data-label="Why it fits Elfnote">Needs you to control no cards, so it's a going-second hand trap that punishes their Deck and Extra Deck summons.</td></tr>
+                                <tr><th scope="row">Called by the Grave · Crossout Designator</th><td data-label="Why it fits Elfnote">Protect Lucina's search and Medius's summon effect from Ash Blossom.</td></tr>
+                                <tr><th scope="row">Lightning Storm · Evenly Matched · Forbidden Droplet · Harpie's Feather Duster</th><td data-label="Why it fits Elfnote">Side Deck breakers for going second. Harpie's Feather Duster is Limited.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Anti-synergies to plan around</h3>
+                    <ul class="enb-list enb-list--bad">
+                        <li><strong>Synchro-only locks.</strong> Elfnote Power Patron (while face-up), Welcome Home and Strelitzia (for the turn) and Fydraulis Harmonia (until the end of your next turn) all fence off Link Monsters. Make Links first, or on your opponent's turn.</li>
+                        <li><strong>Quatrain's Token.</strong> While it's out, only Elfnote monsters from the Extra Deck: no Junora, Chaos Angel or Mediclius.</li>
+                        <li><strong>Terminus.</strong> Only Power Patron monsters can attack the turn you use it.</li>
+                        <li><strong>June Pride and OTKs.</strong> Its center attack lock includes your own monsters.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 7 · Verdict -->
+            <section id="enb-verdict" class="enb-section" aria-labelledby="enb-verdict-title">
+                <h2 id="enb-verdict-title" class="enb-h2"><i class="fas fa-trophy" aria-hidden="true"></i>7 · Competitive Verdict</h2>
+
+                <div class="enb-panel enb-tier">
+                    <div class="enb-tier__badge" role="img" aria-label="Tier 2, Tier 1 contender from 8 October 2026">
+                        <span class="enb-tier__label">Tier</span>
+                        <span class="enb-tier__grade">2</span>
+                        <span class="enb-tier__next">T1 contender · 8 Oct</span>
+                    </div>
+                    <div>
+                        <p style="margin-top:0">Elfnote already had one of the best one-card starters around and an
+                            opponent's-turn game few decks match: four disruptions from Lucina alone. What held it back
+                            was the other half of the match. Its main monsters want to be on the field during the
+                            opponent's turn, so going second it leaned on hand traps, and player reports said so.</p>
+                        <p>Beyond the Brave doesn't add Elfnotes; it adds a second route around that gap. Junoldo's
+                            Junora and Mediclius's negate-and-halve break boards without an Elfnote Quick Effect, and
+                            Mediclius's three-arrow banish turns the going-first board into a real lock. The limits stay:
+                            Droll &amp; Lock Bird shuts both search engines at once, Nibiru catches both main lines past
+                            their fifth summon, and the key Tuner fences off its own Extra Deck. Tinia and Terminus at one
+                            copy also mean fewer natural draws of those pieces.</p>
+                    </div>
+                </div>
+
+                <div class="enb-grid-2">
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Strengths</h3>
+                        <ul class="enb-list enb-list--ok">
+                            <li>A true one-card starter in Lucina, Medius the Pure and Citrinitas as extenders, and room for around 15 non-engine cards.</li>
+                            <li>Disruption that arrives on the opponent's turn and reloads itself through June Pride.</li>
+                            <li>Two board breakers that need no Elfnote Quick Effect: Junora's arrival and Mediclius.</li>
+                            <li>Droll-proof refunds: Regina from the GY, Junoldo from the GY and Extra Deck.</li>
+                        </ul>
+                    </div>
+                    <div class="enb-panel">
+                        <h3 class="enb-h3">Weaknesses</h3>
+                        <ul class="enb-list enb-list--bad">
+                            <li>Droll &amp; Lock Bird after the first search; Nibiru past the fifth summon.</li>
+                            <li>Every good end board wants the center zone: effects that occupy or empty it hurt.</li>
+                            <li>Lucina can't bounce Xyz or Link Monsters, and Tinia's banish is only until the End Phase.</li>
+                            <li>Dark Ruler No More can't be answered with a monster effect.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="enb-panel">
+                    <h3 class="enb-h3">Matchup guide by opponent's plan</h3>
+                    <div class="enb-table-wrap">
+                        <table class="enb-table enb-table--stack">
+                            <thead><tr><th scope="col">Their plan</th><th scope="col">Your tools</th><th scope="col">Note</th></tr></thead>
+                            <tbody>
+                                <tr><th scope="row">Link climbing</th><td data-label="Your tools">Junora's column lock, Strelitzia's Level cut</td><td data-label="Note">Elfnotes in your second and fourth zones cover both Extra Monster Zones.</td></tr>
+                                <tr><th scope="row">Xyz and Synchro</th><td data-label="Your tools">Strelitzia changes their Levels; Lucina bounces Level 6 or lower monsters</td><td data-label="Note">Lucina can't touch the Xyz Monster once it's out: hit the materials.</td></tr>
+                                <tr><th scope="row">Graveyard engines</th><td data-label="Your tools">Mediclius's full-field banish, Rhapsodia's negate</td><td data-label="Note">Mediclius banishes only what's on the field; their GY stays.</td></tr>
+                                <tr><th scope="row">Backrow and floodgates</th><td data-label="Your tools">Fortuna's bounce, Aristeia's negate, Side Deck breakers</td><td data-label="Note">A WATER or WIND center under Plea for Help shields your own Continuous cards.</td></tr>
+                                <tr><th scope="row">Hand-trap heavy</th><td data-label="Your tools">One-card starters, Regina's refund, summon-mode searches</td><td data-label="Note">Lead with the Medius half to draw out Ash Blossom, then play the Elfnote half.</td></tr>
+                                <tr><th scope="row">An established board, going second</th><td data-label="Your tools">Line 4: Junora's negate, then Mediclius</td><td data-label="Note">Skip June Pride so your side monsters can attack.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="enb-note"><i class="fas fa-info-circle" aria-hidden="true"></i>Card text, stats, release
+                        dates and TCG list status were checked against the official card database on 26 September 2026.
+                        Ratios and ratings are the site's own.</p>
+                </div>
+            </section>
+        </div>
+
         <!-- Universal Banlist & Resources -->
         <section class="grid grid-cols-1 gap-8 mb-16">
             <div id="banlist-status" class="elfnote-card p-6"></div>
@@ -1166,6 +2683,519 @@
                 initPageSections('Elfnote');
             });
         </script>
+    <!-- Beyond the Brave tab (Movement IV). Runs before tab-deeplink.js so a #tab-betb link
+         that opens the tab on load also mounts its content. combo-system.js is loaded in <head>. -->
+    <script>
+        (function () {
+            'use strict';
+
+            var PANEL_ID = 'tab-betb';
+            var TAB_NAME = 'betb'; // switchTab('betb') toggles #tab-betb and #btn-betb
+            var COMBO_MOUNT_ID = 'elfnote-combo-lab';
+            var COMBO_SLUG = 'elfnote'; // assets/data/combos/elfnote-combos.json
+            var SPOT_ART = {
+                'enb-spot-citrinitas-img-container': 'Ars Magna "Citrinitas"',
+                'enb-spot-tmedius-img-container': 'Theorealized Medius',
+                'enb-spot-mediclius-img-container': 'Mediclius the Extraordinary Power Patron'
+            };
+            var PANEL_ART = {
+                'enb-lucina-img-container': 'Elfnote Lucina',
+                'enb-tinia-img-container': 'Elfnote Tinia',
+                'enb-fortuna-img-container': 'Elfnote Fortuna',
+                'enb-regina-img-container': 'Elfnote Regina',
+                'enb-pp-img-container': 'Elfnote Power Patron',
+                'enb-junoldo-img-container': 'Junoldo the Shadespirit Power Patron',
+                'enb-junepride-img-container': 'Elfnote June Pride',
+                'enb-strelitzia-img-container': 'Elfnote Seraphim Strelitzia',
+                'enb-junora-img-container': 'Junora the Power Patron of Tuning',
+                'enb-purification-img-container': 'Purification Power Patron',
+                'enb-mediclius-img-container': 'Mediclius the Extraordinary Power Patron',
+                'enb-welcome-img-container': 'Elfnotes: Welcome Home',
+                'enb-plea-img-container': 'Elfnotes: A Plea for Help',
+                'enb-aristeia-img-container': 'Elfnotes: Aristeia of Trust',
+                'enb-rhapsodia-img-container': 'Elfnotes: Rhapsodia of Madness',
+                'enb-quatrain-img-container': 'Elfnotes: Quatrain of Succession',
+                'enb-citrinitas-img-container': 'Ars Magna "Citrinitas"',
+                'enb-medius-img-container': 'Medius the Pure',
+                'enb-tmedius-img-container': 'Theorealized Medius',
+                'enb-pastlull-img-container': 'Theorealize Past Lull',
+                'enb-liberation-img-container': 'Theorealize Liberation',
+                'enb-overdrive-img-container': 'Theorealize Overdrive',
+                'enb-terminus-img-container': 'Prohibited Power Patron Portal - Terminus',
+                'enb-vidolia-img-container': 'Plundered Power Patron Plane - Vidolia'
+            };
+            var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            var artRequested = false;
+            var comboReady = null;
+
+            // Art and the combo simulator are fetched once, the first time the tab opens.
+            function openBetbPanel() {
+                if (!artRequested && typeof CardLoader !== 'undefined') {
+                    artRequested = true;
+                    CardLoader.loadCards(PANEL_ART);
+                }
+                if (!comboReady) {
+                    // combo-system.js declares ComboLoader as a top-level class, which is
+                    // not a property of window, so check it with typeof.
+                    comboReady = typeof ComboLoader === 'undefined'
+                        ? Promise.resolve(null)
+                        : ComboLoader.renderComboSystem(COMBO_MOUNT_ID, COMBO_SLUG);
+                }
+                return comboReady;
+            }
+
+            function showPanel() {
+                var panel = document.getElementById(PANEL_ID);
+                if (panel && !panel.classList.contains('active-tab')) switchTab(TAB_NAME);
+                return openBetbPanel();
+            }
+
+            function scrollToEl(el) {
+                if (el) el.scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth', block: 'start' });
+            }
+
+            var tabBtn = document.getElementById('btn-' + TAB_NAME);
+            if (tabBtn) tabBtn.addEventListener('click', openBetbPanel);
+
+            // ---- Card gallery filter ----
+            var gallery = document.querySelector('[data-enb-gallery]');
+            var filterButtons = gallery ? gallery.querySelectorAll('[data-enb-filter]') : [];
+            var galleryCards = gallery ? gallery.querySelectorAll('[data-enb-card]') : [];
+            var countEl = gallery ? gallery.querySelector('[data-enb-count]') : null;
+
+            function applyFilter(key) {
+                var shown = 0;
+                Array.prototype.forEach.call(galleryCards, function (card) {
+                    var groups = (card.getAttribute('data-groups') || '').split(' ');
+                    var visible = key === 'all' || groups.indexOf(key) !== -1;
+                    card.hidden = !visible;
+                    if (visible) shown++;
+                });
+                Array.prototype.forEach.call(filterButtons, function (btn) {
+                    btn.setAttribute('aria-pressed', btn.getAttribute('data-enb-filter') === key ? 'true' : 'false');
+                });
+                if (countEl) countEl.textContent = shown + (shown === 1 ? ' card' : ' cards');
+            }
+            Array.prototype.forEach.call(filterButtons, function (btn) {
+                btn.addEventListener('click', function () { applyFilter(btn.getAttribute('data-enb-filter')); });
+            });
+
+            // ---- Deep links into the tab ----
+            // Returns the element a hash points at if it lives in this tab, after making it visible.
+            function revealTarget(id) {
+                if (!id || !/^[\w:.-]+$/.test(id)) return null;
+                var target = document.getElementById(id);
+                if (!target) return null;
+                if (target.id !== PANEL_ID && !target.closest('#' + PANEL_ID)) return null;
+                var card = target.closest('[data-enb-card]');
+                if (card && card.hidden) applyFilter('all');
+                showPanel();
+                return target;
+            }
+
+            function openPanelForHash() {
+                var id = window.location.hash.slice(1);
+                try { id = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+                revealTarget(id); // tab-deeplink.js does the scrolling
+            }
+            window.addEventListener('hashchange', openPanelForHash);
+            document.addEventListener('DOMContentLoaded', openPanelForHash);
+
+            // Clicking a link whose hash is already current fires no hashchange, so handle it here.
+            document.addEventListener('click', function (event) {
+                var link = event.target.closest && event.target.closest('a[href^="#"]');
+                if (!link || link.hasAttribute('data-combo-open')) return;
+                var id = link.getAttribute('href').slice(1);
+                if (id !== window.location.hash.slice(1)) return;
+                var target = revealTarget(id);
+                if (!target) return;
+                event.preventDefault();
+                setTimeout(function () { scrollToEl(target); }, 60);
+            });
+
+            // "Play line N" selects that line in the simulator.
+            function selectCombo(num, tries) {
+                var option = document.querySelector('#' + COMBO_MOUNT_ID +
+                    ' .combo-selector-option[data-value="' + num + '"]');
+                if (option) {
+                    option.click();
+                    scrollToEl(document.getElementById(COMBO_MOUNT_ID));
+                    return;
+                }
+                if (tries < 30) setTimeout(function () { selectCombo(num, tries + 1); }, 100);
+            }
+            document.querySelectorAll('[data-combo-open]').forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var num = link.getAttribute('data-combo-open');
+                    showPanel().then(function () { selectCombo(num, 0); });
+                });
+            });
+
+            // Spotlight art is always visible, so it loads with the page.
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof CardLoader !== 'undefined') CardLoader.loadCards(SPOT_ART);
+            });
+
+            // ---- Stage planner ----
+            var planner = document.querySelector('[data-stage-planner]');
+            if (planner) initPlanner(planner);
+
+            function initPlanner(root) {
+                var MONSTERS = {
+                    lucina: { name: 'Elfnote Lucina', short: 'Lucina', attr: 'FIRE', level: 6, elfnote: true,
+                        swap: 'return a Level 6 or lower monster your opponent controls to the hand' },
+                    tinia: { name: 'Elfnote Tinia', short: 'Tinia', attr: 'WATER', level: 6, elfnote: true,
+                        swap: 'banish a random card from their hand until the End Phase' },
+                    fortuna: { name: 'Elfnote Fortuna', short: 'Fortuna', attr: 'LIGHT', level: 6, elfnote: true,
+                        swap: 'return a face-up Spell/Trap to the hand' },
+                    regina: { name: 'Elfnote Regina', short: 'Regina', attr: 'WIND', level: 6, elfnote: true },
+                    pp: { name: 'Elfnote Power Patron', short: 'Power Patron', attr: 'FIRE', level: 1, elfnote: true },
+                    junoldo: { name: 'Junoldo the Shadespirit Power Patron', short: 'Junoldo', attr: 'DARK', level: 10, elfnote: true },
+                    junepride: { name: 'Elfnote June Pride', short: 'June Pride', attr: 'LIGHT', level: 10, elfnote: true, synchro: true },
+                    strelitzia: { name: 'Elfnote Seraphim Strelitzia', short: 'Strelitzia', attr: 'FIRE', level: 7, elfnote: true, synchro: true },
+                    junora: { name: 'Junora the Power Patron of Tuning', short: 'Junora', attr: 'FIRE', level: 10, synchro: true },
+                    chaos: { name: 'Chaos Angel', short: 'Chaos Angel', attr: 'DARK', level: 10, synchro: true },
+                    medius: { name: 'Medius the Pure', short: 'Medius', attr: 'DARK', level: 4, darkFairy: true },
+                    tmedius: { name: 'Theorealized Medius', short: 'Theorealized Medius', attr: 'DARK', level: 4, darkFairy: true },
+                    other: { name: 'Another monster', short: 'Other monster', attr: null, level: null }
+                };
+                var MONSTER_ORDER = ['lucina', 'tinia', 'fortuna', 'regina', 'pp', 'junoldo', 'junepride',
+                    'strelitzia', 'junora', 'chaos', 'medius', 'tmedius', 'other'];
+                var EMZ = {
+                    '': { label: 'Empty' },
+                    'mediclius-left': { label: 'Mediclius, left', link: 'mediclius', side: 'left', short: 'Mediclius' },
+                    'mediclius-right': { label: 'Mediclius, right', link: 'mediclius', side: 'right', short: 'Mediclius' },
+                    'purification-left': { label: 'Purification Power Patron, left', link: 'purification', side: 'left', short: 'Purification' },
+                    'purification-right': { label: 'Purification Power Patron, right', link: 'purification', side: 'right', short: 'Purification' },
+                    'masquerena-left': { label: 'I:P Masquerena, left', link: 'masquerena', side: 'left', short: 'Masquerena' },
+                    'masquerena-right': { label: 'I:P Masquerena, right', link: 'masquerena', side: 'right', short: 'Masquerena' }
+                };
+                var CONTINUOUS = [
+                    ['welcome', 'Elfnotes: Welcome Home'],
+                    ['plea', 'Elfnotes: A Plea for Help'],
+                    ['quatrain', 'Elfnotes: Quatrain of Succession'],
+                    ['rhapsodia', 'Elfnotes: Rhapsodia of Madness'],
+                    ['aristeia', 'Elfnotes: Aristeia of Trust']
+                ];
+                var ATTRS = ['FIRE', 'WATER', 'EARTH', 'WIND', 'LIGHT', 'DARK'];
+                var PLEA_MODES = {
+                    FIRE: 'your Synchro Monsters inflict piercing damage',
+                    EARTH: 'your Synchro Monsters inflict piercing damage',
+                    WATER: 'your other face-up Spells/Traps can\'t be destroyed by your opponent\'s card effects',
+                    WIND: 'your other face-up Spells/Traps can\'t be destroyed by your opponent\'s card effects',
+                    LIGHT: 'you take no battle damage',
+                    DARK: 'you take no battle damage'
+                };
+                var PRESETS = [
+                    { label: 'Line 1 end board', zones: ['', '', 'junepride', '', ''], emz: '', cont: ['welcome'] },
+                    { label: 'Line 3, after the rotation', zones: ['tinia', 'regina', 'fortuna', 'lucina', ''], emz: '', cont: ['welcome', 'rhapsodia'] },
+                    { label: 'Line 2 end board', zones: ['junora', 'fortuna', 'junepride', '', 'medius'], emz: 'purification-left', cont: ['welcome', 'rhapsodia'] },
+                    { label: 'Line 2 + Mediclius', zones: ['junora', 'fortuna', 'junepride', '', ''], emz: 'mediclius-left', cont: ['welcome', 'rhapsodia'] },
+                    { label: 'Board C, their turn', zones: ['', 'strelitzia', '', 'pp', ''], emz: '', cont: ['welcome'] },
+                    { label: 'Line 4 (going second)', zones: ['medius', 'junora', 'regina', '', ''], emz: 'mediclius-left', cont: [] },
+                    { label: 'Clear', zones: ['', '', '', '', ''], emz: '', cont: [] }
+                ];
+                var ZONE_LABELS = ['Zone 1 (left)', 'Zone 2', 'Zone 3 (center)', 'Zone 4', 'Zone 5 (right)'];
+
+                var form = root.querySelector('[data-planner-controls]');
+                var presetBox = root.querySelector('[data-planner-presets]');
+                var boardEl = root.querySelector('[data-planner-board]');
+                var readoutEl = root.querySelector('[data-planner-readout]');
+
+                function option(value, label) {
+                    var o = document.createElement('option');
+                    o.value = value;
+                    o.textContent = label;
+                    return o;
+                }
+                function field(id, labelText, select) {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'enb-field';
+                    var label = document.createElement('label');
+                    label.setAttribute('for', id);
+                    label.textContent = labelText;
+                    select.id = id;
+                    wrap.appendChild(label);
+                    wrap.appendChild(select);
+                    return wrap;
+                }
+                function fieldset(legendText) {
+                    var fs = document.createElement('fieldset');
+                    var lg = document.createElement('legend');
+                    lg.textContent = legendText;
+                    fs.appendChild(lg);
+                    return fs;
+                }
+
+                // Controls
+                var zoneSelects = [];
+                var fsZones = fieldset('Your Main Monster Zones');
+                ZONE_LABELS.forEach(function (text, i) {
+                    var sel = document.createElement('select');
+                    sel.appendChild(option('', 'Empty'));
+                    MONSTER_ORDER.forEach(function (key) { sel.appendChild(option(key, MONSTERS[key].name)); });
+                    zoneSelects.push(sel);
+                    fsZones.appendChild(field('enb-zone-' + (i + 1), text, sel));
+                });
+                var fsEmz = fieldset('Extra Monster Zone');
+                var emzSelect = document.createElement('select');
+                Object.keys(EMZ).forEach(function (key) { emzSelect.appendChild(option(key, EMZ[key].label)); });
+                fsEmz.appendChild(field('enb-emz', 'Your Link Monster', emzSelect));
+                var fsCont = fieldset('Face-up Continuous cards');
+                var contBoxes = {};
+                CONTINUOUS.forEach(function (pair) {
+                    var label = document.createElement('label');
+                    label.className = 'enb-check';
+                    var box = document.createElement('input');
+                    box.type = 'checkbox';
+                    box.value = pair[0];
+                    contBoxes[pair[0]] = box;
+                    label.appendChild(box);
+                    label.appendChild(document.createTextNode(pair[1]));
+                    fsCont.appendChild(label);
+                });
+                var fsAttr = fieldset('Theorealize (GY effect)');
+                var attrSelect = document.createElement('select');
+                attrSelect.appendChild(option('', 'Unchanged'));
+                ATTRS.forEach(function (a) { attrSelect.appendChild(option(a, a)); });
+                fsAttr.appendChild(field('enb-attr', 'Center monster\'s Attribute', attrSelect));
+                form.appendChild(fsZones);
+                form.appendChild(fsEmz);
+                form.appendChild(fsCont);
+                form.appendChild(fsAttr);
+
+                var presetButtons = PRESETS.map(function (preset) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = preset.label;
+                    btn.setAttribute('aria-pressed', 'false');
+                    btn.addEventListener('click', function () {
+                        zoneSelects.forEach(function (sel, i) { sel.value = preset.zones[i]; });
+                        emzSelect.value = preset.emz;
+                        attrSelect.value = '';
+                        Object.keys(contBoxes).forEach(function (k) { contBoxes[k].checked = preset.cont.indexOf(k) !== -1; });
+                        render();
+                        presetButtons.forEach(function (b) { b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+                    });
+                    presetBox.appendChild(btn);
+                    return btn;
+                });
+
+                form.addEventListener('change', function () {
+                    presetButtons.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+                    render();
+                });
+
+                function listText(items) {
+                    if (items.length < 2) return items.join('');
+                    return items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
+                }
+                function pointedZones(side) { return side === 'left' ? [0, 1, 2] : [2, 3, 4]; }
+
+                function render() {
+                    var z = zoneSelects.map(function (sel) { return sel.value ? MONSTERS[sel.value] : null; });
+                    var keys = zoneSelects.map(function (sel) { return sel.value; });
+                    var emz = EMZ[emzSelect.value];
+                    var override = attrSelect.value;
+                    var cont = {};
+                    Object.keys(contBoxes).forEach(function (k) { cont[k] = contBoxes[k].checked; });
+
+                    var center = z[2];
+                    var effAttr = center ? (override || center.attr) : null;
+                    var anySynchro = z.some(function (m) { return m && m.synchro; });
+                    var hasJunora = keys.indexOf('junora') !== -1;
+                    var hasPP = keys.indexOf('pp') !== -1;
+                    var elfCols = [];
+                    z.forEach(function (m, i) { if (m && m.elfnote) elfCols.push(i + 1); });
+                    var pointed = emz.link === 'mediclius' ? pointedZones(emz.side) : [];
+                    var lockedCols = hasJunora ? elfCols : [];
+                    var items = [];
+                    function add(tone, html) { items.push('<li class="t-' + tone + '"><span>' + html + '</span></li>'); }
+
+                    if (!z.some(Boolean) && !emz.link) {
+                        add('info', 'Pick a preset or place monsters to see what the board does.');
+                    }
+
+                    // Center
+                    if (!center) {
+                        if (z.some(Boolean)) add('warn', '<b>The center zone is empty.</b> Regina from the hand, or a Lucina, Tinia or Fortuna hand summon, can land there; Regina would also call an Elfnote from the Deck.');
+                    } else {
+                        var attrText = center.attr
+                            ? (override && override !== center.attr ? center.attr + ', treated as ' + override + ' by Theorealize' : center.attr)
+                            : (override ? 'treated as ' + override + ' by Theorealize' : 'Attribute not set');
+                        add('info', '<b>Center: ' + center.name + '</b> (' + attrText + ').');
+                    }
+                    if (override && !center) add('warn', 'Theorealize needs a face-up monster to change: the center zone is empty.');
+
+                    // Switches
+                    var switchers = [];
+                    z.forEach(function (m, i) { if (m && m.swap && i !== 2) switchers.push({ m: m, i: i }); });
+                    var switchCount = 0;
+                    if (!center) {
+                        if (switchers.length) add('off', 'No switch can happen: ' + listText(switchers.map(function (s) { return s.m.short; })) + ' need a monster in the center zone.');
+                    } else {
+                        switchers.forEach(function (s) {
+                            add('ok', '<b>' + s.m.short + '</b> (zone ' + (s.i + 1) + ') can switch into the center on your opponent\'s turn and ' + s.m.swap + '.');
+                        });
+                        switchCount = switchers.length;
+                        if (center.swap) {
+                            if (switchers.length) {
+                                switchCount++;
+                                add('ok', '<b>' + center.short + '</b> is in the center now. Once another Elfnote switches in, it stands beside the center and can switch back to ' + center.swap + '.');
+                            } else {
+                                add('info', center.short + ' is in the center: its own switch needs it in another zone.');
+                            }
+                        } else if (!switchers.length && z.some(Boolean)) {
+                            add('info', 'No Lucina, Tinia or Fortuna beside the center, so no switches this turn.');
+                        }
+                    }
+
+                    // June Pride and Strelitzia
+                    keys.forEach(function (key, i) {
+                        if (key === 'junepride') {
+                            if (i === 2) add('ok', '<b>June Pride</b> is in the center: only center monsters can attack, and its tag-out can summon an Elfnote each from your hand, Deck and GY.');
+                            else add('warn', '<b>June Pride</b> in zone ' + (i + 1) + ' is off-center: no attack lock and no tag-out.');
+                        }
+                        if (key === 'strelitzia') {
+                            if (i === 2) add('ok', '<b>Strelitzia</b> has 3000 ATK in the center.');
+                            else add('info', '<b>Strelitzia</b> in zone ' + (i + 1) + ' has 0 ATK off-center, but its Quick Effect still works.');
+                        }
+                    });
+
+                    // Power Patron
+                    if (hasPP) {
+                        if (center) {
+                            var lvl = center.level ? ' from Level ' + center.level + ' to ' + (center.level + 3) : '';
+                            add('ok', '<b>Elfnote Power Patron</b> can raise ' + center.short + lvl + ' and Synchro Summon at once' + (center.level === 6 ? ': with Power Patron as the Tuner that makes June Pride.' : '.'));
+                        } else {
+                            add('warn', '<b>Elfnote Power Patron</b> has no target: its +3 needs a monster in the center zone.');
+                        }
+                        var ppLock = 'While Elfnote Power Patron is face-up you can only summon Synchro Monsters from the Extra Deck.';
+                        if (emz.link) ppLock += ' Your ' + emz.short + ' had to arrive before it, or on your opponent\'s turn.';
+                        add('warn', ppLock);
+                        var strelIdx = keys.indexOf('strelitzia');
+                        if (strelIdx !== -1 && strelIdx !== 2) {
+                            add('ok', '<b>Board C is set.</b> On your opponent\'s turn Strelitzia summons an Elfnote and cuts Levels, Power Patron lifts the center Elfnote back to 6, and Junora = Power Patron (1) + that Elfnote (6) + another Elfnote (3).');
+                        }
+                    }
+
+                    // Continuous cards
+                    if (cont.welcome) {
+                        if (center) add('ok', '<b>Welcome Home:</b> ' + center.short + ' can\'t be destroyed by card effects.');
+                        else add('off', '<b>Welcome Home</b> protects nothing: the center zone is empty.');
+                    }
+                    if (cont.plea) {
+                        if (!center) {
+                            add('off', '<b>Plea for Help</b> protects nothing: the center zone is empty.');
+                        } else {
+                            var mode = effAttr ? PLEA_MODES[effAttr] : null;
+                            add(mode ? 'ok' : 'warn', '<b>Plea for Help:</b> your opponent can\'t target ' + center.short + ' with card effects' +
+                                (mode ? '. ' + effAttr + ' center: ' + mode + '.' : '. Set an Attribute to see its mode.'));
+                        }
+                    }
+                    if (cont.quatrain) {
+                        if (center) add('ok', '<b>Quatrain:</b> ' + center.short + ' can\'t be banished by your opponent\'s card effects.');
+                        else add('off', '<b>Quatrain\'s</b> banish shield is idle: the center zone is empty.');
+                    }
+                    if (cont.rhapsodia) {
+                        if (center) add('ok', '<b>Rhapsodia:</b> your opponent\'s monsters can only attack ' + center.short + '.' +
+                            (anySynchro ? ' Its revive can also negate a card: you control a Synchro Monster.' : ' Its revive negates nothing: you control no Synchro Monster.'));
+                        else add('warn', '<b>Rhapsodia\'s</b> attack redirect is off with the center zone empty.' + (anySynchro ? ' Its revive can still negate: you control a Synchro Monster.' : ''));
+                    }
+                    if (cont.aristeia) {
+                        var n = elfCols.length;
+                        if (n >= 3) add('ok', '<b>Aristeia</b> can negate a Spell/Trap (' + n + ' Elfnote monsters)' + (anySynchro ? ' and destroy it: you control a Synchro Monster.' : '.'));
+                        else add('warn', '<b>Aristeia\'s</b> negate needs 3 Elfnote monsters; you have ' + n + '. Its move effect still works.');
+                    }
+
+                    // Junora's column lock
+                    if (hasJunora) {
+                        if (!elfCols.length) {
+                            add('warn', '<b>Junora\'s</b> column lock covers nothing: you control no Elfnote monsters, and Junora isn\'t one.');
+                        } else {
+                            var extra = [];
+                            if (elfCols.indexOf(2) !== -1 && !(emz.link && emz.side === 'left')) extra.push('the left Extra Monster Zone');
+                            if (elfCols.indexOf(4) !== -1 && !(emz.link && emz.side === 'right')) extra.push('the right Extra Monster Zone');
+                            add('ok', '<b>Junora\'s</b> column lock covers column' + (elfCols.length > 1 ? 's ' : ' ') + listText(elfCols.map(String)) +
+                                (extra.length ? ', including ' + listText(extra) : '') + '.');
+                        }
+                    }
+
+                    // Link Monsters
+                    var medCount = 0;
+                    if (emz.link === 'mediclius') {
+                        medCount = pointed.filter(function (i) { return z[i]; }).length;
+                        var tiers = [];
+                        if (medCount >= 1) tiers.push('1+: in your Main Phase it negates their face-up monsters and halves their ATK');
+                        if (medCount >= 2) tiers.push('2+: unaffected by their activated effects');
+                        if (medCount >= 3) tiers.push('3: once per opponent\'s turn it banishes itself and every card they control');
+                        var empties = pointed.filter(function (i) { return !z[i]; }).map(function (i) { return String(i + 1); });
+                        if (!medCount) add('warn', '<b>Mediclius</b> points at nothing: fill zones ' + listText(pointed.map(function (i) { return String(i + 1); })) + '.');
+                        else add('ok', '<b>Mediclius</b> points at ' + medCount + ' monster' + (medCount > 1 ? 's' : '') + '. ' + tiers.join('; ') + '.' +
+                            (empties.length ? ' Fill zone ' + listText(empties) + ' for the next tier.' : ''));
+                    }
+                    if (emz.link === 'purification') {
+                        var fairies = [];
+                        z.forEach(function (m, i) { if (m && m.darkFairy) fairies.push(i); });
+                        var pz = pointedZones(emz.side);
+                        if (!fairies.length) {
+                            add('warn', '<b>Purification Power Patron\'s</b> Quick Effect needs another DARK Fairy on your field: Medius the Pure or Theorealized Medius.');
+                        } else {
+                            // Use a DARK Fairy outside Mediclius's future arrows as material if there is one.
+                            var spend = fairies.filter(function (i) { return pz.indexOf(i) === -1; })[0];
+                            if (spend === undefined) spend = fairies[0];
+                            var after = pz.filter(function (i) { return z[i] && i !== spend; }).length;
+                            add('ok', '<b>Purification Power Patron</b> can Link Summon Mediclius in either Main Phase, using ' + z[spend].short + '. It would land in the ' + emz.side + ' Extra Monster Zone pointing at ' + after + ' monster' + (after === 1 ? '' : 's') + (after === 3 ? ', with all three effects.' : '.'));
+                        }
+                        add('info', 'Its bottom arrow points at your zone ' + (emz.side === 'left' ? 2 : 4) + ': Theorealize Past Lull\'s GY effect can revive a Synchro Monster there when it\'s free.');
+                    }
+                    if (emz.link === 'masquerena') {
+                        add('ok', '<b>I:P Masquerena</b> can Link Summon during your opponent\'s Main Phase, and a Link Monster made from it can\'t be destroyed by their card effects.');
+                    }
+
+                    readoutEl.innerHTML = items.join('');
+
+                    // Board picture (decorative; the readout carries the same facts)
+                    function cell(cls, main, tag) {
+                        return '<div class="enb-zone ' + cls + '">' + (main ? '<span>' + main + '</span>' : '') +
+                            (tag ? '<span class="enb-zone__tag">' + tag + '</span>' : '') + '</div>';
+                    }
+                    var oppRow = '';
+                    for (var c = 1; c <= 5; c++) {
+                        var locked = lockedCols.indexOf(c) !== -1;
+                        oppRow += cell(locked ? 'is-locked' : '', locked ? 'Locked' : '', 'column ' + c);
+                    }
+                    var emzRow = '';
+                    for (var e = 1; e <= 5; e++) {
+                        if (e !== 2 && e !== 4) { emzRow += '<div class="enb-zone enb-zone--spacer"></div>'; continue; }
+                        var side = e === 2 ? 'left' : 'right';
+                        if (emz.link && emz.side === side) emzRow += cell('is-occupied', emz.short, 'yours');
+                        else if (lockedCols.indexOf(e) !== -1) emzRow += cell('is-locked', 'Locked', 'Extra Zone');
+                        else emzRow += cell('', '', 'Extra Zone');
+                    }
+                    var myRow = '';
+                    z.forEach(function (m, i) {
+                        var cls = [];
+                        if (m) cls.push('is-occupied');
+                        if (i === 2) cls.push('is-center');
+                        if (pointed.indexOf(i) !== -1) cls.push('is-pointed');
+                        myRow += cell(cls.join(' '), m ? m.short : '', i === 2 ? 'center' : 'zone ' + (i + 1));
+                    });
+                    boardEl.innerHTML =
+                        '<span class="enb-board__label">Opponent\'s Main Monster Zones</span><div class="enb-board__row">' + oppRow + '</div>' +
+                        '<span class="enb-board__label">Extra Monster Zones</span><div class="enb-board__row">' + emzRow + '</div>' +
+                        '<span class="enb-board__label">Your Main Monster Zones</span><div class="enb-board__row">' + myRow + '</div>';
+                }
+
+                // Start on Line 1's end board.
+                presetButtons[0].click();
+            }
+        })();
+    </script>
+    <!-- Tab deep links (#betb and friends) -->
+    <script src="../assets/js/tab-deeplink.js"></script>
 </body>
 
 </html>

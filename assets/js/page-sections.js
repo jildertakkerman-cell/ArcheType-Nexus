@@ -41,10 +41,24 @@
  * how a reader thinks about "the pros" as one thing, not N independent
  * sentences) — never an individual bullet or sentence.
  *
+ * New-content tabs are built from page-specific markup (callouts, card
+ * entries, lock tables) that the .card auto-discovery below doesn't
+ * recognize. Mark the tab (or a whole new page's <main>) instead:
+ *
+ *   <div id="tab-betb" class="tab-panel" data-pcs-scope="betb">...</div>
+ *
+ * and every run of plain reading text inside it (consecutive <p>/<ul>/<ol>/
+ * <dl>/<blockquote>/<table> siblings, headings left static) becomes its own
+ * section, keyed "betb-<nearest heading>". Blocks with controls in them
+ * (checkers, planners, filters) aren't editable text, so they get a
+ * [suggest an improvement] link to the page's suggestion form instead
+ * (CardLoader.openSuggestionForm). Opt a block out with data-pcs-skip.
+ *
  * Content format is a small custom markdown-lite, not raw HTML or a full
  * markdown library: **bold** (also Ctrl+B), *italic* (also Ctrl+I),
  * [[Card Name]] (renders as the site's existing accent-highlighted
- * card-name style), lines starting with "- " for bullets,
+ * card-name style), lines starting with "- " for bullets, lines starting
+ * with "|" for table rows ("| a | b |", first row is the header),
  * [size=sm|lg|xl]...[/size], [font=serif|mono]...[/font], and
  * [color=accent|red|orange|yellow|green|blue|purple|gray]...[/color]
  * for the editor's size/font dropdowns and color-swatch buttons. Text is
@@ -93,6 +107,20 @@ function _pcsInjectStyle() {
             font-weight: 500; cursor: pointer; font-family: inherit; padding: 0;
         }
         .pcs-toolbar-link:hover, .pcs-toolbar-link:focus { color: #f59e0b; text-decoration: underline; outline: none; }
+        /* A tool toolbar sits just before its block, not inside it. */
+        .pcs-tool-toolbar:focus-within, .pcs-tool-toolbar:hover,
+        .pcs-tool-toolbar:has(+ :hover), .pcs-tool-toolbar:has(+ :focus-within) { opacity: 1; }
+        /* A run lifted out of a flex/grid column keeps that column's gap
+           (see _pcsWrapRun) — only the holder with the original nodes, not
+           the editor that replaces it in edit mode. */
+        .pcs-content > .pcs-run-stack { display: flex; flex-direction: column; gap: var(--pcs-gap); }
+        .pcs-table-wrap { overflow-x: auto; max-width: 100%; margin: 0.5rem 0; }
+        .pcs-table { border-collapse: collapse; font-size: 0.85rem; line-height: 1.45; }
+        .pcs-table th, .pcs-table td {
+            border: 1px solid rgba(255,255,255,0.12); padding: 0.4rem 0.6rem;
+            text-align: left; vertical-align: top;
+        }
+        .pcs-table thead th { background: rgba(255,255,255,0.05); font-weight: 700; }
         .pcs-toolbar-note { color: #4ade80; font-size: 0.68rem; }
         .pcs-muted { color: #a3a3a3; font-size: 0.8rem; margin: 0 0 0.5rem; }
         .pcs-policy {
@@ -409,6 +437,7 @@ function _pcsFormatTipsHtml(idSuffix, variant) {
         ? `<li><code>**bold**</code> (Ctrl+B), <code>*italic*</code> (Ctrl+I), and <code>[[Card Name]]</code> work here too — card names render accent-highlighted.</li>`
         : `<li><code>- </code> at the start of a line makes a bullet.</li>
            <li><code>Short Label:</code> at the start of a bullet auto-bolds and colors it, matching the rest of the list.</li>
+           <li><code>| Card | Verdict |</code> lines make a table; the first row is the header.</li>
            <li><code>**bold**</code> (Ctrl+B), <code>*italic*</code> (Ctrl+I), and <code>[[Card Name]]</code> also work — card names render accent-highlighted.</li>`;
     return `<div class="pcs-tips">
         <button type="button" class="pcs-tips-toggle" id="pcs-tips-toggle-${idSuffix}" aria-expanded="false">
@@ -507,10 +536,12 @@ function _pcsRenderBody(text, opts) {
     }
 
     // Group consecutive "- " lines into a list (<ol> for combo walkthroughs,
-    // <ul> otherwise); blank-line-separated runs of other text become <p>.
+    // <ul> otherwise) and consecutive "|" lines into a table; blank-line-
+    // separated runs of other text become <p>.
     const blocks = [];
     let listBuf = [];
     let paraBuf = [];
+    let tableBuf = [];
     const flushList = () => {
         if (listBuf.length) {
             const tag = opts.ordered ? 'ol' : 'ul';
@@ -523,12 +554,30 @@ function _pcsRenderBody(text, opts) {
         if (paraBuf.length) blocks.push(`<p>${paraBuf.join('<br>')}</p>`);
         paraBuf = [];
     };
+    // "| a | b |" rows; the first is the header. A markdown-style "|---|---|"
+    // divider row is accepted and dropped, so a table pasted from elsewhere
+    // still works. Cells are already escaped/formatted — `out` is.
+    const flushTable = () => {
+        const rows = tableBuf
+            .map(line => line.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim()))
+            .filter(cells => !cells.every(c => /^:?-{2,}:?$/.test(c)));
+        if (rows.length) {
+            const [head, ...body] = rows;
+            blocks.push(`<div class="pcs-table-wrap"><table class="pcs-table">` +
+                `<thead><tr>${head.map(c => `<th scope="col">${c}</th>`).join('')}</tr></thead>` +
+                `<tbody>${body.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>` +
+                `</table></div>`);
+        }
+        tableBuf = [];
+    };
     for (const rawLine of out.split('\n')) {
         const line = rawLine.trim();
-        if (line.startsWith('- ')) { flushPara(); listBuf.push(line.slice(2).trim()); }
-        else if (line === '') { flushList(); flushPara(); }
-        else { flushList(); paraBuf.push(line); }
+        if (line.startsWith('|')) { flushList(); flushPara(); tableBuf.push(line); }
+        else if (line.startsWith('- ')) { flushTable(); flushPara(); listBuf.push(line.slice(2).trim()); }
+        else if (line === '') { flushTable(); flushList(); flushPara(); }
+        else { flushTable(); flushList(); paraBuf.push(line); }
     }
+    flushTable();
     flushList();
     flushPara();
     return { html: blocks.join(''), cardMap: {} };
@@ -712,12 +761,41 @@ function _pcsHtmlToDraft(html) {
         }).join('\n\n');
     }
 
+    const clean = el => el.textContent.replace(/\s+/g, ' ').trim();
     const lines = [];
     (function walk(node) {
         for (const child of node.children) {
             const tag = child.tagName;
-            if (tag === 'LI') {
-                lines.push('- ' + child.textContent.replace(/\s+/g, ' ').trim());
+            if (tag === 'TABLE') {
+                // One "| a | b |" line per row (header row included), so the
+                // edit renders back as a table rather than a run-on paragraph.
+                // A literal "|" inside a cell would split it, so it becomes "/".
+                lines.push('');
+                child.querySelectorAll('tr').forEach(tr => {
+                    const cells = [...tr.children].map(c => clean(c).replace(/\|/g, '/'));
+                    lines.push(`| ${cells.join(' | ')} |`);
+                });
+                lines.push('');
+            } else if (tag === 'DL') {
+                // Term/description pairs (card stats, a combo's "Needs:" /
+                // "Ends on:") become "Label: text" bullets.
+                child.querySelectorAll('dt').forEach(dt => {
+                    const dds = [];
+                    for (let n = dt.nextElementSibling; n && n.tagName === 'DD'; n = n.nextElementSibling) dds.push(clean(n));
+                    lines.push(`- ${clean(dt)}: ${dds.join('; ')}`);
+                });
+            } else if (tag === 'LI') {
+                // A bullet with its own heading (icon + title + text, the way
+                // the new "weak points" lists are built) keeps the title as
+                // the auto-bolded "Label:" instead of running into the text.
+                const heading = child.querySelector('h3, h4, h5');
+                if (heading) {
+                    const rest = child.cloneNode(true);
+                    rest.querySelector('h3, h4, h5').remove();
+                    lines.push(`- ${clean(heading)}: ${clean(rest)}`);
+                } else {
+                    lines.push('- ' + clean(child));
+                }
             } else if (tag === 'P') {
                 const text = child.textContent.replace(/\s+/g, ' ').trim();
                 if (text) lines.push('', text, '');
@@ -928,9 +1006,217 @@ function _pcsAutoDiscoverBlocks() {
         bodyNodes[0].parentNode.insertBefore(wrapper, bodyNodes[0]);
         bodyNodes.forEach(node => wrapper.appendChild(node));
     });
+
+    _pcsDiscoverScopedRuns(reserveKey);
+}
+
+// ---- [data-pcs-scope]: new-content tabs and pages -------------------------
+
+const PCS_PROSE_TAGS = new Set(['P', 'UL', 'OL', 'DL', 'BLOCKQUOTE', 'TABLE']);
+// Regions a scope may contain but that aren't the page's own content: the
+// deck dock <nav>, the banlist and community-combo widgets (all filled in by
+// script), the combo labs and cross-engine panels (which carry their own
+// suggestion links), and anything opted out.
+const PCS_FOREIGN = 'nav, #banlist-status, #community-combos-wrapper, [data-pcs-skip], [data-combo-system], [data-cross-engine]';
+// Never walked into. A <p> or <table> that failed the prose test has nothing
+// block-level inside worth wrapping on its own; a <summary> is a click target
+// (a toolbar button inside it would toggle the <details>); the rest are
+// already handled (.cms-section, combo walkthroughs), script-driven (live
+// regions), or foreign.
+const PCS_WALK_SKIP = `script, style, template, svg, form, iframe, summary, p, table, h1, h2, h3, h4, h5, h6, ` +
+    `.cms-section, .combo-step-card, [data-pcs-scope], [data-pcs-tool], [aria-live], [role="status"], ${PCS_FOREIGN}`;
+// Card-name buttons that open a card popup read as text inside a sentence, so
+// they don't stop a paragraph or table from being prose.
+const PCS_CONTROLS = 'button:not([data-cardname]):not([data-xe-card]), input, select, textarea';
+// Controls that navigate rather than make a block a tool: tabs, disclosure
+// toggles, "open the tab" and "open this line in the lab" buttons, jump links,
+// and this file's own links.
+const PCS_NON_TOOL_CONTROLS = '[role="tab"], [aria-expanded], [data-open-panel], [data-combo-open], [data-suggest], ' +
+    '[data-xe-jump], .pcs-toolbar-link';
+
+let _pcsInlineScriptText = null;
+
+// An id that a page script looks up belongs to a live output (a checker
+// verdict, a card count). Moving it keeps it working, but an approved edit
+// would replace it with static text and cut the script off — so any block
+// holding one stays out. Inline scripts only: page-specific logic on these
+// pages lives inline.
+function _pcsIsScriptedId(id) {
+    if (_pcsInlineScriptText === null) {
+        _pcsInlineScriptText = [...document.querySelectorAll('script:not([src])')].map(s => s.textContent).join('\n');
+    }
+    return !!id && _pcsInlineScriptText.includes(id);
+}
+
+function _pcsHasScriptedId(el) {
+    return [el, ...el.querySelectorAll('[id]')].some(n => _pcsIsScriptedId(n.id));
+}
+
+// A container a page script fills in (a combo lab mount with its "Loading…"
+// placeholder, a checker's result box): scripted id, no headings of its own.
+// A real content section with a scripted id still has headings and is walked.
+function _pcsIsScriptMount(el) {
+    return _pcsIsScriptedId(el.id) && !el.querySelector('h1, h2, h3, h4, h5');
+}
+
+// Plain reading text: a paragraph, list, quote or table (or a scroll wrapper
+// holding only a table), with no controls, art, script hooks or JS-toggled
+// visibility anywhere inside it.
+function _pcsIsProseBlock(el) {
+    const isTableWrap = el.tagName === 'DIV' && el.children.length === 1 && el.firstElementChild.tagName === 'TABLE';
+    if (!PCS_PROSE_TAGS.has(el.tagName) && !isTableWrap) return false;
+    if (el.hidden || el.querySelector('[hidden]')) return false;
+    if (el.matches('[data-pcs-skip], [aria-live], [role="status"]') || el.querySelector('[data-pcs-skip], [aria-live], [role="status"], .cms-section')) return false;
+    if (el.querySelector(PCS_CONTROLS)) return false;
+    if (el.matches(IMAGE_CONTAINER_SELECTOR) || el.querySelector(`${IMAGE_CONTAINER_SELECTOR}, img, canvas, video`)) return false;
+    if (_pcsHasScriptedId(el)) return false;
+    return el.textContent.trim().length > 0;
+}
+
+// A heading's text with its parts spaced: "<span>1</span>Fill the zones"
+// reads "1 Fill the zones", not "1Fill the zones".
+function _pcsHeadingText(h) {
+    return [...h.childNodes].map(n => n.textContent.replace(/\s+/g, ' ').trim()).filter(Boolean).join(' ');
+}
+
+// Nearest heading above el, stopping at the scope root: the heading itself if
+// a previous sibling is one, else the LAST heading inside that sibling (a
+// note under a grid of cards belongs to the grid's section, not its first card).
+function _pcsRunHeading(el, root) {
+    for (let node = el; node && node !== root; node = node.parentElement) {
+        for (let sib = node.previousElementSibling; sib; sib = sib.previousElementSibling) {
+            if (sib.matches('h1, h2, h3, h4, h5')) return sib;
+            const inner = sib.querySelectorAll('h1, h2, h3, h4, h5');
+            if (inner.length) return inner[inner.length - 1];
+        }
+    }
+    return null;
+}
+
+// Moves a run of prose siblings into one .cms-section, keeping the layout the
+// nodes had as direct children of their parent:
+//   - grid / flex-row parent: each block is its own run (see the walk in
+//     _pcsDiscoverScopedRuns), and the wrapper takes over the block's own
+//     placement (grid-area, flex sizing).
+//   - flex-column parent: the wrapper's holder restacks the run with the
+//     parent's row-gap (.pcs-run-stack).
+//   - sibling rules (Tailwind's space-y-*, ".x > * + *") stop matching once
+//     the nodes move; later nodes keep the margin they had.
+function _pcsWrapRun(run, key) {
+    const parent = run[0].parentElement;
+    const ps = getComputedStyle(parent);
+    const first = getComputedStyle(run[0]);
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cms-section';
+    wrapper.dataset.sectionKey = key;
+    if (first.textAlign === 'center') wrapper.dataset.pcsAlign = 'center';
+
+    if (ps.display.includes('grid')) {
+        Object.assign(wrapper.style, { gridArea: first.gridArea, alignSelf: first.alignSelf, justifySelf: first.justifySelf, minWidth: '0' });
+    } else if (ps.display.includes('flex')) {
+        Object.assign(wrapper.style, { flexGrow: first.flexGrow, flexShrink: first.flexShrink, flexBasis: first.flexBasis, alignSelf: first.alignSelf, minWidth: '0' });
+        if (run.length > 1 && parseFloat(ps.rowGap) > 0) {
+            wrapper.classList.add('pcs-run-stack');
+            wrapper.style.setProperty('--pcs-gap', ps.rowGap);
+        }
+    }
+
+    const margins = run.map(n => getComputedStyle(n).marginTop);
+    parent.insertBefore(wrapper, run[0]);
+    run.forEach(n => wrapper.appendChild(n));
+    run.forEach((n, i) => {
+        if (i > 0 && getComputedStyle(n).marginTop !== margins[i]) n.style.marginTop = margins[i];
+    });
+}
+
+function _pcsDiscoverScopedRuns(reserveKey) {
+    document.querySelectorAll('[data-pcs-scope]').forEach(scope => {
+        const prefix = scope.dataset.pcsScope || 'new';
+
+        (function walk(parent) {
+            const ps = getComputedStyle(parent);
+            // Side-by-side children (grid cells, flex rows) are separate
+            // blocks on screen, so they're never merged into one run.
+            const sideBySide = ps.display.includes('grid') || (ps.display.includes('flex') && ps.flexDirection.startsWith('row'));
+            let run = [];
+            // A kicker ("NEW CARD · Beyond the Brave · 8 Oct 2026") or a stat
+            // line ("Level 7 · DARK · Machine") is a label, not reading text:
+            // short, with no sentence in it.
+            const flush = () => {
+                const text = run.map(el => el.textContent.replace(/\s+/g, ' ').trim()).join(' ');
+                if (text.length >= 80 || (text.length >= 20 && /[.!?](\s|$)/.test(text))) {
+                    const heading = _pcsRunHeading(run[0], scope);
+                    _pcsWrapRun(run, reserveKey(`${prefix}-`, heading ? _pcsHeadingText(heading) : 'notes'));
+                }
+                run = [];
+            };
+            for (const child of [...parent.children]) {
+                if (_pcsIsProseBlock(child)) {
+                    if (sideBySide) flush();
+                    run.push(child);
+                    continue;
+                }
+                flush();
+                if (!child.matches(PCS_WALK_SKIP) && !_pcsIsScriptMount(child)) walk(child);
+            }
+            flush();
+        })(scope);
+    });
+}
+
+// Blocks with controls in a scope (checkers, planners, filterable galleries)
+// get a [suggest an improvement] link just above them. It opens the page's
+// suggestion form (card-loader.js) there, with the nearest heading as context.
+// DOM-only, so it runs even when Supabase is unavailable.
+//
+// One link per <section>, placed on the widget's own root: climb from the
+// first control until the parent is the section or holds a heading next to
+// the widget. That lands on the checker itself rather than above the whole
+// section or panel group, and a widget's own hint text doesn't split it.
+// Every widget root is marked data-pcs-tool so the prose walk leaves its
+// labels and hints alone: they're part of the tool, covered by its link.
+function _pcsWidgetRoot(control, section) {
+    let block = control;
+    while (block.parentElement && block.parentElement !== section) {
+        const siblings = [...block.parentElement.children].filter(c => c !== block);
+        if (siblings.some(c => c.matches('h1, h2, h3, h4, h5'))) break;
+        block = block.parentElement;
+    }
+    return block;
+}
+
+function _pcsAttachToolLinks() {
+    const sections = new Set();
+    document.querySelectorAll('[data-pcs-scope]').forEach(scope => {
+        scope.querySelectorAll(PCS_CONTROLS).forEach(control => {
+            if (control.matches(PCS_NON_TOOL_CONTROLS)) return;
+            if (control.closest(`.cms-section, .pcs-tool-toolbar, ${PCS_FOREIGN}`)) return;
+
+            const section = control.closest('section, [data-pcs-scope]');
+            const block = _pcsWidgetRoot(control, section);
+            block.dataset.pcsTool = '';
+            if (sections.has(section)) return;
+            sections.add(section);
+            if (block.previousElementSibling?.classList.contains('pcs-tool-toolbar')) return;
+
+            const named = block.closest('[data-suggest-context]');
+            const heading = _pcsRunHeading(block, scope) || scope.querySelector('h2, h3, h4');
+            const context = named ? named.dataset.suggestContext
+                : (heading ? _pcsHeadingText(heading) : document.title);
+
+            const toolbar = document.createElement('div');
+            toolbar.className = 'pcs-toolbar pcs-tool-toolbar';
+            if (getComputedStyle(block).textAlign === 'center') toolbar.classList.add('pcs-toolbar-center');
+            toolbar.innerHTML = `<button type="button" class="pcs-toolbar-link" data-suggest="${window.escapeHtml(context)}">[suggest an improvement]</button>`;
+            block.before(toolbar);
+        });
+    });
+    if (sections.size) _pcsInjectStyle();
 }
 
 async function initPageSections(archetypeName) {
+    _pcsAttachToolLinks();
+
     const client = window.Auth?._getClient?.();
     if (!client) return;
 
@@ -1043,7 +1329,8 @@ function _pcsBuildPane(host, key, ctx, style, originalSlot) {
     const originalHTML = originalSlot ? originalSlot.innerHTML : ''; // read-only snapshot — only used for draft-seeding text and the history view, never re-inserted as live content (see showOriginal() below)
 
     const toolbar = document.createElement('div');
-    toolbar.className = style.ordered ? 'pcs-toolbar pcs-toolbar-center' : 'pcs-toolbar';
+    // data-pcs-align is set by _pcsWrapRun on runs of centered text.
+    toolbar.className = style.ordered || host.dataset.pcsAlign === 'center' ? 'pcs-toolbar pcs-toolbar-center' : 'pcs-toolbar';
     const contentSlot = document.createElement('div');
     contentSlot.className = 'pcs-content';
 

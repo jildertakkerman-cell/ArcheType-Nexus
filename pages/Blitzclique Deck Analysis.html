@@ -14,6 +14,7 @@
     <script src="../assets/js/supabase-config.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <script src="../assets/js/community-combos.js"></script>
     <script src="../assets/js/text-utils.js"></script>
     <script src="../assets/js/deck-dock.js" defer></script>
@@ -382,6 +383,511 @@
             font-family: 'Roboto Mono', monospace;
             color: #ea580c;
         }
+
+        /* --- Guide tabs + Beyond the Brave (BETB) support panel ---
+           Scoped here rather than as Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild. */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #2d3748;
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            min-height: 44px;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: -2px;
+            font: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #9ca3af;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #e5e7eb; background-color: rgba(59, 130, 246, 0.08); }
+        .tab-btn[aria-selected="true"] {
+            color: #60a5fa;
+            border-bottom-color: #3b82f6;
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible {
+            outline: 2px solid #60a5fa;
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there
+           so deep-link visitors don't see the whole guide outlined. */
+        .tab-panel:target:focus-visible { outline: none; }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: #f97316;
+            color: #0b0f19;
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.875rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .betb-intro {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            line-height: 1.65;
+            color: #d1d5db;
+            text-align: center;
+        }
+        .betb-intro strong { color: #fff; }
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid #2d3748;
+            border-radius: 9999px;
+            background: #141b25;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #d1d5db;
+        }
+        .betb-chip i { color: #60a5fa; }
+        .betb-chip--tcg { border-color: rgba(249, 115, 22, 0.6); }
+        .betb-chip--tcg i { color: #f97316; }
+        .betb-pillars {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+            color: #60a5fa;
+            filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.5));
+        }
+        .betb-callout {
+            padding: 1rem 1.25rem;
+            border: 1px solid #2d3748;
+            border-left: 4px solid #f97316;
+            border-radius: 0.5rem;
+            background: #1a2235;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #fb923c;
+        }
+        .betb-callout strong { color: #fff; }
+        .betb-callout ul { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .betb-callout li { position: relative; padding-left: 1.1rem; }
+        .betb-callout li::before {
+            content: '';
+            position: absolute;
+            top: 0.6em;
+            left: 0;
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 9999px;
+            background: #3b82f6;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Card art slot. Reserves the card's 59:86 shape so nothing shifts when
+           CardLoader swaps the art in, then drops the empty-slot styling. */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            border: 2px solid #2d3748;
+            border-radius: 0.25rem;
+            background: #0f141e;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.6rem;
+            line-height: 1.3;
+            letter-spacing: 1px;
+            text-align: center;
+            text-transform: uppercase;
+            color: #4a5568;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        /* CardLoader's not-found fallback nests a full-size placeholder; keep it in the slot. */
+        .betb-art .card-placeholder {
+            min-height: 0;
+            height: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+            letter-spacing: inherit;
+        }
+        .betb-art .card-placeholder::before { content: none; }
+
+        /* Card spotlight: art | name + stats on top, text full-width below on
+           phones; art spans both rows from tablet up. */
+        .betb-spotlight {
+            padding: 1.25rem;
+            border: 1px solid rgba(59, 130, 246, 0.45);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, #1e2532, #141b25);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(59, 130, 246, 0.12);
+        }
+        .betb-spotlight-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-spotlight-art { grid-area: art; }
+        .betb-spotlight-head { grid-area: head; min-width: 0; }
+        .betb-spotlight-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #fb923c;
+        }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #fff;
+            text-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+        }
+        .betb-stats {
+            display: grid;
+            gap: 0.2rem;
+            margin-top: 0.6rem;
+            font-size: 0.8rem;
+        }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: #9ca3af; }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; font-weight: 600; color: #e5e7eb; }
+        .betb-label {
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #d1d5db;
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: #3b82f6;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-opt {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #93c5fd;
+        }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid #f97316;
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: rgba(249, 115, 22, 0.08);
+            font-size: 0.875rem;
+            line-height: 1.55;
+            color: #e5e7eb;
+        }
+        .betb-role strong { color: #fb923c; }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 1px solid #2d3748;
+            border-radius: 0.5rem;
+            background: #0f141e;
+        }
+        .betb-glance dt {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #9ca3af;
+        }
+        .betb-glance dd {
+            margin: 0.25rem 0 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #fb923c;
+        }
+        .betb-glance dd.betb-glance-open { color: #4ade80; }
+
+        /* Combo walkthrough */
+        .betb-steps {
+            display: grid;
+            gap: 1rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-step;
+        }
+        .betb-step {
+            display: grid;
+            grid-template-columns: 64px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            padding: 1rem;
+            border: 1px solid #2d3748;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, #1e2532, #141b25);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            counter-increment: betb-step;
+        }
+        .betb-step-art { position: relative; }
+        .betb-step-art::after {
+            content: counter(betb-step);
+            content: counter(betb-step) / "";
+            position: absolute;
+            top: -0.5rem;
+            left: -0.5rem;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 9999px;
+            background: #3b82f6;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+            pointer-events: none;
+        }
+        .betb-step-title {
+            margin-bottom: 0.35rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .betb-step p { font-size: 0.9rem; line-height: 1.6; color: #d1d5db; }
+        .betb-step p strong { color: #60a5fa; }
+        .betb-step-state {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed #2d3748;
+        }
+        .betb-step .betb-step-state { font-size: 0.8rem; color: #9ca3af; }
+        .betb-step-state b { font-weight: 700; color: #fb923c; }
+        .betb-endboard {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid rgba(59, 130, 246, 0.45);
+            border-radius: 0.75rem;
+            background: #141b25;
+        }
+        .betb-endboard-title { margin-bottom: 1rem; font-size: 1.125rem; font-weight: 700; color: #fff; }
+        .betb-endboard-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-endboard-grid h4 {
+            margin-bottom: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #60a5fa;
+        }
+        .betb-endboard-grid ul {
+            display: grid;
+            gap: 0.35rem;
+            margin: 0;
+            padding-left: 1.1rem;
+            list-style: disc;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #d1d5db;
+        }
+
+        /* Tables scroll inside their own focusable region on narrow screens
+           instead of forcing the page to scroll sideways. */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid #2d3748;
+            border-radius: 0.5rem;
+            background: #141b25;
+        }
+        .betb-table { width: 100%; min-width: 560px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(45, 55, 72, 0.8);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            background: #1e2532;
+            border-bottom: 2px solid #3b82f6;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #60a5fa;
+        }
+        .betb-table tbody th { font-weight: 700; color: #fff; white-space: nowrap; }
+        .betb-table td { color: #d1d5db; }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table a {
+            color: #60a5fa;
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+        .betb-table a:hover { color: #fff; }
+        .betb-copies { font-family: 'Roboto Mono', monospace; font-weight: 700; color: #fb923c; white-space: nowrap; }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--play { border: 1px solid rgba(74, 222, 128, 0.4); background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .betb-pill--skip { border: 1px solid rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.12); color: #f87171; }
+        .betb-note { margin-top: 0.75rem; font-size: 0.8rem; line-height: 1.55; color: #9ca3af; }
+        .betb-note strong { color: #d1d5db; }
+
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid #2d3748;
+            border-left: 4px solid #ef4444;
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, #1e2532, #141b25);
+        }
+        .betb-risks i { margin-top: 0.2rem; color: #f87171; }
+        .betb-risks h3 { margin-bottom: 0.25rem; font-weight: 700; color: #fff; }
+        .betb-risks p { font-size: 0.875rem; line-height: 1.55; color: #d1d5db; }
+
+        @media (min-width: 768px) {
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-spotlight { padding: 1.75rem; }
+            .betb-spotlight-layout {
+                grid-template-columns: 180px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.5rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-step { grid-template-columns: 96px minmax(0, 1fr); gap: 1.5rem; padding: 1.25rem 1.5rem; }
+            .betb-endboard-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn { transition: none; }
+        }
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -428,6 +934,15 @@
                 </div>
             </div>
         </section>
+
+        <!-- Guide tabs: the original guide lives unchanged in "Classic Analysis";
+             Beyond the Brave support gets its own panel. The banlist stays below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Blitzclique guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Beyond the Brave Support <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
         <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -612,6 +1127,326 @@
             </div>
         </section>
 
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== BEYOND THE BRAVE (BETB) SUPPORT TAB ====================
+             Card text is the official printed text. The combo line was checked step by
+             step against the printed text of Surge, Emi and Overvolt for once-per-turn
+             limits, targeting and the hand-only lock. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What Changed -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Beyond the Brave: What Changed</h2>
+                <ul class="betb-release" role="list" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG · Beyond the Brave · <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG · <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">
+                    Beyond the Brave adds one card to Blitzclique: <strong>Blitzclique Overvolt</strong>, a Normal Spell that destroys a face-up card and then keeps returning from the GY. It brings no new monsters, so the engine in the <strong>Classic Analysis</strong> tab is unchanged. What Overvolt changes is how reliably that engine gets its searches.
+                </p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-search"></i></div>
+                        <h3 class="font-bold text-accent mb-2">A Second Destruction on Demand</h3>
+                        <p class="text-gray-300 text-sm">Surge, Grain and Emi only search when another card is destroyed while they're on the field. Overvolt supplies that destruction, so a hand with a single Blitzclique monster still gets its search.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-recycle"></i></div>
+                        <h3 class="font-bold text-accent mb-2">Removal That Comes Back</h3>
+                        <p class="text-gray-300 text-sm">You can activate Overvolt any number of times per turn. Once per turn, it returns from the GY to your hand when a Blitzclique card's effect destroys a card.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-lock"></i></div>
+                        <h3 class="font-bold text-accent mb-2">A Lock the Deck Already Has</h3>
+                        <p class="text-gray-300 text-sm">Its restriction is the same hand-only lock that every Blitzclique monster applies. A pure Blitzclique turn gives up nothing to play it.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card Spotlight -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Card Spotlight</h2>
+                <article class="betb-spotlight" aria-labelledby="betb-overvolt-name">
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-overvolt-img" class="betb-art">Blitzclique Overvolt</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Tech Spotlight</p>
+                            <h3 id="betb-overvolt-name" class="betb-card-name">Blitzclique Overvolt</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Type</dt><dd>Normal Spell</dd></div>
+                                <div><dt>Archetype</dt><dd>Blitzclique</dd></div>
+                                <div><dt>Speed</dt><dd>Spell Speed 1 (your Main Phase)</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects" role="list">
+                                <li>Target 1 face-up card on the field; destroy it, also for the rest of this turn, you cannot Special Summon Effect Monsters, except from the hand.</li>
+                                <li>If a card(s) is destroyed by your "Blitzclique" card's effect, while this card is in your GY (except during the Damage Step): You can add this card to your hand.</li>
+                            </ol>
+                            <p class="betb-opt"><i class="fas fa-lock" aria-hidden="true"></i> You can only use this effect of "Blitzclique Overvolt" once per turn.</p>
+                            <p class="betb-role"><strong>Search trigger and recyclable removal.</strong> The once-per-turn clause covers only the GY effect, so you can activate Overvolt as often as you have it in hand. Each time it destroys a card, it triggers the search of any Surge, Grain or Emi on your field. Because it's a Spell, it can also clear a face-up floodgate or force out a negate before you commit a monster effect. The lock applies even if nothing is destroyed, so make any Extra Deck plays before you activate it.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Activation</dt><dd class="betb-glance-open">No limit per turn</dd></div>
+                                <div><dt>GY return</dt><dd>Once per turn</dd></div>
+                                <div><dt>Targets</dt><dd>Face-up cards only</dd></div>
+                                <div><dt>After use</dt><dd>Hand-only Special Summons</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Ways to reach it -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Ways to Reach Overvolt</h2>
+                <p class="betb-intro">Overvolt is easy to find, which is why one copy is usually enough.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-routes-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-routes-caption" class="betb-sr-only">Cards that add Blitzclique Overvolt to your hand or send it to the GY, and their limits</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">How it gets Overvolt</th>
+                                <th scope="col">Catch</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Grain Blitzclique</th>
+                                <td>When another card is destroyed while Grain is on the field, add 1 "Blitzclique" Spell from the Deck to your hand.</td>
+                                <td>Once per turn. The same search is how Grain gets Hideout in the Sky, Coulomb, so you pick one.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Crackle Blitzclique</th>
+                                <td>When another card is destroyed while Crackle is on the field, send 1 "Blitzclique" Spell/Trap from the Deck to the GY. Overvolt then waits in the GY.</td>
+                                <td>Once per turn. Overvolt reaches your hand only after a Blitzclique card's effect destroys another card.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Foolish Burial Goods</th>
+                                <td>Sends Overvolt from the Deck to the GY.</td>
+                                <td>Same as Crackle: it needs a later Blitzclique destruction to reach your hand.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Combo walkthrough -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Going Second: The Overvolt Relay</h2>
+                <p class="betb-intro">A two-card line that turns one Surge into up to four pieces of removal, a second monster and a searched Trap. Opening hand: <strong>Surge Blitzclique</strong> and <strong>Blitzclique Overvolt</strong>.</p>
+                <div class="betb-callout mb-8">
+                    <h3 class="betb-callout-title"><i class="fas fa-clipboard-check" aria-hidden="true"></i> What the line needs</h3>
+                    <ul role="list">
+                        <li><strong>At least three cards on your opponent's field:</strong> a monster for Surge, a face-up card for Overvolt and one more card of any kind for Emi. A fourth face-up card lets you use Overvolt a second time.</li>
+                        <li><strong>No Extra Deck this turn:</strong> Surge applies the hand-only lock in step 1, so this line never leaves the Main Deck.</li>
+                    </ul>
+                </div>
+                <ol class="betb-steps" role="list">
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-1-img" class="betb-art">Surge Blitzclique</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Surge Destroys a Monster</h3>
+                            <p>Reveal <strong>Surge Blitzclique</strong> in your hand and target a monster your opponent controls. Destroy it, then Special Summon Surge from your hand. Surge wasn't on the field when that monster was destroyed, so its search doesn't trigger yet.</p>
+                            <p class="betb-step-state"><b>Field:</b> Surge. <b>Hand:</b> Overvolt.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-2-img" class="betb-art">Blitzclique Overvolt</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Overvolt Triggers Surge's Search</h3>
+                            <p>Activate <strong>Blitzclique Overvolt</strong> on a face-up card your opponent controls and destroy it. Surge is on the field, so its effect adds <strong>Emi Blitzclique</strong> from the Deck to your hand. Overvolt goes to the GY.</p>
+                            <p class="betb-step-state"><b>Field:</b> Surge. <b>Hand:</b> Emi. <b>GY:</b> Overvolt.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-3-img" class="betb-art">Emi Blitzclique</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Emi Destroys a Card, Overvolt Returns</h3>
+                            <p>Emi was added to your hand by a card effect rather than drawn, so you can reveal it and target any card on the field, including a face-down Spell or Trap. Destroy it, then Special Summon Emi from your hand. A Blitzclique card's effect just destroyed a card, so <strong>Overvolt</strong> returns from the GY to your hand.</p>
+                            <p class="betb-step-state"><b>Field:</b> Surge, Emi. <b>Hand:</b> Overvolt. Overvolt's GY effect is now used for this turn.</p>
+                        </div>
+                    </li>
+                    <li class="betb-step">
+                        <div class="betb-step-art">
+                            <div id="betb-step-4-img" class="betb-art">Blitzclique Return Stroke</div>
+                        </div>
+                        <div>
+                            <h3 class="betb-step-title">Overvolt Again, Emi Searches a Trap</h3>
+                            <p>Activate Overvolt again on another face-up card. Emi is on the field, so its effect adds 1 "Blitzclique" Trap from the Deck, such as <strong>Blitzclique Return Stroke</strong>. Set it for your opponent's turn.</p>
+                            <p class="betb-step-state"><b>Field:</b> Surge, Emi, 1 Set Trap. <b>GY:</b> Overvolt.</p>
+                        </div>
+                    </li>
+                </ol>
+                <div class="betb-endboard">
+                    <h3 class="betb-endboard-title">Result</h3>
+                    <div class="betb-endboard-grid">
+                        <div>
+                            <h4>Removed</h4>
+                            <ul>
+                                <li>Up to four of your opponent's cards: one monster (Surge), two face-up cards (Overvolt, twice) and one card of any kind (Emi).</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Your field</h4>
+                            <ul>
+                                <li>Surge Blitzclique (1800 ATK) and Emi Blitzclique (900 ATK).</li>
+                                <li>A Set Blitzclique Trap.</li>
+                                <li>This line clears a board rather than winning outright: 2700 damage if their field is empty.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Next turn</h4>
+                            <ul>
+                                <li>Overvolt is back in the GY. The next time a Blitzclique card's effect destroys a card, it returns to your hand again.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="betb-callout mt-6">
+                    <h3 class="betb-callout-title"><i class="fas fa-bolt" aria-hidden="true"></i> Two more uses</h3>
+                    <ul role="list">
+                        <li><strong>Turning on Whisker:</strong> Whisker Blitzclique's hand effect works only in a turn when a Blitzclique card's effect has destroyed a card. One Overvolt meets that condition, so Whisker can Special Summon up to 3 Thunder monsters from your hand and destroy up to that many cards.</li>
+                        <li><strong>A target on an empty board:</strong> Hideout in the Sky, Coulomb puts a Mech Beast Token (Machine / EARTH / Level 6 / 2000 ATK / 2000 DEF) on your opponent's field, so your destruction effects have something face-up to hit even when their field is empty. You get one token per turn.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Splash check -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Splash Check: Other Thunder and Machine Decks</h2>
+                <p class="betb-intro">Overvolt fits the Thunder theme, but it's a Spell, and its GY effect only responds to destruction by a "Blitzclique" card. In any other deck it's a one-use removal Spell that also locks you out of the Extra Deck for the turn.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-splash-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-splash-caption" class="betb-sr-only">Whether Blitzclique Overvolt belongs in each Thunder or Machine deck, and why</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Deck</th>
+                                <th scope="col">Verdict</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Blitzclique</th>
+                                <td><span class="betb-pill betb-pill--play"><i class="fas fa-check" aria-hidden="true"></i> Play 1</span></td>
+                                <td>Every Blitzclique monster already applies the same lock, Grain searches Overvolt, and it keeps coming back from the GY.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="Thunder%20Dragon%20Deck%20Analysis.html">Thunder Dragon</a></th>
+                                <td><span class="betb-pill betb-pill--skip"><i class="fas fa-times" aria-hidden="true"></i> Skip</span></td>
+                                <td>Main Deck Thunder Dragons that summon from the hand still work, but the lock stops Thunder Dragon Colossus and Thunder Dragon Titan. Without Blitzclique cards destroying things, Overvolt never returns from the GY. In a Blitzclique–Thunder Dragon hybrid, summon Colossus first.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="Spright%20Deck%20Analysis.html">Spright</a></th>
+                                <td><span class="betb-pill betb-pill--skip"><i class="fas fa-times" aria-hidden="true"></i> Skip</span></td>
+                                <td>Spright Blue and Spright Jet still summon from the hand, but the lock stops Gigantic Spright, Spright Elf and Spright Sprind, which are the reasons to play Spright.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><a href="Cyber%20Dragon%20Deck%20Analysis.html">Cyber Dragon</a></th>
+                                <td><span class="betb-pill betb-pill--skip"><i class="fas fa-times" aria-hidden="true"></i> Skip</span></td>
+                                <td>Cyber Dragon wins through Fusion and Link Summons from the Extra Deck, and Overvolt shuts both off for the turn.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Deck Building: Recommended Copies</h2>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-ratios-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-ratios-caption" class="betb-sr-only">Recommended copies of Blitzclique Overvolt by build, with reasoning</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Build</th>
+                                <th scope="col">Copies</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Standard Blitzclique</th>
+                                <td class="betb-copies">1</td>
+                                <td>Grain searches it, Crackle and Foolish Burial Goods can send it to the GY, and it returns to your hand from there. One copy covers most games without the risk of opening a dead Spell going first.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Going-second builds</th>
+                                <td class="betb-copies">2–3</td>
+                                <td>More face-up removal available immediately on the turn you need to break a board.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Genesys</th>
+                                <td class="betb-copies">1</td>
+                                <td>It costs 5 Genesys points. One copy keeps the search target and leaves points for staples.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>Sequencing rule:</strong> Overvolt applies the hand-only lock whether or not it destroys anything. Finish any Extra Deck plays, such as Thunder Dragon Colossus or a Spright Link Summon, before you activate it.</p>
+            </section>
+
+            <!-- Weak points -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Weak Points to Play Around</h2>
+                <ul class="betb-risks" role="list">
+                    <li>
+                        <i class="fas fa-eye-slash" aria-hidden="true"></i>
+                        <div>
+                            <h3>Face-up cards only, on your turn</h3>
+                            <p>Overvolt can't hit face-down cards, and as a Normal Spell it can't be used on your opponent's turn. Emi and Blitzclique - Breakaway can hit face-down Spells and Traps.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt" aria-hidden="true"></i>
+                        <div>
+                            <h3>Destruction and targeting protection</h3>
+                            <p>Overvolt targets and destroys, so it does nothing to cards that can't be targeted or can't be destroyed by card effects.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ban" aria-hidden="true"></i>
+                        <div>
+                            <h3>Spell negation</h3>
+                            <p>Baronne de Fleur, Solemn Judgment and other negates stop Overvolt when it's activated. If it's negated, nothing is destroyed and none of your monsters' searches trigger.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ghost" aria-hidden="true"></i>
+                        <div>
+                            <h3>GY disruption</h3>
+                            <p>Ghost Belle &amp; Haunted Mansion negates Overvolt's return from the GY. D.D. Crow can banish it from the GY, and under Macro Cosmos it's banished instead of going to the GY at all.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <div>
+                            <h3>Hand traps on the searchers</h3>
+                            <p>Ash Blossom &amp; Joyous Spring stops the searches Overvolt is meant to trigger. Effect Veiler or Infinite Impermanence on Surge, Grain or Emi negates their effects on the field, so destroying a card with Overvolt gets you nothing.</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="betb-callout mt-6">
+                    <h3 class="betb-callout-title"><i class="fas fa-gavel" aria-hidden="true"></i> Verdict</h3>
+                    <p>Overvolt is a solid one-of, not a new engine. It's slower and more restrictive than generic removal, but it's searchable, it comes back, and it fixes the deck's most common problem: a lone Surge, Grain or Emi with nothing else to destroy. Play one copy in Blitzclique and leave it out of other Thunder and Machine decks.</p>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
+
         <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.9s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Current TCG Banlist Status</h2>
@@ -780,6 +1615,23 @@
                 initCommunityCombos('community-combos-wrapper', 'Blitzclique');
                 initSynergyTags('Blitzclique');
                 initPageSections('Blitzclique');
+            }
+        });
+    </script>
+
+    <!-- Guide tabs: Beyond the Brave art is only fetched the first time that tab opens. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-betb': [
+                    { 'betb-overvolt-img': 'Blitzclique Overvolt' },
+                    {
+                        'betb-step-1-img': 'Surge Blitzclique',
+                        'betb-step-2-img': 'Blitzclique Overvolt',
+                        'betb-step-3-img': 'Emi Blitzclique',
+                        'betb-step-4-img': 'Blitzclique Return Stroke'
+                    }
+                ]
             }
         });
     </script>

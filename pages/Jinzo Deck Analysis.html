@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Jinzo: A machine-based anti-trap archetype that dominates through trap negation and psychic interference, creating a controlled environment where traps cannot function.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Jinzo%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
     <title>Jinzo Deck Guide: Psycho-Shocker Trap Negation</title>
     <script src="../assets/js/google-analytics.js"></script>
         <!-- This script is intended to load your local card loader -->
@@ -14,6 +15,10 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -140,6 +145,759 @@
              letter-spacing: 2px;
         }
     </style>
+    <style>
+        /* ===== Guide tabs + Jinzo - Energy Shocker (Beyond the Brave) =====
+           Added next to the original styles, which are left as they were. The
+           original guide sits unchanged in the "Classic Analysis" tab. Scoped
+           classes rather than Tailwind utilities: output.css is precompiled, so
+           utilities not already in it would need a rebuild. Every colour below
+           comes from the --betb-* tokens. */
+        :root {
+            --betb-primary: #00bfff;            /* the classic guide's sky blue */
+            --betb-primary-soft: #7dd3fc;
+            --betb-primary-line: rgba(0, 191, 255, 0.4);
+            --betb-primary-wash: rgba(0, 191, 255, 0.14);
+            --betb-energy: #facc15;             /* Energy Shocker's charge */
+            --betb-energy-soft: #fde68a;
+            --betb-energy-wash: rgba(250, 204, 21, 0.1);
+            --betb-ok: #4ade80;
+            --betb-ok-wash: rgba(74, 222, 128, 0.12);
+            --betb-warn: #fbbf24;
+            --betb-warn-wash: rgba(251, 191, 36, 0.12);
+            --betb-danger: #f87171;
+            --betb-danger-wash: rgba(248, 113, 113, 0.12);
+            --betb-surface: #16181d;
+            --betb-surface-deep: #101216;
+            --betb-inset: #0b0c0f;
+            --betb-border: #2a3340;
+            --betb-text: #d1d5db;
+            --betb-muted: #9ca3af;
+            --betb-heading: #ffffff;
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--betb-border);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--betb-muted);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #e5e7eb; background-color: rgba(0, 191, 255, 0.08); }
+        .tab-btn[aria-selected="true"] {
+            border-bottom-color: var(--betb-primary);
+            color: var(--betb-primary-soft);
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+        }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--betb-energy);
+            color: #111;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .betb-spot-cta:focus-visible,
+        .betb-tag:focus-visible,
+        .betb-preset:focus-visible,
+        .betb-link:focus-visible,
+        .betb-table-wrap:focus-visible {
+            outline: 2px solid var(--betb-energy);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+        /* Deep-link targets land clear of the fixed home button. */
+        [id^="betb-"] { scroll-margin-top: 1.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.72rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Card art slot: holds the 59:86 card shape until CardLoader
+           swaps the image in, then drops the empty-slot styling. ----- */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--betb-primary-line);
+            border-radius: 0.35rem;
+            background: var(--betb-inset);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            color: var(--betb-primary-soft);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        /* CardLoader's not-found fallback nests a full-size .card-placeholder. */
+        .betb-art .card-placeholder {
+            aspect-ratio: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            font-size: inherit;
+        }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .betb-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, var(--betb-energy-wash) 0%, transparent 55%),
+                linear-gradient(135deg, var(--betb-surface) 0%, var(--betb-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(0, 191, 255, 0.12);
+        }
+        .betb-spot-art { grid-area: art; }
+        .betb-spot-head { grid-area: head; min-width: 0; }
+        .betb-spot-body { grid-area: body; min-width: 0; }
+        .betb-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--betb-energy-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .betb-spot-title {
+            color: var(--betb-heading);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(0, 191, 255, 0.55);
+        }
+        .betb-spot-stats {
+            margin-top: 0.35rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .betb-spot-hook { color: var(--betb-text); font-size: 0.92rem; line-height: 1.6; }
+        .betb-spot-hook strong { color: var(--betb-heading); }
+        .betb-spot-label,
+        .betb-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .betb-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .betb-tag i { color: var(--betb-ok); }
+        .betb-tag:hover { border-color: var(--betb-primary); background: var(--betb-primary-wash); }
+        .betb-tag-role { color: var(--betb-muted); font-size: 0.7rem; font-weight: 600; }
+        .betb-tag--counter i { color: var(--betb-danger); }
+        .betb-tag--counter:hover { border-color: var(--betb-danger); background: var(--betb-danger-wash); }
+        .betb-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--betb-primary);
+            border-radius: 9999px;
+            background: var(--betb-primary-wash);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .betb-spot-cta:hover { background: rgba(0, 191, 255, 0.28); box-shadow: 0 0 16px rgba(0, 191, 255, 0.35); }
+
+        /* ----- Tab intro ----- */
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-deep);
+            color: var(--betb-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .betb-chip i { color: var(--betb-primary-soft); }
+        .betb-chip--tcg { border-color: rgba(250, 204, 21, 0.55); }
+        .betb-chip--tcg i { color: var(--betb-energy); }
+        .betb-intro,
+        .betb-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--betb-text);
+            line-height: 1.65;
+            text-align: center;
+        }
+        .betb-intro strong,
+        .betb-lede strong { color: var(--betb-heading); }
+        .betb-pillars { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            color: var(--betb-energy);
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 6px rgba(250, 204, 21, 0.45));
+        }
+        .betb-callout {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-energy);
+            border-radius: 0.5rem;
+            background: var(--betb-surface);
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+            color: var(--betb-energy-soft);
+            font-weight: 700;
+        }
+
+        /* ----- Card spotlight: art | name + stats on phones, text full width
+           below; art spans both rows from tablet up. ----- */
+        .betb-spotlight {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 191, 255, 0.1);
+        }
+        .betb-spotlight-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-spotlight-art { grid-area: art; }
+        .betb-spotlight-head { grid-area: head; min-width: 0; }
+        .betb-spotlight-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            color: var(--betb-energy-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            color: var(--betb-heading);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(0, 191, 255, 0.55);
+        }
+        .betb-stats { display: grid; gap: 0.2rem; margin-top: 0.6rem; font-size: 0.8rem; }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; color: #e5e7eb; font-weight: 600; }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.55;
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--betb-primary);
+            color: #04121a;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-energy);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--betb-energy-wash);
+            color: #e5e7eb;
+            font-size: 0.875rem;
+            line-height: 1.55;
+        }
+        .betb-role strong { color: var(--betb-energy-soft); }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-inset);
+        }
+        .betb-glance dt {
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-glance dd {
+            margin: 0.25rem 0 0;
+            color: var(--betb-primary-soft);
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        /* ----- Tables scroll inside their own focusable region on narrow
+           screens instead of making the page scroll sideways. ----- */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-deep);
+        }
+        .betb-table { width: 100%; min-width: 600px; border-collapse: collapse; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(42, 51, 64, 0.85);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            border-bottom: 2px solid var(--betb-primary);
+            background: var(--betb-surface);
+            color: var(--betb-primary-soft);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .betb-table tbody th { color: var(--betb-heading); font-weight: 700; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table td strong { color: var(--betb-heading); }
+        .betb-table--compare thead th:last-child,
+        .betb-table--compare td:last-child { background: rgba(0, 191, 255, 0.05); }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--yes  { border-color: rgba(74, 222, 128, 0.4); background: var(--betb-ok-wash); color: var(--betb-ok); }
+        .betb-pill--part { border-color: rgba(251, 191, 36, 0.4); background: var(--betb-warn-wash); color: var(--betb-warn); }
+        .betb-pill--no   { border-color: rgba(248, 113, 113, 0.4); background: var(--betb-danger-wash); color: var(--betb-danger); }
+        .betb-note { margin-top: 0.75rem; color: var(--betb-muted); font-size: 0.8rem; line-height: 1.55; }
+        .betb-note strong { color: var(--betb-text); }
+        .betb-link {
+            color: var(--betb-primary-soft);
+            font-weight: 700;
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+        .betb-link:hover { color: #fff; }
+
+        /* ----- Lock checker ----- */
+        .betb-lock {
+            display: grid;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .betb-lock-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .betb-lock-presets .betb-label { width: 100%; margin: 0; }
+        .betb-preset {
+            min-height: 40px;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: var(--betb-text);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .betb-preset:hover { border-color: var(--betb-primary-soft); color: #fff; }
+        .betb-preset[aria-pressed="true"] { border-color: var(--betb-primary); background: var(--betb-primary-wash); color: #fff; }
+        .betb-lock-inputs { display: grid; gap: 1rem; }
+        .betb-lock-set {
+            min-width: 0;
+            margin: 0;
+            padding: 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.6rem;
+            background: var(--betb-inset);
+        }
+        .betb-lock-set legend {
+            padding: 0 0.4rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        /* Name and options share a line only when both fit; otherwise the
+           options wrap below instead of squeezing the name to nothing. */
+        .betb-lock-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem 0.75rem;
+            padding: 0.65rem 0;
+            border-top: 1px dashed var(--betb-border);
+        }
+        .betb-lock-row:first-of-type { padding-top: 0.2rem; border-top: 0; }
+        .betb-lock-name { flex: 1 1 10rem; color: var(--betb-heading); font-size: 0.85rem; font-weight: 700; }
+        .betb-seg { display: flex; flex: 0 1 auto; flex-wrap: wrap; gap: 0.35rem; }
+        .betb-seg label { position: relative; display: inline-flex; }
+        .betb-seg input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .betb-seg span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            color: var(--betb-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .betb-seg input:hover + span { border-color: var(--betb-primary-soft); color: #fff; }
+        .betb-seg input:checked + span { border-color: var(--betb-primary); background: var(--betb-primary-wash); color: #fff; }
+        .betb-seg input:focus-visible + span { outline: 2px solid var(--betb-energy); outline-offset: 2px; }
+        .betb-lock-hint { margin-top: 0.6rem; color: var(--betb-muted); font-size: 0.75rem; line-height: 1.5; }
+        .betb-lock-result {
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-muted);
+            border-radius: 0.6rem;
+            background: var(--betb-inset);
+        }
+        .betb-lock-result.is-on { border-left-color: var(--betb-ok); }
+        .betb-lock-result.is-off { border-left-color: var(--betb-danger); }
+        .betb-lock-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--betb-heading);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .is-on .betb-lock-status { color: var(--betb-ok); }
+        .is-off .betb-lock-status { color: var(--betb-danger); }
+        .betb-lock-detail { margin-top: 0.5rem; color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+        .betb-lock-notes {
+            display: grid;
+            gap: 0.35rem;
+            margin: 0.6rem 0 0;
+            padding-left: 1.1rem;
+            color: var(--betb-text);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            list-style: disc;
+        }
+
+        /* ----- Engine cards ----- */
+        .betb-kin { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-kin-card {
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+            padding: 1rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-kin-card h3 { margin-bottom: 0.2rem; color: var(--betb-heading); font-weight: 700; line-height: 1.3; }
+        .betb-kin-meta { margin-bottom: 0.4rem; color: var(--betb-primary-soft); font-size: 0.72rem; font-weight: 700; }
+        .betb-kin-card p { color: var(--betb-text); font-size: 0.85rem; line-height: 1.55; }
+        .betb-kin-card strong { color: var(--betb-energy-soft); }
+
+        /* ----- Combo line summaries + the interactive combo lab ----- */
+        .betb-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-top: 3px solid var(--betb-primary);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-line--legacy { border-top-color: var(--betb-muted); }
+        .betb-line h3 { color: var(--betb-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+        .betb-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .betb-line-facts dt {
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-line-facts dd { margin: 0.15rem 0 0; color: var(--betb-text); font-size: 0.85rem; line-height: 1.5; }
+        .betb-line-lock { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; }
+        .betb-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--betb-border);
+            color: var(--betb-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .betb-line-rule strong { color: var(--betb-energy-soft); }
+        .betb-lab { margin-top: 2rem; }
+        .betb-lab-mount { min-height: 12rem; }
+        .betb-lab-loading { padding: 2rem 1rem; color: var(--betb-muted); font-size: 0.9rem; text-align: center; }
+
+        /* ----- Deck building ----- */
+        .betb-build { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-build-card {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-build-card h3 { margin-bottom: 0.25rem; color: var(--betb-heading); font-weight: 700; }
+        .betb-build-sub { margin-bottom: 0.9rem; color: var(--betb-muted); font-size: 0.8rem; line-height: 1.5; }
+        .betb-ratio { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .betb-ratio > li {
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr);
+            gap: 0.6rem;
+            align-items: baseline;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(42, 51, 64, 0.7);
+        }
+        .betb-ratio > li:last-child { padding-bottom: 0; border-bottom: 0; }
+        .betb-ratio-count {
+            color: var(--betb-energy);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: right;
+        }
+        .betb-ratio-name { color: var(--betb-heading); font-size: 0.875rem; font-weight: 700; }
+        .betb-ratio-role { display: block; color: var(--betb-text); font-size: 0.8rem; font-weight: 400; line-height: 1.45; }
+        .betb-ratio-group {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ----- Failure modes ----- */
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-danger);
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-risks i { margin-top: 0.2rem; color: var(--betb-danger); }
+        .betb-risks h3 { margin-bottom: 0.25rem; color: var(--betb-heading); font-weight: 700; }
+        .betb-risks p { color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+
+        @media (min-width: 640px) {
+            .betb-kin { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 768px) {
+            .betb-spot {
+                grid-template-columns: 150px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                padding: 1.5rem;
+            }
+            .betb-spot-title { font-size: 1.45rem; }
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-spotlight { padding: 1.75rem; }
+            .betb-spotlight-layout {
+                grid-template-columns: 180px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.4rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-lock { padding: 1.75rem; }
+            .betb-build { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .betb-lock-inputs { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; }
+            .betb-kin { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .betb-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn,
+            .betb-tag,
+            .betb-spot-cta,
+            .betb-preset,
+            .betb-seg span { transition: none; }
+        }
+        /* Printing the guide should include every tab, not just the open one. */
+        @media print {
+            .tab-nav,
+            .betb-spot-cta,
+            .betb-lock-presets { display: none; }
+            .tab-panel[hidden] { display: block !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -179,6 +937,43 @@
                 </p>
             </div>
         </section>
+
+        <!-- ==================== NEW CARD SPOTLIGHT (Beyond the Brave) ====================
+             Always visible, above the guide tabs. Each meta-counter chip opens the
+             Energy Shocker tab at the matching note; the full write-up lives there. -->
+        <aside class="betb-spot" data-pcs-scope="spot" aria-labelledby="betb-spot-title">
+            <div class="betb-spot-art">
+                <div id="betb-spot-img-container" class="betb-art">Jinzo - Energy Shocker</div>
+            </div>
+            <div class="betb-spot-head">
+                <p class="betb-spot-kicker"><span class="tab-new-badge">New card</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="betb-spot-title" class="betb-spot-title">Jinzo - Energy Shocker</h2>
+                <p class="betb-spot-stats">Level 7 &middot; DARK &middot; Machine &middot; 2400 / 1500</p>
+            </div>
+            <div class="betb-spot-body">
+                <p class="betb-spot-hook">A Jinzo that stops only your opponent's Traps. When it's summoned, it destroys every Trap your opponent controls and gains 300 ATK for each one. While you have another monster that mentions <strong>Dark Time Wizard</strong> on your field or in your GY, your opponent can't activate Traps at all, from the hand, the field or the GY. It's named "Jinzo" on the field and in the GY, so parts of the classic engine still work with it.</p>
+                <p id="betb-spot-tags-label" class="betb-spot-label">Meta-counter notes</p>
+                <ul class="betb-tags" aria-labelledby="betb-spot-tags-label">
+                    <li><a class="betb-tag" href="#betb-vs-imperm"><i class="fas fa-hand-paper" aria-hidden="true"></i> Infinite Impermanence <span class="betb-tag-role">locked out</span></a></li>
+                    <li><a class="betb-tag" href="#betb-vs-labrynth"><i class="fas fa-dungeon" aria-hidden="true"></i> Labrynth <span class="betb-tag-role">GY Traps too</span></a></li>
+                    <li><a class="betb-tag" href="#betb-vs-floodgates"><i class="fas fa-lock-open" aria-hidden="true"></i> Set floodgates <span class="betb-tag-role">wiped</span></a></li>
+                    <li><a class="betb-tag betb-tag--counter" href="#betb-vs-veiler"><i class="fas fa-eye-slash" aria-hidden="true"></i> Effect Veiler <span class="betb-tag-role">its answer</span></a></li>
+                    <li><a class="betb-tag betb-tag--counter" href="#betb-vs-skilldrain"><i class="fas fa-ban" aria-hidden="true"></i> Face-up Skill Drain <span class="betb-tag-role">clear it first</span></a></li>
+                </ul>
+                <button type="button" class="betb-spot-cta" data-open-panel="tab-betb">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Analysis panel;
+             Jinzo - Energy Shocker (Beyond the Brave) gets its own panel. The
+             banlist and community combos stay below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Jinzo guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Energy Shocker <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16">
@@ -368,6 +1163,474 @@
             </div>
         </section>
      
+
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== JINZO - ENERGY SHOCKER (BEYOND THE BRAVE) TAB ====================
+             Card text is the official printed text. Every combo step was checked against the
+             printed text of each card in it; the step-by-step lines live in
+             assets/data/combos/jinzo-combos.json and play in the combo simulator. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What Changed -->
+            <section class="mb-10 md:mb-16">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Beyond the Brave: Jinzo - Energy Shocker</h2>
+                <ul class="betb-release" aria-label="Release dates">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; <time datetime="2026-07-18">18 Jul 2026</time></li>
+                </ul>
+                <p class="betb-intro">
+                    <strong>Jinzo - Energy Shocker</strong> is the first Jinzo that stops only your opponent's Traps. When it's summoned it destroys every Trap they control and gains 300 ATK for each. Its lock needs a partner: another monster that mentions <strong>Dark Time Wizard</strong>, the Quick-Play Spell at the center of Beyond the Brave's Joey Wheeler theme. The anti-Trap guide, the core lineup and the Psychic Bounder combo in the <strong>Classic Analysis</strong> tab are unchanged. This tab covers the new card, which classic Jinzo cards still work with it, and the Dark Time Wizard cards that turn its lock on.
+                </p>
+                <div class="betb-pillars">
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-user-shield"></i></div>
+                        <h3 class="font-bold text-accent mb-2 heading-font">One-Sided Lock</h3>
+                        <p class="text-gray-300 text-sm">Classic Jinzo stops Traps for both players and leaves Trap effects in the GY alone. Energy Shocker stops only your opponent, and it covers everything: Traps from the hand like Infinite Impermanence, Set Traps, and Trap effects in the GY.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-bolt"></i></div>
+                        <h3 class="font-bold text-accent mb-2 heading-font">Backrow Wipe on Summon</h3>
+                        <p class="text-gray-300 text-sm">Normal or Special Summoned, it reveals your opponent's Set cards, destroys every Trap among them along with any face-up Traps, and gains 300 ATK per card. Three Traps put it at 3300.</p>
+                    </div>
+                    <div class="card p-6 text-center">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-search"></i></div>
+                        <h3 class="font-bold text-accent mb-2 heading-font">Found by the Joey Cards</h3>
+                        <p class="text-gray-300 text-sm">Its text mentions Dark Time Wizard. So Dark Time Wizard can add it, Swiftwind Panther Warrior can summon it from the Deck, and it can be revealed to summon Alligator's Dragon Knight.</p>
+                    </div>
+                </div>
+                <div class="betb-callout">
+                    <p class="betb-callout-title"><i class="fas fa-book-open" aria-hidden="true"></i> Why Level 7 and Dark Time Wizard?</p>
+                    <p>Like Jinzo the Machine Menace, Energy Shocker is Level 7, matching the manga's Jinzo. The Dark Time Wizard link is a nod to Joey Wheeler, who won Jinzo from Espa Roba during Battle City.</p>
+                </div>
+            </section>
+
+            <!-- Card Spotlight -->
+            <section class="mb-10 md:mb-16" id="betb-card">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Card Spotlight</h2>
+                <article class="betb-spotlight" aria-labelledby="betb-shocker-name">
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-shocker-img-container" class="betb-art">Jinzo - Energy Shocker</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Effect Monster &middot; Beyond the Brave</p>
+                            <h3 id="betb-shocker-name" class="betb-card-name">Jinzo - Energy Shocker</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Level</dt><dd>7</dd></div>
+                                <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                <div><dt>Type</dt><dd>Machine / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>2400 / 1500</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li>This card's name becomes "Jinzo" while on the field or in the GY.</li>
+                                <li>If this card is Normal or Special Summoned: You can destroy all Traps your opponent controls (if face-down, reveal it), then this card gains 300 ATK for each card destroyed. You can only use this effect of "Jinzo - Energy Shocker" once per turn.</li>
+                                <li>While you have another monster that mentions "Dark Time Wizard" in your field or GY, your opponent cannot activate Trap Cards or effects.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> Energy Shocker does two jobs. On its own it's a searchable Trap wipe that leaves a 2400+ ATK attacker. With a partner it becomes a one-sided Jinzo whose lock your opponent can't answer with a Trap. It has no protection of its own, so the lock lasts only while Energy Shocker stays face-up and its effects aren't negated.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Lock needs</dt><dd>1 other Dark Time Wizard monster</dd></div>
+                                <div><dt>Lock stops</dt><dd>Traps from hand, field and GY</dd></div>
+                                <div><dt>Summon wipe</dt><dd>Hard once per turn</dd></div>
+                                <div><dt>Name in hand or Deck</dt><dd>Its own, not "Jinzo"</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Head-to-head -->
+            <section class="mb-10 md:mb-16" id="betb-compare">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Three Jinzos Compared</h2>
+                <p class="betb-lede">Energy Shocker doesn't replace the original. The original's lock needs nothing but itself. Energy Shocker's lock needs a partner, but it spares your own Traps and also stops Trap effects in the GY.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-compare-caption" tabindex="0">
+                    <table class="betb-table betb-table--compare">
+                        <caption id="betb-compare-caption" class="betb-sr-only">Jinzo, Jinzo the Machine Menace and Jinzo - Energy Shocker compared</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col"><span class="betb-sr-only">Feature</span></th>
+                                <th scope="col">Jinzo</th>
+                                <th scope="col">Jinzo the Machine Menace</th>
+                                <th scope="col">Jinzo - Energy Shocker</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Level</th>
+                                <td>6</td>
+                                <td>7 (6 on the turn it summons itself)</td>
+                                <td>7</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Getting it out</th>
+                                <td>Tribute Summon (1 Tribute), Law of the Cosmos, Psychic Shockwave, or add it with Psychic Bounder</td>
+                                <td>Summons itself from the hand while a Trap is face-up on the field or in either GY</td>
+                                <td>Jinzo - Jector, Swiftwind Panther Warrior, a revival from the GY, or a Tribute Summon (2 Tributes)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Trap lock</th>
+                                <td>No Trap Card can be activated and Trap effects on the field are negated, <strong>yours included</strong>; Trap effects in the GY still work</td>
+                                <td>None of its own</td>
+                                <td>Your opponent's Traps only, from the <strong>hand, field and GY</strong>, while a Dark Time Wizard partner is on your field or in your GY</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Backrow removal</th>
+                                <td>None</td>
+                                <td>Tributes itself for a "Jinzo" from the hand or GY, then can destroy all your opponent's Traps</td>
+                                <td>On summon, destroys all your opponent's Traps and gains 300 ATK for each</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Named "Jinzo"</th>
+                                <td>Always</td>
+                                <td>Never</td>
+                                <td>On the field and in the GY only</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Lock checker -->
+            <section class="mb-10 md:mb-16" id="betb-lock">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Is the Lock On?</h2>
+                <p class="betb-lede">The Trap lock works only while Energy Shocker is face-up with its effects intact <strong>and</strong> another monster that mentions Dark Time Wizard is on your field or in your GY. Energy Shocker doesn't count for itself, but a second copy does. Set up a board to check it.</p>
+                <div class="betb-lock" data-lock-checker>
+                    <div class="betb-lock-presets" role="group" aria-labelledby="betb-lock-presets-label">
+                        <p id="betb-lock-presets-label" class="betb-label">Try a board</p>
+                        <button type="button" class="betb-preset" data-preset="goats" aria-pressed="false">After the Scapegoats line</button>
+                        <button type="button" class="betb-preset" data-preset="knight" aria-pressed="false">After the Dragon Knight line</button>
+                        <button type="button" class="betb-preset" data-preset="jector" aria-pressed="false">After the Jector line</button>
+                        <button type="button" class="betb-preset" data-preset="veiler" aria-pressed="false">Effect Veiler on Energy Shocker</button>
+                    </div>
+                    <div class="betb-lock-inputs" data-lock-controls>
+                        <p class="betb-lock-hint">The interactive checker needs JavaScript. The rule above covers every case.</p>
+                    </div>
+                    <div class="betb-lock-result" data-lock-result aria-live="polite"></div>
+                </div>
+            </section>
+
+            <!-- The engine -->
+            <section class="mb-10 md:mb-16" id="betb-engine">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">The Dark Time Wizard Cards That Turn the Lock On</h2>
+                <p class="betb-lede">Beyond the Brave's Joey Wheeler cards all mention Dark Time Wizard. The monsters among them are Energy Shocker's lock partners, and the rest find or protect it.</p>
+                <div class="betb-kin">
+                    <article class="betb-kin-card" aria-labelledby="betb-engine-dtw">
+                        <div id="betb-engine-dtw-img-container" class="betb-art">Dark Time Wizard</div>
+                        <div>
+                            <h3 id="betb-engine-dtw">Dark Time Wizard</h3>
+                            <p class="betb-kin-meta">Quick-Play Spell &middot; searcher</p>
+                            <p>Adds any other card that mentions it from the Deck, <strong>Energy Shocker included</strong>, and comes back from the GY to your hand in the End Phase. Its other mode is a coin toss that destroys your opponent's monsters or yours.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-engine-panther">
+                        <div id="betb-engine-panther-img-container" class="betb-art">Swiftwind Panther Warrior</div>
+                        <div>
+                            <h3 id="betb-engine-panther">Swiftwind Panther Warrior</h3>
+                            <p class="betb-kin-meta">Level 4 &middot; EARTH &middot; Beast-Warrior &middot; lock partner</p>
+                            <p>Main Phase Quick Effect: Tribute another monster from your hand or field to <strong>Special Summon Energy Shocker from your hand or Deck</strong>. It mentions Dark Time Wizard, so on the field it's also a lock partner. It can only attack on a turn a monster was Tributed.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-engine-knight">
+                        <div id="betb-engine-knight-img-container" class="betb-art">Alligator's Dragon Knight</div>
+                        <div>
+                            <h3 id="betb-engine-knight">Alligator's Dragon Knight</h3>
+                            <p class="betb-kin-meta">Level 5 &middot; WIND &middot; Dragon &middot; lock partner</p>
+                            <p>Reveal Energy Shocker, or any card that mentions Dark Time Wizard, to Special Summon it from your hand. On summon it adds up to 2 differently named Dark Time Wizard Spells/Traps, then you discard 1. <strong>In the GY it keeps the lock on</strong> after you Tribute it.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-engine-goats">
+                        <div id="betb-engine-goats-img-container" class="betb-art">Sleepy Scapegoats</div>
+                        <div>
+                            <h3 id="betb-engine-goats">Sleepy Scapegoats</h3>
+                            <p class="betb-kin-meta">Quick-Play Spell &middot; one-card line</p>
+                            <p>Up to 4 Tokens, plus Panther from the Deck if your opponent controls a monster. If a card of yours that mentions Dark Time Wizard would be destroyed, <strong>Energy Shocker included</strong>, you can destroy a Token instead. For the rest of that turn, only Fusion Monsters can come out of your Extra Deck.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-engine-robber">
+                        <div id="betb-engine-robber-img-container" class="betb-art">Foolish Graverobber</div>
+                        <div>
+                            <h3 id="betb-engine-robber">Foolish Graverobber</h3>
+                            <p class="betb-kin-meta">Normal Trap &middot; discard target</p>
+                            <p>Banish it from your GY to Set a Spell/Trap from your opponent's GY, such as <strong>a Trap Energy Shocker just destroyed</strong>. The lock only stops your opponent, so your own Traps still work.</p>
+                        </div>
+                    </article>
+                    <article class="betb-kin-card" aria-labelledby="betb-engine-exceed">
+                        <div id="betb-engine-exceed-img-container" class="betb-art">Red-Eyes Black Dragon Exceed</div>
+                        <div>
+                            <h3 id="betb-engine-exceed">Red-Eyes Black Dragon Exceed</h3>
+                            <p class="betb-kin-meta">Level 9 &middot; DARK &middot; Dragon &middot; Fusion &middot; lock partner</p>
+                            <p>When it's Special Summoned, it Special Summons a Level 8 or lower monster from your hand or GY. Pick Energy Shocker, and Exceed is its lock partner. <a class="betb-link" href="Red-Eyes%20Deck%20Analysis.html#cross-engine">See the Red-Eyes page for that line</a>.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="mb-10 md:mb-16" id="betb-combos">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Combo Lines</h2>
+                <p class="betb-lede">All three lines are for going second into Set cards. Play each one step by step in the combo simulator below the summaries.</p>
+                <div class="betb-lines">
+                    <article class="betb-line" aria-labelledby="betb-line-1">
+                        <p class="betb-kicker">Line 1 &middot; One card</p>
+                        <h3 id="betb-line-1">Sleepy Scapegoats Lock</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Sleepy Scapegoats</dd></div>
+                            <div><dt>Needs</dt><dd>Your opponent controls a monster; Swiftwind Panther Warrior and Energy Shocker in the Deck</dd></div>
+                            <div><dt>End board</dt><dd>Energy Shocker (2400 + 300 per Trap), Panther and 2 Tokens. Your Normal Summon is still unused.</dd></div>
+                            <div><dt>Lock</dt><dd class="betb-line-lock"><span class="betb-pill betb-pill--yes"><i class="fas fa-lock" aria-hidden="true"></i> On</span> Panther on the field</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> The Tokens can't be Tributed to Normal Summon a monster, but paying Panther's cost isn't a Normal Summon. Panther is already on the field when Energy Shocker lands, so the wipe can't be answered with a Trap. <strong>Watch for:</strong> Ash Blossom on Sleepy Scapegoats stops the whole card. Ash or Infinite Impermanence on Panther's effect stops Energy Shocker.</p>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-2">
+                        <p class="betb-kicker">Line 2 &middot; Two cards</p>
+                        <h3 id="betb-line-2">Alligator's Dragon Knight Push</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Alligator's Dragon Knight, Jinzo - Energy Shocker</dd></div>
+                            <div><dt>Needs</dt><dd>Dark Time Wizard, Foolish Graverobber and Swiftwind Panther Warrior in the Deck</dd></div>
+                            <div><dt>End board</dt><dd>Energy Shocker and Panther, one of your opponent's Traps Set on your field, and Dark Time Wizard back in hand</dd></div>
+                            <div><dt>Lock</dt><dd class="betb-line-lock"><span class="betb-pill betb-pill--yes"><i class="fas fa-lock" aria-hidden="true"></i> On</span> Panther on the field, Dragon Knight in the GY</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Energy Shocker pays for the Dragon Knight's summon by being revealed, and the Dragon Knight in the GY keeps the lock on after Panther leaves. <strong>Watch for:</strong> your opponent can chain a Trap at every step until Energy Shocker lands. Droll &amp; Lock Bird after the Dragon Knight's search stops Dark Time Wizard's.</p>
+                    </article>
+                    <article class="betb-line betb-line--legacy" aria-labelledby="betb-line-3">
+                        <p class="betb-kicker">Line 3 &middot; Classic engine only</p>
+                        <h3 id="betb-line-3">Jinzo - Jector Backrow Check</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Jinzo - Jector, Jinzo the Machine Menace</dd></div>
+                            <div><dt>Needs</dt><dd>At least 1 Set Trap on your opponent's side; Energy Shocker in the Deck</dd></div>
+                            <div><dt>End board</dt><dd>Energy Shocker and Machine Menace, with Menace ready to revive Energy Shocker from the GY</dd></div>
+                            <div><dt>Lock</dt><dd class="betb-line-lock"><span class="betb-pill betb-pill--no"><i class="fas fa-lock-open" aria-hidden="true"></i> Off</span> No Dark Time Wizard monster</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Jector's reveal finds the Traps and summons Energy Shocker in one effect. The Traps it destroys then let Machine Menace summon itself. <strong>Watch for:</strong> with no lock, your opponent can chain the Traps Energy Shocker is about to destroy. If Menace revives it on your opponent's turn, it can wipe again, because the once-per-turn limit resets each turn.</p>
+                    </article>
+                </div>
+                <section class="betb-lab" aria-label="Interactive combo lines">
+                    <div id="jinzo-combo-lab" class="betb-lab-mount">
+                        <p class="betb-lab-loading">Loading the interactive combo lines&hellip;</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Classic card compatibility -->
+            <section class="mb-10 md:mb-16" id="betb-legacy">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Which Classic Jinzo Cards Still Work</h2>
+                <p class="betb-lede">Energy Shocker is named "Jinzo" only on the field and in the GY. Support that fetches a card named "Jinzo" from the hand or Deck can't reach it. Support that asks for a "Jinzo" <em>monster</em>, or for "Jinzo" in the GY, can.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-legacy-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-legacy-caption" class="betb-sr-only">How each classic Jinzo card works with Jinzo - Energy Shocker</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">With Energy Shocker</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Jinzo - Jector</th>
+                                <td><span class="betb-pill betb-pill--yes">Adds and summons it</span></td>
+                                <td>It adds any "Jinzo" monster from the Deck, and Energy Shocker is one. If its reveal finds a Trap, the same effect Special Summons Energy Shocker from your hand.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Jinzo the Machine Menace</th>
+                                <td><span class="betb-pill betb-pill--part">From the GY only</span></td>
+                                <td>Its Quick Effect summons a card named "Jinzo" from your hand or GY. In your hand Energy Shocker has its own name, so Menace can only bring it back from the GY.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Jinzo - Returner</th>
+                                <td><span class="betb-pill betb-pill--part">From the GY only</span></td>
+                                <td>When Returner is sent to the GY, it revives a "Jinzo" from your GY, and that includes Energy Shocker. The revived monster is destroyed in your End Phase, but its summon effect still destroys your opponent's Traps.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Everlasting Alloy</th>
+                                <td><span class="betb-pill betb-pill--yes">Protects it</span></td>
+                                <td>Energy Shocker lets you meet "if you control Jinzo", and it's a Machine. Alloy can stop your opponent's card effects from destroying it, or negate an effect that targets it, such as Effect Veiler.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Cyber Energy Shock</th>
+                                <td><span class="betb-pill betb-pill--yes">Works</span></td>
+                                <td>It also needs you to control "Jinzo", and Energy Shocker counts. Its +800 ATK option stacks with Energy Shocker's own boost.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Psychic Wave</th>
+                                <td><span class="betb-pill betb-pill--part">GY effect only</span></td>
+                                <td>Its first effect sends a card named "Jinzo". Its GY effect sends any "Jinzo" monster from the Deck to the GY, which can put Energy Shocker there for Machine Menace or Returner to revive.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Psychic Bounder</th>
+                                <td><span class="betb-pill betb-pill--no">Can't add it</span></td>
+                                <td>Bounder adds a card named "Jinzo", and in the Deck Energy Shocker has its own name. Bounder still finds Everlasting Alloy and Cyber Energy Shock.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Law of the Cosmos</th>
+                                <td><span class="betb-pill betb-pill--no">Can't summon it</span></td>
+                                <td>Its Deck summon needs a card named "Jinzo", so it can't Special Summon Energy Shocker.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Psychic Shockwave</th>
+                                <td><span class="betb-pill betb-pill--no">Can't summon it</span></td>
+                                <td>It summons a Level 6 DARK Machine; Energy Shocker is Level 7.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Jinzo - Layered</th>
+                                <td><span class="betb-pill betb-pill--no">Not material</span></td>
+                                <td>It needs 2 Level 6 monsters, and Energy Shocker is Level 7. The classic Jinzo + Layered end board still needs the original Jinzo or Machine Menace.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Jinzo</th>
+                                <td><span class="betb-pill betb-pill--part">Clashes</span></td>
+                                <td>Its lock stops your Traps too, such as Reversal Box or the Trap Foolish Graverobber Sets for you. Energy Shocker's lock only hits your opponent.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Meta-counter notes -->
+            <section class="mb-10 md:mb-16" id="betb-matchups">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Meta-Counter Notes</h2>
+                <p class="betb-lede">What Energy Shocker does to the Traps and decks it's built to beat, and what beats it back.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-matchups-caption" tabindex="0">
+                    <table class="betb-table">
+                        <caption id="betb-matchups-caption" class="betb-sr-only">Energy Shocker against common Traps, Trap decks and counters</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Opponent's card or deck</th>
+                                <th scope="col">Result</th>
+                                <th scope="col">What happens</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="betb-vs-imperm">
+                                <th scope="row">Infinite Impermanence</th>
+                                <td><span class="betb-pill betb-pill--yes">Locked out</span></td>
+                                <td>Once the lock is on, it can't be activated from the hand or from the field. Its last chance is Panther's effect, before Energy Shocker lands.</td>
+                            </tr>
+                            <tr id="betb-vs-labrynth">
+                                <th scope="row">Labrynth</th>
+                                <td><span class="betb-pill betb-pill--yes">Strong</span></td>
+                                <td>The GY effects of Welcome Labrynth, Big Welcome Labrynth and Transaction Rollback are Trap effects, so the lock stops them along with the Normal Traps. The wipe clears whatever is Set. Lady Labrynth of the Silver Castle has 3000 ATK: in Attack Position, Energy Shocker needs 3 destroyed Traps (3300) to run over it.</td>
+                            </tr>
+                            <tr id="betb-vs-traptrix">
+                                <th scope="row">Traptrix</th>
+                                <td><span class="betb-pill betb-pill--yes">Strong</span></td>
+                                <td>Traptrix Trap Hole Nightmare would negate Energy Shocker's summon effect, and Floodgate Trap Hole would flip it face-down. With the lock already on when it lands, neither can be activated. The Traptrix monsters' own effects still work.</td>
+                            </tr>
+                            <tr id="betb-vs-floodgates">
+                                <th scope="row">Set floodgates: Skill Drain, There Can Be Only One, Anti-Spell Fragrance, Royal Decree</th>
+                                <td><span class="betb-pill betb-pill--yes">Wiped</span></td>
+                                <td>If they're still Set when Energy Shocker lands, the wipe destroys them. With the lock on, your opponent can't flip them in response.</td>
+                            </tr>
+                            <tr id="betb-vs-skilldrain">
+                                <th scope="row">Face-up Skill Drain</th>
+                                <td><span class="betb-pill betb-pill--no">Beats it</span></td>
+                                <td>It negates Energy Shocker on the field: no wipe and no lock. Destroy it first with a Spell such as Harpie's Feather Duster or Lightning Storm.</td>
+                            </tr>
+                            <tr id="betb-vs-fragrance">
+                                <th scope="row">Face-up Anti-Spell Fragrance</th>
+                                <td><span class="betb-pill betb-pill--part">Work around it</span></td>
+                                <td>Dark Time Wizard and Sleepy Scapegoats would have to be Set and wait a turn. Monster effects still work: Panther from your hand can Tribute a monster to summon Energy Shocker, and Jector can if your opponent also has a Set Trap. The wipe then destroys Fragrance.</td>
+                            </tr>
+                            <tr id="betb-vs-veiler">
+                                <th scope="row">Effect Veiler</th>
+                                <td><span class="betb-pill betb-pill--no">Its answer</span></td>
+                                <td>Chained to Energy Shocker's summon effect, it cancels both the wipe and the lock until the end of the turn. It's a monster effect, so the lock can't stop it. Everlasting Alloy from your hand negates it, because Veiler targets a Machine you control.</td>
+                            </tr>
+                            <tr id="betb-vs-ash">
+                                <th scope="row">Ash Blossom &amp; Joyous Spring</th>
+                                <td><span class="betb-pill betb-pill--part">Stops the setup</span></td>
+                                <td>It hits every Deck effect on the way in: Dark Time Wizard's and the Dragon Knight's searches, Sleepy Scapegoats, Panther's Deck summon and Jector's search. Energy Shocker's wipe doesn't touch the Deck, so Ash can't stop it.</td>
+                            </tr>
+                            <tr id="betb-vs-banish">
+                                <th scope="row">Called by the Grave and other GY banishing</th>
+                                <td><span class="betb-pill betb-pill--no">Breaks the lock</span></td>
+                                <td>If your only lock partner is in the GY, banishing it turns the lock off. Called by the Grave is a Spell, so the lock doesn't stop it. Keep one partner on the field and one in the GY.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16" id="betb-build">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-4 text-center heading-font">Adding Energy Shocker to a Jinzo Deck</h2>
+                <p class="betb-lede">These are our starting ratios, not a sourced list. Beyond the Brave isn't out in the TCG until 8 Oct 2026, so expect them to change.</p>
+                <div class="betb-build">
+                    <article class="betb-build-card" aria-labelledby="betb-build-main">
+                        <h3 id="betb-build-main">Jinzo &times; Dark Time Wizard (Main Deck)</h3>
+                        <p class="betb-build-sub">The classic Jinzo cards that still work with Energy Shocker, plus the Joey cards that turn the lock on.</p>
+                        <p class="betb-ratio-group">Dark Time Wizard cards</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Jinzo - Energy Shocker <span class="betb-ratio-role">A second copy is also a lock partner for the first.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Swiftwind Panther Warrior <span class="betb-ratio-role">Your only way to summon Energy Shocker from the Deck.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Dark Time Wizard <span class="betb-ratio-role">Adds Panther or Energy Shocker, then returns every End Phase.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Alligator's Dragon Knight <span class="betb-ratio-role">Any Dark Time Wizard card makes it a summon and 2 searches.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Sleepy Scapegoats <span class="betb-ratio-role">The one-card line; its Tokens protect the board.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Foolish Graverobber <span class="betb-ratio-role">The Dragon Knight's discard; Sets a Trap your opponent lost.</span></span></li>
+                        </ul>
+                        <p class="betb-ratio-group">Classic Jinzo cards</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Jinzo the Machine Menace <span class="betb-ratio-role">Revives Energy Shocker from the GY at Quick-Effect speed.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Jinzo - Jector <span class="betb-ratio-role">Adds Energy Shocker and summons it into Set Traps.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Psychic Bounder <span class="betb-ratio-role">Adds Everlasting Alloy, your answer to Effect Veiler.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Everlasting Alloy <span class="betb-ratio-role">Protects Energy Shocker while the lock is up.</span></span></li>
+                            <li><span class="betb-ratio-count">0</span><span class="betb-ratio-name">Jinzo <span class="betb-ratio-role">Its lock would also stop the Trap Foolish Graverobber Sets for you.</span></span></li>
+                        </ul>
+                    </article>
+                    <article class="betb-build-card" aria-labelledby="betb-build-side">
+                        <h3 id="betb-build-side">Side Deck Package</h3>
+                        <p class="betb-build-sub">For any deck, against Trap-heavy opponents. Dark Time Wizard adds Panther, and Panther summons Energy Shocker by Tributing one of your other monsters.</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Jinzo - Energy Shocker <span class="betb-ratio-role">Stays in the Deck until Panther calls it.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Swiftwind Panther Warrior <span class="betb-ratio-role">Also the lock partner while it's on the field.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Dark Time Wizard <span class="betb-ratio-role">Adds Panther, then returns to your hand in the End Phase.</span></span></li>
+                        </ul>
+                        <p class="betb-note"><strong>Note:</strong> five cards come in, so take out five that are weak against Traps. Panther needs one other monster to Tribute, from your hand or field.</p>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Failure modes -->
+            <section class="mb-10 md:mb-16" id="betb-risks">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-font">Where It Goes Wrong</h2>
+                <ul class="betb-risks">
+                    <li>
+                        <i class="fas fa-unlink" aria-hidden="true"></i>
+                        <div>
+                            <h3>The lock isn't automatic</h3>
+                            <p>In a deck with only classic Jinzo cards, Energy Shocker never locks Traps. There it's a Trap wipe on a 2400 ATK body, which is still useful, but it isn't a Jinzo.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-weight-hanging" aria-hidden="true"></i>
+                        <div>
+                            <h3>A Level 7 in your opening hand</h3>
+                            <p>Without Panther, Jector or two monsters to Tribute, it stays in your hand. Psychic Bounder and Law of the Cosmos can't help, because in the hand and Deck it isn't named "Jinzo". Revealing it for Alligator's Dragon Knight is the best use of a stuck copy.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                        <div>
+                            <h3>Openings before it lands</h3>
+                            <p>Every step before Energy Shocker reaches the field is open to Traps. Infinite Impermanence on Panther's effect ends Lines 1 and 2, so draw it out first if you can.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-redo" aria-hidden="true"></i>
+                        <div>
+                            <h3>One wipe per turn</h3>
+                            <p>The summon effect is a hard once per turn. A second Energy Shocker summoned the same turn can't wipe again, but it still keeps the first one's lock on.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+        </div>
+        <!-- END tab-betb -->
 
         <!-- TCG Banlist Impact Section -->
         <section>
@@ -773,6 +2036,281 @@
                 initPageSections('Jinzo');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Energy Shocker spotlight. The
+         Energy Shocker tab's art and the combo simulator only load the first time
+         that tab opens. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-betb': [
+                    { 'betb-shocker-img-container': 'Jinzo - Energy Shocker' },
+                    {
+                        'betb-engine-dtw-img-container': 'Dark Time Wizard',
+                        'betb-engine-panther-img-container': 'Swiftwind Panther Warrior',
+                        'betb-engine-knight-img-container': "Alligator's Dragon Knight",
+                        'betb-engine-goats-img-container': 'Sleepy Scapegoats',
+                        'betb-engine-robber-img-container': 'Foolish Graverobber',
+                        'betb-engine-exceed-img-container': 'Red-Eyes Black Dragon Exceed'
+                    }
+                ]
+            },
+            panelInit: {
+                'tab-betb': function () {
+                    const mount = document.getElementById('jinzo-combo-lab');
+                    if (!mount) return;
+                    // combo-system.js declares ComboLoader as a top-level class, which
+                    // is a global binding but not a property of window.
+                    if (typeof ComboLoader === 'undefined') {
+                        mount.innerHTML = '<p class="betb-lab-loading">The interactive combo lines could not load. The line summaries above still list every hand, requirement and end board.</p>';
+                        return;
+                    }
+                    ComboLoader.renderComboSystem('jinzo-combo-lab', 'jinzo');
+                }
+            }
+        });
+
+        (function () {
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'betb-spot-img-container': 'Jinzo - Energy Shocker' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same meta-counter chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('[role="tabpanel"]');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (!cta) return;
+            cta.addEventListener('click', () => {
+                const tab = tabFor(cta.dataset.openPanel);
+                if (!tab) return;
+                tab.click();
+                tab.focus({ preventScroll: true });
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+            });
+        })();
+    </script>
+
+    <!-- "Is the lock on?" checker. Everything it knows is in the three config
+         blocks at the top; the rule it applies is Energy Shocker's printed text:
+         face-up, effects intact, and another monster that mentions Dark Time
+         Wizard on your field or in your GY. -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-lock-checker]');
+            if (!root) return;
+            const controls = root.querySelector('[data-lock-controls]');
+            const result = root.querySelector('[data-lock-result]');
+
+            const SHOCKER_STATES = [
+                { value: 'field', label: 'Face-up, effects intact' },
+                { value: 'negated', label: 'Face-up, effects negated' },
+                { value: 'gone', label: 'Not on your field' }
+            ];
+            const PLACES = [
+                { value: 'field', label: 'Field' },
+                { value: 'gy', label: 'GY' },
+                { value: 'none', label: 'Elsewhere' }
+            ];
+            const PARTNERS = [
+                { id: 'panther', name: 'Swiftwind Panther Warrior' },
+                { id: 'knight', name: "Alligator's Dragon Knight" },
+                { id: 'exceed', name: 'Red-Eyes Black Dragon Exceed' },
+                { id: 'fisherman', name: 'Fisherman of Legend' },
+                { id: 'second', name: 'A second Jinzo - Energy Shocker' }
+            ];
+            // Unlisted partners default to "none" in every preset.
+            const PRESETS = {
+                goats: { shocker: 'field', panther: 'field' },
+                knight: { shocker: 'field', panther: 'field', knight: 'gy' },
+                jector: { shocker: 'field' },
+                veiler: { shocker: 'negated', panther: 'field', knight: 'gy' }
+            };
+
+            const state = {};
+
+            function applyPreset(name) {
+                const preset = PRESETS[name] || {};
+                state.shocker = preset.shocker || 'field';
+                PARTNERS.forEach(p => { state[p.id] = preset[p.id] || 'none'; });
+            }
+
+            function radioGroup(key, labelText, options) {
+                const row = document.createElement('div');
+                row.className = 'betb-lock-row';
+                const labelId = 'betb-lock-' + key + '-label';
+                const name = document.createElement('span');
+                name.className = 'betb-lock-name';
+                name.id = labelId;
+                name.textContent = labelText;
+                const seg = document.createElement('div');
+                seg.className = 'betb-seg';
+                seg.setAttribute('role', 'radiogroup');
+                seg.setAttribute('aria-labelledby', labelId);
+                options.forEach(opt => {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'betb-lock-' + key;
+                    input.value = opt.value;
+                    input.dataset.key = key;
+                    const text = document.createElement('span');
+                    text.textContent = opt.label;
+                    label.append(input, text);
+                    seg.appendChild(label);
+                });
+                row.append(name, seg);
+                return row;
+            }
+
+            function fieldset(legendText, rows, hint) {
+                const set = document.createElement('fieldset');
+                set.className = 'betb-lock-set';
+                const legend = document.createElement('legend');
+                legend.textContent = legendText;
+                set.appendChild(legend);
+                rows.forEach(r => set.appendChild(r));
+                if (hint) {
+                    const p = document.createElement('p');
+                    p.className = 'betb-lock-hint';
+                    p.textContent = hint;
+                    set.appendChild(p);
+                }
+                return set;
+            }
+
+            function buildControls() {
+                controls.textContent = '';
+                controls.append(
+                    fieldset('Jinzo - Energy Shocker', [radioGroup('shocker', 'On your field', SHOCKER_STATES)],
+                        'Effect Veiler and a face-up Skill Drain both negate it.'),
+                    fieldset('Monsters that mention Dark Time Wizard',
+                        PARTNERS.map(p => radioGroup(p.id, p.name, PLACES)),
+                        'Elsewhere covers the hand, the Deck and banished cards.')
+                );
+            }
+
+            function joinNames(list) {
+                const names = list.map(p => p.name);
+                if (names.length < 2) return names.join('');
+                return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+            }
+
+            function evaluate() {
+                if (state.shocker === 'gone') {
+                    return {
+                        on: false,
+                        title: 'Lock off',
+                        detail: 'The lock is a continuous effect of a face-up Energy Shocker. In the GY it only counts as "Jinzo", which lets Jinzo the Machine Menace or Jinzo - Returner revive it.',
+                        notes: []
+                    };
+                }
+                if (state.shocker === 'negated') {
+                    return {
+                        on: false,
+                        title: 'Lock off: effects negated',
+                        detail: 'A negated monster loses its continuous effects too. Effect Veiler lasts until the end of the turn; a face-up Skill Drain lasts as long as it stays face-up. Negated while its summon effect was resolving, it doesn\'t wipe either.',
+                        notes: ['Everlasting Alloy from your hand can negate Effect Veiler, because Veiler targets a Machine you control.']
+                    };
+                }
+                const onField = PARTNERS.filter(p => state[p.id] === 'field');
+                const inGy = PARTNERS.filter(p => state[p.id] === 'gy');
+                if (!onField.length && !inGy.length) {
+                    return {
+                        on: false,
+                        title: 'Lock off: no partner',
+                        detail: 'Energy Shocker doesn\'t count for itself; its text needs another monster that mentions Dark Time Wizard. Its summon effect still destroys your opponent\'s Traps.',
+                        notes: []
+                    };
+                }
+                const held = onField.map(p => p.name + ' (field)').concat(inGy.map(p => p.name + ' (GY)'));
+                const notes = [];
+                if (!inGy.length) {
+                    notes.push('Every partner is on the field. Remove ' + joinNames(onField) + ' and the lock goes off. A partner in the GY is harder to reach.');
+                } else if (!onField.length) {
+                    notes.push('Every partner is in the GY. Your opponent has to banish ' + joinNames(inGy) + ' to break the lock. Called by the Grave is a Spell, so the lock doesn\'t stop it.');
+                } else {
+                    notes.push('Partners on the field and in the GY: your opponent has to clear both places to break the lock.');
+                }
+                notes.push('Monster effects such as Effect Veiler, and Spells, still work for your opponent.');
+                return {
+                    on: true,
+                    title: 'Lock on',
+                    detail: 'Your opponent can\'t activate Trap Cards or Trap effects: not from the hand, not Set on the field, not in the GY. Held by ' + held.join(', ') + '.',
+                    notes: notes
+                };
+            }
+
+            function render() {
+                controls.querySelectorAll('input[type="radio"]').forEach(input => {
+                    input.checked = state[input.dataset.key] === input.value;
+                });
+                root.querySelectorAll('[data-preset]').forEach(btn => {
+                    const preset = PRESETS[btn.dataset.preset];
+                    const matches = (preset.shocker || 'field') === state.shocker &&
+                        PARTNERS.every(p => (preset[p.id] || 'none') === state[p.id]);
+                    btn.setAttribute('aria-pressed', String(matches));
+                });
+
+                const verdict = evaluate();
+                result.className = 'betb-lock-result ' + (verdict.on ? 'is-on' : 'is-off');
+                result.textContent = '';
+                const status = document.createElement('p');
+                status.className = 'betb-lock-status';
+                const icon = document.createElement('i');
+                icon.className = 'fas ' + (verdict.on ? 'fa-lock' : 'fa-lock-open');
+                icon.setAttribute('aria-hidden', 'true');
+                status.append(icon, document.createTextNode(' ' + verdict.title));
+                const detail = document.createElement('p');
+                detail.className = 'betb-lock-detail';
+                detail.textContent = verdict.detail;
+                result.append(status, detail);
+                if (verdict.notes.length) {
+                    const list = document.createElement('ul');
+                    list.className = 'betb-lock-notes';
+                    verdict.notes.forEach(text => {
+                        const li = document.createElement('li');
+                        li.textContent = text;
+                        list.appendChild(li);
+                    });
+                    result.appendChild(list);
+                }
+            }
+
+            controls.addEventListener('change', e => {
+                const input = e.target.closest('input[type="radio"]');
+                if (!input) return;
+                state[input.dataset.key] = input.value;
+                render();
+            });
+            root.addEventListener('click', e => {
+                const btn = e.target.closest('[data-preset]');
+                if (!btn) return;
+                applyPreset(btn.dataset.preset);
+                render();
+            });
+
+            buildControls();
+            applyPreset('knight');
+            render();
+        })();
+    </script>
+
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

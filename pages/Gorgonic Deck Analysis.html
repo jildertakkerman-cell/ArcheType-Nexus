@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Gorgonic: A parasitic archetype focused on summoning Gorgonic Guardian for powerful control and disruption effects through petrification mechanics.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Gorgonic%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
     <title>Gorgonic Deck Guide: Stone-Gazing Serpents</title>
     <script src="../assets/js/google-analytics.js"></script>
         <!-- Assuming card-loader.js is in assets/js/ as seen in other files -->
@@ -14,6 +15,10 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -288,6 +293,943 @@
             color: #9370DB;
         }
     </style>
+    <!-- Guide tabs + Umbral Horror (Beyond the Brave) tab. Every colour comes from
+         the --betb-* tokens so the new tab matches the page's stone-and-purple theme. -->
+    <style>
+        :root {
+            --betb-primary: #a78bfa;
+            --betb-primary-soft: #c4b5fd;
+            --betb-primary-line: rgba(167, 139, 250, 0.45);
+            --betb-primary-wash: rgba(167, 139, 250, 0.14);
+            --betb-energy: #fb7185;
+            --betb-energy-soft: #fda4af;
+            --betb-energy-wash: rgba(251, 113, 133, 0.12);
+            --betb-ok: #4ade80;
+            --betb-ok-wash: rgba(74, 222, 128, 0.12);
+            --betb-warn: #fbbf24;
+            --betb-warn-wash: rgba(251, 191, 36, 0.12);
+            --betb-danger: #f87171;
+            --betb-danger-wash: rgba(248, 113, 113, 0.12);
+            --betb-surface: #2b2b2b;
+            --betb-surface-deep: #232026;
+            --betb-inset: #19171b;
+            --betb-border: #4a3a4a;
+            --betb-text: #d6d3d1;
+            --betb-muted: #a8a29e;
+            --betb-heading: #ffffff;
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--betb-border);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--betb-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #f5f5f4; background-color: var(--betb-primary-wash); }
+        .tab-btn[aria-selected="true"] {
+            border-bottom-color: var(--betb-primary);
+            color: var(--betb-primary-soft);
+        }
+        .tab-btn-sub { color: var(--betb-muted); font-weight: 600; }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--betb-energy);
+            color: #1c1917;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .tab-panel[hidden],
+        .betb-cardpanel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .betb-cardtab:focus-visible,
+        .betb-cardpanel:focus-visible,
+        .betb-spot-cta:focus-visible,
+        .betb-tag:focus-visible,
+        .betb-preset:focus-visible,
+        .betb-play:focus-visible,
+        .betb-link:focus-visible,
+        .betb-table-wrap:focus-visible {
+            outline: 2px solid var(--betb-energy);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-betb link focuses the panel itself; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+        /* Deep-link targets land clear of the fixed home button. */
+        [id^="betb-"], #gorgonic-lab { scroll-margin-top: 1.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.78rem;
+                white-space: normal;
+                text-align: center;
+            }
+            .tab-btn-sub { display: block; width: 100%; font-size: 0.7rem; }
+        }
+
+        .betb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Card art slot: holds the 59:86 card shape until CardLoader
+           swaps the image in, then drops the empty-slot styling. ----- */
+        .betb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--betb-primary-line);
+            border-radius: 0.35rem;
+            background: var(--betb-inset);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            color: var(--betb-primary-soft);
+            font-size: 0.6rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .betb-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        /* CardLoader's not-found fallback nests a full-size .card-placeholder. */
+        .betb-art .card-placeholder {
+            aspect-ratio: auto;
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+        }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .betb-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, var(--betb-energy-wash) 0%, transparent 55%),
+                linear-gradient(135deg, var(--betb-surface) 0%, var(--betb-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(106, 13, 173, 0.18);
+        }
+        .betb-spot-art { grid-area: art; }
+        .betb-spot-head { grid-area: head; min-width: 0; }
+        .betb-spot-body { grid-area: body; min-width: 0; }
+        .betb-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--betb-energy-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .betb-spot-title {
+            color: var(--betb-heading);
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(147, 112, 219, 0.55);
+        }
+        .betb-spot-stats {
+            margin-top: 0.35rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .betb-spot-hook { color: var(--betb-text); font-size: 0.92rem; line-height: 1.6; }
+        .betb-spot-hook strong { color: var(--betb-heading); }
+        .betb-spot-label,
+        .betb-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .betb-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: #f5f5f4;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .betb-tag i { color: var(--betb-primary); }
+        .betb-tag:hover { border-color: var(--betb-primary); background: var(--betb-primary-wash); }
+        .betb-tag-role { color: var(--betb-muted); font-size: 0.7rem; font-weight: 600; }
+        .betb-tag--boss i { color: var(--betb-energy); }
+        .betb-tag--boss:hover { border-color: var(--betb-energy); background: var(--betb-energy-wash); }
+        .betb-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--betb-primary);
+            border-radius: 9999px;
+            background: var(--betb-primary-wash);
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .betb-spot-cta:hover { background: rgba(167, 139, 250, 0.28); box-shadow: 0 0 16px rgba(167, 139, 250, 0.35); }
+
+        /* ----- Tab intro ----- */
+        .betb-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-surface-deep);
+            color: var(--betb-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .betb-chip i { color: var(--betb-primary-soft); }
+        .betb-chip--tcg { border-color: rgba(251, 113, 133, 0.55); }
+        .betb-chip--tcg i { color: var(--betb-energy); }
+        .betb-intro,
+        .betb-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--betb-text);
+            line-height: 1.65;
+            text-align: center;
+        }
+        .betb-intro strong,
+        .betb-lede strong { color: var(--betb-heading); }
+        .betb-pillars { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-pillar {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            text-align: center;
+        }
+        .betb-pillar h3 { margin-bottom: 0.5rem; color: var(--betb-primary-soft); font-weight: 700; }
+        .betb-pillar p { color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+        .betb-pillar-icon {
+            margin-bottom: 0.75rem;
+            color: var(--betb-energy);
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 6px rgba(251, 113, 133, 0.45));
+        }
+        .betb-callout {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-primary);
+            border-radius: 0.5rem;
+            background: var(--betb-surface);
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .betb-callout-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+            color: var(--betb-primary-soft);
+            font-weight: 700;
+        }
+        .betb-link {
+            color: var(--betb-primary-soft);
+            font-weight: 700;
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
+        }
+        .betb-link:hover { color: #fff; }
+
+        /* ----- Card panel: one tab per card, grouped Main Deck / Extra Deck ----- */
+        .betb-cardtabs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .betb-cardtab {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.15rem;
+            min-width: 0;
+            min-height: 44px;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.6rem;
+            background: var(--betb-inset);
+            color: var(--betb-text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .betb-cardtab:hover { border-color: var(--betb-primary-soft); }
+        .betb-cardtab-deck {
+            color: var(--betb-muted);
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-cardtab-name { color: var(--betb-heading); font-size: 0.9rem; font-weight: 700; line-height: 1.25; }
+        .betb-cardtab-role { color: var(--betb-primary-soft); font-size: 0.75rem; font-weight: 600; }
+        .betb-cardtab[aria-selected="true"] {
+            border-color: var(--betb-primary);
+            background: var(--betb-primary-wash);
+            box-shadow: inset 0 -3px 0 var(--betb-primary);
+        }
+        .betb-cardtab--extra .betb-cardtab-role { color: var(--betb-energy-soft); }
+        .betb-cardtab--extra[aria-selected="true"] {
+            border-color: var(--betb-energy);
+            background: var(--betb-energy-wash);
+            box-shadow: inset 0 -3px 0 var(--betb-energy);
+        }
+        @media (max-width: 767px) {
+            .betb-cardtab--extra { grid-column: 1 / -1; }
+        }
+        .betb-spotlight {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .betb-spotlight--extra { border-color: rgba(251, 113, 133, 0.45); }
+        .betb-spotlight-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .betb-spotlight-art { grid-area: art; }
+        .betb-spotlight-head { grid-area: head; min-width: 0; }
+        .betb-spotlight-body { grid-area: body; min-width: 0; }
+        .betb-kicker {
+            color: var(--betb-energy-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .betb-card-name {
+            margin-top: 0.2rem;
+            color: var(--betb-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .betb-stats { display: grid; gap: 0.2rem; margin-top: 0.6rem; font-size: 0.8rem; }
+        .betb-stats > div { display: flex; flex-wrap: wrap; column-gap: 0.4rem; }
+        .betb-stats dt { color: var(--betb-muted); }
+        .betb-stats dt::after { content: ":"; }
+        .betb-stats dd { margin: 0; color: #f5f5f4; font-weight: 600; }
+        .betb-effects {
+            display: grid;
+            gap: 0.6rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            counter-reset: betb-effect;
+        }
+        .betb-effects > li {
+            position: relative;
+            padding-left: 2rem;
+            color: var(--betb-text);
+            font-size: 0.9rem;
+            line-height: 1.55;
+            counter-increment: betb-effect;
+        }
+        .betb-effects > li::before {
+            content: counter(betb-effect);
+            content: counter(betb-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--betb-primary);
+            color: #1c1917;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .betb-effects > li.betb-effect-materials { padding-left: 0; color: var(--betb-heading); font-weight: 700; counter-increment: none; }
+        .betb-effects > li.betb-effect-materials::before { display: none; }
+        .betb-role {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--betb-energy);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--betb-energy-wash);
+            color: #f5f5f4;
+            font-size: 0.875rem;
+            line-height: 1.55;
+        }
+        .betb-role strong { color: var(--betb-energy-soft); }
+        .betb-glance {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+            margin: 1.25rem 0 0;
+        }
+        .betb-glance > div {
+            padding: 0.75rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-inset);
+        }
+        .betb-glance dt {
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-glance dd {
+            margin: 0.25rem 0 0;
+            color: var(--betb-primary-soft);
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .betb-angle {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-inset);
+            color: var(--betb-text);
+            font-size: 0.875rem;
+            line-height: 1.55;
+        }
+        .betb-angle i { margin-top: 0.2rem; color: var(--betb-primary); }
+        .betb-angle strong { color: var(--betb-heading); }
+        .betb-copies {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 1rem;
+            color: var(--betb-muted);
+            font-size: 0.8rem;
+        }
+        .betb-copies b { color: var(--betb-energy-soft); font-size: 0.95rem; }
+
+        /* ----- Boss evolution ladder: stacked on phones, four rungs across on desktop ----- */
+        .betb-ladder { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-rung {
+            display: grid;
+            grid-template-columns: 72px minmax(0, 1fr);
+            gap: 0.5rem 0.9rem;
+            align-content: start;
+            padding: 1rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-rung--base { grid-template-columns: 1fr; }
+        .betb-rung--top { border-color: rgba(251, 113, 133, 0.45); }
+        .betb-rung-via {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--betb-energy-soft);
+            font-size: 0.75rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+        .betb-rung-via i { transform: rotate(90deg); }
+        .betb-rung-body { min-width: 0; }
+        .betb-rung-rank {
+            display: inline-block;
+            padding: 0.1rem 0.55rem;
+            border-radius: 9999px;
+            background: var(--betb-primary-wash);
+            color: var(--betb-primary-soft);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .betb-rung h3 { margin: 0.35rem 0 0.3rem; color: var(--betb-heading); font-size: 0.95rem; font-weight: 700; line-height: 1.3; }
+        .betb-rung p { color: var(--betb-text); font-size: 0.82rem; line-height: 1.5; }
+        .betb-rung .betb-tags { margin-top: 0.6rem; }
+        .betb-rung-mats { margin-top: 0.45rem; color: var(--betb-muted); font-size: 0.75rem; }
+        .betb-rung-mats strong { color: var(--betb-primary-soft); }
+
+        /* ----- Tables: stack into labelled rows on phones, no sideways scroll ----- */
+        .betb-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.5rem;
+            background: var(--betb-surface-deep);
+        }
+        .betb-table { width: 100%; border-collapse: collapse; }
+        .betb-table caption { padding: 0.75rem 0.85rem 0; color: var(--betb-muted); font-size: 0.8rem; text-align: left; }
+        .betb-table th,
+        .betb-table td {
+            padding: 0.7rem 0.85rem;
+            border-bottom: 1px solid rgba(74, 58, 74, 0.85);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .betb-table thead th {
+            border-bottom: 2px solid var(--betb-primary);
+            background: var(--betb-surface);
+            color: var(--betb-primary-soft);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .betb-table tbody th { color: var(--betb-heading); font-weight: 700; }
+        .betb-table td { color: var(--betb-text); }
+        .betb-table tbody tr:last-child > * { border-bottom: none; }
+        .betb-table td strong { color: var(--betb-heading); }
+        .betb-table-sub { display: block; color: var(--betb-muted); font-size: 0.72rem; font-weight: 600; }
+        .betb-table-group th {
+            padding-top: 1rem;
+            background: var(--betb-inset);
+            color: var(--betb-energy-soft);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.15rem 0.6rem;
+            border: 1px solid transparent;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .betb-pill--yes  { border-color: rgba(74, 222, 128, 0.4); background: var(--betb-ok-wash); color: var(--betb-ok); }
+        .betb-pill--part { border-color: rgba(251, 191, 36, 0.4); background: var(--betb-warn-wash); color: var(--betb-warn); }
+        .betb-pill--no   { border-color: rgba(248, 113, 113, 0.4); background: var(--betb-danger-wash); color: var(--betb-danger); }
+        .betb-note { margin-top: 0.75rem; color: var(--betb-muted); font-size: 0.8rem; line-height: 1.55; }
+        .betb-note strong { color: var(--betb-text); }
+        @media (max-width: 639px) {
+            .betb-table--stack thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+            }
+            .betb-table--stack tr {
+                display: block;
+                padding: 0.75rem 0.85rem;
+                border-bottom: 1px solid rgba(74, 58, 74, 0.85);
+            }
+            .betb-table--stack tbody tr:last-child { border-bottom: none; }
+            .betb-table--stack th,
+            .betb-table--stack td { display: block; padding: 0.2rem 0; border: 0; }
+            .betb-table--stack td[data-label]::before {
+                content: attr(data-label);
+                display: block;
+                color: var(--betb-muted);
+                font-size: 0.66rem;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+            .betb-table--stack .betb-table-group th { padding-top: 0.2rem; background: none; }
+        }
+
+        /* ----- Extra Deck lock checker ----- */
+        .betb-lock {
+            display: grid;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        .betb-lock-presets { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+        .betb-lock-presets .betb-label { width: 100%; margin: 0; }
+        .betb-preset {
+            min-height: 40px;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            background: var(--betb-inset);
+            color: var(--betb-text);
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .betb-preset:hover { border-color: var(--betb-primary-soft); color: #fff; }
+        .betb-preset[aria-pressed="true"] { border-color: var(--betb-primary); background: var(--betb-primary-wash); color: #fff; }
+        .betb-lock-inputs { display: grid; gap: 1rem; }
+        .betb-lock-set {
+            min-width: 0;
+            margin: 0;
+            padding: 0.9rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.6rem;
+            background: var(--betb-inset);
+        }
+        .betb-lock-set legend {
+            padding: 0 0.4rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        /* Name and options share a line only when both fit; otherwise the
+           options wrap below instead of squeezing the name to nothing. */
+        .betb-lock-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem 0.75rem;
+            padding: 0.65rem 0;
+            border-top: 1px dashed var(--betb-border);
+        }
+        .betb-lock-row:first-of-type { padding-top: 0.2rem; border-top: 0; }
+        .betb-lock-name { flex: 1 1 10rem; color: var(--betb-heading); font-size: 0.85rem; font-weight: 700; }
+        .betb-seg { display: flex; flex: 0 1 auto; flex-wrap: wrap; gap: 0.35rem; }
+        .betb-seg--list { flex: 1 1 100%; display: grid; grid-template-columns: 1fr; }
+        .betb-seg label { position: relative; display: inline-flex; }
+        .betb-seg input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .betb-seg span {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.1rem 0.4rem;
+            width: 100%;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 9999px;
+            color: var(--betb-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .betb-seg--list span { border-radius: 0.5rem; }
+        .betb-seg small { color: var(--betb-muted); font-size: 0.68rem; font-weight: 600; }
+        .betb-seg--list small { flex-basis: 100%; }
+        .betb-seg input:hover + span { border-color: var(--betb-primary-soft); color: #fff; }
+        .betb-seg input:checked + span { border-color: var(--betb-primary); background: var(--betb-primary-wash); color: #fff; }
+        .betb-seg input:focus-visible + span { outline: 2px solid var(--betb-energy); outline-offset: 2px; }
+        .betb-lock-hint { margin-top: 0.6rem; color: var(--betb-muted); font-size: 0.75rem; line-height: 1.5; }
+        .betb-lock-result {
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-muted);
+            border-radius: 0.6rem;
+            background: var(--betb-inset);
+        }
+        .betb-lock-result.is-on { border-left-color: var(--betb-ok); }
+        .betb-lock-result.is-off { border-left-color: var(--betb-danger); }
+        .betb-lock-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--betb-heading);
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .is-on .betb-lock-status { color: var(--betb-ok); }
+        .is-off .betb-lock-status { color: var(--betb-danger); }
+        .betb-lock-detail { margin-top: 0.5rem; color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+        .betb-lock-checks {
+            display: grid;
+            gap: 0.4rem;
+            margin: 0.75rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .betb-lock-checks li {
+            display: grid;
+            grid-template-columns: 1.1rem minmax(0, 1fr);
+            gap: 0.5rem;
+            color: var(--betb-text);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .betb-lock-checks .fa-check { margin-top: 0.2rem; color: var(--betb-ok); }
+        .betb-lock-checks .fa-times { margin-top: 0.2rem; color: var(--betb-danger); }
+        .betb-lock-checks .fa-info-circle { margin-top: 0.2rem; color: var(--betb-primary-soft); }
+
+        /* ----- Combo line summaries + "play in the simulator" buttons ----- */
+        .betb-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .betb-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-top: 3px solid var(--betb-primary);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-line--legacy { border-top-color: var(--betb-muted); }
+        .betb-line h3 { color: var(--betb-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+        .betb-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .betb-line-facts dt {
+            color: var(--betb-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .betb-line-facts dd { margin: 0.15rem 0 0; color: var(--betb-text); font-size: 0.85rem; line-height: 1.5; }
+        .betb-line-rule {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--betb-border);
+            color: var(--betb-muted);
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        .betb-line-rule strong { color: var(--betb-energy-soft); }
+        .betb-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.55rem 1rem;
+            border: 1px solid var(--betb-primary);
+            border-radius: 9999px;
+            background: var(--betb-primary-wash);
+            color: #fff;
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        .betb-play:hover { background: rgba(167, 139, 250, 0.28); }
+        .betb-play-row { display: flex; justify-content: center; margin-top: 1.5rem; }
+        .betb-lab-mount { min-height: 12rem; }
+
+        /* ----- Deck building ----- */
+        .betb-build { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .betb-build-card {
+            padding: 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-build-card h3 { margin-bottom: 0.25rem; color: var(--betb-heading); font-weight: 700; }
+        .betb-build-card p { color: var(--betb-text); font-size: 0.875rem; line-height: 1.6; }
+        .betb-build-card p + p { margin-top: 0.75rem; }
+        .betb-build-sub { margin-bottom: 0.9rem; color: var(--betb-muted) !important; font-size: 0.8rem !important; line-height: 1.5; }
+        .betb-ratio { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .betb-ratio > li {
+            display: grid;
+            grid-template-columns: 2.5rem minmax(0, 1fr);
+            gap: 0.6rem;
+            align-items: baseline;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(74, 58, 74, 0.7);
+        }
+        .betb-ratio > li:last-child { padding-bottom: 0; border-bottom: 0; }
+        .betb-ratio-count { color: var(--betb-energy); font-size: 0.9rem; font-weight: 700; text-align: right; }
+        .betb-ratio-name { color: var(--betb-heading); font-size: 0.875rem; font-weight: 700; }
+        .betb-ratio-role { display: block; color: var(--betb-text); font-size: 0.8rem; font-weight: 400; line-height: 1.45; }
+        .betb-ratio-group {
+            margin: 1rem 0 0.5rem;
+            color: var(--betb-primary-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* ----- Failure modes ----- */
+        .betb-risks { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .betb-risks > li {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: 0.85rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--betb-border);
+            border-left: 4px solid var(--betb-danger);
+            border-radius: 0.5rem;
+            background: linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-risks i { margin-top: 0.2rem; color: var(--betb-danger); }
+        .betb-risks h3 { margin-bottom: 0.25rem; color: var(--betb-heading); font-weight: 700; }
+        .betb-risks p { color: var(--betb-text); font-size: 0.875rem; line-height: 1.55; }
+        .betb-verdict {
+            padding: 1.5rem;
+            border: 1px solid var(--betb-primary-line);
+            border-radius: 0.75rem;
+            background:
+                radial-gradient(ellipse at 100% 0%, var(--betb-energy-wash) 0%, transparent 60%),
+                linear-gradient(145deg, var(--betb-surface), var(--betb-surface-deep));
+        }
+        .betb-verdict p { color: var(--betb-text); line-height: 1.65; }
+        .betb-verdict p + p { margin-top: 0.75rem; }
+        .betb-verdict strong { color: var(--betb-heading); }
+
+        @media (min-width: 640px) {
+            .betb-seg--list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 768px) {
+            .betb-spot {
+                grid-template-columns: 150px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.5rem;
+                padding: 1.5rem;
+            }
+            .betb-spot-title { font-size: 1.45rem; }
+            .betb-pillars { grid-template-columns: repeat(3, 1fr); }
+            .betb-cardtabs { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+            .betb-spotlight { padding: 1.75rem; }
+            .betb-spotlight-layout {
+                grid-template-columns: 180px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                column-gap: 1.75rem;
+                row-gap: 0.75rem;
+            }
+            .betb-card-name { font-size: 1.4rem; }
+            .betb-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-lock { padding: 1.75rem; }
+            .betb-build { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .betb-ladder { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .betb-rung { grid-template-columns: 1fr; }
+            .betb-rung .betb-art { max-width: 120px; }
+            .betb-rung-via i { transform: none; }
+            .betb-lock-inputs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+            .betb-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn,
+            .betb-tag,
+            .betb-spot-cta,
+            .betb-cardtab,
+            .betb-preset,
+            .betb-play,
+            .betb-seg span { transition: none; }
+        }
+        /* Printing the guide should include every tab and every card, not just the open ones. */
+        @media print {
+            .tab-nav,
+            .betb-cardtabs,
+            .betb-spot-cta,
+            .betb-play,
+            .betb-lock-presets { display: none; }
+            .tab-panel[hidden],
+            .betb-cardpanel[hidden] { display: block !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -330,6 +1272,43 @@
                 </p>
             </div>
         </section>
+
+        <!-- ==================== NEW CARDS SPOTLIGHT (Beyond the Brave) ====================
+             Always visible, above the guide tabs. Each chip opens the Umbral Horror tab
+             on that card; the full write-up lives there. -->
+        <aside class="betb-spot" data-pcs-scope="spot" aria-labelledby="betb-spot-title">
+            <div class="betb-spot-art">
+                <div id="betb-spot-img-container" class="betb-art">Gorgonic Umbral Horror</div>
+            </div>
+            <div class="betb-spot-head">
+                <p class="betb-spot-kicker"><span class="tab-new-badge">5 new cards</span> Beyond the Brave &middot; TCG 8 Oct 2026</p>
+                <h2 id="betb-spot-title" class="betb-spot-title">Umbral Horror: Gorgonic Goes Rank 4</h2>
+                <p class="betb-spot-stats">Gorgonic Umbral Horror &middot; Level 4 &middot; DARK &middot; Rock &middot; 1200 / 0</p>
+            </div>
+            <div class="betb-spot-body">
+                <p class="betb-spot-hook">The first new Gorgonic card in over twelve years is also an <strong>Umbral Horror</strong>. It summons itself onto an empty field, adds V, Shining or Thousand Umbral Horror, and counts as two materials for a Number. Together the five cards climb from Rank 4 to <strong>Number C104: Umbral Horror Masquerade Victory</strong> without a Rank-Up-Magic Spell. The catch for classic players: while Gorgonic Umbral Horror is face-up, <strong>Gorgonic Guardian</strong> can't be summoned.</p>
+                <p id="betb-spot-tags-label" class="betb-spot-label">The five cards</p>
+                <ul class="betb-tags" aria-labelledby="betb-spot-tags-label">
+                    <li><a class="betb-tag" href="#betb-card-gorgonic"><i class="fas fa-mountain" aria-hidden="true"></i> Gorgonic <span class="betb-tag-role">starter</span></a></li>
+                    <li><a class="betb-tag" href="#betb-card-v"><i class="fas fa-level-up-alt" aria-hidden="true"></i> V <span class="betb-tag-role">search + Rank-Up</span></a></li>
+                    <li><a class="betb-tag" href="#betb-card-shining"><i class="fas fa-sun" aria-hidden="true"></i> Shining <span class="betb-tag-role">extender</span></a></li>
+                    <li><a class="betb-tag" href="#betb-card-thousand"><i class="fas fa-chess-rook" aria-hidden="true"></i> Thousand <span class="betb-tag-role">Field Spell</span></a></li>
+                    <li><a class="betb-tag betb-tag--boss" href="#betb-card-victory"><i class="fas fa-crown" aria-hidden="true"></i> C104 Victory <span class="betb-tag-role">boss</span></a></li>
+                </ul>
+                <button type="button" class="betb-spot-cta" data-open-panel="tab-betb">Open the Umbral Horror guide <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original Rank 3 guide is kept unchanged in the Classic Gorgonic panel; the
+             Beyond the Brave Umbral Horror cards get their own panel. The combo simulator,
+             banlist and community combos stay below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Gorgonic guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Gorgonic <span class="tab-btn-sub">Rank 3</span></button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-betb" aria-controls="tab-betb" aria-selected="false" tabindex="-1">Umbral Horror <span class="tab-btn-sub">Rank 4</span> <span class="tab-new-badge" aria-hidden="true">New</span><span class="betb-sr-only">(new cards)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16">
@@ -496,6 +1475,9 @@
                     </div>
                 </div>
             </div>
+            <div class="betb-play-row">
+                <button type="button" class="betb-play" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play this line step by step</button>
+            </div>
         </section>
 
         <!-- Endboard Section -->
@@ -560,6 +1542,605 @@
                     </ul>
                 </div>
             </div>
+        </section>
+
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== UMBRAL HORROR (BEYOND THE BRAVE) TAB ====================
+             The five Beyond the Brave cards seen from the Gorgonic side. Card text is the
+             official English text. Every combo step was checked against the text of each
+             card in it; the step-by-step lines live in assets/data/combos/gorgonic-combos.json
+             and play in the combo simulator below the tabs. -->
+        <div id="tab-betb" data-pcs-scope="betb" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-betb" tabindex="0" hidden>
+
+            <!-- What changed -->
+            <section class="mb-10 md:mb-16" id="betb-intro">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Beyond the Brave: Gorgonic Meets Umbral Horror</h2>
+                <ul class="betb-release" aria-label="Release details">
+                    <li class="betb-chip betb-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> <span>TCG &middot; Beyond the Brave &middot; <time datetime="2026-10-08">8 Oct 2026</time></span></li>
+                    <li class="betb-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> <span>OCG &middot; <time datetime="2026-07-18">18 Jul 2026</time></span></li>
+                    <li class="betb-chip"><i class="fas fa-layer-group" aria-hidden="true"></i> 4 Main Deck &middot; 1 Extra Deck</li>
+                </ul>
+                <p class="betb-intro">
+                    Beyond the Brave prints the first new Gorgonic card in over twelve years, and it's also an <strong>Umbral Horror</strong>. <strong>Gorgonic Umbral Horror</strong> is a Level 4 DARK Rock, so it heads for Rank 4 Numbers rather than Gorgonic Guardian. It comes with <strong>V</strong>, <strong>Shining</strong> and <strong>Thousand Umbral Horror</strong> and the Rank 5 boss <strong>Number C104: Umbral Horror Masquerade Victory</strong>. The Rank 3 guide in the <strong>Classic Gorgonic</strong> tab is unchanged. This tab covers the five new cards, how they climb from Rank 4 to Rank 7, which classic cards still work with them, and the Extra Deck restrictions that decide it.
+                </p>
+                <div class="betb-pillars">
+                    <div class="betb-pillar">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-dice-one"></i></div>
+                        <h3>One Card, One Rank 4</h3>
+                        <p>Gorgonic Umbral Horror summons itself, adds V Umbral Horror and counts as two of Number 104: Masquerade V's three materials. Normal Summon V and one card has made a Rank 4.</p>
+                    </div>
+                    <div class="betb-pillar">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-level-up-alt"></i></div>
+                        <h3>Rank-Up Without a Spell</h3>
+                        <p>V Umbral Horror banishes itself from the GY to put a Number one Rank higher on a Masquerade Xyz Monster. Masquerade V becomes C104 Victory, and cards that negate Spells can't touch it.</p>
+                    </div>
+                    <div class="betb-pillar">
+                        <div class="betb-pillar-icon" aria-hidden="true"><i class="fas fa-lock"></i></div>
+                        <h3>Two Restrictions</h3>
+                        <p>Thousand Umbral Horror places Barian's Seventh Untopia, which holds both players to 2 non-Number Extra Deck summons a turn. Gorgonic Umbral Horror allows only Number Xyz Monsters while it's face-up, and that shuts out Gorgonic Guardian.</p>
+                    </div>
+                </div>
+                <div class="betb-callout">
+                    <p class="betb-callout-title"><i class="fas fa-book-open" aria-hidden="true"></i> Why is a Gorgonic an Umbral Horror?</p>
+                    <p>Umbral Horror and Number 104 are Vector's cards in Yu-Gi-Oh! ZEXAL, and Gorgonic Umbral Horror's name refers to the Gorgonic cards Vector used in his past. The rest of his Beyond the Brave support, Barian's Seventh Untopia, Barian's Hope, Barian's Seal and CXyz Hope Chaos Barian Dragon, is covered in the <a class="betb-link" href="Barian%27s%20Deck%20Analysis.html">Barian's guide</a>.</p>
+                </div>
+            </section>
+
+            <!-- The five cards: interactive card panel -->
+            <section class="mb-10 md:mb-16" id="betb-cards">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">The Five Cards</h2>
+                <p class="betb-lede">Four Main Deck monsters that exist to make the fifth. Pick a card to see its official text, its job in the deck and how it sits next to the classic Gorgonics.</p>
+
+                <div class="betb-cardtabs" role="tablist" aria-label="Beyond the Brave Umbral Horror cards" data-card-tabs>
+                    <button type="button" class="betb-cardtab" role="tab" id="betb-cardtab-gorgonic" aria-controls="betb-card-gorgonic" aria-selected="true">
+                        <span class="betb-cardtab-deck">Main Deck</span>
+                        <span class="betb-cardtab-name">Gorgonic Umbral Horror</span>
+                        <span class="betb-cardtab-role">Starter</span>
+                    </button>
+                    <button type="button" class="betb-cardtab" role="tab" id="betb-cardtab-v" aria-controls="betb-card-v" aria-selected="false" tabindex="-1">
+                        <span class="betb-cardtab-deck">Main Deck</span>
+                        <span class="betb-cardtab-name">V Umbral Horror</span>
+                        <span class="betb-cardtab-role">Search + Rank-Up</span>
+                    </button>
+                    <button type="button" class="betb-cardtab" role="tab" id="betb-cardtab-shining" aria-controls="betb-card-shining" aria-selected="false" tabindex="-1">
+                        <span class="betb-cardtab-deck">Main Deck</span>
+                        <span class="betb-cardtab-name">Shining Umbral Horror</span>
+                        <span class="betb-cardtab-role">Extender</span>
+                    </button>
+                    <button type="button" class="betb-cardtab" role="tab" id="betb-cardtab-thousand" aria-controls="betb-card-thousand" aria-selected="false" tabindex="-1">
+                        <span class="betb-cardtab-deck">Main Deck</span>
+                        <span class="betb-cardtab-name">Thousand Umbral Horror</span>
+                        <span class="betb-cardtab-role">Field Spell placer</span>
+                    </button>
+                    <button type="button" class="betb-cardtab betb-cardtab--extra" role="tab" id="betb-cardtab-victory" aria-controls="betb-card-victory" aria-selected="false" tabindex="-1">
+                        <span class="betb-cardtab-deck">Extra Deck</span>
+                        <span class="betb-cardtab-name">Number C104: Umbral Horror Masquerade Victory</span>
+                        <span class="betb-cardtab-role">Boss</span>
+                    </button>
+                </div>
+
+                <!-- Gorgonic Umbral Horror -->
+                <article id="betb-card-gorgonic" class="betb-spotlight betb-cardpanel" role="tabpanel" aria-labelledby="betb-cardtab-gorgonic" tabindex="0" data-card-panel>
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-card-gorgonic-img-container" class="betb-art">Gorgonic Umbral Horror</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Main Deck &middot; Effect Monster</p>
+                            <h3 class="betb-card-name">Gorgonic Umbral Horror</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Level</dt><dd>4</dd></div>
+                                <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                <div><dt>Type</dt><dd>Rock / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>1200 / 0</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li>You cannot Special Summon from the Extra Deck, except "Number" Xyz Monsters. You can only use each of the following effects of "Gorgonic Umbral Horror" once per turn.</li>
+                                <li>If you control no monsters, or all monsters you control are "Umbral Horror" monsters: You can Special Summon this card from your hand, and if you do, add 1 non-Rock "Umbral Horror" monster from your Deck to your hand.</li>
+                                <li>Can be treated as 2 materials for the Xyz Summon of a "Number" Xyz Monster that requires 3 or more materials.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> the starter. It summons itself onto an empty field, adds V, Shining or Thousand, then counts as two of Masquerade V's three materials. Every line in this tab begins with it.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Summons itself</dt><dd>Empty field, or only Umbral Horrors</dd></div>
+                                <div><dt>Adds</dt><dd>A non-Rock Umbral Horror</dd></div>
+                                <div><dt>Counts as</dt><dd>2 materials for a 3+ material Number</dd></div>
+                                <div><dt>While face-up</dt><dd>Number Xyz only from the Extra Deck</dd></div>
+                            </dl>
+                            <p class="betb-angle"><i class="fas fa-mountain" aria-hidden="true"></i><span><strong>The Gorgonic angle.</strong> It's the only Level 4 Gorgonic, and it keeps the family's DARK Rock stats. So <strong>Gallant Granite</strong> can add it, and <strong>Gorgonic Gargoyle</strong> and <strong>Gorgonic Cerberus</strong> both react to it. Its Number-only restriction is the catch. Gorgonic Guardian isn't a Number, so the two can't share a turn while Gorgonic Umbral Horror is face-up. <a class="betb-link" href="#betb-legacy">See which classic cards still work</a>.</span></p>
+                            <p class="betb-copies">Recommended copies: <b>3</b></p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- V Umbral Horror -->
+                <article id="betb-card-v" class="betb-spotlight betb-cardpanel" role="tabpanel" aria-labelledby="betb-cardtab-v" tabindex="0" data-card-panel hidden>
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-card-v-img-container" class="betb-art">V Umbral Horror</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Main Deck &middot; Effect Monster</p>
+                            <h3 class="betb-card-name">V Umbral Horror</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Level</dt><dd>4</dd></div>
+                                <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                <div><dt>Type</dt><dd>Spellcaster / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>500 / 1500</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li>If this card is Normal or Special Summoned: You can add 1 "Umbral Horror" monster from your Deck to your hand, except "V Umbral Horror".</li>
+                                <li>You can banish this card from your GY, then target 1 "Masquerade" Xyz Monster you control; Special Summon from your Extra Deck, 1 "Number" monster that is 1 Rank higher than that monster you control, by using it as material (this is treated as an Xyz Summon, transfer its materials).</li>
+                                <li>You can only use each effect of "V Umbral Horror" once per turn.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> searcher and Rank-Up. On the field it adds the next Umbral Horror, Gorgonic included. In the GY it does the job of a Rank-Up-Magic Spell, so the climb from Masquerade V to C104 Victory costs no card from your hand.</p>
+                            <dl class="betb-glance">
+                                <div><dt>On summon</dt><dd>Adds any Umbral Horror but V</dd></div>
+                                <div><dt>From the GY</dt><dd>Masquerade Xyz &rarr; Number 1 Rank up</dd></div>
+                                <div><dt>Works on</dt><dd>Masquerade V and the 2013 Number 104: Masquerade</dd></div>
+                                <div><dt>Rank-Up stopped by</dt><dd>GY banishers such as D.D. Crow and the Bystials</dd></div>
+                            </dl>
+                            <p class="betb-angle"><i class="fas fa-mountain" aria-hidden="true"></i><span><strong>The Gorgonic angle.</strong> V can fetch Gorgonic Umbral Horror too. Normal Summon V, add Gorgonic, and Gorgonic still summons itself, because V is an Umbral Horror. Ash Blossom can stop V's search, but not its Rank-Up, which summons from the Extra Deck.</span></p>
+                            <p class="betb-copies">Recommended copies: <b>3</b></p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Shining Umbral Horror -->
+                <article id="betb-card-shining" class="betb-spotlight betb-cardpanel" role="tabpanel" aria-labelledby="betb-cardtab-shining" tabindex="0" data-card-panel hidden>
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-card-shining-img-container" class="betb-art">Shining Umbral Horror</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Main Deck &middot; Effect Monster</p>
+                            <h3 class="betb-card-name">Shining Umbral Horror</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Level</dt><dd>4</dd></div>
+                                <div><dt>Attribute</dt><dd>LIGHT</dd></div>
+                                <div><dt>Type</dt><dd>Fiend / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>0 / 2000</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li>If you Normal or Special Summon an "Umbral Horror" monster(s) or a "Masquerade" Xyz Monster(s) (except during the Damage Step): You can Special Summon this card from your hand, and if you do, draw 1 card, then you can Special Summon it if it is an "Umbral Horror" monster.</li>
+                                <li>Can be treated as 2 materials for the Xyz Summon of a "Number" Xyz Monster that requires 3 or more materials.</li>
+                                <li>You can only use each effect of "Shining Umbral Horror" once per turn.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> the extender. It joins the field when you summon an Umbral Horror or a Masquerade Xyz, replaces itself with a draw, and then counts as two materials. With one more Level 4 it makes a second Masquerade V.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Joins on</dt><dd>An Umbral Horror or Masquerade summon</dd></div>
+                                <div><dt>Gives</dt><dd>+1 card and +1 body</dd></div>
+                                <div><dt>Counts as</dt><dd>2 materials for a 3+ material Number</dd></div>
+                                <div><dt>Timing</dt><dd>Must already be in your hand</dd></div>
+                            </dl>
+                            <p class="betb-angle"><i class="fas fa-mountain" aria-hidden="true"></i><span><strong>The Gorgonic angle.</strong> Shining is the one LIGHT card of the five, so it fits a Rank 4 Number that asks for LIGHT monsters, like <strong>Number 102: Star Seraph Sentry</strong>. Rank that up with Rank-Up-Magic Limited Barian's Force and <strong>Number C102: Archfiend Seraph</strong> turns a monster to 0 ATK and negates it, Gorgonic Guardian's gaze one Rank higher. It can't respond to the summon that added it to your hand; it has to be there already.</span></p>
+                            <p class="betb-copies">Recommended copies: <b>2</b></p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Thousand Umbral Horror -->
+                <article id="betb-card-thousand" class="betb-spotlight betb-cardpanel" role="tabpanel" aria-labelledby="betb-cardtab-thousand" tabindex="0" data-card-panel hidden>
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-card-thousand-img-container" class="betb-art">Thousand Umbral Horror</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Main Deck &middot; Effect Monster</p>
+                            <h3 class="betb-card-name">Thousand Umbral Horror</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Level</dt><dd>4</dd></div>
+                                <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                <div><dt>Type</dt><dd>Fiend / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>0 / 0</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li>(Quick Effect): You can send this card from your hand or field to the GY; place 1 "Barian's Seventh Untopia" from your hand or Deck, face-up in your Field Zone, also you cannot Special Summon from the Extra Deck until the end of your next turn after this effect resolves, except Xyz Monsters.</li>
+                                <li>If an Xyz Monster(s) is Special Summoned, while this card is in your GY (except during the Damage Step): You can Special Summon this card, also you take no effect damage from your card effects this turn.</li>
+                                <li>You can only use each effect of "Thousand Umbral Horror" once per turn.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> the Field Spell placer. It puts Barian's Seventh Untopia on the field straight from the Deck, then comes back from the GY when any Xyz Monster is Special Summoned, even one of your opponent's. That return is the third material for a second Masquerade V.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Places</dt><dd>Untopia, from hand or Deck</dd></div>
+                                <div><dt>Your restriction</dt><dd>Xyz only, until the end of your next turn</dd></div>
+                                <div><dt>Returns when</dt><dd>Any Xyz Monster is Special Summoned</dd></div>
+                                <div><dt>Bonus</dt><dd>No effect damage to you that turn</dd></div>
+                            </dl>
+                            <div class="betb-callout">
+                                <p class="betb-callout-title"><i class="fas fa-chess-rook" aria-hidden="true"></i> What Barian's Seventh Untopia does</p>
+                                <p>Neither player can Special Summon from the Extra Deck more than 2 times per turn, except Number monsters. Once per turn in your Main Phase it adds an Umbral Horror monster from your Deck, then you discard 1 card. In each End Phase, each player takes 400 damage for every Xyz Monster on the field. Thousand places it rather than activating it, so nothing that negates a Spell's activation can answer it.</p>
+                            </div>
+                            <p class="betb-angle"><i class="fas fa-mountain" aria-hidden="true"></i><span><strong>The Gorgonic angle.</strong> Thousand's restriction still allows Xyz Monsters, so on its own it wouldn't stop Gorgonic Guardian. The one that does is Gorgonic Umbral Horror. Try both in the <a class="betb-link" href="#betb-lock">Extra Deck checker</a>.</span></p>
+                            <p class="betb-copies">Recommended copies: <b>2</b></p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Number C104: Umbral Horror Masquerade Victory -->
+                <article id="betb-card-victory" class="betb-spotlight betb-spotlight--extra betb-cardpanel" role="tabpanel" aria-labelledby="betb-cardtab-victory" tabindex="0" data-card-panel hidden>
+                    <div class="betb-spotlight-layout">
+                        <div class="betb-spotlight-art">
+                            <div id="betb-card-victory-img-container" class="betb-art">Number C104: Umbral Horror Masquerade Victory</div>
+                        </div>
+                        <div class="betb-spotlight-head">
+                            <p class="betb-kicker">Extra Deck &middot; Xyz Monster</p>
+                            <h3 class="betb-card-name">Number C104: Umbral Horror Masquerade Victory</h3>
+                            <dl class="betb-stats">
+                                <div><dt>Rank</dt><dd>5</dd></div>
+                                <div><dt>Attribute</dt><dd>DARK</dd></div>
+                                <div><dt>Type</dt><dd>Spellcaster / Xyz / Effect</dd></div>
+                                <div><dt>ATK / DEF</dt><dd>3000 / 1500</dd></div>
+                            </dl>
+                        </div>
+                        <div class="betb-spotlight-body">
+                            <p class="betb-label">Card text</p>
+                            <ol class="betb-effects">
+                                <li class="betb-effect-materials">4 Level 5 monsters</li>
+                                <li>Once per turn (Quick Effect): You can detach 1 material from this card, then target 1 card your opponent controls; destroy it.</li>
+                                <li>If this card battles an opponent's monster, during damage calculation: This card's ATK/DEF become equal to that opponent's monster's ATK or DEF (whichever is higher) +100, during that damage calculation only.</li>
+                                <li>If this card destroys a monster by battle: Send 1 random card from your opponent's hand to the GY, and if you do, halve your opponent's LP.</li>
+                            </ol>
+                            <p class="betb-role"><strong>Role:</strong> the boss. Nobody makes it from four Level 5s. It lands on top of Masquerade V through V Umbral Horror or a Rank-Up-Magic Spell, keeps Masquerade V's materials and picks up Masquerade V's banish effect on the way.</p>
+                            <dl class="betb-glance">
+                                <div><dt>Removal</dt><dd>Destroys 1 card, on either turn</dd></div>
+                                <div><dt>In battle</dt><dd>Their higher stat + 100</dd></div>
+                                <div><dt>On a kill</dt><dd>Random discard, then their LP halved</dd></div>
+                                <div><dt>Arrives via</dt><dd>V Umbral Horror or Limited Barian's Force</dd></div>
+                            </dl>
+                            <div class="betb-callout">
+                                <p class="betb-callout-title"><i class="fas fa-balance-scale" aria-hidden="true"></i> Against the 2013 C104</p>
+                                <p>The original Number C104: Umbral Horror Masquerade destroys a Spell or Trap when it's Special Summoned, and negates monster effects only with Number 104: Masquerade attached. Masquerade V has a different name, so on top of it the original never gets that negation. Victory needs nothing attached: its Quick Effect hits any card, and in battle it always ends up 100 higher than the monster it fights. The halving happens only if your opponent has a card in hand to send.</p>
+                            </div>
+                            <p class="betb-angle"><i class="fas fa-mountain" aria-hidden="true"></i><span><strong>The Gorgonic angle.</strong> This is where Gorgonic Umbral Horror ends up. When V Umbral Horror ranks Masquerade V up, Gorgonic travels along as material, and from then on its Number-only restriction is off. Gorgonic Guardian beats a monster by turning it to 0 ATK; Victory just becomes 100 ATK stronger than it.</span></p>
+                            <p class="betb-copies">Recommended copies: <b>1&ndash;2</b></p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Boss evolution -->
+            <section class="mb-10 md:mb-16" id="betb-evolution">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Boss Evolution: Rank 4 to Rank 7</h2>
+                <p class="betb-lede">Every step is an Xyz Summon on top of the last monster, so the materials keep piling up. Gorgonic Umbral Horror goes under Masquerade V at the bottom and is still attached when the Dragon lands at the top.</p>
+                <ol class="betb-ladder">
+                    <li class="betb-rung betb-rung--base">
+                        <div class="betb-rung-body">
+                            <span class="betb-rung-rank">Level 4</span>
+                            <h3>The Umbral Horror bodies</h3>
+                            <p>Masquerade V needs three Level 4s. Gorgonic and Shining each count as two, so any one of them plus one more Level 4 is enough.</p>
+                            <ul class="betb-tags" aria-label="Level 4 cards">
+                                <li><a class="betb-tag" href="#betb-card-gorgonic">Gorgonic <span class="betb-tag-role">&times;2</span></a></li>
+                                <li><a class="betb-tag" href="#betb-card-shining">Shining <span class="betb-tag-role">&times;2</span></a></li>
+                                <li><a class="betb-tag" href="#betb-card-v">V</a></li>
+                                <li><a class="betb-tag" href="#betb-card-thousand">Thousand</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="betb-rung">
+                        <p class="betb-rung-via"><i class="fas fa-arrow-right" aria-hidden="true"></i> Xyz Summon with 3 Level 4s</p>
+                        <div id="betb-ladder-mv-img-container" class="betb-art">Number 104: Masquerade V</div>
+                        <div class="betb-rung-body">
+                            <span class="betb-rung-rank">Rank 4</span>
+                            <h3>Number 104: Masquerade V</h3>
+                            <p>2700 ATK. Once per turn it detaches to add a Barian's Spell or Trap. The Xyz Monster summoned on top of it gets its banish effect: your opponent banishes 4 monsters with different Attributes and 1 Spell from their Deck, or you banish their top 10 cards.</p>
+                            <p class="betb-rung-mats">Holds: <strong>Gorgonic + V</strong></p>
+                        </div>
+                    </li>
+                    <li class="betb-rung">
+                        <p class="betb-rung-via"><i class="fas fa-arrow-right" aria-hidden="true"></i> V Umbral Horror from the GY, or Rank-Up-Magic Limited Barian's Force</p>
+                        <div id="betb-ladder-victory-img-container" class="betb-art">Number C104: Umbral Horror Masquerade Victory</div>
+                        <div class="betb-rung-body">
+                            <span class="betb-rung-rank">Rank 5</span>
+                            <h3>Number C104: Umbral Horror Masquerade Victory</h3>
+                            <p>3000 ATK. It destroys 1 card on either turn, wins its battles by 100 and halves your opponent's LP on a kill. The banish effect fires as it lands.</p>
+                            <p class="betb-rung-mats">Holds: <strong>Masquerade V + Gorgonic</strong> (V was detached for the search)</p>
+                        </div>
+                    </li>
+                    <li class="betb-rung betb-rung--top">
+                        <p class="betb-rung-via"><i class="fas fa-arrow-right" aria-hidden="true"></i> Its own summon on any Number C101 to C107</p>
+                        <div id="betb-ladder-dragon-img-container" class="betb-art">CXyz Hope Chaos Barian Dragon</div>
+                        <div class="betb-rung-body">
+                            <span class="betb-rung-rank">Rank 7</span>
+                            <h3>CXyz Hope Chaos Barian Dragon</h3>
+                            <p>1000 ATK per material. While a Number C is attached, your opponent can't add cards from their Main Deck to their hand except by drawing. It isn't a Number, so it needs Gorgonic Umbral Horror off the field and counts toward Untopia's 2.</p>
+                            <p class="betb-rung-mats">Holds: <strong>Victory + Masquerade V + Gorgonic</strong> = 3000 ATK</p>
+                        </div>
+                    </li>
+                </ol>
+                <p class="betb-note">Line 1 in the simulator stops at Victory to keep a second Masquerade V. The full climb to the Dragon, with Barian's Hope and Barian's Seal, is the <a class="betb-link" href="Barian%27s%20Deck%20Analysis.html#line-main">main line of the Barian's guide</a> and line 1 of the <a class="betb-link" href="Number%20Deck%20Analysis.html#tab-betb">Number guide's Masquerade V tab</a>.</p>
+            </section>
+
+            <!-- Rank 4 toolbox -->
+            <section class="mb-10 md:mb-16" id="betb-rank4">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">The Rank 4 Toolbox</h2>
+                <p class="betb-lede">Gorgonic and Shining count double only for a Number that needs three or more materials. These are the Rank 4 Numbers worth making with them, and where each one goes next.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-rank4-caption" tabindex="0">
+                    <table class="betb-table betb-table--stack">
+                        <caption id="betb-rank4-caption">Rank 4 Numbers for the Umbral Horror engine</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Rank 4 Number</th>
+                                <th scope="col">Materials</th>
+                                <th scope="col">Counts double?</th>
+                                <th scope="col">Next step</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Number 104: Masquerade V</th>
+                                <td data-label="Materials">3 Level 4</td>
+                                <td data-label="Counts double?"><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Gorgonic or Shining</span></td>
+                                <td data-label="Next step">V Umbral Horror or Limited Barian's Force into C104 Victory. The core of the deck.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Number 104: Masquerade<span class="betb-table-sub">2013</span></th>
+                                <td data-label="Materials">3 Level 4</td>
+                                <td data-label="Counts double?"><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Gorgonic or Shining</span></td>
+                                <td data-label="Next step">It's a Masquerade too, so V Umbral Horror can rank it up. On top of it, the 2013 C104 keeps its monster negation.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Number 105: Battlin' Boxer Star Cestus</th>
+                                <td data-label="Materials">3 Level 4</td>
+                                <td data-label="Counts double?"><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Gorgonic or Shining</span></td>
+                                <td data-label="Next step">Limited Barian's Force into Number C105: Battlin' Boxer Comet Cestus, which destroys a monster and burns for its ATK with Star Cestus attached.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Number 102: Star Seraph Sentry</th>
+                                <td data-label="Materials">3 LIGHT Level 4</td>
+                                <td data-label="Counts double?"><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Shining only</span></td>
+                                <td data-label="Next step">Limited Barian's Force into Number C102: Archfiend Seraph: 0 ATK and negate, like Gorgonic Guardian. Gorgonic is DARK and can't help here.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Number 39: Utopia Rising</th>
+                                <td data-label="Materials">2 Level 4</td>
+                                <td data-label="Counts double?"><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> Counts as 1</span></td>
+                                <td data-label="Next step">When it's Special Summoned it revives a Number from your GY, such as a Masquerade V, and can pass its materials to it.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Number 101: Silent Honor ARK</th>
+                                <td data-label="Materials">2 Level 4</td>
+                                <td data-label="Counts double?"><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> Counts as 1</span></td>
+                                <td data-label="Next step">Limited Barian's Force into Number C101: Silent Honor DARK, another Number C the Dragon can stack on.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>Gallant Granite</strong>, the Rank 4 Rock searcher from the Classic tab, isn't a Number. It can still add Gorgonic Umbral Horror from the Deck, but on a turn when Gorgonic is face-up Granite can't be summoned. See the table below.</p>
+            </section>
+
+            <!-- Classic card compatibility -->
+            <section class="mb-10 md:mb-16" id="betb-legacy">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Old Stone, New Horror: Which Classic Cards Still Work</h2>
+                <p class="betb-lede">The classic Gorgonics are Level 3 Rocks built for a Rank 3. The new cards are Level 4s built for Rank 4 Numbers. Most of them don't combine, and the table shows why.</p>
+                <div class="betb-table-wrap" role="region" aria-labelledby="betb-legacy-caption" tabindex="0">
+                    <table class="betb-table betb-table--stack">
+                        <caption id="betb-legacy-caption">Classic cards alongside the Umbral Horror cards</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Works with it?</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="betb-table-group"><th scope="colgroup" colspan="3">Classic Gorgonic</th></tr>
+                            <tr>
+                                <th scope="row">Gorgonic Guardian<span class="betb-table-sub">Rank 3 Xyz</span></th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td data-label="Why">Not a Number, so it can't be summoned while Gorgonic Umbral Horror is face-up, even with Gorgonic as one of its materials. Once Gorgonic is material or in the GY, Guardian is allowed again, but it still needs two Level 3 Rocks.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gorgonic Cerberus</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Barely</span></td>
+                                <td data-label="Why">Its Normal Summon makes every Rock you control Level 3, Gorgonic Umbral Horror included. Gorgonic (as 2) plus Cerberus then makes a Rank 3 Number that needs three Level 3s: Number 34: Terror-Byte, Number 51: Finisher the Strong Arm or Number C65: King Overfiend. None of them is worth the Normal Summon that V Umbral Horror wants.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gorgonic Gargoyle</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Barely</span></td>
+                                <td data-label="Why">Normal Summoning Gorgonic Umbral Horror, a Rock, brings Gargoyle out. But Gorgonic only adds a card when it summons itself, and a Level 3 Gargoyle can't join a Rank 4. Gargoyle isn't an Umbral Horror either, so once it's on the field Gorgonic can't summon itself.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gorgonic Golem</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td data-label="Why">A Level 3 body with no way into a Rank 4. On your field it stops Gorgonic Umbral Horror from summoning itself.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gorgonic Ghoul</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--no"><i class="fas fa-times" aria-hidden="true"></i> No</span></td>
+                                <td data-label="Why">Level 1, and it only summons itself next to another Gorgonic Ghoul. Same problem as Golem.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Gallant Granite<span class="betb-table-sub">Rank 4 Rock Xyz</span></th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Next turn</span></td>
+                                <td data-label="Why">It adds any Rock from the Deck, Gorgonic Umbral Horror included. But Granite isn't a Number or an Umbral Horror: it can't come out while Gorgonic is face-up, and with Granite on your field Gorgonic can't summon itself. It finds Gorgonic for a later turn.</td>
+                            </tr>
+                            <tr class="betb-table-group"><th scope="colgroup" colspan="3">Older Umbral Horror</th></tr>
+                            <tr>
+                                <th scope="row">Umbral Horror Will o' the Wisp</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td data-label="Why">When it's summoned, it takes the Level of another Umbral Horror you control or have in your GY. Target Gorgonic and it becomes Level 4, the third material for Masquerade V.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Umbral Horror Ghoul</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--yes"><i class="fas fa-check" aria-hidden="true"></i> Yes</span></td>
+                                <td data-label="Why">An Umbral Horror, so Gorgonic can still summon itself beside it. Once per turn it drops to 0 ATK to summon a 0-ATK Umbral Horror from your hand: Shining or Thousand.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Umbral Horror Ghost</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td data-label="Why">It summons itself and a Level 4 or lower Fiend from your hand, like Shining or Thousand, but you can't Normal Summon that turn, so V has to arrive some other way.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Umbral Horror Unform</th>
+                                <td data-label="Works with it?"><span class="betb-pill betb-pill--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td data-label="Why">Only when it's destroyed by battle while attacking. Then it summons 2 Umbral Horrors from your Deck. V's summon trigger still adds a card; Gorgonic's doesn't, because it only adds when it summons itself from the hand.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="betb-note"><strong>Bottom line:</strong> the two Gorgonic decks share a name, not a plan. Build the Rank 3 deck from the Classic tab with Chronomaly or Adamancipator, and build Umbral Horror as a Rank 4 Number deck.</p>
+            </section>
+
+            <!-- Extra Deck checker -->
+            <section class="mb-10 md:mb-16" id="betb-lock">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Can You Still Summon It?</h2>
+                <p class="betb-lede">Four cards in this engine limit your Extra Deck. Set what has resolved this turn, pick a monster, and the checker applies each card's text.</p>
+                <div class="betb-lock" data-lock-checker>
+                    <div class="betb-lock-presets" role="group" aria-labelledby="betb-lock-presets-label">
+                        <p id="betb-lock-presets-label" class="betb-label">Try a situation</p>
+                        <button type="button" class="betb-preset" data-preset="core" aria-pressed="false">Gorgonic on the field</button>
+                        <button type="button" class="betb-preset" data-preset="rankup" aria-pressed="false">After the Rank-Up</button>
+                        <button type="button" class="betb-preset" data-preset="cap" aria-pressed="false">Untopia after 2 summons</button>
+                        <button type="button" class="betb-preset" data-preset="negated" aria-pressed="false">Gorgonic negated</button>
+                        <button type="button" class="betb-preset" data-preset="classic" aria-pressed="false">Classic Rank 3 turn</button>
+                    </div>
+                    <div class="betb-lock-inputs" data-lock-controls>
+                        <p class="betb-lock-hint">Loading the checker&hellip;</p>
+                    </div>
+                    <div class="betb-lock-result" data-lock-result aria-live="polite"></div>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="mb-10 md:mb-16" id="betb-combos">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Combo Lines</h2>
+                <p class="betb-lede">Every line plays step by step in the combo simulator below the tabs. Each step moves one card, so you can follow every search, cost and material.</p>
+                <div class="betb-lines">
+                    <article class="betb-line" aria-labelledby="betb-line-1">
+                        <p class="betb-kicker">Line 1 &middot; Going first</p>
+                        <h3 id="betb-line-1">Gorgonic into C104 Victory</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Gorgonic Umbral Horror + 1 card to discard</dd></div>
+                            <div><dt>Uses</dt><dd>All five new cards, Barian's Seventh Untopia, 2 Masquerade V</dd></div>
+                            <div><dt>End board</dt><dd>C104 Victory (2 materials), Masquerade V (1), Untopia, a Set Barian's Seal, Barian's Hope in hand</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Gorgonic and Shining each count as two materials, so four monsters make two Masquerade V. <strong>Watch for:</strong> Nibiru is live after Thousand returns, the fifth summon. Ash Blossom on Gorgonic's or V's search cuts the line short.</p>
+                        <button type="button" class="betb-play" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i> Play line 1</button>
+                    </article>
+                    <article class="betb-line" aria-labelledby="betb-line-2">
+                        <p class="betb-kicker">Line 2 &middot; Going second</p>
+                        <h3 id="betb-line-2">Two Rank-Ups and a Victory Swing</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Gorgonic Umbral Horror + Shining Umbral Horror</dd></div>
+                            <div><dt>Uses</dt><dd>V, Thousand, Untopia, Barian's Seal, Rank-Up-Magic Limited Barian's Force</dd></div>
+                            <div><dt>Result</dt><dd>2 cards destroyed before battle, Victory wins its fight and halves their LP, then the 2013 C104 swings for 3000</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it works:</strong> Shining in hand responds to Gorgonic's own summon, so the second body comes free. Masquerade V's detach can find Limited Barian's Force, since its name contains "Barian's". <strong>Watch for:</strong> the halving needs a card in your opponent's hand.</p>
+                        <button type="button" class="betb-play" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i> Play line 2</button>
+                    </article>
+                    <article class="betb-line betb-line--legacy" aria-labelledby="betb-line-3">
+                        <p class="betb-kicker">Line 3 &middot; Classic Rank 3</p>
+                        <h3 id="betb-line-3">Golem and Gargoyle into Gorgonic Guardian</h3>
+                        <dl class="betb-line-facts">
+                            <div><dt>Hand</dt><dd>Gorgonic Golem + Gorgonic Gargoyle</dd></div>
+                            <div><dt>Uses</dt><dd>No Umbral Horror cards</dd></div>
+                            <div><dt>End board</dt><dd>Gorgonic Guardian with 2 materials</dd></div>
+                        </dl>
+                        <p class="betb-line-rule"><strong>Why it's here:</strong> the Classic tab's foundational combo, in the simulator. <strong>Watch for:</strong> keep Gorgonic Umbral Horror out of this turn. While it's face-up, Guardian can't be summoned.</p>
+                        <button type="button" class="betb-play" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play line 3</button>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Deck building -->
+            <section class="mb-10 md:mb-16" id="betb-build">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Building It</h2>
+                <div class="betb-build">
+                    <div class="betb-build-card">
+                        <h3>The Umbral Horror core</h3>
+                        <p class="betb-build-sub">Our recommendation for the engine. Fill the rest with hand traps; the engine's own interaction is mostly on the board.</p>
+                        <p class="betb-ratio-group">Main Deck</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">Gorgonic Umbral Horror<span class="betb-ratio-role">The best starter: summons itself and adds a card.</span></span></li>
+                            <li><span class="betb-ratio-count">3</span><span class="betb-ratio-name">V Umbral Horror<span class="betb-ratio-role">A second starter, and the Rank-Up that needs no Spell.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Shining Umbral Horror<span class="betb-ratio-role">Extender. Weak alone in the opening hand.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Thousand Umbral Horror<span class="betb-ratio-role">Places Untopia and comes back as a material.</span></span></li>
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Barian's Seventh Untopia<span class="betb-ratio-role">Thousand needs one in the Deck to place.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Rank-Up-Magic Limited Barian's Force<span class="betb-ratio-role">The backup Rank-Up when V Umbral Horror is banished.</span></span></li>
+                        </ul>
+                        <p class="betb-ratio-group">Extra Deck</p>
+                        <ul class="betb-ratio">
+                            <li><span class="betb-ratio-count">2</span><span class="betb-ratio-name">Number 104: Masquerade V<span class="betb-ratio-role">Line 1 makes two.</span></span></li>
+                            <li><span class="betb-ratio-count">1&ndash;2</span><span class="betb-ratio-name">Number C104: Umbral Horror Masquerade Victory</span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">Number C104: Umbral Horror Masquerade<span class="betb-ratio-role">The second Rank 5 for Limited Barian's Force.</span></span></li>
+                            <li><span class="betb-ratio-count">1</span><span class="betb-ratio-name">CXyz Hope Chaos Barian Dragon<span class="betb-ratio-role">The Rank 7 finish.</span></span></li>
+                        </ul>
+                        <p class="betb-note">The Barian's Spells and Traps and the Seventh cards are in the <a class="betb-link" href="Barian%27s%20Deck%20Analysis.html#overview">Barian's guide</a>.</p>
+                    </div>
+                    <div class="betb-build-card">
+                        <h3>What about the classic Gorgonics?</h3>
+                        <p class="betb-build-sub">Gorgonic Guardian, Gargoyle, Golem, Cerberus and Ghoul</p>
+                        <p>Leave them out of this build. They're Level 3, they stop Gorgonic Umbral Horror from summoning itself, and their boss isn't a Number, so Gorgonic Umbral Horror won't let it out.</p>
+                        <p>Keep them for the Rank 3 deck in the Classic tab. Gorgonic Umbral Horror doesn't fit there either: it's Level 4, and it would shut off Gorgonic Guardian.</p>
+                        <p>The one card both builds can share is <strong>Gallant Granite</strong>, since it adds any Rock monster. Here it finds Gorgonic Umbral Horror for a later turn.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- What can go wrong -->
+            <section class="mb-10 md:mb-16" id="betb-risks">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">What Can Go Wrong</h2>
+                <ul class="betb-risks">
+                    <li>
+                        <i class="fas fa-search-minus" aria-hidden="true"></i>
+                        <div>
+                            <h3>Searches are choke points</h3>
+                            <p>Gorgonic, V and Masquerade V all add cards from the Deck. Ash Blossom on the first one shortens the line; Droll &amp; Lock Bird after the first add stops the rest.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-eye-slash" aria-hidden="true"></i>
+                        <div>
+                            <h3>A negated Gorgonic counts as one material</h3>
+                            <p>Infinite Impermanence or Effect Veiler on Gorgonic Umbral Horror after it lands turns off its double-material effect, so Masquerade V needs a third body. Shining in hand is the answer. The Number-only restriction is off while it's negated too.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-ghost" aria-hidden="true"></i>
+                        <div>
+                            <h3>V Umbral Horror lives in the GY</h3>
+                            <p>D.D. Crow, a Bystial or Called by the Grave banishes or shuts off V before it can rank up. Limited Barian's Force is the backup.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-meteor" aria-hidden="true"></i>
+                        <div>
+                            <h3>Nibiru after the fifth summon</h3>
+                            <p>Both lines pass five summons before C104 Victory lands. Nibiru there Tributes every face-up monster on your field and leaves you with whatever is still in hand.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- Verdict -->
+            <section class="mb-10 md:mb-16" id="betb-verdict">
+                <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Verdict</h2>
+                <div class="betb-verdict">
+                    <p><strong>For Umbral Horror, Gorgonic is the key card.</strong> One copy summons itself, adds the next piece and counts double for Masquerade V. From there V Umbral Horror reaches C104 Victory without a Spell, and Thousand locks both Extra Decks behind Untopia.</p>
+                    <p><strong>For classic Gorgonic, it's a new name, not new support.</strong> Its restriction shuts out Gorgonic Guardian, and its Level 4 keeps it out of Rank 3. Treat the two as separate decks, and use this tab for the Rank 4 one.</p>
+                </div>
+            </section>
+        </div>
+        <!-- END tab-betb -->
+
+        <!-- ==================== COMBO SIMULATOR (shared by both tabs) ==================== -->
+        <section class="mb-10 md:mb-16" id="gorgonic-lab" data-pcs-scope="lab">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">Combo Simulator</h2>
+            <p class="betb-lede">Lines 1 and 2 use the Beyond the Brave Umbral Horror cards; line 3 is the classic Gorgonic Guardian combo.</p>
+            <div id="gorgonic-combo-lab" class="betb-lab-mount" data-combo-system="Gorgonic"></div>
         </section>
               
 
@@ -712,6 +2293,400 @@
                 initPageSections('Gorgonic');
             });
         </script>
+
+    <!-- Card panel tabs inside the Umbral Horror tab (WAI-ARIA tabs, automatic
+         activation). Registered before GuideTabs so a #betb-card-* link shows the
+         right card before guide-tabs.js opens the tab and scrolls to it. -->
+    <script>
+        (function () {
+            'use strict';
+            const list = document.querySelector('[data-card-tabs]');
+            if (!list) return;
+            const tabs = Array.from(list.querySelectorAll('[role="tab"]'));
+            const panelOf = tab => document.getElementById(tab.getAttribute('aria-controls'));
+
+            function select(tab, focus) {
+                tabs.forEach(t => {
+                    const on = t === tab;
+                    t.setAttribute('aria-selected', String(on));
+                    t.tabIndex = on ? 0 : -1;
+                    panelOf(t).hidden = !on;
+                });
+                if (focus) tab.focus();
+            }
+
+            list.addEventListener('click', e => {
+                const tab = e.target.closest('[role="tab"]');
+                if (tab) select(tab);
+            });
+            list.addEventListener('keydown', e => {
+                const i = tabs.indexOf(document.activeElement);
+                if (i < 0) return;
+                const next = {
+                    ArrowRight: tabs[(i + 1) % tabs.length],
+                    ArrowLeft: tabs[(i - 1 + tabs.length) % tabs.length],
+                    Home: tabs[0],
+                    End: tabs[tabs.length - 1]
+                }[e.key];
+                if (!next) return;
+                e.preventDefault();
+                select(next, true);
+            });
+
+            // Show the card a link points at, e.g. the spotlight chips' #betb-card-* links.
+            function targetOf(hash) {
+                if (!hash || hash.length < 2) return null;
+                try {
+                    return document.getElementById(decodeURIComponent(hash.slice(1)));
+                } catch (err) {
+                    return null; /* malformed hash: ignore */
+                }
+            }
+            function showCardFor(target) {
+                const panel = target && target.closest('[data-card-panel]');
+                const tab = panel && tabs.find(t => t.getAttribute('aria-controls') === panel.id);
+                if (tab) select(tab);
+            }
+            window.addEventListener('hashchange', () => showCardFor(targetOf(location.hash)));
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (link) showCardFor(targetOf(link.hash));
+            });
+            showCardFor(targetOf(location.hash));
+        })();
+    </script>
+
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + spotlight + simulator links. The
+         Umbral Horror tab's art only loads the first time that tab opens; the combo
+         simulator below the tabs mounts itself through data-combo-system. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-betb': [
+                    {
+                        'betb-card-gorgonic-img-container': 'Gorgonic Umbral Horror',
+                        'betb-card-v-img-container': 'V Umbral Horror',
+                        'betb-card-shining-img-container': 'Shining Umbral Horror',
+                        'betb-card-thousand-img-container': 'Thousand Umbral Horror',
+                        'betb-card-victory-img-container': 'Number C104: Umbral Horror Masquerade Victory'
+                    },
+                    {
+                        'betb-ladder-mv-img-container': 'Number 104: Masquerade V',
+                        'betb-ladder-victory-img-container': 'Number C104: Umbral Horror Masquerade Victory',
+                        'betb-ladder-dragon-img-container': 'CXyz Hope Chaos Barian Dragon'
+                    }
+                ]
+            }
+        });
+
+        (function () {
+            'use strict';
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'betb-spot-img-container': 'Gorgonic Umbral Horror' });
+
+            const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const tablist = document.querySelector('[data-guide-tabs]');
+            const tabFor = panelId => tablist && tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the guide tab holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('.tab-panel');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (cta && tablist) {
+                cta.addEventListener('click', () => {
+                    const tab = tabFor(cta.dataset.openPanel);
+                    if (!tab) return;
+                    tab.click();
+                    tab.focus({ preventScroll: true });
+                    tablist.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+                });
+            }
+
+            // "Play line N": pick combo N in the simulator below the tabs. The simulator
+            // mounts itself asynchronously, so wait for its option to exist before clicking it.
+            const lab = document.getElementById('gorgonic-combo-lab');
+            function whenOption(num, done) {
+                if (!lab) return;
+                const selector = '.combo-selector-option[data-value="' + num + '"]';
+                const found = lab.querySelector(selector);
+                if (found) { done(found); return; }
+                if (!window.MutationObserver) return;
+                let timer = null;
+                const observer = new MutationObserver(() => {
+                    const option = lab.querySelector(selector);
+                    if (!option) return;
+                    observer.disconnect();
+                    clearTimeout(timer);
+                    done(option);
+                });
+                observer.observe(lab, { childList: true, subtree: true });
+                timer = setTimeout(() => observer.disconnect(), 10000);
+            }
+            document.addEventListener('click', e => {
+                const trigger = e.target.closest('[data-combo-open]');
+                if (!trigger) return;
+                const section = document.getElementById('gorgonic-lab');
+                if (section) section.scrollIntoView({ block: 'start', behavior: reduceMotion() ? 'auto' : 'smooth' });
+                whenOption(trigger.dataset.comboOpen, option => option.click());
+            });
+        })();
+    </script>
+
+    <!-- "Can you still summon it?" checker. Everything it knows is in the config
+         blocks at the top; each rule is one card's printed restriction:
+         Gorgonic Umbral Horror (face-up: Number Xyz only), Thousand Umbral Horror
+         and Seventh Tachyon (Xyz only), Barian's Seventh Untopia (2 non-Number
+         Extra Deck summons a turn). -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-lock-checker]');
+            if (!root) return;
+            const controls = root.querySelector('[data-lock-controls]');
+            const result = root.querySelector('[data-lock-result]');
+
+            const LOCKS = [
+                {
+                    key: 'gorgonic',
+                    name: 'Gorgonic Umbral Horror',
+                    options: [
+                        { value: 'faceup', label: 'Face-up' },
+                        { value: 'negated', label: 'Face-up, negated' },
+                        { value: 'off', label: 'Not face-up' }
+                    ]
+                },
+                {
+                    key: 'thousand',
+                    name: "Thousand Umbral Horror's effect",
+                    options: [
+                        { value: 'on', label: 'This turn or your last' },
+                        { value: 'off', label: 'Not used' }
+                    ]
+                },
+                {
+                    key: 'tachyon',
+                    name: 'Seventh Tachyon',
+                    options: [
+                        { value: 'on', label: 'Resolved this turn' },
+                        { value: 'off', label: 'Not used' }
+                    ]
+                },
+                {
+                    key: 'untopia',
+                    name: "Barian's Seventh Untopia",
+                    options: [
+                        { value: 'off', label: 'Not on the field' },
+                        { value: '0', label: '0 used' },
+                        { value: '1', label: '1 used' },
+                        { value: '2', label: '2 used' }
+                    ]
+                }
+            ];
+            const TARGETS = [
+                { value: 'mv', name: 'Number 104: Masquerade V', tag: 'Rank 4 Number', kind: 'Xyz', number: true },
+                { value: 'victory', name: 'Number C104: Umbral Horror Masquerade Victory', tag: 'Rank 5 Number', kind: 'Xyz', number: true },
+                { value: 'rising', name: 'Number 39: Utopia Rising', tag: 'Rank 4 Number', kind: 'Xyz', number: true },
+                { value: 'dragon', name: 'CXyz Hope Chaos Barian Dragon', tag: 'Rank 7 Xyz, not a Number', kind: 'Xyz', number: false },
+                { value: 'guardian', name: 'Gorgonic Guardian', tag: 'Rank 3 Xyz', kind: 'Xyz', number: false },
+                { value: 'granite', name: 'Gallant Granite', tag: 'Rank 4 Xyz', kind: 'Xyz', number: false },
+                { value: 'dragite', name: 'Adamancipator Risen - Dragite', tag: 'Synchro', kind: 'Synchro', number: false },
+                { value: 'link', name: 'Any Link Monster', tag: 'Link', kind: 'Link', number: false }
+            ];
+            const TIPS = {
+                mv: 'Gorgonic or Shining can be 2 of its 3 materials.',
+                victory: 'It arrives through V Umbral Horror or a Rank-Up-Magic Spell, and both count as Xyz Summons.',
+                rising: 'It needs only 2 materials, so Gorgonic and Shining count as 1 each here.',
+                dragon: 'Its own summon also needs a Number C101 to C107 on your field to stack on.',
+                guardian: 'It needs 2 Level 3 Rock monsters.',
+                granite: 'Once it is out, it can add Gorgonic Umbral Horror from your Deck for a later turn.',
+                dragite: 'The Adamancipator engine from the Classic tab.',
+                link: 'Link Monsters are never Xyz Monsters.'
+            };
+            const PRESETS = {
+                core: { gorgonic: 'faceup', thousand: 'on', tachyon: 'off', untopia: '0', target: 'guardian' },
+                rankup: { gorgonic: 'off', thousand: 'on', tachyon: 'off', untopia: '0', target: 'dragon' },
+                cap: { gorgonic: 'off', thousand: 'on', tachyon: 'off', untopia: '2', target: 'dragon' },
+                negated: { gorgonic: 'negated', thousand: 'off', tachyon: 'off', untopia: 'off', target: 'granite' },
+                classic: { gorgonic: 'off', thousand: 'off', tachyon: 'off', untopia: 'off', target: 'guardian' }
+            };
+            const KEYS = LOCKS.map(l => l.key).concat('target');
+
+            const state = {};
+
+            function applyPreset(name) {
+                const preset = PRESETS[name];
+                KEYS.forEach(key => { state[key] = preset[key]; });
+            }
+
+            function radioGroup(key, labelText, options, extraClass) {
+                const row = document.createElement('div');
+                row.className = 'betb-lock-row';
+                const labelId = 'betb-lock-' + key + '-label';
+                const name = document.createElement('span');
+                name.className = 'betb-lock-name';
+                name.id = labelId;
+                name.textContent = labelText;
+                const seg = document.createElement('div');
+                seg.className = 'betb-seg' + (extraClass ? ' ' + extraClass : '');
+                seg.setAttribute('role', 'radiogroup');
+                seg.setAttribute('aria-labelledby', labelId);
+                options.forEach(opt => {
+                    const label = document.createElement('label');
+                    const input = document.createElement('input');
+                    input.type = 'radio';
+                    input.name = 'betb-lock-' + key;
+                    input.value = opt.value;
+                    input.dataset.key = key;
+                    const text = document.createElement('span');
+                    text.textContent = opt.label;
+                    if (opt.tag) {
+                        const small = document.createElement('small');
+                        small.textContent = opt.tag;
+                        text.appendChild(small);
+                    }
+                    label.append(input, text);
+                    seg.appendChild(label);
+                });
+                row.append(name, seg);
+                return row;
+            }
+
+            function fieldset(legendText, rows, hint) {
+                const set = document.createElement('fieldset');
+                set.className = 'betb-lock-set';
+                const legend = document.createElement('legend');
+                legend.textContent = legendText;
+                set.appendChild(legend);
+                rows.forEach(r => set.appendChild(r));
+                if (hint) {
+                    const p = document.createElement('p');
+                    p.className = 'betb-lock-hint';
+                    p.textContent = hint;
+                    set.appendChild(p);
+                }
+                return set;
+            }
+
+            function buildControls() {
+                controls.textContent = '';
+                controls.append(
+                    fieldset('What has resolved', LOCKS.map(l => radioGroup(l.key, l.name, l.options)),
+                        'Negated means Infinite Impermanence, Effect Veiler or similar. Untopia counts your non-Number Extra Deck summons this turn.'),
+                    fieldset('Monster you want to summon',
+                        [radioGroup('target', 'From the Extra Deck', TARGETS.map(t => ({ value: t.value, label: t.name, tag: t.tag })), 'betb-seg--list')])
+                );
+            }
+
+            function evaluate() {
+                const t = TARGETS.find(x => x.value === state.target);
+                const checks = [];
+                let blocked = false;
+                const block = text => { blocked = true; checks.push({ ok: false, text: text }); };
+
+                if (state.gorgonic === 'faceup') {
+                    if (t.kind === 'Xyz' && t.number) {
+                        checks.push({ ok: true, text: 'Gorgonic Umbral Horror allows it: it is a Number Xyz Monster.' });
+                    } else {
+                        block('Gorgonic Umbral Horror is face-up, so only Number Xyz Monsters can come out of the Extra Deck. Using Gorgonic as one of the materials doesn\'t help: it is still face-up when the summon is checked.');
+                    }
+                } else if (state.gorgonic === 'negated') {
+                    checks.push({ ok: null, text: 'Gorgonic Umbral Horror is negated, so its restriction is off for now. So is its double-material effect.' });
+                }
+                if (state.thousand === 'on') {
+                    if (t.kind === 'Xyz') {
+                        checks.push({ ok: true, text: 'Thousand Umbral Horror\'s restriction allows it: it is an Xyz Monster.' });
+                    } else {
+                        block('Thousand Umbral Horror\'s effect allows only Xyz Monsters from the Extra Deck until the end of your next turn.');
+                    }
+                }
+                if (state.tachyon === 'on') {
+                    if (t.kind === 'Xyz') {
+                        checks.push({ ok: true, text: 'Seventh Tachyon\'s restriction allows it: it is an Xyz Monster.' });
+                    } else {
+                        block('Seventh Tachyon allows only Xyz Monsters from the Extra Deck for the rest of the turn.');
+                    }
+                }
+                if (state.untopia !== 'off') {
+                    const used = Number(state.untopia);
+                    if (t.number) {
+                        checks.push({ ok: true, text: 'Barian\'s Seventh Untopia doesn\'t count Number monsters.' });
+                    } else if (used >= 2) {
+                        block('Barian\'s Seventh Untopia: you have already made 2 non-Number Extra Deck summons this turn.');
+                    } else {
+                        checks.push({ ok: true, text: 'Barian\'s Seventh Untopia allows it as your ' + (used === 0 ? 'first' : 'second') + ' of 2 non-Number Extra Deck summons this turn.' });
+                    }
+                }
+                if (!checks.length) checks.push({ ok: true, text: 'Nothing from this engine is restricting your Extra Deck.' });
+                return { blocked: blocked, target: t, checks: checks };
+            }
+
+            function render() {
+                controls.querySelectorAll('input[type="radio"]').forEach(input => {
+                    input.checked = state[input.dataset.key] === input.value;
+                });
+                root.querySelectorAll('[data-preset]').forEach(btn => {
+                    const preset = PRESETS[btn.dataset.preset];
+                    btn.setAttribute('aria-pressed', String(KEYS.every(key => preset[key] === state[key])));
+                });
+
+                const verdict = evaluate();
+                result.className = 'betb-lock-result ' + (verdict.blocked ? 'is-off' : 'is-on');
+                result.textContent = '';
+                const status = document.createElement('p');
+                status.className = 'betb-lock-status';
+                const icon = document.createElement('i');
+                icon.className = 'fas ' + (verdict.blocked ? 'fa-ban' : 'fa-check-circle');
+                icon.setAttribute('aria-hidden', 'true');
+                status.append(icon, document.createTextNode(' ' + (verdict.blocked ? 'Blocked: ' : 'Allowed: ') + verdict.target.name));
+                const detail = document.createElement('p');
+                detail.className = 'betb-lock-detail';
+                detail.textContent = TIPS[verdict.target.value] || '';
+                const list = document.createElement('ul');
+                list.className = 'betb-lock-checks';
+                verdict.checks.forEach(check => {
+                    const li = document.createElement('li');
+                    const mark = document.createElement('i');
+                    mark.className = 'fas ' + (check.ok === null ? 'fa-info-circle' : check.ok ? 'fa-check' : 'fa-times');
+                    mark.setAttribute('aria-hidden', 'true');
+                    const text = document.createElement('span');
+                    text.textContent = check.text;
+                    li.append(mark, text);
+                    list.appendChild(li);
+                });
+                result.append(status, detail, list);
+            }
+
+            controls.addEventListener('change', e => {
+                const input = e.target.closest('input[type="radio"]');
+                if (!input) return;
+                state[input.dataset.key] = input.value;
+                render();
+            });
+            root.addEventListener('click', e => {
+                const btn = e.target.closest('[data-preset]');
+                if (!btn) return;
+                applyPreset(btn.dataset.preset);
+                render();
+            });
+
+            buildControls();
+            applyPreset('core');
+            render();
+        })();
+    </script>
+
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
