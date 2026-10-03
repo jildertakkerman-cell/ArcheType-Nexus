@@ -62,6 +62,12 @@ sitemapXml += `  <url>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>${baseUrl}/pages/Beginners-Guide.html</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 `;
 
 // Add all archetype pages (with deduplication)

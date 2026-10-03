@@ -1,0 +1,233 @@
+/**
+ * lore-music-data.js — the music each Lore Archive reel plays (lore-music.js). Keyed like
+ * lore-reel-data.js; loaded with lore-music.js the first time a reader turns the music on.
+ *
+ * palette      the archetype's sound (PALETTES in lore-music.js):
+ *              fantasy · medieval · sacred · playful · horror · tribal · electronic · wuxia · japanese · indian
+ * moods        optional, one per slide (story) or per pick (roster, trail), in order:
+ *              calm · wonder · ceremony · vision · dread · battle · sorrow · mystic · chaos · hope · triumph.
+ *              Without them, each chapter takes its mood from its slide's colour.
+ * theme        optional written main theme: [scale step, beats] pairs, two bars (8 beats). It opens the
+ *              story and each act. Without it, the theme is built from the reel's key.
+ * cast         optional written themes for the people in Who's who, by name, the same way
+ *              ({ notes, oct } moves one an octave: oct: -12). Others are built from their names.
+ * instruments  optional swaps from the palette, e.g. { lead: { soft: 'clarinet', heroic: 'trumpet' } }
+ *
+ * Pages that share a palette are spread across keys and tempos in the order they appear here, so
+ * add new reels at the end: that way no existing page's music changes.
+ */
+(function () {
+    'use strict';
+
+    window.LoreMusicData = {
+        reels: {
+            // ---- Stories ----
+            'adventurer': { palette: 'medieval' },
+            'albaz': { palette: 'fantasy' },
+            'alien': { palette: 'electronic' },
+            'artmage': {
+                palette: 'fantasy',
+                moods: ['wonder', 'calm', 'ceremony', 'vision', 'battle', 'sorrow', 'triumph',
+                    'dread', 'vision', 'battle', 'mystic', 'ceremony',
+                    'chaos', 'hope', 'wonder', 'triumph'],
+                theme: [[0, 1], [2, 0.5], [4, 0.5], [7, 2], [5, 1], [4, 1], [2, 1], [4, 1]],
+                cast: {
+                    Medius: [[0, 1], [4, 1], [7, 2], [6, 1], [4, 1], [5, 2]],
+                    Finmel: [[2, 1.5], [1, 0.5], [2, 1], [4, 1], [3, 2], [1, 2]],
+                    Graflare: [[0, 0.5], [0, 0.5], [4, 1], [3, 1], [1, 1], [2, 4]],
+                    Litera: [[4, 0.5], [5, 0.5], [7, 1], [5, 1], [4, 1], [2, 2], [4, 2]],
+                    Nerva: [[7, 3], [4, 1], [5, 2], [2, 2]],
+                    Drastea: { notes: [[0, 2], [1, 1], [0, 1], [-2, 2], [-3, 2]], oct: -12 }
+                }
+            },
+            'bujin': {
+                palette: 'japanese',
+                moods: ['ceremony', 'hope', 'calm', 'mystic',
+                    'sorrow', 'hope', 'calm', 'dread', 'triumph',
+                    'dread', 'chaos', 'battle', 'hope']
+            },
+            'centur-ion': { palette: 'medieval' },
+            'danger': { palette: 'electronic' },
+            'darklord': { palette: 'sacred' },
+            'digital-bug': { palette: 'electronic' },
+            'dragon-rulers': { palette: 'fantasy' },
+            'dream-mirror': { palette: 'fantasy' },
+            'dt-great-war': { palette: 'fantasy' },
+            'dt-worm-war': { palette: 'electronic' },
+            'eldlich': { palette: 'horror' },
+            'elfnote': { palette: 'medieval' },
+            'fire-island': { palette: 'tribal' },
+            'geargia': { palette: 'electronic' },
+            'ghost-meets-girl': { palette: 'japanese' },
+            'gladiator-beast': { palette: 'fantasy' },
+            'grepher': { palette: 'fantasy' },
+            'herald': { palette: 'sacred' },
+            'inpachi': { palette: 'playful' },
+            'invoked': {
+                palette: 'fantasy',
+                moods: ['mystic', 'wonder', 'dread', 'vision', 'triumph',
+                    'mystic', 'chaos', 'battle', 'sorrow',
+                    'hope', 'dread', 'battle', 'ceremony', 'triumph', 'wonder'],
+                theme: [[7, 1], [6, 1], [4, 2], [3, 1], [1, 1], [0, 2]],
+                instruments: { lead: { soft: 'oboe', dark: 'bassoon', magic: 'choir' } }
+            },
+            'karakuri': { palette: 'japanese' },
+            'koaki-meiru': { palette: 'electronic' },
+            'machine-dragons': { palette: 'electronic' },
+            'magistus': {
+                palette: 'fantasy',
+                moods: ['calm', 'hope', 'dread', 'chaos', 'vision', 'triumph', 'sorrow', 'dread',
+                    'battle', 'ceremony', 'hope', 'wonder', 'chaos', 'triumph', 'sorrow', 'calm'],
+                theme: [[4, 1.5], [3, 0.5], [4, 1], [6, 1], [5, 2], [1, 2]],
+                instruments: { lead: { soft: 'clarinet', heroic: 'trumpet' } }
+            },
+            'megalith': { palette: 'sacred' },
+            'mokey-mokey': { palette: 'playful' },
+            'myutant': { palette: 'electronic' },
+            'prophecy': { palette: 'fantasy' },
+            'revolution': { palette: 'medieval' },
+            'rikka': { palette: 'japanese' },
+            'runick': { palette: 'medieval' },
+            'sacred-tree': { palette: 'fantasy' },
+            'sinful-spoils': { palette: 'fantasy' },
+            'sky-striker': {
+                palette: 'electronic',
+                moods: ['sorrow', 'calm', 'hope', 'battle',
+                    'dread', 'mystic', 'battle', 'calm', 'dread',
+                    'hope', 'sorrow', 'chaos', 'battle', 'triumph', 'wonder']
+            },
+            'starry-knight': { palette: 'medieval' },
+            'swordsoul': {
+                palette: 'wuxia',
+                moods: ['wonder', 'mystic', 'ceremony', 'calm', 'dread',
+                    'battle', 'sorrow', 'triumph',
+                    'dread', 'sorrow', 'chaos', 'battle', 'hope', 'mystic']
+            },
+            'tenyi': {
+                palette: 'indian',
+                moods: ['mystic', 'calm', 'hope', 'wonder',
+                    'dread', 'chaos', 'sorrow',
+                    'vision', 'dread', 'triumph']
+            },
+            'the-weather': { palette: 'playful' },
+            'vanquish-soul': { palette: 'electronic' },
+            'vendread': {
+                palette: 'horror',
+                moods: ['dread', 'sorrow', 'calm', 'triumph', 'hope', 'dread', 'battle',
+                    'chaos', 'sorrow', 'hope', 'battle', 'vision', 'battle',
+                    'wonder', 'hope']
+            },
+            'visas': { palette: 'fantasy' },
+            'voiceless-voice': { palette: 'sacred' },
+            'world-legacy': { palette: 'fantasy' },
+            'zombie-world': { palette: 'horror' },
+
+            // ---- Rosters ----
+            'amazement': { palette: 'playful' },
+            'amazoness': { palette: 'tribal' },
+            'argostars': { palette: 'fantasy' },
+            'aroma': { palette: 'playful' },
+            'beetrooper': { palette: 'electronic' },
+            'charmers': { palette: 'fantasy' },
+            'clown-crew': { palette: 'playful' },
+            'crystal-beast': { palette: 'fantasy' },
+            'dark-scorpion': { palette: 'medieval' },
+            'dd': { palette: 'electronic' },
+            'dinomist': { palette: 'electronic' },
+            'dinomorphia': { palette: 'tribal' },
+            'dracotail': { palette: 'fantasy' },
+            'enneacraft': { palette: 'electronic' },
+            'exosister': { palette: 'sacred' },
+            'fiendsmith': { palette: 'sacred' },
+            'ghostrick': { palette: 'horror' },
+            'gold-pride': { palette: 'electronic' },
+            'gravekeepers': { palette: 'tribal' },
+            'gunkan': { palette: 'playful' },
+            'hecahands': { palette: 'fantasy' },
+            'k9': { palette: 'electronic' },
+            'kewl-tune': { palette: 'electronic' },
+            'labrynth': { palette: 'horror' },
+            'lightsworn': { palette: 'sacred' },
+            'live-twin': { palette: 'electronic' },
+            'machina': { palette: 'electronic' },
+            'maliss': { palette: 'electronic' },
+            'memento': { palette: 'horror' },
+            'mikanko': { palette: 'japanese' },
+            'nemleria': { palette: 'playful' },
+            'ninja': { palette: 'japanese' },
+            'nouvelles': { palette: 'horror' },
+            'ogdoadic': { palette: 'tribal' },
+            'purrely': { palette: 'playful' },
+            'radiant-typhoon': { palette: 'fantasy' },
+            'rescue-ace': { palette: 'electronic' },
+            'ryu-ge': { palette: 'wuxia' },
+            'ryzeal': { palette: 'electronic' },
+            's-force': { palette: 'electronic' },
+            'six-samurai': { palette: 'japanese' },
+            'subterror': { palette: 'tribal' },
+            'traptrix': { palette: 'horror' },
+            'ua': { palette: 'electronic' },
+            'ursarctic-drytron': { palette: 'electronic' },
+            'vaylantz': { palette: 'medieval' },
+            'virtual-world': { palette: 'wuxia' },
+
+            // ---- Art trails ----
+            'abyss-actor': { palette: 'horror' },
+            'adamancipator': { palette: 'tribal' },
+            'ancient-gear': { palette: 'electronic' },
+            'ancient-warriors': { palette: 'wuxia' },
+            'cyberdark': { palette: 'electronic' },
+            'dark-world': { palette: 'horror' },
+            'dragonmaid': { palette: 'playful' },
+            'duston': { palette: 'playful' },
+            'evil-eye': { palette: 'horror' },
+            'fa': { palette: 'electronic' },
+            'fur-hire': { palette: 'medieval' },
+            'gagaga': { palette: 'electronic' },
+            'goblin': { palette: 'playful' },
+            'harpie': { palette: 'fantasy' },
+            'hieratic': { palette: 'tribal' },
+            'impcantation': { palette: 'horror' },
+            'kozmo': { palette: 'electronic' },
+            'libromancer': { palette: 'fantasy' },
+            'madolche': { palette: 'playful' },
+            'magikey': { palette: 'fantasy' },
+            'majespecter': { palette: 'japanese' },
+            'melffy': { palette: 'playful' },
+            'metalfoes': { palette: 'electronic' },
+            'monarch': { palette: 'fantasy' },
+            'morphtronic': { palette: 'electronic' },
+            'noble-knight': { palette: 'medieval' },
+            'ojama': { palette: 'playful' },
+            'performapal': { palette: 'playful' },
+            'prank-kids': { palette: 'playful' },
+            'punk': { palette: 'japanese' },
+            'raidraptor': { palette: 'electronic' },
+            'salamangreat': { palette: 'electronic' },
+            'skull-servant': { palette: 'horror' },
+            'solfachord': { palette: 'playful' },
+            'spyral': { palette: 'electronic' },
+            'time-thief': { palette: 'electronic' },
+            'toon': { palette: 'playful' },
+            'trickstar': { palette: 'electronic' },
+            'vaalmonica': { palette: 'sacred' },
+            'vampire': { palette: 'horror' },
+            'war-rock': { palette: 'tribal' },
+            'witchcrafter': { palette: 'playful' },
+            'yosenju': { palette: 'japanese' },
+            'yummy': { palette: 'playful' },
+
+            // ---- Added later (keep appending here) ----
+            'kaiju': { palette: 'fantasy' },
+            'crystron': { palette: 'electronic' },
+            'lunalight': { palette: 'horror' },
+            'unchained': { palette: 'horror' },
+            'dual-avatar': { palette: 'japanese' },
+            'marincess': { palette: 'playful' },
+            'burning-abyss': { palette: 'horror' },
+            'meklord': { palette: 'electronic' },
+            'simorgh': { palette: 'sacred' },
+            'angelechy': { palette: 'medieval' }
+        }
+    };
+})();

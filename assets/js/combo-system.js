@@ -1056,6 +1056,9 @@ class ComboGuide {
 
             const cardNameMap = {};
             if (combo.cards) combo.cards.forEach(c => cardNameMap[c.id] = c.name);
+            // Tokens are just "Token" by name, so their step art comes by passcode, as on the board.
+            const tokenCodeMap = {};
+            if (combo.cards) combo.cards.forEach(c => { if (c.isToken && c.code) tokenCodeMap[c.id] = c.code; });
 
             // ---------------------------------------------
             // PART 1: SIMULATOR (First)
@@ -1161,7 +1164,8 @@ class ComboGuide {
                     const imgId = `combo-${key}-step-${stepNum}-img`;
 
                     // Collect cards for batch loading via CardLoader
-                    if (cardName) imageMap[imgId] = cardName;
+                    const tokenCode = tokenCodeMap[primaryCardId];
+                    if (cardName && !tokenCode) imageMap[imgId] = cardName;
 
                     // 1. Use customText if available, otherwise use auto-generated text
                     let displayText = step.customText || step.text;
@@ -1195,10 +1199,12 @@ class ComboGuide {
                             <div id="${imgId}" 
                                  class="relative flex-shrink-0 w-24 h-36 md:w-28 md:h-40 rounded-lg overflow-hidden cursor-pointer shadow-md border mt-3 md:mt-0 transition-transform duration-300 group-hover:scale-105"
                                  style="border-color: ${accent};"
-                                 onclick="if(window.CardLoader) window.CardLoader.showPopup(event, '${cardName.replace(/'/g, "\\'")}')">
-                                <div class="w-full h-full flex items-center justify-center opacity-50 bg-black">
+                                 ${tokenCode ? '' : `onclick="if(window.CardLoader) window.CardLoader.showPopup(event, '${cardName.replace(/'/g, "\\'")}')"`}>
+                                ${tokenCode
+                                    ? `<img src="https://images.ygoprodeck.com/images/cards/${tokenCode}.jpg" alt="${cardName}" loading="lazy" class="w-full h-full object-cover">`
+                                    : `<div class="w-full h-full flex items-center justify-center opacity-50 bg-black">
                                     <i class="fas fa-spinner fa-spin" style="color: ${accent}"></i>
-                                </div>
+                                </div>`}
                             </div>
 
                             <div class="flex-grow text-center md:text-left">
@@ -1603,7 +1609,11 @@ class DuelSimulator {
     async preloadAllImages() {
         if (typeof window.CardLoader === 'undefined') return;
         const names = new Set();
-        Object.values(this.combos).forEach(c => c.cards.forEach(card => names.add(card.name)));
+        // Tokens and placeholders aren't looked up by name (see the token art cases), so skip them here too.
+        Object.values(this.combos).forEach(c => c.cards.forEach(card => {
+            const isPlaceholder = card.isDummy || String(card.id).startsWith('dummy-') || String(card.name).toLowerCase().startsWith('any ');
+            if (!(card.isToken && card.code) && !isPlaceholder) names.add(card.name);
+        }));
         // Use the robust CardLoader to handle API calls and caching
         window.CardLoader.preloadCards(Array.from(names));
     }

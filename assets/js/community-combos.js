@@ -53,11 +53,13 @@ async function initCommunityCombos(containerId, archetypeName) {
     const client = window.Auth?._getClient?.();
     if (!client) return;
 
-    const { data: archetypeRow } = await client
+    // ilike ignores case, and a few names have a lowercase duplicate row (Roid, Sphinx):
+    // take the row spelled like the page, else the first.
+    const { data: archetypeRows } = await client
         .from('archetypes')
-        .select('archetypeid')
-        .ilike('archetypename', archetypeName)
-        .single();
+        .select('archetypeid, archetypename')
+        .ilike('archetypename', archetypeName);
+    const archetypeRow = archetypeRows?.find(r => r.archetypename === archetypeName) || archetypeRows?.[0];
 
     if (!archetypeRow) return;
 

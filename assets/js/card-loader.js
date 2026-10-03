@@ -945,9 +945,10 @@ window.CardLoader = (function () {
     async function injectSuggestionForm() {
         // Non-content utility pages ("suggest an edit to THIS page" doesn't
         // make sense on a directory listing, the moderator-only admin panel,
-        // or a user's own replay library) — same opt-out convention as the
-        // pre-existing index skip, extended to admin.html and My-Replays.html.
-        if (['index', 'admin', 'my-replays'].includes(document.body.dataset.page)) {
+        // a user's own replay library, or a dev/testing mockup) — same opt-out
+        // convention as the pre-existing index skip, extended to admin.html,
+        // My-Replays.html and data-page="dev".
+        if (['index', 'admin', 'my-replays', 'dev'].includes(document.body.dataset.page)) {
             console.log(`Skipping suggestion form on ${document.body.dataset.page} page`);
             return;
         }
@@ -1401,6 +1402,8 @@ window.CardLoader = (function () {
             const supabaseCards = await fetchArchetypeCardsFromSupabase(archetypeName);
             if (supabaseCards && supabaseCards.length > 0) {
                 cards = supabaseCards.map(mapSupabaseCardToApiFormat);
+            } else if (await isApiArchetype(archetypeName) === false) {
+                cards = [];
             } else {
                 const apiUrl = `${CONFIG.API_URL}?archetype=${encodeURIComponent(archetypeName)}`;
                 const res = await fetch(apiUrl);
@@ -1697,6 +1700,41 @@ window.CardLoader = (function () {
      * Fetch card data from API
      * Tries Supabase first, falls back to YGOProDeck API
      */
+    // Card records are kept in localStorage for a week, so a returning reader's cards skip the
+    // lookup. Sets, prices and release dates are left out (they're large, and enrichCardData()
+    // fetches them when a popup opens). Every access is guarded: storage can be full, blocked
+    // or missing, and then this is simply skipped.
+    const STORED_CARD_PREFIX = 'cl-card:v1:';
+    const STORED_CARD_TTL = 7 * 24 * 60 * 60 * 1000;
+    const UNSTORED_FIELDS = new Set(['card_sets', 'card_prices', 'misc_info', 'hosted_image_url']);
+
+    function readStoredCard(cardName) {
+        try {
+            const raw = localStorage.getItem(STORED_CARD_PREFIX + cardName.toLowerCase());
+            if (!raw) return null;
+            const { t, d } = JSON.parse(raw);
+            if (Date.now() - t < STORED_CARD_TTL && d && d.name) return d;
+            localStorage.removeItem(STORED_CARD_PREFIX + cardName.toLowerCase());
+        } catch (error) { /* storage unavailable */ }
+        return null;
+    }
+
+    function storeCard(cardName, record) {
+        try {
+            const data = {};
+            Object.entries(record).forEach(([field, value]) => {
+                if (!UNSTORED_FIELDS.has(field) && !field.startsWith('_')) data[field] = value;
+            });
+            const key = STORED_CARD_PREFIX + cardName.toLowerCase(), value = JSON.stringify({ t: Date.now(), d: data });
+            try {
+                localStorage.setItem(key, value);
+            } catch (full) {   // over quota: drop the stored cards and start again
+                Object.keys(localStorage).filter(k => k.startsWith(STORED_CARD_PREFIX)).forEach(k => localStorage.removeItem(k));
+                localStorage.setItem(key, value);
+            }
+        } catch (error) { /* storage unavailable */ }
+    }
+
     async function fetchCardData(cardName) {
         if (!cardName) throw new Error('fetchCardData requires a card name');
 
@@ -1704,6 +1742,14 @@ window.CardLoader = (function () {
         // backdrop all used to re-request cards another path had already fetched.
         const cached = cardDataCache[cardName];
         if (cached && cached._complete) return cached;
+
+        const stored = readStoredCard(cardName);
+        if (stored) {
+            const record = Object.assign(cardDataCache[cardName] || {}, stored, { _complete: true });
+            cardDataCache[cardName] = record;
+            cardDataCache[stored.name] = record;
+            return record;
+        }
 
         const key = cardName.toLowerCase();
         if (!cardDataPromises[key]) {
@@ -1715,12 +1761,45 @@ window.CardLoader = (function () {
                     const record = Object.assign(cardDataCache[cardName] || {}, result, { _complete: true });
                     cardDataCache[cardName] = record;
                     cardDataCache[result.name] = record;
+                    storeCard(cardName, record);
                     return record;
                 })
                 .finally(() => { delete cardDataPromises[key]; });
         }
 
         return cardDataPromises[key];
+    }
+
+    // Fills in card_sets, card_prices and misc_info (the release date) from the YGOProDeck API
+    // for a record that came from Supabase or storage without them. Once per card; the popup
+    // calls it when it opens.
+    const enrichPromises = {};
+    function enrichCardData(record) {
+        if (!record || record.is_dummy || record._enriched || (record.card_sets && record.card_prices && record.misc_info)) {
+            return Promise.resolve(record);
+        }
+        const key = String(record.id || record.name);
+        if (!enrichPromises[key]) {
+            const lookup = async query => {
+                const response = await fetch(`${CONFIG.API_URL}?${query}&misc=yes`);
+                return response.ok ? (await response.json())?.data?.[0] : null;
+            };
+            enrichPromises[key] = lookup(`name=${encodeURIComponent(record.name)}`)
+                .then(apiData => apiData || (record.id ? lookup(`id=${encodeURIComponent(record.id)}`) : null))
+                .then(apiData => {
+                    if (apiData) {
+                        if (!record.card_sets) record.card_sets = apiData.card_sets;
+                        if (!record.card_prices) record.card_prices = apiData.card_prices;
+                        if (!record.misc_info) record.misc_info = apiData.misc_info;
+                    }
+                })
+                .catch(error => console.warn('[CardLoader] Failed to fetch sets and prices:', error))
+                .then(() => {
+                    record._enriched = true;
+                    return record;
+                });
+        }
+        return enrichPromises[key];
     }
 
     async function fetchCardDataUncached(cardName) {
@@ -1755,26 +1834,10 @@ window.CardLoader = (function () {
             // First, try to fetch from Supabase database
             const supabaseData = await fetchCardDataFromSupabase(name);
 
-            if (supabaseData) {
-                // Enriched Supabase data with Sets/Prices from API if missing
-                if (!supabaseData.card_sets || !supabaseData.card_prices) {
-                    try {
-                        const apiUrl = `${CONFIG.API_URL}?name=${encodeURIComponent(name)}&misc=yes`;
-                        const response = await fetch(apiUrl);
-                        if (response.ok) {
-                            const apiJson = await response.json();
-                            const apiData = apiJson?.data?.[0];
-                            if (apiData) {
-                                if (!supabaseData.card_sets) supabaseData.card_sets = apiData.card_sets;
-                                if (!supabaseData.card_prices) supabaseData.card_prices = apiData.card_prices;
-                            }
-                        }
-                    } catch (e) {
-                        console.warn('[CardLoader] Failed to fetch enrichment data from API:', e);
-                    }
-                }
-                return supabaseData;
-            }
+            // Sets, prices and release dates aren't in the Supabase row. Only the popup shows
+            // them, so enrichCardData() fetches them when one opens: fetching them here cost an
+            // extra API call per card on the page before its image could start loading.
+            if (supabaseData) return supabaseData;
 
             // Fallback to YGOProDeck API
             try {
@@ -1864,26 +1927,8 @@ window.CardLoader = (function () {
         // Try Supabase first
         const supabaseData = await fetchCardDataByIdFromSupabase(cardId);
 
-        if (supabaseData) {
-            // Enriched Supabase data with Sets/Prices from API if missing
-            if (!supabaseData.card_sets || !supabaseData.card_prices) {
-                try {
-                    const apiUrl = `${CONFIG.API_URL}?id=${cardId}&misc=yes`;
-                    const response = await fetch(apiUrl);
-                    if (response.ok) {
-                        const apiJson = await response.json();
-                        const apiData = apiJson?.data?.[0];
-                        if (apiData) {
-                            if (!supabaseData.card_sets) supabaseData.card_sets = apiData.card_sets;
-                            if (!supabaseData.card_prices) supabaseData.card_prices = apiData.card_prices;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[CardLoader] Failed to fetch enrichment data by ID from API:', e);
-                }
-            }
-            return supabaseData;
-        }
+        // Sets and prices come later, from enrichCardData() when a popup opens.
+        if (supabaseData) return supabaseData;
 
         // Fallback to YGOProDeck API
         const apiUrl = `${CONFIG.API_URL}?id=${cardId}&misc=yes`;
@@ -1927,8 +1972,12 @@ window.CardLoader = (function () {
         cardWrapper.style.alignItems = 'center';
         cardWrapper.style.width = '100%';
 
-        // Create image element
+        // Create image element. Cards below the screen or in a hidden tab wait until they're
+        // scrolled near (loading must be set before src), so they don't take bandwidth from
+        // what's on screen at page load: a page with 35 cards used to fetch them all at once.
         const img = document.createElement('img');
+        img.loading = 'lazy';
+        img.decoding = 'async';
         img.src = imageUrl;
         img.alt = cardInfo.name;
         img.className = 'w-full h-auto rounded-lg shadow-md cursor-pointer';
@@ -2792,13 +2841,15 @@ window.CardLoader = (function () {
         const cardInfo = cardDataCache[cardName];
         if (!cardInfo) return;
 
-        // Lazy load description/data if missing or if release date (misc_info) is missing
-        const needsFetch = (!cardInfo.desc || cardInfo.desc === '' || !cardInfo.misc_info);
+        // Lazy load the description if it's missing, and the sets, prices and release date,
+        // which card lookups no longer fetch up front (see enrichCardData).
+        const needsFetch = !cardInfo.desc
+            || (!cardInfo._enriched && (!cardInfo.card_sets || !cardInfo.card_prices || !cardInfo.misc_info));
 
         if (needsFetch && !cardInfo.is_dummy && !cardInfo._fetching) {
             cardInfo._fetching = true;
             console.log('[CardLoader] Lazy loading details for:', cardName);
-            fetchCardData(cardName).then(data => {
+            fetchCardData(cardName).then(enrichCardData).then(data => {
                 cardInfo._fetching = false;
                 if (data) {
                     Object.assign(cardInfo, data);
@@ -2806,9 +2857,11 @@ window.CardLoader = (function () {
                         const descArea = document.getElementById('popup-desc-area');
                         if (descArea) descArea.innerHTML = formatCardDescription(cardInfo.desc, cardInfo.type, cardInfo.name);
 
-                        // Update price
+                        // Update price and sets
                         const priceArea = document.getElementById('popup-price-area');
-                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo, { wrapper: false });
+                        if (priceArea) priceArea.innerHTML = formatPriceSection(cardInfo, { wrapper: false }) || '<p class="cp-note">No price data available.</p>';
+                        const setsArea = document.getElementById('popup-sets-area');
+                        if (setsArea) setsArea.innerHTML = formatSetsSection(cardInfo);
 
                         // Update release date
                         const misc = cardInfo.misc_info ? cardInfo.misc_info[0] : null;
@@ -2910,14 +2963,14 @@ window.CardLoader = (function () {
                     <!-- Prices Tab -->
                     <div id="tab-prices" class="popup-tab-content cp-hidden">
                         <div id="popup-price-area">
-                            ${priceHtml || '<p class="cp-note">No price data available.</p>'}
+                            ${priceHtml || (cardInfo._fetching ? '<p class="cp-note">Loading prices…</p>' : '<p class="cp-note">No price data available.</p>')}
                         </div>
                     </div>
 
                     <!-- Sets Tab -->
                     <div id="tab-sets" class="popup-tab-content cp-hidden">
                         <div id="popup-sets-area">
-                            ${formatSetsSection(cardInfo)}
+                            ${cardInfo._fetching && !cardInfo.card_sets ? '<p class="cp-note">Loading sets…</p>' : formatSetsSection(cardInfo)}
                         </div>
                     </div>
                 </div>
@@ -3793,6 +3846,45 @@ window.CardLoader = (function () {
     // re-downloading the full YGOProDeck payload for each caller.
     const archetypeCardsPromises = {};
 
+    // YGOProDeck's ?archetype= filter answers 400 for any name it doesn't file cards
+    // under, and many pages go by a name it doesn't ("Gem-Knight", "Fallen of Albaz",
+    // "Hazy Flame"). Its archetype list is small, so it's kept for a week and checked
+    // first; the site's own database (get_archetype_cards) knows the other names.
+    const API_ARCHETYPES_KEY = 'cl-api-archetypes:v1';
+    let apiArchetypeNamesPromise = null;
+
+    function fetchApiArchetypeNames() {
+        if (!apiArchetypeNamesPromise) {
+            apiArchetypeNamesPromise = (async () => {
+                try {
+                    const { t, names } = JSON.parse(localStorage.getItem(API_ARCHETYPES_KEY)) || {};
+                    if (names && Date.now() - t < STORED_CARD_TTL) return new Set(names);
+                } catch (error) { /* storage unavailable */ }
+                try {
+                    const response = await fetch(CONFIG.API_URL.replace('cardinfo.php', 'archetypes.php'));
+                    if (!response.ok) throw new Error(`Archetype list API returned status ${response.status}`);
+                    const names = (await response.json()).map(entry => entry.archetype_name.toLowerCase());
+                    try {
+                        localStorage.setItem(API_ARCHETYPES_KEY, JSON.stringify({ t: Date.now(), names }));
+                    } catch (error) { /* storage unavailable */ }
+                    return new Set(names);
+                } catch (error) {
+                    console.warn('[CardLoader] Could not load the YGOProDeck archetype list:', error);
+                    apiArchetypeNamesPromise = null;   // try again on the next call
+                    return null;
+                }
+            })();
+        }
+        return apiArchetypeNamesPromise;
+    }
+
+    // Whether YGOProDeck files cards under this archetype name (its filter ignores case);
+    // null when its list couldn't be loaded.
+    async function isApiArchetype(archetypeName) {
+        const names = await fetchApiArchetypeNames();
+        return names ? names.has(String(archetypeName).toLowerCase()) : null;
+    }
+
     /**
      * Fetch all cards from an archetype using the YGOProDeck API
      * @param {string} archetypeName - The archetype name (e.g., "Blue-Eyes", "Dark Magician")
@@ -3812,15 +3904,19 @@ window.CardLoader = (function () {
 
     async function fetchArchetypeCardsUncached(archetypeName) {
         try {
+            if (await isApiArchetype(archetypeName) === false) {
+                return await fetchArchetypeCardNamesFromSupabase(archetypeName);
+            }
+
             const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=${encodeURIComponent(archetypeName)}`;
             console.log(`[CardLoader] Fetching archetype cards for: ${archetypeName}`);
 
             const response = await fetch(apiUrl);
 
             if (response.status === 400) {
-                // Archetype not found, return empty array
-                console.log(`[CardLoader] Archetype "${archetypeName}" not found in API (400), returning empty array`);
-                return [];
+                // Not a YGOProDeck archetype (its list was unavailable, so this wasn't known up front)
+                console.log(`[CardLoader] Archetype "${archetypeName}" not found in API (400), trying the site database`);
+                return await fetchArchetypeCardNamesFromSupabase(archetypeName);
             }
 
             if (!response.ok) {
@@ -3842,6 +3938,15 @@ window.CardLoader = (function () {
             console.error(`[CardLoader] Failed to fetch archetype cards for ${archetypeName}:`, error);
             return null;
         }
+    }
+
+    // Card names from the site's database; null when it couldn't be asked.
+    async function fetchArchetypeCardNamesFromSupabase(archetypeName) {
+        const rows = await fetchArchetypeCardsFromSupabase(archetypeName);
+        if (!rows) return null;
+        const cardNames = [...new Set(rows.map(row => row.cardname).filter(Boolean))];
+        console.log(`[CardLoader] Found ${cardNames.length} cards for ${archetypeName} in the site database`);
+        return cardNames;
     }
 
     /**
@@ -3976,9 +4081,8 @@ window.CardLoader = (function () {
             return;
         }
 
-        // Check if archetype exists by fetching cards
-        const archetypeCards = await fetchArchetypeCards(archetypeName);
-        const archetypeExists = archetypeCards.length > 0;
+        // Deck searches go by YGOProDeck's archetype tag, so only its own archetype names get one
+        const archetypeExists = await isApiArchetype(archetypeName) !== false;
 
         // --- Begin Helper (Copied from renderBanlistSection for consistency) ---
         // Detect page color scheme from existing headers or accent classes
@@ -4160,11 +4264,12 @@ window.CardLoader = (function () {
             container.innerHTML = container._deckResourcesHtml;
         }
 
-        Promise.all([fetchArchetypeCards(archetypeName), fetchDiscordLinks()])
-            .then(([archetypeCards, discordLinks]) => {
+        // Deck searches go by YGOProDeck's archetype tag, so only its own archetype names get one.
+        Promise.all([isApiArchetype(archetypeName), fetchDiscordLinks()])
+            .then(([isKnown, discordLinks]) => {
                 if (container._deckResourcesArchetype !== archetypeName) return;
                 const discordUrl = discordLinks[archetypeName.toLowerCase()] || null;
-                const html = buildDeckResourcesCompactHtml(archetypeName, archetypeCards.length > 0, discordUrl, showAllDecks);
+                const html = buildDeckResourcesCompactHtml(archetypeName, isKnown !== false, discordUrl, showAllDecks);
                 if (html !== container._deckResourcesHtml) {
                     container.innerHTML = html;
                     container._deckResourcesHtml = html;
@@ -4238,12 +4343,27 @@ window.CardLoader = (function () {
     // ARCHETYPE CARDS BROWSER (Supabase)
     // ========================================
 
+    // The backdrop and the banlist can both ask for one archetype; share the request.
+    // The database function matches names exactly, so the key keeps their case.
+    const supabaseArchetypePromises = {};
+
     /**
      * Fetch all cards for an archetype from Supabase
      * @param {string} archetypeName - Name of the archetype
      * @returns {Promise<Array>} Array of card objects with type info
      */
-    async function fetchArchetypeCardsFromSupabase(archetypeName) {
+    function fetchArchetypeCardsFromSupabase(archetypeName) {
+        const key = String(archetypeName);
+        if (!supabaseArchetypePromises[key]) {
+            supabaseArchetypePromises[key] = fetchArchetypeCardsFromSupabaseUncached(archetypeName).then(rows => {
+                if (rows === null) delete supabaseArchetypePromises[key];
+                return rows;
+            });
+        }
+        return supabaseArchetypePromises[key].then(rows => rows && rows.slice());
+    }
+
+    async function fetchArchetypeCardsFromSupabaseUncached(archetypeName) {
         const client = getSupabaseClient();
         if (!client) return null;
 

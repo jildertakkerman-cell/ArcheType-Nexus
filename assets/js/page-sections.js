@@ -1227,11 +1227,13 @@ async function initPageSections(archetypeName) {
 
     _pcsInjectStyle();
 
-    const { data: archetypeRow } = await client
+    // ilike ignores case, and a few names have a lowercase duplicate row (Roid, Sphinx):
+    // take the row spelled like the page, else the first.
+    const { data: archetypeRows } = await client
         .from('archetypes')
-        .select('archetypeid')
-        .ilike('archetypename', archetypeName)
-        .single();
+        .select('archetypeid, archetypename')
+        .ilike('archetypename', archetypeName);
+    const archetypeRow = archetypeRows?.find(r => r.archetypename === archetypeName) || archetypeRows?.[0];
     if (!archetypeRow) return;
     const archetypeId = archetypeRow.archetypeid;
 

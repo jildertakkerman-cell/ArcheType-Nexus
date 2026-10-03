@@ -630,6 +630,43 @@ const archetypes = [
 
     },
     {
+        name: 'Dark Time Wizard',
+        description: "Joey Wheeler's coin tosses, dice and Battle City legends, rebuilt in Beyond the Brave around Dark Time Wizard: a Quick-Play search-or-gamble that summons Red-Eyes Black Dragon Exceed whichever way the coin lands.",
+        filepath: 'pages/Dark Time Wizard Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="joey-bg" cx="50%" cy="45%" r="60%">
+                            <stop offset="0%" stop-color="#2a2138"/>
+                            <stop offset="100%" stop-color="#0c0a10"/>
+                        </radialGradient>
+                        <radialGradient id="joey-coin" cx="35%" cy="30%" r="75%">
+                            <stop offset="0%" stop-color="#ffe3a1"/>
+                            <stop offset="45%" stop-color="#f2b53a"/>
+                            <stop offset="100%" stop-color="#b7791f"/>
+                        </radialGradient>
+                    </defs>
+                    <!-- Time Wizard clock face behind a spinning coin, with a die -->
+                    <circle cx="50" cy="50" r="46" fill="url(#joey-bg)" stroke="#f2b53a" stroke-width="2"/>
+                    <circle cx="50" cy="46" r="32" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="2 6.4" opacity="0.8"/>
+                    <line x1="50" y1="46" x2="50" y2="20" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" opacity="0.7">
+                        <animateTransform attributeName="transform" type="rotate" values="360 50 46;0 50 46" dur="10s" repeatCount="indefinite"/>
+                    </line>
+                    <ellipse cx="50" cy="46" rx="17" ry="17" fill="url(#joey-coin)" stroke="#7c4a03" stroke-width="1.5">
+                        <animate attributeName="rx" values="17;2;17" dur="2.4s" repeatCount="indefinite"/>
+                    </ellipse>
+                    <rect x="62" y="62" width="20" height="20" rx="4" fill="#f5f1ea" stroke="#be123c" stroke-width="1" transform="rotate(12 72 72)"/>
+                    <g fill="#be123c" transform="rotate(12 72 72)">
+                        <circle cx="67" cy="67" r="1.8"/>
+                        <circle cx="72" cy="72" r="1.8"/>
+                        <circle cx="77" cy="77" r="1.8"/>
+                    </g>
+                    <text x="50" y="93" text-anchor="middle" font-size="9" fill="#f2b53a" font-weight="bold">DTW</text>
+                </svg>`,
+        firstReleaseDate: null,
+        latestReleaseDate: null,
+
+    },
+    {
         name: 'Dark World',
         description: 'A DARK Fiend archetype that thrives on discarding cards to unleash powerful effects and swarm the field.',
         filepath: 'pages/Dark World Deck Analysis.html',
@@ -17244,44 +17281,6 @@ const archetypes = [
                                 <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2.4s" repeatCount="indefinite"/>
                             </polygon>
                         </g>
-                </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
-    },
-
-    {
-        name: 'Joey Series',
-        description: "Joey Wheeler's coin tosses, dice and Battle City legends, rebuilt in Beyond the Brave around Dark Time Wizard: a Quick-Play search-or-gamble that summons Red-Eyes Black Dragon Exceed whichever way the coin lands.",
-        filepath: 'pages/Joey Series Deck Analysis.html',
-        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <radialGradient id="joey-bg" cx="50%" cy="45%" r="60%">
-                            <stop offset="0%" stop-color="#2a2138"/>
-                            <stop offset="100%" stop-color="#0c0a10"/>
-                        </radialGradient>
-                        <radialGradient id="joey-coin" cx="35%" cy="30%" r="75%">
-                            <stop offset="0%" stop-color="#ffe3a1"/>
-                            <stop offset="45%" stop-color="#f2b53a"/>
-                            <stop offset="100%" stop-color="#b7791f"/>
-                        </radialGradient>
-                    </defs>
-                    <!-- Time Wizard clock face behind a spinning coin, with a die -->
-                    <circle cx="50" cy="50" r="46" fill="url(#joey-bg)" stroke="#f2b53a" stroke-width="2"/>
-                    <circle cx="50" cy="46" r="32" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="2 6.4" opacity="0.8"/>
-                    <line x1="50" y1="46" x2="50" y2="20" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" opacity="0.7">
-                        <animateTransform attributeName="transform" type="rotate" values="360 50 46;0 50 46" dur="10s" repeatCount="indefinite"/>
-                    </line>
-                    <ellipse cx="50" cy="46" rx="17" ry="17" fill="url(#joey-coin)" stroke="#7c4a03" stroke-width="1.5">
-                        <animate attributeName="rx" values="17;2;17" dur="2.4s" repeatCount="indefinite"/>
-                    </ellipse>
-                    <rect x="62" y="62" width="20" height="20" rx="4" fill="#f5f1ea" stroke="#be123c" stroke-width="1" transform="rotate(12 72 72)"/>
-                    <g fill="#be123c" transform="rotate(12 72 72)">
-                        <circle cx="67" cy="67" r="1.8"/>
-                        <circle cx="72" cy="72" r="1.8"/>
-                        <circle cx="77" cy="77" r="1.8"/>
-                    </g>
-                    <text x="50" y="93" text-anchor="middle" font-size="9" fill="#f2b53a" font-weight="bold">JOEY</text>
                 </svg>`,
         firstReleaseDate: null,
         latestReleaseDate: null,
