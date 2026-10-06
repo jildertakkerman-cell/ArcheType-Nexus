@@ -9,13 +9,18 @@
  * instruments loaded in the meantime (prepare).
  *
  * Each archetype has a palette (lore-music-data.js names it; PALETTES below defines it): its
- * instruments, scale, chords, tempo and meter, drums, and the flourish that opens a chapter.
- * Each chapter has a mood, scored in the data or taken from the slide's colour, which picks an
- * arrangement and one of three written four-bar progressions. The music keeps one pulse and
- * never restarts: a new chapter comes in on the next beat as a new phrase, carrying the theme
- * of whoever the passage names, or the archetype's main theme, which also opens the story and
- * each act. Rosters and art trails get a chapter per pick. Pages that share a palette get their
- * own key, tempo and progressions, so no two sound alike.
+ * instruments, scale, chords, tempo and meter, drums, and the flourish that opens the music and
+ * each act. Each chapter has a mood, scored in the data or taken from the slide's colour, which
+ * picks an arrangement and one of three written four-bar progressions. The music keeps one pulse
+ * and never restarts: a new chapter comes in on the next strong beat (a bar line, or the middle of
+ * a 4/4 bar) as a new phrase, after a light build, while the old chapter fades out under it over
+ * about a second. A chapter in the same mood and key carries straight on and only changes the
+ * theme. Each chapter carries the theme of whoever the passage names, or the archetype's main
+ * theme, which also opens the story and each act. Rosters and art trails get a chapter per pick.
+ * Pages that share a palette get their own key, tempo and progressions, so no two sound alike.
+ *
+ * Between pages: the music rises in gently (with a bar of chords before the theme and drums), and
+ * following a link fades it out over a third of a second before the next page loads.
  *
  * The instruments are samples from the FluidR3 GM soundfont (CC BY 3.0, credited under the reel
  * while it plays): every third semitone of each, re-pitched in between and levelled on load.
@@ -861,14 +866,16 @@
         const ctx = g.ctx, pal = cp.pal, trim = dbGain(pal.trim), dry = gainNode(ctx, trim), wet = gainNode(ctx, trim);
         dry.connect(g.bus.dry);
         wet.connect(g.bus.wet);
-        const p = { g, ctx, pal, reel, out: { dry, wet }, padOut: null, pumps: [],
+        const base = { dry, wet };
+        // out and padOut are the current chapter's (chapterBus); base and basePad what they feed
+        const p = { g, ctx, pal, reel, base, basePad: base, out: base, padOut: null, pumps: [], bus: null, started: false,
             beatDur: 60 / cp.bpm, stepDur: 15 / cp.bpm, spb: pal.meter * 4, next: 0, step: 0, cur: null, pending: null,
             chord: null, voicing: null, choirVoicing: null, melody: null, cue: null, singer: null };
         p.barDur = p.beatDur * pal.meter;
         if (pal.pump) {   // pads go through their own gain, for the sidechain pump
             const pd = gainNode(ctx, 1), pw = gainNode(ctx, 1);
             pd.connect(dry); pw.connect(wet);
-            p.padOut = { dry: pd, wet: pw };
+            p.basePad = { dry: pd, wet: pw };
             p.pumps = [pd.gain, pw.gain];
         }
         return p;
@@ -876,32 +883,59 @@
 
     function stopPlayer(p, tau = 0.3) {
         unlight(p.singer);
-        fadeTo([p.out.dry.gain, p.out.wet.gain], 0, p.ctx.currentTime, tau);
-        setTimeout(() => { p.out.dry.disconnect(); p.out.wet.disconnect(); }, 6000);
+        fadeTo([p.base.dry.gain, p.base.wet.gain], 0, p.ctx.currentTime, tau);
+        setTimeout(() => { p.base.dry.disconnect(); p.base.wet.disconnect(); }, 6000);
     }
 
-    // The first beat at or after `earliest`, on the player's grid
-    function beatAfter(p, earliest) {
-        let at = p.next + ((4 - p.step % 4) % 4) * p.stepDur;
-        while (at < earliest - 1e-6) at += p.beatDur;
+    // Each chapter plays through its own gain. At a change, the old chapter's chords, theme and reverb
+    // fade out under the new one (CROSSFADE_TAU: about a second) instead of ringing on and clashing.
+    const CROSSFADE_TAU = 0.35;
+    function chapterBus(p) {
+        const pair = dest => {
+            const dry = gainNode(p.ctx, 1), wet = gainNode(p.ctx, 1);
+            dry.connect(dest.dry); wet.connect(dest.wet);
+            return { dry, wet };
+        };
+        const main = pair(p.base), pad = p.basePad === p.base ? main : pair(p.basePad);
+        return { main, pad, gains: [...new Set([main.dry, main.wet, pad.dry, pad.wet])].map(node => node.gain) };
+    }
+
+    function fadeBus(p, bus, t, tau) {
+        bus.gains.forEach(gain => { gain.setValueAtTime(1, t); gain.setTargetAtTime(0, t, tau); });
+        // Live, the faded gains are let go once silent (an offline render may outlast the timer)
+        if (p.reel) setTimeout(() => new Set([bus.main.dry, bus.main.wet, bus.pad.dry, bus.pad.wet]).forEach(node => node.disconnect()), (tau * 12 + 2) * 1000);
+    }
+
+    // The first strong beat (a bar line, or the middle of a 4/4 bar) at or after `earliest`: chapters change
+    // there, so a chord never changes in the middle of a half-bar
+    function strongBeatAfter(p, earliest) {
+        const strong = p.pal.meter === 4 ? 8 : p.spb;   // steps between strong beats
+        let at = p.next + ((strong - p.step % strong) % strong) * p.stepDur;
+        while (at < earliest - 1e-6) at += strong * p.stepDur;
         return at;
     }
 
-    // A chapter's music starts on a beat, as the first bar of a new phrase
+    // A chapter's music starts on a strong beat, as the first bar of a new phrase
     function queue(p, music, earliest) {
-        p.pending = { ...music, at: beatAfter(p, earliest) };
+        p.pending = { ...music, at: strongBeatAfter(p, earliest) };
     }
 
     function run(p, until) {
         while (p.next < until) {
             if (p.pending && p.next >= p.pending.at - 1e-6) {
                 p.cur = p.pending;
+                p.cur.first = !p.started;   // the first chapter this player plays opens with a bar of its own
+                p.started = true;
                 p.pending = null;
                 p.step = 0;
                 p.melody = null;
                 p.cue = null;
                 unlight(p.singer);   // a chapter change cuts the theme short
                 p.singer = null;
+                if (p.bus) fadeBus(p, p.bus, p.next, CROSSFADE_TAU);
+                p.bus = chapterBus(p);
+                p.out = p.bus.main;
+                p.padOut = p.bus.pad === p.bus.main ? null : p.bus.pad;
             }
             if (p.cur) playStep(p, p.next, p.step);
             p.step++;
@@ -914,15 +948,19 @@
         const s = step % p.spb, bar = Math.floor(step / p.spb) % 4, phraseLen = p.spb * 4, phrase = Math.floor(step / phraseLen);
         // A paused slideshow: after the first phrase, only chords, bass and a thinner arpeggio carry on
         const paused = !!(p.reel && p.reel.paused), resting = paused && phrase > 0;
+        // The music's first chapter opens with a bar of chords alone; the theme and drums come in after it
+        const intro = c.first && step < p.spb;
         if (s === 0) {
             p.chord = chordOf(p, c.chords[bar]);
-            if (step % phraseLen === 0) {
-                if (step === 0) {
-                    if (c.newAct && kit) kit.accent(p, t);
-                    flourish(p, t);
-                }
-                // The theme: at the chapter's start, then every other phrase while the slideshow plays
-                if (c.person && (phrase === 0 || (!paused && phrase % 2 === 0))) startMelody(p, c.person, step, t);
+            if (step === 0) {
+                if (c.newAct && kit) kit.accent(p, t);
+                // The flourish marks a beginning: the music's first chapter and each new act, not every chapter
+                if (c.first || c.newAct) flourish(p, t);
+            }
+            // The theme: at the chapter's start (after the opening bar), then every other phrase while the slideshow plays
+            const themeAt = c.first ? p.spb : 0;
+            if (c.person && (step === themeAt || (step % phraseLen === 0 && phrase > 0 && !paused && phrase % 2 === 0))) {
+                startMelody(p, c.person, step, t);
             }
             // A portrait asked for its theme: it comes in on the first bar after the current theme ends
             if (p.cue && !(p.melody && step - p.melody.start < p.melody.length)) {
@@ -935,7 +973,7 @@
         if (pal.waltz && (s === 4 || s === 8)) waltzStab(p, t);
         playBass(p, t, s);
         if (arr.arp && !(resting && s % 4)) playArp(p, t, s, bar);
-        if (kit && !resting) {
+        if (kit && !resting && !intro) {
             const name = arr.perc || (pal.groove ? 'groove' : null);
             const pattern = name && ((kit.patterns && kit.patterns[name]) || PATTERNS[name]);
             if (pattern) pattern(kit, p, t, s, bar);
@@ -1140,8 +1178,10 @@
         const actStarts = new Set();
         if (!data.kind && data.slides) data.slides.forEach((item, j) => { if (item === '|') actStarts.add(j - actStarts.size); });
         const chapter = root.loreReelChapter || null;
-        const r = { root, key, kind: data.kind || 'story', music, actStarts, chapter, paused: !!(chapter && chapter.paused), visible: !io, hooked: new WeakSet() };
-        root.addEventListener('lore-reel:change', () => onChange(r));
+        // A story's slide colours, so a change can tell in advance whether the next chapter's mood differs
+        const colors = !data.kind && data.slides ? data.slides.filter(item => item !== '|').map(slide => slide.color) : null;
+        const r = { root, key, kind: data.kind || 'story', music, actStarts, colors, chapter, paused: !!(chapter && chapter.paused), visible: !io, hooked: new WeakSet() };
+        root.addEventListener('lore-reel:change', event => onChange(r, event.detail || {}));
         root.addEventListener('lore-reel:chapter', event => onChapter(r, event.detail));
         root.addEventListener('lore-reel:state', event => { r.paused = !!event.detail.paused; });
         reels.set(root, r);
@@ -1228,7 +1268,7 @@
         const t = g.ctx.currentTime;
         if (audible()) {
             if (g.ctx.state !== 'running') g.ctx.resume().catch(() => {});
-            fadeTo(g.fades, 1, t, 0.5);
+            fadeTo(g.fades, 1, t, 0.9);   // a gentle rise (about 3 s), as when arriving from another page
             if (A.player && A.player.reel !== A.active) stopScore();
             startScore();
             if (!A.timer) A.timer = setInterval(tick, TICK_MS);
@@ -1257,14 +1297,25 @@
         run(p, now + LOOKAHEAD_S);
     }
 
-    // The mosaic has started: the next chapter comes in on the first beat after its midpoint, and the kit builds into it
-    function onChange(r) {
+    // Whether chapter music m carries on from what plays (or is about to): the same mood in the same key
+    const continues = (p, m) => {
+        const playing = p.pending || p.cur;
+        return !!playing && !m.newAct && m.arr === playing.arr && m.key === playing.key && m.chords === playing.chords;
+    };
+
+    // The mosaic has started: the next chapter comes in on the first strong beat after its midpoint, and the kit
+    // builds into it, unless the next chapter (known for stories) carries on in the same mood and key
+    function onChange(r, d) {
         const p = A.player;
         if (A.active !== r || !p || !audible()) return;
-        A.downbeat = beatAfter(p, p.ctx.currentTime + 0.6);
+        A.downbeat = strongBeatAfter(p, p.ctx.currentTime + 0.6);
+        const color = r.colors && r.colors[d.to], newAct = r.actStarts.has(d.to);
+        if (color && continues(p, chapterMusic(r, { index: d.to, from: r.chapter ? r.chapter.index : -1, color, actStart: newAct }))) return;
+        // A light build for an ordinary chapter, a full one into a new act
         const kit = KITS[p.pal.kit];
-        if (kit) kit.swellTo(p, A.downbeat, 0.55);
+        if (kit) kit.swellTo(p, A.downbeat, newAct ? SWELL_ACT : SWELL);
     }
+    const SWELL = 0.32, SWELL_ACT = 0.6;
 
     function onChapter(r, d) {
         r.chapter = d;
@@ -1274,7 +1325,14 @@
         if (A.active !== r || !p || !audible()) return;
         const now = p.ctx.currentTime, earliest = A.downbeat > now + 0.05 ? A.downbeat : now + 0.25;
         A.downbeat = 0;
-        queue(p, chapterMusic(r, d), earliest);
+        const music = chapterMusic(r, d);
+        // The same mood in the same key: the music carries on, and only the theme changes, from the next bar
+        if (continues(p, music)) {
+            if (p.pending) p.pending.person = music.person;
+            else { p.cur.person = music.person; p.cue = music.person; }
+            return;
+        }
+        queue(p, music, earliest);
     }
 
     // Every speaker on the page shows the state; the playing reel shows the credit (or the loading count)
@@ -1328,6 +1386,29 @@
 
     document.addEventListener('visibilitychange', refresh);
 
+    // Leaving for another page: the music fades out over a moment instead of stopping dead, then the link
+    // is followed. Only while it plays, and only for an ordinary click on a link that replaces this page
+    // (not a new tab, a download, or an anchor on this page). Coming back through the back button
+    // (the page restored as it was) brings the music back in.
+    const LEAVE_MS = 320;
+    document.addEventListener('click', event => {
+        if (!A.g || !audible() || event.defaultPrevented || event.button !== 0
+            || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const link = event.target.closest && event.target.closest('a[href]');
+        if (!link || (link.target && link.target !== '_self') || link.hasAttribute('download')) return;
+        const url = new URL(link.href, location.href);
+        if (!/^https?:$/.test(url.protocol) || (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search)) return;
+        event.preventDefault();
+        const t = A.g.ctx.currentTime;
+        A.g.fades.forEach(param => {
+            param.cancelScheduledValues(t);
+            param.setValueAtTime(param.value, t);
+            param.linearRampToValueAtTime(0, t + LEAVE_MS / 1000);
+        });
+        setTimeout(() => { location.href = url.href; }, LEAVE_MS);
+    });
+    window.addEventListener('pageshow', event => { if (event.persisted) refresh(); });
+
     /* ---- Balancing: LoreMusic.measure(mood, palette) renders offline and reports the loudness ---- */
 
     // Peak and RMS in dBFS, and loudness as heard: K-weighting (ITU-R BS.1770 shelf + high-pass), ungated
@@ -1357,16 +1438,55 @@
         };
     }
 
-    async function measure(moodName, palName = 'fantasy', { seconds = 14, variant = 0, theme = 'Measure' } = {}) {
+    // changes: [{ at, mood }], chapter changes as a page makes them (the mosaic starts at `at`, the chapter
+    // swaps 0.45 s later). curve: also the loudness every 100 ms (400 ms windows), to see how a change lands.
+    async function measure(moodName, palName = 'fantasy', { seconds = 14, variant = 0, theme = 'Measure', changes = [], curve = false } = {}) {
         const pal = PALETTES[palName], { core, rest } = paletteInstruments(pal);
         const loaded = await Promise.all([...core, ...rest].map(name => loadInstrument(new OfflineAudioContext(2, 1, 44100), name)));
         const ctx = new OfflineAudioContext(2, 44100 * seconds, 44100), g = makeGraph(ctx);
         g.fades.forEach(param => param.setValueAtTime(1, 0));
         const p = makePlayer(g, { pal, bpm: pal.bpm }, null);
+        const music = mood => ({ arr: ARRANGE[mood], key: 50, chords: progressionsOf(mood)[variant], person: { name: theme + mood, pan: 0 }, newAct: false });
         p.next = 0.05;
-        queue(p, { arr: ARRANGE[moodName], key: 50, chords: progressionsOf(moodName)[variant], person: { name: theme, pan: 0 }, newAct: false }, 0.05);
+        queue(p, music(moodName), 0.05);
+        changes.forEach(change => {
+            run(p, change.at);
+            const next = music(change.mood), downbeat = strongBeatAfter(p, change.at + 0.6);
+            if (!continues(p, next) && KITS[pal.kit]) KITS[pal.kit].swellTo(p, downbeat, SWELL);
+            run(p, change.at + 0.45);
+            if (continues(p, next)) { p.cur.person = next.person; p.cue = next.person; } else queue(p, next, downbeat);
+        });
         run(p, seconds - 1.5);
-        return { ...loudness(await ctx.startRendering()), loaded: loaded.every(Boolean) };
+        const buf = await ctx.startRendering();
+        return { ...loudness(buf), loaded: loaded.every(Boolean), ...(curve ? { curve: loudnessCurve(buf) } : {}) };
+    }
+
+    // Momentary loudness (K-weighted, 400 ms windows) every 100 ms
+    function loudnessCurve(buf) {
+        const sr = buf.sampleRate, K = f0 => Math.tan(Math.PI * f0 / sr);
+        let k = K(1681.974450955533), q = 0.7071752369554196, a0 = 1 + k / q + k * k;
+        const vh = Math.pow(10, 3.999843853973347 / 20), vb = Math.pow(vh, 0.4996667741545416);
+        const shelf = [(vh + vb * k / q + k * k) / a0, 2 * (k * k - vh) / a0, (vh - vb * k / q + k * k) / a0, 2 * (k * k - 1) / a0, (1 - k / q + k * k) / a0];
+        k = K(38.13547087602444); q = 0.5003270373238773; a0 = 1 + k / q + k * k;
+        const hp = [1, -2, 1, 2 * (k * k - 1) / a0, (1 - k / q + k * k) / a0];
+        const energy = new Float64Array(buf.length + 1);
+        for (let c = 0; c < buf.numberOfChannels; c++) {
+            const d = buf.getChannelData(c), states = [[0, 0, 0, 0], [0, 0, 0, 0]];
+            for (let i = 0; i < d.length; i++) {
+                let y = d[i];
+                [shelf, hp].forEach(([b0, b1, b2, a1, a2], j) => {
+                    const s = states[j], out = b0 * y + b1 * s[0] + b2 * s[1] - a1 * s[2] - a2 * s[3];
+                    s[1] = s[0]; s[0] = y; s[3] = s[2]; s[2] = out; y = out;
+                });
+                energy[i + 1] += y * y;
+            }
+        }
+        for (let i = 1; i <= buf.length; i++) energy[i] += energy[i - 1];
+        const win = Math.round(0.4 * sr), hop = Math.round(0.1 * sr), out = [];
+        for (let i = 0; i + win <= buf.length; i += hop) {
+            out.push(Math.round((-0.691 + 10 * Math.log10((energy[i + win] - energy[i]) / win + 1e-12)) * 10) / 10);
+        }
+        return out;
     }
 
     window.LoreMusic = {
