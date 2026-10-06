@@ -98,6 +98,9 @@ window.CardBrowser = (function () {
     const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const NEW_MONTHS = 6;
     const PHONE_PREVIEW = 6;
+    const NAMED_BY_LIMIT = 4;
+    // A card name quoted in card text, with straight or curly quotes.
+    const QUOTED_NAME = /["“]([^"”]+)["”]/g;
     // Card panel columns (px): column width, gap between columns, padding + border.
     const DETAIL_COLUMN = 352;
     const DETAIL_COLUMN_GAP = 28;
@@ -134,7 +137,7 @@ window.CardBrowser = (function () {
 
     const state = {
         q: '', zone: 'all', tags: [], match: 'all', attr: '', race: '', print: '', era: '',
-        fresh: false, sort: 'name', view: 'grid', fmt: 'tcg', card: '',
+        fresh: false, names: '', sort: 'name', view: 'grid', fmt: 'tcg', card: '',
         allTags: false, more: false, anime: false, expanded: {}, sheet: ''
     };
 
@@ -142,6 +145,7 @@ window.CardBrowser = (function () {
     let utils = {};
     let cards = [];
     let cardById = new Map();
+    let cardByName = new Map(); // lower-case name (and alternative names) -> card
     let anime = [];
     let zoneTotals = {};
     let tagIndex = [];
@@ -211,6 +215,7 @@ window.CardBrowser = (function () {
         primeCardLoaderCache();
         await Promise.all([loadTags(), loadBanlists()]);
         buildTagIndex();
+        buildMentions();
         sanitizeState();
 
         renderPage(container);
@@ -488,6 +493,7 @@ window.CardBrowser = (function () {
         if (state.print && !cards.some(c => c.region === state.print)) state.print = '';
         if (state.fresh && !cards.some(c => c.fresh)) state.fresh = false;
         if (state.card && !cardById.has(state.card)) state.card = '';
+        if (state.names && !cardById.has(state.names)) state.names = '';
     }
 
     /**
@@ -533,6 +539,7 @@ window.CardBrowser = (function () {
         if (!changed.size) return;
 
         applyBans();
+        buildMentions();
         primeCardLoaderCache();
         changed.forEach(id => { tileCache.delete(id); rowCache.delete(id); });
         cards.sort((a, b) => a.name.localeCompare(b.name));
@@ -547,6 +554,7 @@ window.CardBrowser = (function () {
 
     function matchesBase(c, skip) {
         if (state.qLower && !c.hay.includes(state.qLower)) return false;
+        if (state.names && !(c.nameIds && c.nameIds.has(state.names))) return false;
         if (skip !== 'print' && state.print && c.region !== state.print) return false;
         if (skip !== 'attr' && state.attr && c.attr !== state.attr) return false;
         if (skip !== 'race' && state.race && c.race !== state.race) return false;
@@ -592,7 +600,7 @@ window.CardBrowser = (function () {
 
     function activeFilterCount() {
         return state.tags.length + (state.attr ? 1 : 0) + (state.race ? 1 : 0) + (state.print ? 1 : 0)
-            + (state.era ? 1 : 0) + (state.fresh ? 1 : 0);
+            + (state.era ? 1 : 0) + (state.fresh ? 1 : 0) + (state.names ? 1 : 0);
     }
 
     function isFiltered() {
@@ -760,6 +768,8 @@ window.CardBrowser = (function () {
 
                     <div class="cb-row cb-status-row">
                         <p class="cb-status" id="cb-status" role="status" aria-live="polite"></p>
+                        <button type="button" class="cb-link-btn cb-copy-names" data-action="copy-names"
+                            title="Copy the names of the cards shown, one per line"><span>Copy names</span></button>
                         <span id="cb-active" style="display: contents"></span>
                     </div>
                 </div>
@@ -1036,6 +1046,7 @@ window.CardBrowser = (function () {
         if (state.print) chips.push({ kind: 'print', value: '', label: PRINT_LABEL[state.print] });
         if (state.era) chips.push({ kind: 'era', value: '', label: `Released ${ERAS.find(e => e.key === state.era).label}` });
         if (state.fresh) chips.push({ kind: 'fresh', value: '', label: 'New & upcoming' });
+        if (state.names) chips.push({ kind: 'names', value: '', label: `Names: ${cardById.get(state.names).name}` });
 
         renderInto($('cb-active'), chips.map(ch => `
             <button type="button" class="cb-active" data-action="remove" data-kind="${ch.kind}" data-value="${esc(ch.value)}"
@@ -1445,7 +1456,7 @@ window.CardBrowser = (function () {
                     </div>
                     <div class="cb-detail-block">
                         <p class="cb-label">Card text</p>
-                        <p class="cb-desc">${c.desc ? highlight(c.desc) : 'No card text recorded.'}</p>
+                        <p class="cb-desc">${c.desc ? linkedText(c) : 'No card text recorded.'}</p>
                     </div>
                 </div>
                 <div class="cb-detail-side" id="cb-detail-side">
@@ -1455,6 +1466,7 @@ window.CardBrowser = (function () {
                         <p class="cb-detail-none">No gameplay tags have been recorded for this card yet.</p>
                     </div>`}
                     ${actions}
+                    ${namedByHtml(c)}
                 </div>
             </div>
             <div class="cb-detail-actions">
@@ -1541,6 +1553,18 @@ window.CardBrowser = (function () {
             panel.addEventListener('focusout', e => {
                 if (!panel.contains(e.relatedTarget)) clearTagLinks();
             });
+            // Phones: swipe the card sheet sideways for the previous or next card.
+            let touch = null;
+            panel.addEventListener('touchstart', e => {
+                touch = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+            }, { passive: true });
+            panel.addEventListener('touchend', e => {
+                if (!touch || !PHONE_QUERY.matches || !state.card) return;
+                const dx = e.changedTouches[0].clientX - touch.x;
+                const dy = e.changedTouches[0].clientY - touch.y;
+                touch = null;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) step(dx < 0 ? 1 : -1);
+            }, { passive: true });
         }
     }
 
@@ -1588,6 +1612,8 @@ window.CardBrowser = (function () {
             case 'toggle-anime': state.anime = !state.anime; renderAnime(); return;
             case 'copy-name': withCard(c => copyText(el, c.name)); return;
             case 'copy-link': copyText(el, location.href); return;
+            case 'copy-names': copyText(el, order.map(c => c.name).join('\n')); return;
+            case 'filter-names': state.names = value; state.zone = 'all'; break;
             case 'full-art': withCard(c => CardLoader.showLargeImageByName && CardLoader.showLargeImageByName(c.name, e)); return;
             case 'more-info': withCard(c => CardLoader.showPopupByName && CardLoader.showPopupByName(c.name, e)); return;
             default: return;
@@ -1723,6 +1749,7 @@ window.CardBrowser = (function () {
         state.print = '';
         state.era = '';
         state.fresh = false;
+        state.names = '';
     }
 
     function setSearch(value) {
@@ -1787,6 +1814,120 @@ window.CardBrowser = (function () {
             label.textContent = 'Copied';
             setTimeout(() => { label.textContent = original; }, 1500);
         }).catch(() => { });
+    }
+
+    /**
+     * Which archetype cards each card names in its text ("…add 1 "Blue-Eyes
+     * White Dragon" from your Deck…") and, the other way round, which cards
+     * name it. A card naming itself (its once-per-turn line) doesn't count.
+     */
+    function buildMentions() {
+        cardByName = new Map();
+        cards.forEach(c => [c.name].concat(c.altNames).forEach(n => cardByName.set(n.toLowerCase(), c)));
+        cards.forEach(c => { c.namedBy = []; });
+        cards.forEach(c => {
+            const named = new Set();
+            for (const m of (c.desc || '').matchAll(QUOTED_NAME)) {
+                const target = cardByName.get(m[1].toLowerCase());
+                if (target && target !== c) named.add(target);
+            }
+            c.nameIds = new Set([...named].map(t => t.id));
+            named.forEach(target => target.namedBy.push(c));
+        });
+        // Newest support first.
+        cards.forEach(c => c.namedBy.sort((a, b) => (b.latest || '').localeCompare(a.latest || '') || a.name.localeCompare(b.name)));
+    }
+
+    /** Card text with the archetype cards it names turned into links that open them. */
+    function linkedText(c) {
+        const text = c.desc;
+        let out = '';
+        let from = 0;
+        for (const m of text.matchAll(QUOTED_NAME)) {
+            const target = cardByName.get(m[1].toLowerCase());
+            if (!target || target === c) continue;
+            const start = m.index + 1;
+            out += highlight(text.slice(from, start));
+            out += `<button type="button" class="cb-text-link" data-action="open-card" data-id="${target.id}" data-focus="name:${start}" title="Open ${esc(target.name)}">${highlight(m[1])}</button>`;
+            from = start + m[1].length;
+        }
+        return out + highlight(text.slice(from));
+    }
+
+    /**
+     * "Named by": the archetype cards whose text names this one, newest first,
+     * each with the part of its text that names it, so readers can see how it
+     * is used (searched, summoned, a Fusion Material, treated as...).
+     */
+    function namedByHtml(c) {
+        const list = c.namedBy || [];
+        if (!list.length) return '';
+        const shown = list.slice(0, NAMED_BY_LIMIT);
+        const words = { main: ['Main Deck', 'Main Deck'], extra: ['Extra Deck', 'Extra Deck'], spell: ['Spell', 'Spells'], trap: ['Trap', 'Traps'] };
+        const breakdown = ZONES.map(z => {
+            const n = list.filter(t => t.zone === z.key).length;
+            return n ? `${n} ${words[z.key][n === 1 ? 0 : 1]}` : '';
+        }).filter(Boolean).join(' · ');
+        const more = list.length > shown.length ? `Show all ${list.length} in the grid` : `Show ${list.length === 1 ? 'it' : 'them'} in the grid`;
+        return `
+            <div class="cb-detail-block cb-detail-block--flow">
+                <p class="cb-label">Named by ${list.length} card${list.length === 1 ? '' : 's'} <span class="cb-label-note">· newest first</span></p>
+                <p class="cb-namedby-breakdown">${breakdown}</p>
+                <ul class="cb-namers">
+                    ${shown.map(t => `
+                        <li>
+                            <button type="button" class="cb-namer" data-action="open-card" data-id="${t.id}" data-focus="namedby:${t.id}">
+                                ${imgHtml(t)}
+                                <span class="cb-namer-text">
+                                    <span class="cb-namer-name">${esc(t.name)}</span>
+                                    <span class="cb-namer-how">${mentionSnippet(t.desc || '', c)}</span>
+                                </span>
+                            </button>
+                        </li>`).join('')}
+                </ul>
+                ${state.names === c.id
+            ? '<p class="cb-namedby-breakdown">They are the cards shown in the grid now.</p>'
+            : `<button type="button" class="cb-link-btn cb-namedby-all" data-action="filter-names" data-value="${c.id}" data-focus="namedby-all">${more}</button>`}
+            </div>`;
+    }
+
+    /**
+     * The part of a card's text where it names another card, cut to its clause
+     * and cropped around the name, with the name in bold:
+     * '...add 1 "Blue-Eyes White Dragon" from your Deck to your hand.'
+     */
+    function mentionSnippet(text, target) {
+        const names = [target.name].concat(target.altNames).map(n => n.toLowerCase());
+        let at = -1;
+        let len = 0;
+        for (const m of text.matchAll(QUOTED_NAME)) {
+            if (names.includes(m[1].toLowerCase())) {
+                at = m.index;
+                len = m[0].length;
+                break;
+            }
+        }
+        if (at < 0) return '';
+        const stop = ch => '.;:\n'.includes(ch);
+        let start = at;
+        while (start > 0 && !stop(text[start - 1])) start--;
+        let end = at + len;
+        while (end < text.length && !stop(text[end])) end++;
+        if (end < text.length && text[end] === '.') end++;
+        // Crop a long clause around the name, at word boundaries.
+        let pre = '';
+        let post = '';
+        const before = text.lastIndexOf(' ', at - 36);
+        if (at - start > 40 && before > start && before < at) {
+            start = before + 1;
+            pre = '…';
+        }
+        const after = text.lastIndexOf(' ', at + len + 50);
+        if (end - (at + len) > 56 && after > at + len) {
+            end = after;
+            post = '…';
+        }
+        return `${pre}${esc(text.slice(start, at).trimStart())}<strong>${esc(text.slice(at, at + len))}</strong>${esc(text.slice(at + len, end).trimEnd())}${post}`;
     }
 
     /** Escape text for HTML and mark where the current search matches it. */
@@ -1953,6 +2094,7 @@ window.CardBrowser = (function () {
         state.view = oneOf(p.get('view'), ['grid', 'list'], readPref(VIEW_STORAGE_KEY) || 'grid');
         state.fmt = oneOf(p.get('fmt'), FORMATS.map(f => f.key), readPref(FORMAT_STORAGE_KEY) || 'tcg');
         state.card = /^\d+$/.test(p.get('card') || '') ? p.get('card') : '';
+        state.names = /^\d+$/.test(p.get('names') || '') ? p.get('names') : '';
     }
 
     function writeUrlState() {
@@ -1974,6 +2116,7 @@ window.CardBrowser = (function () {
         put('view', state.view, 'grid');
         put('fmt', state.fmt, 'tcg');
         put('card', state.card);
+        put('names', state.names);
         const qs = p.toString();
         const next = `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`;
         if (next !== `${location.pathname}${location.search}${location.hash}`) {
