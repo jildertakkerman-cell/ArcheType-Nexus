@@ -21,7 +21,8 @@ class ArchetypeLoader {
         this.setupEventListeners();
         this.setupScrollMemory();
         await this.loadArchetypes();
-        await this.fetchArchetypeDates();
+        await Promise.all([this.fetchArchetypeDates(), this.loadOfficialArchetypeNames()]);
+        this.applyCategories();
         this.hideLoading();
         this.restoreSearchQuery();
         this.restoreAlphabetFilter();
@@ -83,6 +84,47 @@ class ArchetypeLoader {
 
     normalizeArchetypeName(name) {
         return name.replace(/-/g, '');
+    }
+
+    // The "Archetype" / "Series" label: whether YGOProDeck lists the name as an
+    // archetype. Release dates can't decide this, because some entries hard-code
+    // their dates and the dates RPC also covers series. Names are compared
+    // loosely, so "Prank Kids" matches "Prank-Kids" and "Magical Muskets"
+    // matches "Magical Musket".
+    normalizeCategoryName(name) {
+        return name.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/s$/, '');
+    }
+
+    async loadOfficialArchetypeNames() {
+        const cacheKey = 'official-archetypes-cache';
+        const expiryKey = 'official-archetypes-cache-expiry';
+        try {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached && Date.now() < parseInt(localStorage.getItem(expiryKey) || '0', 10)) {
+                this.officialArchetypes = new Set(JSON.parse(cached));
+                return;
+            }
+        } catch (e) { }
+        try {
+            const response = await fetch('https://db.ygoprodeck.com/api/v7/archetypes.php');
+            if (!response.ok) return;
+            const names = (await response.json()).map(a => this.normalizeCategoryName(a.archetype_name));
+            this.officialArchetypes = new Set(names);
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify(names));
+                localStorage.setItem(expiryKey, String(Date.now() + 24 * 60 * 60 * 1000));
+            } catch (e) { }
+        } catch (error) {
+            console.warn('[ArchetypeLoader] Archetype list unavailable; labelling by release-date data instead.', error);
+        }
+    }
+
+    // Without the list, the date-based fromAPI set in updateArchetypesWithDates stands.
+    applyCategories() {
+        if (!this.officialArchetypes || !this.officialArchetypes.size) return;
+        for (const archetype of this.archetypes) {
+            archetype.fromAPI = this.officialArchetypes.has(this.normalizeCategoryName(archetype.name));
+        }
     }
 
     /**

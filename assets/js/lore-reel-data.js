@@ -258,6 +258,28 @@
  * (VBEX5), Nemleria, Aroma (VBEX4) and virtual-world (VBEX No. 06).
  * Batch 18 (2026-09-30): art trails Kaiju, Crystron, Lunalight, Unchained, dual-avatar and Marincess (Yugipedia card trivia).
  * Batch 19 (2026-09-30): art trails burning-abyss, Meklord, Simorgh and Angelechy (Yugipedia card trivia).
+ * Batch 20 (2026-10-05): art trails Floowandereeze, Chronomaly, Gouki, Deskbot, Materiactor and Inzektor (Yugipedia card
+ * trivia); deep-sea slideshow (The Valuable Book EX No. 07).
+ * Batch 21 (2026-10-05): art trails Earthbound, Malefic, Igknight, Ghoti and Infernity (Yugipedia card trivia;
+ * Igknight flavor texts).
+ * Batch 22 (2026-10-05): art trails supreme-king, armed-dragon, Artifact, Watt, Numeron and symphonic-warrior
+ * (Yugipedia card trivia).
+ * Batch 23 (2026-10-05): art trails red-eyes, Blackwing, elemental-hero, psy-frame and Graydle
+ * (Yugipedia card trivia).
+ * Batch 24 (2026-10-05): art trails dark-magician, blue-eyes, odd-eyes, Kuriboh, Utopia and d-d
+ * (Yugipedia card trivia).
+ * Batch 25 (2026-10-05): art trails destiny-hero, Stardust, Shark, Nordic, fire-fist, arcana-force, flower-cardian
+ * and Timelord
+ * (Yugipedia card trivia).
+ * Batch 26 (2026-10-05): art trails evil-hero, Gaia, Chimera, t-g, gimmick-puppet, battlin-boxer, phantom-knights,
+ * red-dragon-archfiend, black-luster-soldier and Firewall
+ * (Yugipedia card trivia).
+ * Batch 27 (2026-10-06): art trails Speedroid, sacred-beast, superheavy-samurai, Venom, magnet-warrior, code-talker,
+ * masked-hero and Horus
+ * (Yugipedia card trivia).
+ * Batch 28 (2026-10-06): art trails Cubic, Melodious, wind-up, Penguin, Gizmek, Dinowrestler, Predaplant, Resonator,
+ * Battlewasp and Altergeist
+ * (Yugipedia card trivia).
  * Sources (checked September 2026, via Yugipedia): K9, The Valuable Book EX 6 No. 9
  * (the personnel files); Ghostrick, Master Guide 4 File No. 07 (where each ghost
  * lives); Mikanko, The Valuable Book EX 3 No. 07 (the three families; each girl's
@@ -4916,19 +4938,19 @@
         kind: 'trail',
         label: 'The Burning Abyss art trail',
         stops: [
-            { card: 'The Traveler and the Burning Abyss', title: 'The gate', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Dante, Traveler of the Burning Abyss', title: 'Dante', color: '#e9d5ff', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Virgil, Rock Star of the Burning Abyss', title: 'Virgil', color: '#fde68a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Good & Evil in the Burning Abyss', title: 'Good & Evil', color: '#f0abfc', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Malacoda, Netherlord of the Burning Abyss', title: 'Malacoda', color: '#f87171', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Scarm, Malebranche of the Burning Abyss', title: 'Scarm', color: '#a78bfa', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Cir, Malebranche of the Burning Abyss', title: 'Cir', color: '#fdba74', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Graff, Malebranche of the Burning Abyss', title: 'Graff', color: '#fca5a5', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Draghig, Malebranche of the Burning Abyss', title: 'Draghig', color: '#86efac', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Fire Lake of the Burning Abyss', title: 'Fire Lake', color: '#ef4444', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Cherubini, Ebon Angel of the Burning Abyss', title: 'Cherubini', color: '#94a3b8', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'The Terminus of the Burning Abyss', title: 'Terminus', color: '#fef08a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Dante, Pilgrim of the Burning Abyss', title: 'Pilgrim', color: '#fbbf24', face: [0.5, 0.3], pan: [0.35, 0.35] }
+            { card: 'The Traveler and the Burning Abyss', title: 'The gate', color: '#c4b5fd', face: [0.25, 0.8], pan: [0.3, 0.7] },
+            { card: 'Dante, Traveler of the Burning Abyss', title: 'Dante', color: '#e9d5ff', face: [0.5, 0.15], pan: [0.3, 0.2] },
+            { card: 'Virgil, Rock Star of the Burning Abyss', title: 'Virgil', color: '#fde68a', face: [0.48, 0.18], pan: [0.3, 0.2] },
+            { card: 'Good & Evil in the Burning Abyss', title: 'Good & Evil', color: '#f0abfc', face: [0.5, 0.45], pan: [0.4, 0.45] },
+            { card: 'Malacoda, Netherlord of the Burning Abyss', title: 'Malacoda', color: '#f87171', face: [0.55, 0.15], pan: [0.3, 0.2] },
+            { card: 'Scarm, Malebranche of the Burning Abyss', title: 'Scarm', color: '#a78bfa', face: [0.45, 0.2], pan: [0.3, 0.25] },
+            { card: 'Cir, Malebranche of the Burning Abyss', title: 'Cir', color: '#fdba74', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Graff, Malebranche of the Burning Abyss', title: 'Graff', color: '#fca5a5', face: [0.55, 0.3], pan: [0.3, 0.35] },
+            { card: 'Draghig, Malebranche of the Burning Abyss', title: 'Draghig', color: '#86efac', face: [0.4, 0.2], pan: [0.3, 0.25] },
+            { card: 'Fire Lake of the Burning Abyss', title: 'Fire Lake', color: '#ef4444', face: [0.4, 0.55], pan: [0.4, 0.55] },
+            { card: 'Cherubini, Ebon Angel of the Burning Abyss', title: 'Cherubini', color: '#94a3b8', face: [0.55, 0.3], pan: [0.3, 0.35] },
+            { card: 'The Terminus of the Burning Abyss', title: 'Terminus', color: '#fef08a', face: [0.65, 0.22], pan: [0.2, 0.3] },
+            { card: 'Dante, Pilgrim of the Burning Abyss', title: 'Pilgrim', color: '#fbbf24', face: [0.45, 0.12], pan: [0.25, 0.2] }
         ]
     };
 
@@ -4936,20 +4958,20 @@
         kind: 'trail',
         label: 'The Meklord art trail',
         stops: [
-            { card: 'Meklord Emperor Wisel', title: 'Wisel', color: '#f1f5f9', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Emperor Wisel - Synchro Absorption', title: 'Absorption', color: '#bae6fd', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Emperor Skiel', title: 'Skiel', color: '#93c5fd', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Emperor Granel', title: 'Granel', color: '#fdba74', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Assembly', title: 'Assembly', color: '#fb923c', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Astro Mekanikle', title: 'Mekanikle', color: '#e5e7eb', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Nucleus Infinity Core', title: 'Infinity Core', color: '#fde68a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Army of Wisel', title: 'Army of Wisel', color: '#cbd5e1', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Army of Skiel', title: 'Army of Skiel', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Army of Granel', title: 'Army of Granel', color: '#fdba74', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Astro the Eradicator', title: 'Eradicator', color: '#a5b4fc', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Astro Dragon Asterisk', title: 'Asterisk', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Astro Dragon Triskelion', title: 'Triskelion', color: '#f0abfc', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Meklord Factory', title: 'Factory', color: '#94a3b8', face: [0.5, 0.3], pan: [0.35, 0.35] }
+            { card: 'Meklord Emperor Wisel', title: 'Wisel', color: '#f1f5f9', face: [0.6, 0.2], pan: [0.25, 0.3] },
+            { card: 'Meklord Emperor Wisel - Synchro Absorption', title: 'Absorption', color: '#bae6fd', face: [0.3, 0.25], pan: [0.3, 0.4] },
+            { card: 'Meklord Emperor Skiel', title: 'Skiel', color: '#93c5fd', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Meklord Emperor Granel', title: 'Granel', color: '#fdba74', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Meklord Assembly', title: 'Assembly', color: '#fb923c', face: [0.5, 0.35], pan: [0.3, 0.45] },
+            { card: 'Meklord Astro Mekanikle', title: 'Mekanikle', color: '#e5e7eb', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Meklord Nucleus Infinity Core', title: 'Infinity Core', color: '#fde68a', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Meklord Army of Wisel', title: 'Army of Wisel', color: '#cbd5e1', face: [0.6, 0.22], pan: [0.25, 0.3] },
+            { card: 'Meklord Army of Skiel', title: 'Army of Skiel', color: '#7dd3fc', face: [0.55, 0.35], pan: [0.35, 0.4] },
+            { card: 'Meklord Army of Granel', title: 'Army of Granel', color: '#fdba74', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Meklord Astro the Eradicator', title: 'Eradicator', color: '#a5b4fc', face: [0.35, 0.25], pan: [0.25, 0.45] },
+            { card: 'Meklord Astro Dragon Asterisk', title: 'Asterisk', color: '#c4b5fd', face: [0.5, 0.25], pan: [0.3, 0.35] },
+            { card: 'Meklord Astro Dragon Triskelion', title: 'Triskelion', color: '#f0abfc', face: [0.4, 0.4], pan: [0.3, 0.45] },
+            { card: 'Meklord Factory', title: 'Factory', color: '#94a3b8', face: [0.5, 0.3], pan: [0.3, 0.45] }
         ]
     };
 
@@ -4957,20 +4979,20 @@
         kind: 'trail',
         label: 'The Simorgh art trail',
         stops: [
-            { card: 'Simorgh, Bird of Divinity', title: 'Divinity', color: '#86efac', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Bird of Beginning', title: 'Beginning', color: '#bbf7d0', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Lord of the Storm', title: 'Lord of the Storm', color: '#4ade80', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Elborz, the Sacred Lands of Simorgh', title: 'Elborz', color: '#a3e635', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Dark Simorgh', title: 'Dark Simorgh', color: '#a78bfa', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh of Darkness', title: 'Of Darkness', color: '#8b5cf6', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh Sky Battle', title: 'Sky Battle', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Bird of Sovereignty', title: 'Sovereignty', color: '#fde047', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Bird of Calamity', title: 'Calamity', color: '#f87171', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Bird of Perfection', title: 'Perfection', color: '#fb7185', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh Onslaught', title: 'Onslaught', color: '#fca5a5', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Bird of Ancestry', title: 'Ancestry', color: '#fde68a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh, Bird of Bringing', title: 'Bringing', color: '#fef08a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Simorgh Repulsion', title: 'Repulsion', color: '#bef264', face: [0.5, 0.3], pan: [0.35, 0.35] }
+            { card: 'Simorgh, Bird of Divinity', title: 'Divinity', color: '#86efac', face: [0.5, 0.12], pan: [0.25, 0.25] },
+            { card: 'Simorgh, Bird of Beginning', title: 'Beginning', color: '#bbf7d0', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Simorgh, Lord of the Storm', title: 'Lord of the Storm', color: '#4ade80', face: [0.5, 0.25], pan: [0.25, 0.3] },
+            { card: 'Elborz, the Sacred Lands of Simorgh', title: 'Elborz', color: '#a3e635', face: [0.3, 0.15], pan: [0.2, 0.5] },
+            { card: 'Dark Simorgh', title: 'Dark Simorgh', color: '#a78bfa', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Simorgh of Darkness', title: 'Of Darkness', color: '#8b5cf6', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Simorgh Sky Battle', title: 'Sky Battle', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.3, 0.5] },
+            { card: 'Simorgh, Bird of Sovereignty', title: 'Sovereignty', color: '#fde047', face: [0.5, 0.25], pan: [0.25, 0.3] },
+            { card: 'Simorgh, Bird of Calamity', title: 'Calamity', color: '#f87171', face: [0.6, 0.3], pan: [0.3, 0.35] },
+            { card: 'Simorgh, Bird of Perfection', title: 'Perfection', color: '#fb7185', face: [0.4, 0.3], pan: [0.3, 0.35] },
+            { card: 'Simorgh Onslaught', title: 'Onslaught', color: '#fca5a5', face: [0.4, 0.4], pan: [0.3, 0.5] },
+            { card: 'Simorgh, Bird of Ancestry', title: 'Ancestry', color: '#fde68a', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Simorgh, Bird of Bringing', title: 'Bringing', color: '#fef08a', face: [0.4, 0.25], pan: [0.25, 0.3] },
+            { card: 'Simorgh Repulsion', title: 'Repulsion', color: '#bef264', face: [0.4, 0.45], pan: [0.3, 0.5] }
         ]
     };
 
@@ -4978,18 +5000,1354 @@
         kind: 'trail',
         label: 'The Angelechy art trail',
         stops: [
-            { card: 'Angelechy Shatranga', title: 'Shatranga', color: '#fef08a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Opening to e4', title: 'Opening', color: '#fde68a', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Enlisted', title: 'Enlisted', color: '#e5e7eb', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Destrier', title: 'Destrier', color: '#fcd34d', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Brilliant Move', title: 'Brilliant Move', color: '#facc15', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Bastion', title: 'Bastion', color: '#d6d3d1', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Disturbance', title: 'Disturbance', color: '#a8a29e', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Castellan', title: 'Castellan', color: '#bae6fd', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Problem', title: 'Problem', color: '#fdba74', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Seneschal', title: 'Seneschal', color: '#9ca3af', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Opposition', title: 'Opposition', color: '#78716c', face: [0.5, 0.3], pan: [0.35, 0.35] },
-            { card: 'Angelechy Endgame Problem', title: 'Endgame', color: '#fbbf24', face: [0.5, 0.3], pan: [0.35, 0.35] }
+            { card: 'Angelechy Shatranga', title: 'Shatranga', color: '#fef08a', face: [0.5, 0.12], pan: [0.2, 0.25] },
+            { card: 'Angelechy Opening to e4', title: 'Opening', color: '#fde68a', face: [0.6, 0.25], pan: [0.25, 0.4] },
+            { card: 'Angelechy Enlisted', title: 'Enlisted', color: '#e5e7eb', face: [0.5, 0.25], pan: [0.25, 0.35] },
+            { card: 'Angelechy Destrier', title: 'Destrier', color: '#fcd34d', face: [0.45, 0.3], pan: [0.3, 0.35] },
+            { card: 'Angelechy Bastion', title: 'Bastion', color: '#d6d3d1', face: [0.5, 0.25], pan: [0.3, 0.35] },
+            { card: 'Angelechy Disturbance', title: 'Disturbance', color: '#a8a29e', face: [0.3, 0.3], pan: [0.3, 0.4] },
+            { card: 'Angelechy Problem', title: 'Problem', color: '#fdba74', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Angelechy Endgame Problem', title: 'Endgame', color: '#fbbf24', face: [0.5, 0.35], pan: [0.3, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['floowandereeze'] = {
+        kind: 'trail',
+        label: 'The Floowandereeze art trail',
+        stops: [
+            { card: 'Floowandereeze and the Magnificent Map', title: 'The map', color: '#7dd3fc', face: [0.5, 0.5], pan: [0.3, 0.6] },
+            { card: 'Floowandereeze and the Advent of Adventure', title: 'Setting out', color: '#bae6fd', face: [0.55, 0.15], pan: [0.25, 0.4] },
+            { card: 'Floowandereeze & Snowl', title: 'Snowl', color: '#f1f5f9', face: [0.45, 0.15], pan: [0.25, 0.45] },
+            { card: 'Floowandereeze & Robina', title: 'Robina', color: '#fca5a5', face: [0.35, 0.3], pan: [0.3, 0.35] },
+            { card: 'Floowandereeze & Eglen', title: 'Eglen', color: '#fde68a', face: [0.65, 0.3], pan: [0.3, 0.4] },
+            { card: 'Floowandereeze & Stri', title: 'Stri', color: '#fdba74', face: [0.7, 0.12], pan: [0.2, 0.35] },
+            { card: 'Floowandereeze & Toccan', title: 'Toccan', color: '#86efac', face: [0.25, 0.45], pan: [0.35, 0.45] },
+            { card: 'Floowandereeze & Empen', title: 'Empen', color: '#93c5fd', face: [0.65, 0.45], pan: [0.3, 0.5] },
+            { card: 'Floowandereeze and the Unexplored Winds', title: 'Journey\'s end', color: '#e0f2fe', face: [0.45, 0.6], pan: [0.3, 0.6] }
+        ]
+    };
+
+    window.LoreReelData['chronomaly'] = {
+        kind: 'trail',
+        label: 'The Chronomaly art trail',
+        stops: [
+            { card: 'Chronomaly Crystal Skull', title: 'Crystal Skull', color: '#e0f2fe', face: [0.5, 0.4], pan: [0.4, 0.4] },
+            { card: 'Chronomaly Crystal Bones', title: 'Crystal Bones', color: '#cbd5e1', face: [0.5, 0.2], pan: [0.3, 0.25] },
+            { card: 'Chronomaly Crystal Chrononaut', title: 'Chrononaut', color: '#a5f3fc', face: [0.5, 0.2], pan: [0.3, 0.3] },
+            { card: 'Chronomaly Golden Jet', title: 'Golden Jet', color: '#fcd34d', face: [0.5, 0.4], pan: [0.35, 0.4] },
+            { card: 'Chronomaly Moai', title: 'Moai', color: '#a8a29e', face: [0.6, 0.35], pan: [0.3, 0.4] },
+            { card: 'Chronomaly Esperanza Glyph', title: 'Esperanza', color: '#fde68a', face: [0.55, 0.4], pan: [0.3, 0.45] },
+            { card: 'Chronomaly Colossal Head', title: 'Colossal Head', color: '#d6d3d1', face: [0.5, 0.45], pan: [0.4, 0.45] },
+            { card: 'Chronomaly Pyramid Eye Tablet', title: 'Eye Tablet', color: '#86efac', face: [0.5, 0.75], pan: [0.3, 0.7] },
+            { card: 'Chronomaly Cabrera Trebuchet', title: 'Trebuchet', color: '#fb923c', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Chronomaly Aztec Mask Golem', title: 'Aztec Mask', color: '#f87171', face: [0.5, 0.15], pan: [0.3, 0.2] },
+            { card: 'Chronomaly Mud Golem', title: 'Mud Golem', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.3, 0.25] },
+            { card: 'Number 33: Chronomaly Machu Mech', title: 'Machu Mech', color: '#67e8f9', face: [0.5, 0.35], pan: [0.3, 0.45] },
+            { card: 'Number 36: Chronomaly Chateau Huyuk', title: 'Chateau Huyuk', color: '#22d3ee', face: [0.5, 0.45], pan: [0.4, 0.45] },
+            { card: 'Number 6: Chronomaly Atlandis', title: 'Atlandis', color: '#38bdf8', face: [0.45, 0.5], pan: [0.3, 0.55] }
+        ]
+    };
+
+    window.LoreReelData['gouki'] = {
+        kind: 'trail',
+        label: 'The Gouki art trail',
+        stops: [
+            { card: 'Gouki The Great Ogre', title: 'Great Ogre', color: '#fca5a5', face: [0.5, 0.12], pan: [0.25, 0.2] },
+            { card: 'Gouki Face Turn', title: 'Face turn', color: '#fde68a', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Gouki Cage Match', title: 'Cage match', color: '#a8a29e', face: [0.3, 0.25], pan: [0.25, 0.45] },
+            { card: 'Gouki Thunder Ogre', title: 'Thunder Ogre', color: '#fde047', face: [0.5, 0.12], pan: [0.25, 0.2] },
+            { card: 'Gouki Gameface', title: 'Gameface', color: '#86efac', face: [0.7, 0.35], pan: [0.3, 0.4] },
+            { card: 'Gouki The Tyrant Ogre', title: 'Tyrant Ogre', color: '#ef4444', face: [0.6, 0.2], pan: [0.25, 0.3] },
+            { card: 'Gouki The Master Ogre', title: 'Master Ogre', color: '#fdba74', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Gouki Finishing Move', title: 'Finishing move', color: '#f97316', face: [0.5, 0.35], pan: [0.3, 0.45] },
+            { card: 'Gouki Suprex', title: 'Suprex', color: '#a3e635', face: [0.45, 0.12], pan: [0.25, 0.2] },
+            { card: 'Gouki Twistcobra', title: 'Twistcobra', color: '#4ade80', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Gouki Moonsault', title: 'Moonsault', color: '#e0f2fe', face: [0.4, 0.15], pan: [0.25, 0.2] },
+            { card: 'Gouki Headbatt', title: 'Headbatt', color: '#c4b5fd', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Gouki Octostretch', title: 'Octostretch', color: '#f9a8d4', face: [0.4, 0.15], pan: [0.25, 0.2] },
+            { card: 'Gouki The Solid Ogre', title: 'Solid Ogre', color: '#d6d3d1', face: [0.5, 0.15], pan: [0.25, 0.2] }
+        ]
+    };
+
+    window.LoreReelData['deskbot'] = {
+        kind: 'trail',
+        label: 'The Deskbot art trail',
+        stops: [
+            { card: 'Deskbot Base', title: 'The base', color: '#86efac', face: [0.6, 0.4], pan: [0.3, 0.5] },
+            { card: 'Deskbot Jet', title: 'The jet', color: '#bbf7d0', face: [0.4, 0.55], pan: [0.3, 0.55] },
+            { card: 'Deskbot 001', title: '001', color: '#fde68a', face: [0.45, 0.3], pan: [0.3, 0.35] },
+            { card: 'Deskbot 002', title: '002', color: '#fbcfe8', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Deskbot 003', title: '003', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Deskbot 004', title: '004', color: '#fdba74', face: [0.45, 0.25], pan: [0.3, 0.3] },
+            { card: 'Deskbot 005', title: '005', color: '#fef08a', face: [0.4, 0.25], pan: [0.3, 0.3] },
+            { card: 'Deskbot 006', title: '006', color: '#d1d5db', face: [0.5, 0.25], pan: [0.3, 0.3] },
+            { card: 'Deskbot 008', title: '008', color: '#a5b4fc', face: [0.45, 0.2], pan: [0.3, 0.3] },
+            { card: 'Deskbot 009', title: '009', color: '#4ade80', face: [0.5, 0.25], pan: [0.3, 0.3] }
+        ]
+    };
+
+    window.LoreReelData['materiactor'] = {
+        kind: 'trail',
+        label: 'The Materiactor art trail',
+        stops: [
+            { card: 'Prima Materiactor', title: 'Prima', color: '#e9d5ff', face: [0.3, 0.2], pan: [0.3, 0.4] },
+            { card: 'Materiactor Meltthrough', title: 'Meltthrough', color: '#f472b6', face: [0.45, 0.25], pan: [0.25, 0.45] },
+            { card: 'Materiactor Gigaboros', title: 'Gigaboros', color: '#c084fc', face: [0.25, 0.4], pan: [0.3, 0.45] },
+            { card: 'Materiactor Meltdown', title: 'Meltdown', color: '#e879f9', face: [0.5, 0.45], pan: [0.35, 0.5] },
+            { card: 'Materiactor Annulus', title: 'Annulus', color: '#a78bfa', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Materiactor Gigadra', title: 'Gigadra', color: '#d8b4fe', face: [0.65, 0.25], pan: [0.3, 0.35] },
+            { card: 'Materiactor Exagard', title: 'Exagard', color: '#67e8f9', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Materiactor Critical', title: 'Critical', color: '#22d3ee', face: [0.5, 0.45], pan: [0.35, 0.5] },
+            { card: 'Materiactor Exareptor', title: 'Exareptor', color: '#a5f3fc', face: [0.45, 0.45], pan: [0.4, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['inzektor'] = {
+        kind: 'trail',
+        label: 'The Inzektor art trail',
+        stops: [
+            { card: 'Inzektor Ant', title: 'Ant', color: '#86efac', face: [0.55, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Giga-Mantis', title: 'Giga-Mantis', color: '#4ade80', face: [0.5, 0.12], pan: [0.25, 0.2] },
+            { card: 'Inzektor Giga-Weevil', title: 'Giga-Weevil', color: '#a3e635', face: [0.45, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Exa-Beetle', title: 'Exa-Beetle', color: '#facc15', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Axe - Zektahawk', title: 'Zektahawk', color: '#fde047', face: [0.5, 0.5], pan: [0.35, 0.5] },
+            { card: 'Inzektor Exa-Stag', title: 'Exa-Stag', color: '#e5e7eb', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Crossbow - Zektarrow', title: 'Zektarrow', color: '#cbd5e1', face: [0.4, 0.5], pan: [0.35, 0.5] },
+            { card: 'Inzektor Dragonfly', title: 'Dragonfly', color: '#7dd3fc', face: [0.45, 0.25], pan: [0.3, 0.3] },
+            { card: 'Inzektor Hornet', title: 'Hornet', color: '#fbbf24', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Hopper', title: 'Hopper', color: '#bef264', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Firefly', title: 'Firefly', color: '#fef08a', face: [0.3, 0.15], pan: [0.25, 0.2] },
+            { card: 'Inzektor Giga-Cricket', title: 'Giga-Cricket', color: '#fdba74', face: [0.5, 0.2], pan: [0.25, 0.25] }
+        ]
+    };
+
+    window.LoreReelData['deep-sea'] = {
+        label: 'Magellanica, the Deep Sea City',
+        slides: [
+            { card: 'Magellanica, the Deep Sea City', title: 'The city', color: '#7dd3fc', pan: [0.3, 0.6] },
+            { card: 'Deep Sea Minstrel', title: 'The music hall', color: '#a5f3fc', pan: [0.4, 0.25] },
+            { card: 'Deep Sea Aria', title: 'The artists', color: '#93c5fd', pan: [0.55, 0.2] },
+            { card: 'Deep Sea Diva', title: 'The news', color: '#f9a8d4', pan: [0.4, 0.15] },
+            { card: 'Deep Sea Artisan', title: 'The gift', color: '#fde68a', pan: [0.4, 0.2] },
+            { card: 'Deep Sea Prima Donna', title: 'Prima Donna', color: '#f472b6', pan: [0.4, 0.15] }
+        ],
+        cast: [
+            {
+                name: 'Diva', color: '#f9a8d4', names: ['Diva', 'Prima Donna'], forms: [
+                    { from: 0, card: 'Deep Sea Diva', face: [0.6, 0.1] },
+                    { from: 5, card: 'Deep Sea Prima Donna', as: 'Prima Donna', face: [0.5, 0.15] }
+                ]
+            },
+            {
+                name: 'Artisan', color: '#fde68a', names: ['Artisan'], forms: [
+                    { from: 0, card: 'Deep Sea Artisan', face: [0.35, 0.2] }
+                ]
+            }
+        ]
+    };
+
+    window.LoreReelData['earthbound'] = {
+        kind: 'trail',
+        label: 'The Earthbound art trail',
+        stops: [
+            { card: 'Earthbound Immortal Wiraqocha Rasca', title: 'Wiraqocha Rasca', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.25, 0.4] },
+            { card: 'Ultimate Earthbound Immortal', title: 'The purple fire', color: '#a78bfa', face: [0.3, 0.15], pan: [0.25, 0.4] },
+            { card: 'Earthbound Linewalker', title: 'Linewalker', color: '#ddd6fe', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Earthbound Greater Linewalker', title: 'Greater', color: '#e9d5ff', face: [0.5, 0.12], pan: [0.2, 0.2] },
+            { card: 'Earthbound Immortal Uru', title: 'Uru', color: '#a855f7', face: [0.5, 0.3], pan: [0.25, 0.4] },
+            { card: 'Earthbound Immortal Ccapac Apu', title: 'Ccapac Apu', color: '#f87171', face: [0.5, 0.25], pan: [0.25, 0.35] },
+            { card: 'Earthbound Release', title: 'Release', color: '#fca5a5', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Earthbound Immortal Ccarayhua', title: 'Ccarayhua', color: '#86efac', face: [0.35, 0.15], pan: [0.25, 0.3] },
+            { card: 'Earthbound Immortal Aslla piscu', title: 'Aslla piscu', color: '#fde68a', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Earthbound Whirlwind', title: 'Whirlwind', color: '#fef08a', face: [0.5, 0.35], pan: [0.3, 0.45] },
+            { card: 'Earthbound Immortal Chacu Challhua', title: 'Chacu Challhua', color: '#7dd3fc', face: [0.35, 0.25], pan: [0.25, 0.35] },
+            { card: 'Earthbound Immortal Cusillu', title: 'Cusillu', color: '#fdba74', face: [0.7, 0.25], pan: [0.25, 0.4] },
+            { card: 'Earthbound Prison', title: 'The Hands', color: '#d6d3d1', face: [0.5, 0.35], pan: [0.3, 0.45] },
+            { card: 'Earthbound Immortal Red Nova', title: 'Red Nova', color: '#ef4444', face: [0.5, 0.2], pan: [0.25, 0.3] }
+        ]
+    };
+
+    window.LoreReelData['malefic'] = {
+        kind: 'trail',
+        label: 'The Malefic art trail',
+        stops: [
+            { card: 'Malefic World', title: 'Malefic World', color: '#c4b5fd', face: [0.5, 0.35], pan: [0.3, 0.5] },
+            { card: 'Malefic Territory', title: 'Territory', color: '#a78bfa', face: [0.3, 0.2], pan: [0.25, 0.35] },
+            { card: 'Malefic Cyber End Dragon', title: 'Cyber End', color: '#94a3b8', face: [0.6, 0.55], pan: [0.35, 0.5] },
+            { card: 'Malefic Rainbow Dragon', title: 'Rainbow', color: '#f0abfc', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Malefic Stardust Dragon', title: 'Stardust', color: '#93c5fd', face: [0.5, 0.25], pan: [0.25, 0.3] },
+            { card: 'Malefic Divide', title: 'Divide', color: '#e879f9', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Malefic Force', title: 'Force', color: '#d8b4fe', face: [0.5, 0.75], pan: [0.3, 0.65] },
+            { card: 'Malefic Blue-Eyes White Dragon', title: 'Blue-Eyes', color: '#bae6fd', face: [0.7, 0.4], pan: [0.3, 0.4] },
+            { card: 'Malefic Red-Eyes Black Dragon', title: 'Red-Eyes', color: '#fca5a5', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Malefic Parallel Gear', title: 'Parallel Gear', color: '#e5e7eb', face: [0.5, 0.25], pan: [0.25, 0.4] },
+            { card: 'Malefic Paradox Gear', title: 'Paradox Gear', color: '#d1d5db', face: [0.5, 0.3], pan: [0.25, 0.4] },
+            { card: 'Malefic Paradox Dragon', title: 'Paradox Dragon', color: '#f5f5f4', face: [0.5, 0.4], pan: [0.3, 0.45] },
+            { card: 'Malefic Paradigm Shift', title: 'Paradigm Shift', color: '#fde68a', face: [0.3, 0.4], pan: [0.3, 0.45] },
+            { card: 'Malefic Truth Dragon', title: 'Truth Dragon', color: '#facc15', face: [0.6, 0.45], pan: [0.3, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['igknight'] = {
+        kind: 'trail',
+        label: 'The Igknight art trail',
+        stops: [
+            { card: 'Ignition Phoenix', title: 'The squad', color: '#fca5a5', face: [0.5, 0.3], pan: [0.3, 0.5] },
+            { card: 'Igknight Templar', title: 'Templar', color: '#fdba74', face: [0.45, 0.15], pan: [0.25, 0.2] },
+            { card: 'Igknight Crusader', title: 'Crusader', color: '#f87171', face: [0.55, 0.15], pan: [0.25, 0.2] },
+            { card: 'Igknight Squire', title: 'Squire', color: '#e5e7eb', face: [0.55, 0.12], pan: [0.25, 0.2] },
+            { card: 'Igknight Paladin', title: 'Paladin', color: '#93c5fd', face: [0.45, 0.15], pan: [0.25, 0.2] },
+            { card: 'Igknight Cavalier', title: 'Cavalier', color: '#f9a8d4', face: [0.55, 0.15], pan: [0.25, 0.2] },
+            { card: 'Bad Aim', title: 'Bad aim', color: '#fde047', face: [0.6, 0.35], pan: [0.3, 0.45] },
+            { card: 'Oops!', title: 'Oops!', color: '#fb923c', face: [0.3, 0.2], pan: [0.3, 0.4] },
+            { card: 'Igknight Margrave', title: 'Margrave', color: '#a8a29e', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Igknight Gallant', title: 'Gallant', color: '#fcd34d', face: [0.5, 0.2], pan: [0.25, 0.25] },
+            { card: 'Igknight Champion', title: 'Champion', color: '#ef4444', face: [0.4, 0.15], pan: [0.25, 0.2] },
+            { card: 'Igknights Unite', title: 'Unite', color: '#fecaca', face: [0.5, 0.3], pan: [0.3, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['ghoti'] = {
+        kind: 'trail',
+        label: 'The Ghoti art trail',
+        stops: [
+            { card: 'Psiics, Moonlight of the Ghoti', title: 'Psiics', color: '#a5f3fc', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Keaf, Murk of the Ghoti', title: 'Keaf', color: '#94a3b8', face: [0.5, 0.25], pan: [0.3, 0.3] },
+            { card: 'Paces, Light of the Ghoti', title: 'Paces', color: '#fef9c3', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Askaan, the Bicorned Ghoti', title: 'Askaan', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Ghoti Chain', title: 'Chain', color: '#38bdf8', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Guoglim, Spear of the Ghoti', title: 'Guoglim', color: '#67e8f9', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Ghoti Fury', title: 'Fury', color: '#22d3ee', face: [0.4, 0.3], pan: [0.3, 0.4] },
+            { card: 'Shif, Fairy of the Ghoti', title: 'Shif', color: '#bae6fd', face: [0.72, 0.4], pan: [0.3, 0.4] },
+            { card: 'Eanoc, Sentry of the Ghoti', title: 'Eanoc', color: '#0ea5e9', face: [0.6, 0.35], pan: [0.3, 0.4] },
+            { card: 'Ixeep, Omen of the Ghoti', title: 'Ixeep', color: '#c4b5fd', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Arionpos, Serpent of the Ghoti', title: 'Arionpos', color: '#a78bfa', face: [0.4, 0.35], pan: [0.3, 0.4] },
+            { card: 'Ghoti of the Deep Beyond', title: 'Deep Beyond', color: '#e0f2fe', face: [0.7, 0.25], pan: [0.3, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['infernity'] = {
+        kind: 'trail',
+        label: 'The Infernity art trail',
+        stops: [
+            { card: 'Infernity Archfiend', title: 'Archfiend', color: '#c4b5fd', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Infernity Doom Archfiend', title: 'Doom Archfiend', color: '#a78bfa', face: [0.5, 0.12], pan: [0.25, 0.2] },
+            { card: 'Infernity Launcher', title: 'Launcher', color: '#f87171', face: [0.6, 0.35], pan: [0.3, 0.4] },
+            { card: 'Infernity Avenger', title: 'Avenger', color: '#fca5a5', face: [0.5, 0.3], pan: [0.25, 0.3] },
+            { card: 'Infernity Force', title: 'Force', color: '#fde68a', face: [0.5, 0.35], pan: [0.3, 0.4] },
+            { card: 'Infernity Paranoia', title: 'Paranoia', color: '#e9d5ff', face: [0.5, 0.35], pan: [0.3, 0.4] },
+            { card: 'Infernity Doom Dragon', title: 'Doom Dragon', color: '#ef4444', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Infernity Barrier', title: 'Barrier', color: '#d8b4fe', face: [0.35, 0.4], pan: [0.3, 0.45] },
+            { card: 'Infernity Randomizer', title: 'Randomizer', color: '#fdba74', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Infernity Knight', title: 'Knight', color: '#94a3b8', face: [0.45, 0.2], pan: [0.25, 0.25] },
+            { card: 'Infernity General', title: 'General', color: '#cbd5e1', face: [0.4, 0.2], pan: [0.25, 0.3] },
+            { card: 'Infernity Sage', title: 'Sage', color: '#fef08a', face: [0.5, 0.15], pan: [0.25, 0.2] },
+            { card: 'Infernity Queen', title: 'Queen', color: '#f0abfc', face: [0.45, 0.15], pan: [0.25, 0.2] },
+            { card: 'Infernity Reflector', title: 'Reflector', color: '#93c5fd', face: [0.55, 0.3], pan: [0.3, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['supreme-king'] = {
+        kind: 'trail',
+        label: 'The Supreme King art trail',
+        stops: [
+            { card: 'Supreme King Z-ARC', title: 'Z-ARC', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Soul of the Supreme King', title: 'The split', color: '#a78bfa', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Supreme King Dragon Odd-Eyes', title: 'Odd-Eyes', color: '#f87171', face: [0.55, 0.2], pan: [0.25, 0.3] },
+            { card: 'Supreme King Dragon Dark Rebellion', title: 'Dark Rebellion', color: '#818cf8', face: [0.5, 0.15], pan: [0.25, 0.25] },
+            { card: 'Supreme King Dragon Clear Wing', title: 'Clear Wing', color: '#e9d5ff', face: [0.4, 0.15], pan: [0.25, 0.3] },
+            { card: 'Supreme King Dragon Starving Venom', title: 'Starving Venom', color: '#a3e635', face: [0.45, 0.2], pan: [0.25, 0.3] },
+            { card: 'Starving Venom Wing Dragon', title: 'Venom Wing', color: '#bef264', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Supreme King Z-ARC - Synchro Universe', title: 'Synchro Universe', color: '#d8b4fe', face: [0.4, 0.3], pan: [0.3, 0.4] },
+            { card: 'Supreme King Dragon Darkwurm', title: 'Darkwurm', color: '#a855f7', face: [0.45, 0.3], pan: [0.3, 0.4] },
+            { card: 'Wings of Light', title: 'Wings of Light', color: '#fef9c3', face: [0.5, 0.45], pan: [0.3, 0.4] },
+            { card: 'Miracle of the Supreme King', title: 'The miracle', color: '#fde68a', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Odd-Eyes Arcray Dragon', title: 'Arcray', color: '#fef08a', face: [0.5, 0.3], pan: [0.3, 0.35] },
+            { card: 'Supreme King Gate Zero', title: 'Gate Zero', color: '#94a3b8', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Supreme King Gate Infinity', title: 'Gate Infinity', color: '#cbd5e1', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Supreme King Gate Magician', title: 'Gate Magician', color: '#e879f9', face: [0.5, 0.15], pan: [0.25, 0.25] }
+        ]
+    };
+
+    window.LoreReelData['armed-dragon'] = {
+        kind: 'trail',
+        label: 'The Armed Dragon art trail',
+        stops: [
+            { card: 'Armed Dragon LV3', title: 'LV3', color: '#fde68a', face: [0.45, 0.15], pan: [0.25, 0.3] },
+            { card: 'Armed Dragon LV5', title: 'LV5', color: '#fdba74', face: [0.6, 0.25], pan: [0.25, 0.35] },
+            { card: 'Fist Armed Dragon', title: 'Fist', color: '#f87171', face: [0.5, 0.25], pan: [0.3, 0.35] },
+            { card: 'Armed Dragon LV7', title: 'LV7', color: '#fb923c', face: [0.45, 0.15], pan: [0.25, 0.3] },
+            { card: 'Pile Armed Dragon', title: 'Pile', color: '#93c5fd', face: [0.55, 0.15], pan: [0.25, 0.3] },
+            { card: 'Armed Dragon LV10', title: 'LV10', color: '#ef4444', face: [0.22, 0.2], pan: [0.15, 0.3] },
+            { card: 'Level Down!?', title: 'Level Down!?', color: '#fca5a5', face: [0.5, 0.45], pan: [0.3, 0.4] },
+            { card: 'Armed Dragon LV10 White', title: 'LV10 White', color: '#f5f5f4', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Armed Dragon Thunder LV3', title: 'Thunder LV3', color: '#bef264', face: [0.4, 0.2], pan: [0.25, 0.3] },
+            { card: 'Armed Dragon Blitz', title: 'Blitz', color: '#fde047', face: [0.5, 0.25], pan: [0.3, 0.35] },
+            { card: 'Armed Dragon Thunder LV10', title: 'Thunder LV10', color: '#facc15', face: [0.45, 0.15], pan: [0.25, 0.3] },
+            { card: 'Armed Dragon Thunderbolt', title: 'Thunderbolt', color: '#fef08a', face: [0.7, 0.35], pan: [0.3, 0.4] },
+            { card: 'Dark Armed Dragon', title: 'Dark Armed', color: '#a78bfa', face: [0.55, 0.25], pan: [0.2, 0.35] },
+            { card: 'Dracocension', title: 'Draco\u00ADcension', color: '#c4b5fd', face: [0.5, 0.4], pan: [0.35, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['artifact'] = {
+        kind: 'trail',
+        label: 'The Artifact art trail',
+        stops: [
+            { card: 'Artifact Sanctum', title: 'The sanctum', color: '#fde68a', face: [0.5, 0.75], pan: [0.55, 0.75] },
+            { card: 'Artifact Ignition', title: 'Ignition', color: '#fbbf24', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Artifact Achilleshield', title: 'Achilleshield', color: '#fcd34d', face: [0.45, 0.35], pan: [0.35, 0.45] },
+            { card: 'Artifact Aegis', title: 'Aegis', color: '#e5e7eb', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Artifact Labrys', title: 'Labrys', color: '#fdba74', face: [0.45, 0.45], pan: [0.35, 0.45] },
+            { card: 'Artifact Moralltach', title: 'Moralltach', color: '#f87171', face: [0.55, 0.4], pan: [0.35, 0.45] },
+            { card: 'Artifact Beagalltach', title: 'Beagalltach', color: '#93c5fd', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Artifacts Unleashed', title: 'Unleashed', color: '#c4b5fd', face: [0.5, 0.4], pan: [0.3, 0.6] },
+            { card: 'Artifact Durendal', title: 'Durendal', color: '#fef08a', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Artifact Failnaught', title: 'Failnaught', color: '#86efac', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Artifact Caduceus', title: 'Caduceus', color: '#a5f3fc', face: [0.45, 0.35], pan: [0.35, 0.45] },
+            { card: 'Artifact Mjollnir', title: 'Mjollnir', color: '#7dd3fc', face: [0.45, 0.35], pan: [0.35, 0.45] },
+            { card: 'Artifact Lancea', title: 'Lancea', color: '#fca5a5', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Artifact Scythe', title: 'Scythe', color: '#a8a29e', face: [0.5, 0.35], pan: [0.35, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['watt'] = {
+        kind: 'trail',
+        label: 'The Watt art trail',
+        stops: [
+            { card: 'Wattkid', title: 'Wattkid', color: '#fde047', face: [0.5, 0.35], pan: [0.3, 0.4] },
+            { card: 'Wattcastle', title: 'The castle', color: '#fef08a', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Wattrain', title: 'The train', color: '#fcd34d', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Wattgiraffe', title: 'Wattgiraffe', color: '#facc15', face: [0.4, 0.72], pan: [0.55, 0.7] },
+            { card: 'Wattlemur', title: 'Wattlemur', color: '#d6d3d1', face: [0.5, 0.2], pan: [0.25, 0.3] },
+            { card: 'Wattsquirrel', title: 'Wattsquirrel', color: '#fb923c', face: [0.4, 0.2], pan: [0.25, 0.3] },
+            { card: 'Wattkingdom', title: 'The kingdom', color: '#fde68a', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Wattaildragon', title: 'Wattail\u00ADdragon', color: '#60a5fa', face: [0.35, 0.3], pan: [0.3, 0.35] },
+            { card: 'Ancient Rules', title: 'Ancient Rules', color: '#fbbf24', face: [0.5, 0.45], pan: [0.35, 0.7] },
+            { card: 'Wattkiwi', title: 'Wattkiwi', color: '#bef264', face: [0.3, 0.25], pan: [0.25, 0.35] },
+            { card: 'Wattmole', title: 'Wattmole', color: '#a8a29e', face: [0.45, 0.25], pan: [0.15, 0.3] },
+            { card: 'Watthydra', title: 'Watthydra', color: '#86efac', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Wattkyuki', title: 'Wattkyuki', color: '#c4b5fd', face: [0.4, 0.4], pan: [0.3, 0.4] },
+            { card: 'Wattuna', title: 'Wattuna', color: '#7dd3fc', face: [0.35, 0.55], pan: [0.3, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['numeron'] = {
+        kind: 'trail',
+        label: 'The Numeron art trail',
+        stops: [
+            { card: 'Numeron Calling', title: 'The calling', color: '#fca5a5', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Number 1: Numeron Gate Ekam', title: 'Ekam', color: '#f87171', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Number 2: Numeron Gate Dve', title: 'Dve', color: '#fb923c', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Number 3: Numeron Gate Trini', title: 'Trini', color: '#fbbf24', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Number 4: Numeron Gate Catvari', title: 'Catvari', color: '#facc15', face: [0.5, 0.6], pan: [0.45, 0.6] },
+            { card: 'Number C1: Numeron Chaos Gate Sunya', title: 'Sunya', color: '#e5e7eb', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Number 100: Numeron Dragon', title: 'Numeron Dragon', color: '#fde68a', face: [0.45, 0.15], pan: [0.3, 0.35] },
+            { card: 'Numeron Creation', title: 'Creation', color: '#fef08a', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Rank-Up-Magic Numeron Force', title: 'Numeron Force', color: '#c4b5fd', face: [0.5, 0.45], pan: [0.3, 0.4] },
+            { card: 'Rank-Down-Magic Numeron Fall', title: 'Numeron Fall', color: '#a78bfa', face: [0.5, 0.45], pan: [0.35, 0.45] },
+            { card: 'Number C1000: Numerounius', title: 'Numerounius', color: '#d8b4fe', face: [0.5, 0.25], pan: [0.3, 0.35] },
+            { card: 'Numeron Storm', title: 'Storm', color: '#e9d5ff', face: [0.5, 0.35], pan: [0.35, 0.45] },
+            { card: 'Number iC1000: Numerounius Numerounia', title: 'Numerounia', color: '#f0abfc', face: [0.5, 0.45], pan: [0.3, 0.4] },
+            { card: 'Numeron Network', title: 'Network', color: '#ef4444', face: [0.5, 0.4], pan: [0.35, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['symphonic-warrior'] = {
+        kind: 'trail',
+        label: 'The Symphonic Warrior art trail',
+        stops: [
+            { card: 'Symphonic Warrior Guitaar', title: 'Guitaar', color: '#fca5a5', face: [0.45, 0.3], pan: [0.3, 0.4] },
+            { card: 'Symphonic Warrior Basses', title: 'Basses', color: '#93c5fd', face: [0.4, 0.35], pan: [0.3, 0.4] },
+            { card: 'Symphonic Warrior Drumss', title: 'Drumss', color: '#fde68a', face: [0.45, 0.35], pan: [0.3, 0.4] },
+            { card: 'Symphonic Warrior Piaano', title: 'Piaano', color: '#e5e7eb', face: [0.5, 0.35], pan: [0.3, 0.4] },
+            { card: 'Symphonic Warrior Synthess', title: 'Synthess', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.3, 0.4] },
+            { card: 'Symphonic Warrior Miccs', title: 'Miccs', color: '#f0abfc', face: [0.5, 0.25], pan: [0.3, 0.4] },
+            { card: 'Symph Amplifire', title: 'The amp', color: '#7dd3fc', face: [0.45, 0.6], pan: [0.4, 0.7] },
+            { card: 'Concentrating Current', title: 'Current', color: '#fef08a', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Downbeat', title: 'Downbeat', color: '#fdba74', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'And the Band Played On', title: 'Band Played On', color: '#a5b4fc', face: [0.5, 0.5], pan: [0.35, 0.45] },
+            { card: 'Symphonic Warrior Guitariss', title: 'Guitariss', color: '#fb7185', face: [0.5, 0.4], pan: [0.35, 0.45] },
+            { card: 'Symphonic Warrior Rockks', title: 'Rockks', color: '#60a5fa', face: [0.5, 0.5], pan: [0.35, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['red-eyes'] = {
+        kind: 'trail',
+        label: 'The Red-Eyes art trail',
+        stops: [
+            { card: 'Red-Eyes Black Dragon', title: 'Red-Eyes', color: '#ef4444', face: [0.45, 0.15], pan: [0.15, 0.35] },
+            { card: 'Black Dragon\'s Chick', title: 'The chick', color: '#fca5a5', face: [0.6, 0.25], pan: [0.2, 0.4] },
+            { card: 'Red-Eyes Baby Dragon', title: 'Baby Dragon', color: '#f87171', face: [0.5, 0.45], pan: [0.35, 0.5] },
+            { card: 'Red-Eyes Retro Dragon', title: 'Retro', color: '#fdba74', face: [0.55, 0.25], pan: [0.2, 0.4] },
+            { card: 'Red-Eyes Black Metal Dragon', title: 'Black Metal', color: '#d1d5db', face: [0.4, 0.2], pan: [0.15, 0.35] },
+            { card: 'Red-Eyes Black Fullmetal Dragon', title: 'Fullmetal', color: '#e5e7eb', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Red-Eyes Metal Claws Dragon', title: 'Metal Claws', color: '#fca5a5', face: [0.45, 0.25], pan: [0.2, 0.4] },
+            { card: 'Red-Eyes Soul', title: 'Red-Eyes Soul', color: '#f87171', face: [0.6, 0.45], pan: [0.3, 0.5] },
+            { card: 'Red-Eyes Black Dragon Sword', title: 'The sword', color: '#9ca3af', face: [0.55, 0.3], pan: [0.3, 0.5] },
+            { card: 'Red-Eyes Darkness Dragon', title: 'Darkness', color: '#fde047', face: [0.5, 0.45], pan: [0.3, 0.5] },
+            { card: 'Red-Eyes Zombie Dragon', title: 'Zombie', color: '#86efac', face: [0.45, 0.3], pan: [0.2, 0.4] },
+            { card: 'Red-Eyes Zombie Necro Dragon', title: 'Necro', color: '#7dd3fc', face: [0.3, 0.3], pan: [0.2, 0.4] },
+            { card: 'Red-Eyes Zombie Dragon Lord', title: 'Dragon Lord', color: '#a78bfa', face: [0.65, 0.15], pan: [0.1, 0.35] },
+            { card: 'Return of the Red-Eyes', title: 'The return', color: '#fb923c', face: [0.45, 0.3], pan: [0.2, 0.45] },
+            { card: 'Red-Eyes Dark Dragoon', title: 'Dark Dragoon', color: '#c4b5fd', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Red-Eyes Black Dragon Exceed', title: 'Exceed', color: '#dc2626', face: [0.4, 0.25], pan: [0.15, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['blackwing'] = {
+        kind: 'trail',
+        label: 'The Blackwing art trail',
+        stops: [
+            { card: 'Blackwing - Sirocco the Dawn', title: 'Sirocco', color: '#fdba74', face: [0.35, 0.1], pan: [0.1, 0.3] },
+            { card: 'Blackwing - Ghibli the Searing Wind', title: 'Ghibli', color: '#f87171', face: [0.42, 0.3], pan: [0.2, 0.4] },
+            { card: 'Blackwing - Zephyros the Elite', title: 'Zephyros', color: '#e5e7eb', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Blackwing - Auster the South Wind', title: 'Auster', color: '#fde68a', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Blackwing - Boreas the Sharp', title: 'Boreas', color: '#bae6fd', face: [0.45, 0.15], pan: [0.1, 0.3] },
+            { card: 'Blackwing - Bora the Spear', title: 'Bora', color: '#fb923c', face: [0.5, 0.25], pan: [0.2, 0.4] },
+            { card: 'Blackwing - Kochi the Daybreak', title: 'Kochi', color: '#fcd34d', face: [0.17, 0.65], pan: [0.5, 0.65] },
+            { card: 'Blackwing - Twin Shadow', title: 'Twin Shadow', color: '#a8a29e', face: [0.5, 0.35], pan: [0.25, 0.5] },
+            { card: 'Blackwing - Gale the Whirlwind', title: 'Gale', color: '#d6d3d1', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Blackwing Armor Master', title: 'Armor Master', color: '#9ca3af', face: [0.55, 0.2], pan: [0.15, 0.35] },
+            { card: 'Blackwing - Pinaki the Waxing Moon', title: 'Pinaki', color: '#c4b5fd', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Blackwing - Sharnga the Waning Moon', title: 'Sharnga', color: '#a5b4fc', face: [0.5, 0.38], pan: [0.2, 0.42] },
+            { card: 'Blackwing - Gram the Shining Star', title: 'Gram', color: '#fef08a', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Assault Blackwing - Raikiri the Rain Shower', title: 'Raikiri', color: '#93c5fd', face: [0.5, 0.2], pan: [0.1, 0.35] },
+            { card: 'Blackwing - Vayu the Emblem of Honor', title: 'Vayu', color: '#fca5a5', face: [0.45, 0.3], pan: [0.3, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['elemental-hero'] = {
+        kind: 'trail',
+        label: 'The Elemental HERO art trail',
+        stops: [
+            { card: 'Elemental HERO Avian', title: 'Avian', color: '#86efac', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Elemental HERO Burstinatrix', title: 'Burstinatrix', color: '#f87171', face: [0.5, 0.15], pan: [0.3, 0.12] },
+            { card: 'Elemental HERO Flame Wingman', title: 'Flame Wingman', color: '#fb923c', face: [0.55, 0.2], pan: [0.15, 0.35] },
+            { card: 'Favorite HERO Flame Wingman', title: 'Favorite HERO', color: '#fdba74', face: [0.4, 0.2], pan: [0.1, 0.35] },
+            { card: 'Elemental HERO Shining Flare Wingman', title: 'Shining Flare', color: '#fef08a', face: [0.5, 0.2], pan: [0.1, 0.3] },
+            { card: 'Elemental HERO Tempest', title: 'Tempest', color: '#7dd3fc', face: [0.55, 0.15], pan: [0.1, 0.3] },
+            { card: 'Elemental HERO Mudballman', title: 'Mudballman', color: '#a8a29e', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Elemental HERO Electrum', title: 'Electrum', color: '#fcd34d', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Elemental HERO Neos', title: 'Neos', color: '#e5e7eb', face: [0.5, 0.2], pan: [0.15, 0.3] },
+            { card: 'Elemental HERO Magma Neos', title: 'Magma Neos', color: '#ef4444', face: [0.43, 0.4], pan: [0.3, 0.45] },
+            { card: 'Elemental HERO Storm Neos', title: 'Storm Neos', color: '#93c5fd', face: [0.5, 0.25], pan: [0.15, 0.35] },
+            { card: 'Elemental HERO Cosmo Neos', title: 'Cosmo Neos', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Elemental HERO Honest Neos', title: 'Honest Neos', color: '#fde68a', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Elemental HERO Terra Firma', title: 'Terra Firma', color: '#a3e635', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Wake Up Your Elemental HERO', title: 'Wake Up', color: '#f0abfc', face: [0.5, 0.4], pan: [0.3, 0.6] },
+            { card: 'Elemental HERO Sunrise', title: 'Sunrise', color: '#f97316', face: [0.45, 0.15], pan: [0.1, 0.3] }
+        ]
+    };
+
+    window.LoreReelData['psy-frame'] = {
+        kind: 'trail',
+        label: 'The PSY-Frame art trail',
+        stops: [
+            { card: 'PSY-Frame Driver', title: 'Driver', color: '#93c5fd', face: [0.35, 0.38], pan: [0.2, 0.4] },
+            { card: 'PSY-Framegear Alpha', title: 'Alpha', color: '#fca5a5', face: [0.5, 0.3], pan: [0.2, 0.45] },
+            { card: 'PSY-Framegear Beta', title: 'Beta', color: '#fdba74', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'PSY-Framegear Gamma', title: 'Gamma', color: '#86efac', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'PSY-Framegear Delta', title: 'Delta', color: '#c4b5fd', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'PSY-Framegear Epsilon', title: 'Epsilon', color: '#fde68a', face: [0.55, 0.35], pan: [0.25, 0.45] },
+            { card: 'PSY-Frame Circuit', title: 'The circuit', color: '#7dd3fc', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'PSY-Framelord Zeta', title: 'Zeta', color: '#60a5fa', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'PSY-Framelord Omega', title: 'Omega', color: '#e5e7eb', face: [0.45, 0.2], pan: [0.15, 0.4] },
+            { card: 'PSY-Frame Multi-Threader', title: 'Multi-Threader', color: '#a5b4fc', face: [0.45, 0.25], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['graydle'] = {
+        kind: 'trail',
+        label: 'The Graydle art trail',
+        stops: [
+            { card: 'Graydle Slime', title: 'The Slime', color: '#a5f3fc', face: [0.45, 0.2], pan: [0.15, 0.35] },
+            { card: 'Graydle Parasite', title: 'Parasite', color: '#86efac', face: [0.6, 0.5], pan: [0.3, 0.55] },
+            { card: 'Graydle Alligator', title: 'Alligator', color: '#4ade80', face: [0.7, 0.2], pan: [0.15, 0.4] },
+            { card: 'Graydle Eagle', title: 'Eagle', color: '#fde68a', face: [0.6, 0.35], pan: [0.25, 0.45] },
+            { card: 'Graydle Cobra', title: 'Cobra', color: '#c4b5fd', face: [0.4, 0.15], pan: [0.1, 0.35] },
+            { card: 'Graydle Combat', title: 'Combat', color: '#93c5fd', face: [0.4, 0.25], pan: [0.2, 0.4] },
+            { card: 'Graydle Slime Jr.', title: 'Slime Jr.', color: '#bae6fd', face: [0.45, 0.25], pan: [0.2, 0.4] },
+            { card: 'Graydle Dragon', title: 'The Dragon', color: '#7dd3fc', face: [0.45, 0.35], pan: [0.25, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['dark-magician'] = {
+        kind: 'trail',
+        label: 'The Dark Magician art trail',
+        stops: [
+            { card: 'Dark Magician', title: 'Dark Magician', color: '#c084fc', face: [0.6, 0.15], pan: [0.1, 0.3] },
+            { card: 'Dark Magician, the Pharaoh\'s Servant', title: 'Pharaoh\'s Servant', color: '#a78bfa', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Dark Magician Girl', title: 'Dark Magician Girl', color: '#f9a8d4', face: [0.5, 0.35], pan: [0.45, 0.3] },
+            { card: 'Dark Magician Girl the Magician\'s Apprentice', title: 'Apprentice', color: '#f0abfc', face: [0.5, 0.2], pan: [0.22, 0.12] },
+            { card: 'Dark Magician the Magician of Black Magic', title: 'Black Magic', color: '#818cf8', face: [0.45, 0.15], pan: [0.1, 0.3] },
+            { card: 'Skilled Dark Magician', title: 'Skilled', color: '#93c5fd', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Dark Magician of Chaos', title: 'Of Chaos', color: '#fbbf24', face: [0.4, 0.2], pan: [0.15, 0.35] },
+            { card: 'Dark Magician of Destruction', title: 'Destruction', color: '#f87171', face: [0.4, 0.2], pan: [0.15, 0.35] },
+            { card: 'Dark Magician the Dragon Knight', title: 'Dragon Knight', color: '#86efac', face: [0.45, 0.2], pan: [0.15, 0.4] },
+            { card: 'Dark Magician Girl the Dragon Knight', title: 'DMG Knight', color: '#bef264', face: [0.45, 0.3], pan: [0.4, 0.25] },
+            { card: 'Dark Magician the Knight of Dragon Magic', title: 'Dragon Magic', color: '#fdba74', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'The Dark Magicians', title: 'Together', color: '#e9d5ff', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Toon Dark Magician', title: 'Toon', color: '#fde68a', face: [0.4, 0.3], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['blue-eyes'] = {
+        kind: 'trail',
+        label: 'The Blue-Eyes art trail',
+        stops: [
+            { card: 'Blue-Eyes White Dragon', title: 'Blue-Eyes', color: '#93c5fd', face: [0.35, 0.25], pan: [0.15, 0.4] },
+            { card: 'Heart of the Blue-Eyes', title: 'Heart', color: '#bfdbfe', face: [0.4, 0.45], pan: [0.3, 0.5] },
+            { card: 'Blue-Eyes Ultimate Dragon', title: 'Ultimate', color: '#60a5fa', face: [0.55, 0.25], pan: [0.15, 0.4] },
+            { card: 'Blue-Eyes Toon Dragon', title: 'Toon', color: '#7dd3fc', face: [0.45, 0.35], pan: [0.25, 0.45] },
+            { card: 'Blue-Eyes Shining Dragon', title: 'Shining', color: '#e0f2fe', face: [0.6, 0.2], pan: [0.15, 0.35] },
+            { card: 'Blue-Eyes Jet Dragon', title: 'Jet', color: '#a5f3fc', face: [0.22, 0.65], pan: [0.5, 0.65] },
+            { card: 'Blue-Eyes Tyrant Dragon', title: 'Tyrant', color: '#a78bfa', face: [0.3, 0.2], pan: [0.15, 0.35] },
+            { card: 'Malefic Blue-Eyes White Dragon', title: 'Malefic', color: '#9ca3af', face: [0.65, 0.35], pan: [0.25, 0.45] },
+            { card: 'Blue-Eyes Alternative White Dragon', title: 'Alternative', color: '#bae6fd', face: [0.25, 0.35], pan: [0.25, 0.45] },
+            { card: 'Neo Blue-Eyes Ultimate Dragon', title: 'Neo Ultimate', color: '#38bdf8', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Blue-Eyes Chaos MAX Dragon', title: 'Chaos MAX', color: '#818cf8', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Blue-Eyes Solid Dragon', title: 'Solid', color: '#67e8f9', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Blue-Eyes Ultimate Spirit Dragon', title: 'Ultimate Spirit', color: '#e0e7ff', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Blue-Eyes White Dragon, the White Phantom Beast', title: 'Phantom Beast', color: '#f1f5f9', face: [0.6, 0.4], pan: [0.3, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['odd-eyes'] = {
+        kind: 'trail',
+        label: 'The Odd-Eyes art trail',
+        stops: [
+            { card: 'Odd-Eyes Dragon', title: 'Odd-Eyes Dragon', color: '#f87171', face: [0.55, 0.15], pan: [0.1, 0.3] },
+            { card: 'Odd-Eyes Pendulum Dragon', title: 'Pendulum Dragon', color: '#ef4444', face: [0.8, 0.3], pan: [0.2, 0.4] },
+            { card: 'Odd-Eyes Phantom Dragon', title: 'Phantom', color: '#60a5fa', face: [0.38, 0.33], pan: [0.2, 0.4] },
+            { card: 'Odd-Eyes Persona Dragon', title: 'Persona', color: '#fca5a5', face: [0.45, 0.2], pan: [0.15, 0.35] },
+            { card: 'Odd-Eyes Mirage Dragon', title: 'Mirage', color: '#86efac', face: [0.4, 0.2], pan: [0.15, 0.35] },
+            { card: 'Odd-Eyes Arc Pendulum Dragon', title: 'Arc Pendulum', color: '#fde68a', face: [0.55, 0.15], pan: [0.1, 0.3] },
+            { card: 'Odd-Eyes Rebellion Dragon', title: 'Rebellion', color: '#a78bfa', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Odd-Eyes Raging Dragon', title: 'Raging', color: '#dc2626', face: [0.45, 0.25], pan: [0.15, 0.4] },
+            { card: 'Odd-Eyes Venom Dragon', title: 'Venom', color: '#c084fc', face: [0.55, 0.15], pan: [0.1, 0.35] },
+            { card: 'Odd-Eyes Wing Dragon', title: 'Wing', color: '#e5e7eb', face: [0.45, 0.2], pan: [0.15, 0.35] },
+            { card: 'Odd-Eyes Meteorburst Dragon', title: 'Meteorburst', color: '#fb923c', face: [0.45, 0.4], pan: [0.25, 0.45] },
+            { card: 'Odd-Eyes Absolute Dragon', title: 'Absolute', color: '#7dd3fc', face: [0.5, 0.15], pan: [0.1, 0.35] },
+            { card: 'Odd-Eyes Override Dragon', title: 'Override', color: '#cbd5e1', face: [0.75, 0.3], pan: [0.2, 0.4] },
+            { card: 'Odd-Eyes Pendulumgraph Dragon', title: 'Pendulum\u00ADgraph', color: '#fcd34d', face: [0.45, 0.2], pan: [0.15, 0.35] },
+            { card: 'Odd-Eyes Revolution Dragon', title: 'Revolution', color: '#fef08a', face: [0.5, 0.3], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['kuriboh'] = {
+        kind: 'trail',
+        label: 'The Kuriboh art trail',
+        stops: [
+            { card: 'Kuriboh', title: 'Kuriboh', color: '#fbbf24', face: [0.5, 0.45], pan: [0.35, 0.5] },
+            { card: 'Kuriboh - Multiply!', title: 'Multiply!', color: '#fde68a', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Detonating Kuriboh', title: 'Detonating', color: '#f97316', face: [0.4, 0.4], pan: [0.3, 0.5] },
+            { card: 'Relinkuriboh', title: 'Relinkuriboh', color: '#c084fc', face: [0.55, 0.4], pan: [0.3, 0.5] },
+            { card: 'Sphere Kuriboh', title: 'Sphere', color: '#fef08a', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Magikuriboh', title: 'Magikuriboh', color: '#a78bfa', face: [0.45, 0.6], pan: [0.4, 0.6] },
+            { card: 'Winged Kuriboh', title: 'Winged', color: '#fef9c3', face: [0.5, 0.45], pan: [0.35, 0.5] },
+            { card: 'Winged Kuriboh LV6', title: 'LV6', color: '#fb923c', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Winged Kuriboh LV9', title: 'LV9', color: '#e5e7eb', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Winged Kuriboh Sabatiel LV10', title: 'Sabatiel', color: '#86efac', face: [0.55, 0.3], pan: [0.2, 0.45] },
+            { card: 'Darkuriboh', title: 'Darkuriboh', color: '#c4b5fd', face: [0.5, 0.55], pan: [0.4, 0.6] },
+            { card: 'Junkuriboh', title: 'Junkuriboh', color: '#a8a29e', face: [0.5, 0.45], pan: [0.35, 0.5] },
+            { card: 'Galactikuriboh', title: 'Galactic', color: '#93c5fd', face: [0.45, 0.45], pan: [0.3, 0.5] },
+            { card: 'Linkuriboh', title: 'Linkuriboh', color: '#7dd3fc', face: [0.5, 0.4], pan: [0.3, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['utopia'] = {
+        kind: 'trail',
+        label: 'The Utopia art trail',
+        stops: [
+            { card: 'Number 39: Utopia', title: 'Utopia', color: '#fde047', face: [0.6, 0.33], pan: [0.2, 0.4] },
+            { card: 'Number 39: Utopia Roots', title: 'Roots', color: '#facc15', face: [0.55, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number C39: Utopia Ray', title: 'Utopia Ray', color: '#fbbf24', face: [0.4, 0.6], pan: [0.45, 0.6] },
+            { card: 'Number C39: Utopia Ray V', title: 'Ray V', color: '#ef4444', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number C39: Utopia Ray Victory', title: 'Ray Victory', color: '#fef08a', face: [0.42, 0.25], pan: [0.15, 0.35] },
+            { card: 'Number S39: Utopia Prime', title: 'Utopia Prime', color: '#e0f2fe', face: [0.45, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number S39: Utopia the Lightning', title: 'Lightning', color: '#fde68a', face: [0.45, 0.25], pan: [0.15, 0.35] },
+            { card: 'Number 39: Utopia Beyond', title: 'Beyond', color: '#a5f3fc', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number 99: Utopia Dragonar', title: 'Dragonar', color: '#93c5fd', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Number 93: Utopia Kaiser', title: 'Kaiser', color: '#c4b5fd', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Number 39: Utopia Rising', title: 'Rising', color: '#fb923c', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number 39: Utopia Double', title: 'Double', color: '#fcd34d', face: [0.5, 0.25], pan: [0.15, 0.35] },
+            { card: 'Ultimate Dragonic Utopia Ray', title: 'Dragonic', color: '#f59e0b', face: [0.45, 0.35], pan: [0.25, 0.45] },
+            { card: 'Number 39: Utopia, Emissary of Light', title: 'Emissary', color: '#fef9c3', face: [0.42, 0.3], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['d-d'] = {
+        kind: 'trail',
+        label: 'The D/D art trail',
+        stops: [
+            { card: 'D/D/D Flame King Genghis', title: 'Genghis', color: '#f87171', face: [0.4, 0.15], pan: [0.1, 0.3] },
+            { card: 'D/D/D Gust King Alexander', title: 'Alexander', color: '#86efac', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'D/D/D Wave King Caesar', title: 'Caesar', color: '#93c5fd', face: [0.5, 0.25], pan: [0.15, 0.35] },
+            { card: 'D/D/D/D Dimensional King Arc Crisis', title: 'Arc Crisis', color: '#a78bfa', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'D/D/D Oracle King d\'Arc', title: 'd\'Arc', color: '#fde68a', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'D/D/D Marksman King Tell', title: 'Tell', color: '#4ade80', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'D/D/D Rebel King Leonidas', title: 'Leonidas', color: '#fb923c', face: [0.4, 0.2], pan: [0.15, 0.35] },
+            { card: 'D/D/D Dragon King Pendragon', title: 'Pendragon', color: '#ef4444', face: [0.45, 0.3], pan: [0.2, 0.4] },
+            { card: 'D/D/D Cursed King Siegfried', title: 'Siegfried', color: '#c4b5fd', face: [0.6, 0.25], pan: [0.15, 0.35] },
+            { card: 'D/D/D First King Clovis', title: 'Clovis', color: '#fcd34d', face: [0.55, 0.25], pan: [0.15, 0.35] },
+            { card: 'D/D/D Alfred the Divine Sage King', title: 'Alfred', color: '#e5e7eb', face: [0.55, 0.15], pan: [0.1, 0.3] },
+            { card: 'D/D/D Wise King Solomon', title: 'Solomon', color: '#fef08a', face: [0.45, 0.15], pan: [0.1, 0.3] },
+            { card: 'D/D/D Destiny King Zero Laplace', title: 'Laplace', color: '#94a3b8', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'D/D Savant Nikola', title: 'Savant Nikola', color: '#7dd3fc', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'D/D/D Zero Doom Queen Machinex', title: 'Machinex', color: '#f0abfc', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Go! - D/D/D Divine Zero King Rage', title: 'Rage', color: '#a855f7', face: [0.5, 0.25], pan: [0.15, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['destiny-hero'] = {
+        kind: 'trail',
+        label: 'The Destiny HERO art trail',
+        stops: [
+            { card: 'Destiny HERO - Plasma', title: 'Plasma', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Destiny HERO - Double Dude', title: 'Double Dude', color: '#a5b4fc', face: [0.35, 0.15], pan: [0.1, 0.35] },
+            { card: 'Destiny HERO - Dreadmaster', title: 'Dreadmaster', color: '#818cf8', face: [0.5, 0.12], pan: [0.1, 0.3] },
+            { card: 'Clock Tower Prison', title: 'Clock Tower', color: '#e0e7ff', face: [0.5, 0.45], pan: [0.3, 0.5] },
+            { card: 'Destiny HERO - Dreadnought Master', title: 'Dread\u00ADnought', color: '#6366f1', face: [0.55, 0.15], pan: [0.1, 0.3] },
+            { card: 'Destiny HERO - Dread Servant', title: 'Dread Servant', color: '#94a3b8', face: [0.4, 0.12], pan: [0.1, 0.3] },
+            { card: 'Destiny HERO - Dreadnought Servant', title: 'Dread\u00ADnought Servant', color: '#cbd5e1', face: [0.35, 0.25], pan: [0.2, 0.4] },
+            { card: 'Destiny HERO - Doom Lord', title: 'Doom Lord', color: '#7c3aed', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Destiny HERO - Doom Overlord', title: 'Doom Overlord', color: '#a78bfa', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Destiny HERO - Captain Tenacious', title: 'Captain Tenacious', color: '#fbbf24', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Destiny HERO - Drawhand', title: 'Drawhand', color: '#fca5a5', face: [0.3, 0.15], pan: [0.1, 0.3] },
+            { card: 'Destiny HERO - Dasher', title: 'Dasher', color: '#fdba74', face: [0.75, 0.4], pan: [0.3, 0.5] },
+            { card: 'Destiny HERO - Departed', title: 'Departed', color: '#e5e7eb', face: [0.4, 0.2], pan: [0.15, 0.35] },
+            { card: 'Destiny HERO - Destro-Dogma', title: 'Destro-Dogma', color: '#60a5fa', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Destiny HERO - Destroyer Phoenix Enforcer', title: 'Destroyer Phoenix', color: '#f87171', face: [0.5, 0.3], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['stardust'] = {
+        kind: 'trail',
+        label: 'The Stardust art trail',
+        stops: [
+            { card: 'Stardust Dragon', title: 'Stardust Dragon', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Stardust Dragon - Victim Sanctuary', title: 'Victim Sanctuary', color: '#bae6fd', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Stardust Wish', title: 'Stardust Wish', color: '#e0f2fe', face: [0.5, 0.25], pan: [0.2, 0.4] },
+            { card: 'Majestic Star Dragon', title: 'Majestic', color: '#fef3c7', face: [0.5, 0.25], pan: [0.15, 0.35] },
+            { card: 'Shooting Star Dragon', title: 'Shooting Star', color: '#93c5fd', face: [0.45, 0.15], pan: [0.1, 0.3] },
+            { card: 'Stardust Flash', title: 'Stardust Flash', color: '#cffafe', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Shooting Quasar Dragon', title: 'Quasar', color: '#f0f9ff', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Cosmic Blazar Dragon', title: 'Blazar', color: '#a5f3fc', face: [0.45, 0.4], pan: [0.3, 0.5] },
+            { card: 'Accel Synchro Stardust Dragon', title: 'Accel Synchro', color: '#38bdf8', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Stardust Spark Dragon', title: 'Spark', color: '#fef9c3', face: [0.5, 0.25], pan: [0.15, 0.35] },
+            { card: 'Stardust Chronicle Spark Dragon', title: 'Chronicle', color: '#fde68a', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Stardust Sifr Divine Dragon', title: 'Sifr', color: '#e9d5ff', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Malefic Stardust Dragon', title: 'Malefic', color: '#a78bfa', face: [0.45, 0.3], pan: [0.2, 0.4] },
+            { card: 'Stardust Synchron', title: 'Synchron', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Stardust Trail', title: 'Stardust Trail', color: '#c4b5fd', face: [0.48, 0.15], pan: [0.3, 0.12] }
+        ]
+    };
+
+    window.LoreReelData['shark'] = {
+        kind: 'trail',
+        label: 'The Shark art trail',
+        stops: [
+            { card: 'Number 32: Shark Drake', title: 'Shark Drake', color: '#60a5fa', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Drake Shark', title: 'Drake Shark', color: '#93c5fd', face: [0.75, 0.55], pan: [0.4, 0.6] },
+            { card: 'Number C32: Shark Drake Veiss', title: 'Veiss', color: '#e0f2fe', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Veiss Shark', title: 'Veiss Shark', color: '#bae6fd', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Number C32: Shark Drake LeVeiss', title: 'LeVeiss', color: '#a5f3fc', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number 71: Rebarian Shark', title: 'Rebarian', color: '#f87171', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Bahamut Shark', title: 'Bahamut', color: '#3b82f6', face: [0.35, 0.25], pan: [0.2, 0.4] },
+            { card: 'Number 37: Hope Woven Dragon Spider Shark', title: 'Spider Shark', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Number S37: Spider Shark', title: 'S37', color: '#fef08a', face: [0.45, 0.3], pan: [0.2, 0.4] },
+            { card: 'Submersible Carrier Aero Shark', title: 'Aero Shark', color: '#7dd3fc', face: [0.5, 0.45], pan: [0.3, 0.5] },
+            { card: 'Eagle Shark', title: 'Eagle Shark', color: '#fde68a', face: [0.6, 0.35], pan: [0.25, 0.45] },
+            { card: 'Cat Shark', title: 'Cat Shark', color: '#fdba74', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Buzzsaw Shark', title: 'Buzzsaw', color: '#cbd5e1', face: [0.4, 0.3], pan: [0.2, 0.4] },
+            { card: 'Valiant Shark Lancer', title: 'Shark Lancer', color: '#a5b4fc', face: [0.5, 0.3], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['nordic'] = {
+        kind: 'trail',
+        label: 'The Nordic art trail',
+        stops: [
+            { card: 'Odin, Father of the Aesir', title: 'Odin', color: '#a5f3fc', face: [0.45, 0.2], pan: [0.15, 0.35] },
+            { card: 'Nordic Relic Gungnir', title: 'Gungnir', color: '#fde68a', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Nordic Relic Draupnir', title: 'Draupnir', color: '#fcd34d', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Valkyrie of the Nordic Ascendant', title: 'Valkyrie', color: '#e0f2fe', face: [0.5, 0.25], pan: [0.3, 0.15] },
+            { card: 'Thor, Lord of the Aesir', title: 'Thor', color: '#fef08a', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Tanngnjostr of the Nordic Beasts', title: 'Tanngnjostr', color: '#d6d3d1', face: [0.6, 0.2], pan: [0.15, 0.35] },
+            { card: 'Guldfaxe of the Nordic Beasts', title: 'Guldfaxe', color: '#facc15', face: [0.6, 0.35], pan: [0.25, 0.45] },
+            { card: 'Loki, Lord of the Aesir', title: 'Loki', color: '#86efac', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Dverg of the Nordic Alfar', title: 'Dverg', color: '#a8a29e', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Mara of the Nordic Alfar', title: 'Mara', color: '#c4b5fd', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Fenrir the Nordic Wolf', title: 'Fenrir', color: '#94a3b8', face: [0.4, 0.35], pan: [0.25, 0.45] },
+            { card: 'Gleipnir, the Fetters of Fenrir', title: 'Gleipnir', color: '#e5e7eb', face: [0.5, 0.5], pan: [0.35, 0.55] },
+            { card: 'Jormungardr the Nordic Serpent', title: 'Jormun\u00ADgardr', color: '#67e8f9', face: [0.45, 0.35], pan: [0.25, 0.45] },
+            { card: 'Tyr of the Nordic Champions', title: 'Tyr', color: '#fca5a5', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'The Nordic Lights', title: 'Nordic Lights', color: '#5eead4', face: [0.5, 0.4], pan: [0.3, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['fire-fist'] = {
+        kind: 'trail',
+        label: 'The Fire Fist art trail',
+        stops: [
+            { card: 'Brotherhood of the Fire Fist - Horse Prince', title: 'Horse Prince', color: '#fdba74', face: [0.55, 0.25], pan: [0.15, 0.4] },
+            { card: 'Brotherhood of the Fire Fist - Spirit', title: 'Spirit', color: '#fde68a', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Brotherhood of the Fire Fist - Tiger King', title: 'Tiger King', color: '#f5f5f4', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Brotherhood of the Fire Fist - Lion Emperor', title: 'Lion Emperor', color: '#fef9c3', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Brotherhood of the Fire Fist - Kirin', title: 'Kirin', color: '#fbbf24', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Brotherhood of the Fire Fist - Eland', title: 'Eland', color: '#f59e0b', face: [0.55, 0.15], pan: [0.1, 0.3] },
+            { card: 'Fire Formation - Domei', title: 'Domei', color: '#fca5a5', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Brotherhood of the Fire Fist - Coyote', title: 'Coyote', color: '#fb923c', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Brotherhood of the Fire Fist - Wolf', title: 'Wolf', color: '#f87171', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Brotherhood of the Fire Fist - Bear', title: 'Bear', color: '#a8a29e', face: [0.5, 0.25], pan: [0.15, 0.4] },
+            { card: 'Fire Formation - Tensu', title: 'Tensu', color: '#ef4444', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Five Brothers Explosion', title: 'Five Brothers', color: '#dc2626', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Brotherhood of the Fire Fist - Snake', title: 'Snake', color: '#86efac', face: [0.45, 0.2], pan: [0.15, 0.35] },
+            { card: 'Brotherhood of the Fire Fist - Peacock', title: 'Peacock', color: '#f0abfc', face: [0.45, 0.25], pan: [0.35, 0.15] },
+            { card: 'Ultimate Fire Formation - Seito', title: 'Seito', color: '#fef3c7', face: [0.5, 0.45], pan: [0.3, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['arcana-force'] = {
+        kind: 'trail',
+        label: 'The Arcana Force art trail',
+        stops: [
+            { card: 'Arcana Force 0 - The Fool', title: 'The Fool', color: '#fef9c3', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Arcana Force I - The Magician', title: 'The Magician', color: '#fca5a5', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Arcana Force V - The Hierophant', title: 'The Hierophant', color: '#fde68a', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Arcana Force VI - The Lovers', title: 'The Lovers', color: '#f9a8d4', face: [0.5, 0.2], pan: [0.15, 0.35] },
+            { card: 'Arcana Force VII - The Chariot', title: 'The Chariot', color: '#93c5fd', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Arcana Force XIV - Temperance', title: 'Temperance', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.1, 0.35] },
+            { card: 'Arcana Force XV - The Fiend', title: 'The Fiend', color: '#a78bfa', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Arcana Force XVIII - The Moon', title: 'The Moon', color: '#e0e7ff', face: [0.4, 0.3], pan: [0.2, 0.4] },
+            { card: 'Arcana Force XIX - The Sun', title: 'The Sun', color: '#facc15', face: [0.5, 0.35], pan: [0.25, 0.45] },
+            { card: 'Arcana Force XXI - The World', title: 'The World', color: '#fcd34d', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Arcana Force EX - The Light Ruler', title: 'Light Ruler', color: '#fef08a', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Arcana Force EX - The Dark Ruler', title: 'Dark Ruler', color: '#a5b4fc', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Arcana Force EX - The Chaos Ruler', title: 'Chaos Ruler', color: '#e9d5ff', face: [0.5, 0.35], pan: [0.25, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['flower-cardian'] = {
+        kind: 'trail',
+        label: 'The Flower Cardian art trail',
+        stops: [
+            { card: 'Flower Cardian Pine', title: 'Pine', color: '#86efac', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Pine with Crane', title: 'Pine with Crane', color: '#fca5a5', face: [0.45, 0.3], pan: [0.2, 0.4] },
+            { card: 'Flower Cardian Cherry Blossom', title: 'Cherry Blossom', color: '#f9a8d4', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Cherry Blossom with Curtain', title: 'Cherry Curtain', color: '#fbcfe8', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Peony with Butterfly', title: 'Peony', color: '#f0abfc', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Clover with Boar', title: 'Clover', color: '#bef264', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Zebra Grass with Moon', title: 'Zebra Moon', color: '#fde68a', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Maple with Deer', title: 'Maple', color: '#fb923c', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Willow', title: 'Willow', color: '#a5f3fc', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Willow with Calligrapher', title: 'Calligrapher', color: '#c4b5fd', face: [0.6, 0.6], pan: [0.4, 0.6] },
+            { card: 'Flower Cardian Paulownia with Phoenix', title: 'Paulownia', color: '#fef08a', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Flower Cardian Boardefly', title: 'Boardefly', color: '#fdba74', face: [0.45, 0.25], pan: [0.15, 0.4] },
+            { card: 'Flower Cardian Lightshower', title: 'Lightshower', color: '#93c5fd', face: [0.3, 0.25], pan: [0.15, 0.35] },
+            { card: 'Flower Cardian Lightflare', title: 'Lightflare', color: '#fef9c3', face: [0.5, 0.15], pan: [0.1, 0.3] },
+            { card: 'Flower Cardian Moonflowerviewing', title: 'Moonflower', color: '#e9d5ff', face: [0.45, 0.2], pan: [0.35, 0.15] }
+        ]
+    };
+
+    window.LoreReelData['timelord'] = {
+        kind: 'trail',
+        label: 'The Timelord art trail',
+        stops: [
+            { card: 'Metaion, the Timelord', title: 'Metaion', color: '#fde68a', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Lazion, the Timelord', title: 'Lazion', color: '#fca5a5', face: [0.5, 0.45], pan: [0.3, 0.5] },
+            { card: 'Zaphion, the Timelord', title: 'Zaphion', color: '#f9a8d4', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Sadion, the Timelord', title: 'Sadion', color: '#86efac', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Kamion, the Timelord', title: 'Kamion', color: '#f87171', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Michion, the Timelord', title: 'Michion', color: '#fef08a', face: [0.5, 0.4], pan: [0.25, 0.45] },
+            { card: 'Hailon, the Timelord', title: 'Hailon', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Raphion, the Timelord', title: 'Raphion', color: '#93c5fd', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Gabrion, the Timelord', title: 'Gabrion', color: '#a5f3fc', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Sandaion, the Timelord', title: 'Sandaion', color: '#fef9c3', face: [0.5, 0.3], pan: [0.2, 0.4] },
+            { card: 'Sephylon, the Ultimate Timelord', title: 'Sephylon', color: '#fbbf24', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Timelord Progenitor Vorpgate', title: 'Vorpgate', color: '#a78bfa', face: [0.5, 0.3], pan: [0.2, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['evil-hero'] = {
+        kind: 'trail',
+        label: 'The Evil HERO art trail',
+        stops: [
+            { card: 'Evil HERO Inferno Wing', title: 'Inferno Wing', color: '#f87171', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Evil HERO Inferno Wing - Backfire', title: 'Backfire', color: '#fb923c', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Evil HERO Lightning Golem', title: 'Lightning Golem', color: '#fde047', face: [0.55, 0.12], pan: [0.05, 0.27] },
+            { card: 'Evil HERO Malicious Edge', title: 'Malicious Edge', color: '#a8a29e', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Evil HERO Malicious Fiend', title: 'Malicious Fiend', color: '#c084fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Evil HERO Infernal Gainer', title: 'Infernal Gainer', color: '#f43f5e', face: [0.6, 0.15], pan: [0.07, 0.3] },
+            { card: 'Evil HERO Dark Gaia', title: 'Dark Gaia', color: '#a16207', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Evil HERO Dead-End Prison', title: 'Dead-End Prison', color: '#e9d5ff', face: [0.45, 0.35], pan: [0.27, 0.5] },
+            { card: 'Evil HERO Infernal Rider', title: 'Infernal Rider', color: '#7c3aed', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Evil HERO Sinister Necrom', title: 'Sinister Necrom', color: '#6366f1', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Evil HERO Toxic Bubble', title: 'Toxic Bubble', color: '#86efac', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Evil HERO Adusted Gold', title: 'Adusted Gold', color: '#fcd34d', face: [0.28, 0.12], pan: [0.05, 0.27] },
+            { card: 'Evil HERO Neos Lord', title: 'Neos Lord', color: '#a855f7', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Evil HERO Vicious Claws', title: 'Vicious Claws', color: '#d8b4fe', face: [0.5, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['gaia'] = {
+        kind: 'trail',
+        label: 'The Gaia art trail',
+        stops: [
+            { card: 'Gaia The Fierce Knight', title: 'Gaia', color: '#f87171', face: [0.4, 0.12], pan: [0.05, 0.27] },
+            { card: 'Heart of Gaia', title: 'Heart of Gaia', color: '#fca5a5', face: [0.35, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gaia the Dragon Champion', title: 'Dragon Champion', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Swift Gaia the Fierce Knight', title: 'Swift Gaia', color: '#fdba74', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Charging Gaia the Fierce Knight', title: 'Charging Gaia', color: '#fef08a', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gaia the Fierce Knight Origin', title: 'Origin', color: '#d6d3d1', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Gaia the Magical Knight', title: 'Magical Knight', color: '#c4b5fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Gaia the Magical Knight of Dragons', title: 'Knight of Dragons', color: '#93c5fd', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Galloping Gaia', title: 'Galloping Gaia', color: '#a5b4fc', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Soldier Gaia the Fierce Knight', title: 'Soldier Gaia', color: '#a78bfa', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gaia, the Mid-Knight Sun', title: 'Mid-Knight Sun', color: '#fef9c3', face: [0.3, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gaia Knight, the Force of Earth', title: 'Force of Earth', color: '#a8a29e', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Gaia Dragon, the Thunder Charger', title: 'Thunder Charger', color: '#60a5fa', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Gaia Saber, the Lightning Shadow', title: 'Gaia Saber', color: '#e5e7eb', face: [0.5, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['chimera'] = {
+        kind: 'trail',
+        label: 'The Chimera art trail',
+        stops: [
+            { card: 'Gazelle the King of Mythical Beasts', title: 'Gazelle', color: '#fbbf24', face: [0.3, 0.25], pan: [0.17, 0.4] },
+            { card: 'Berfomet', title: 'Berfomet', color: '#a78bfa', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Chimera Fusion', title: 'Chimera Fusion', color: '#fdba74', face: [0.5, 0.5], pan: [0.35, 0.5] },
+            { card: 'Chimera the Flying Mythical Beast', title: 'Chimera', color: '#fb923c', face: [0.4, 0.4], pan: [0.32, 0.55] },
+            { card: 'Big-Winged Berfomet', title: 'Big-Winged', color: '#c4b5fd', face: [0.35, 0.25], pan: [0.17, 0.4] },
+            { card: 'Gazelle the King of Mythical Claws', title: 'Mythical Claws', color: '#fcd34d', face: [0.65, 0.4], pan: [0.32, 0.55] },
+            { card: 'Chimera the King of Phantom Beasts', title: 'King of Phantoms', color: '#f97316', face: [0.45, 0.35], pan: [0.27, 0.5] },
+            { card: 'Mirror Swordknight', title: 'Mirror Sword\u00ADknight', color: '#e5e7eb', face: [0.3, 0.3], pan: [0.22, 0.45] },
+            { card: 'Berfomet the Mythical King of Phantom Beasts', title: 'Mythical King', color: '#d8b4fe', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Cornfield Coatl', title: 'Cornfield Coatl', color: '#86efac', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Chimera the Illusion Beast', title: 'Illusion Beast', color: '#fef08a', face: [0.45, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['t-g'] = {
+        kind: 'trail',
+        label: 'The T.G. art trail',
+        stops: [
+            { card: 'T.G. Striker', title: 'Striker', color: '#86efac', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'T.G. Warwolf', title: 'Warwolf', color: '#bef264', face: [0.6, 0.2], pan: [0.12, 0.35] },
+            { card: 'T.G. Limiter Removal', title: 'Limiter Removal', color: '#fde68a', face: [0.3, 0.25], pan: [0.17, 0.4] },
+            { card: 'T.G. Rush Rhino', title: 'Rush Rhino', color: '#a8a29e', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'T.G. Power Gladiator', title: 'Power Gladiator', color: '#fca5a5', face: [0.47, 0.35], pan: [0.27, 0.5] },
+            { card: 'T.G. Hyper Librarian', title: 'Hyper Librarian', color: '#93c5fd', face: [0.4, 0.12], pan: [0.05, 0.27] },
+            { card: 'T.G. Wonder Magician', title: 'Wonder Magician', color: '#f0abfc', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'T.G. Recipro Dragonfly', title: 'Recipro Dragonfly', color: '#5eead4', face: [0.35, 0.45], pan: [0.37, 0.6] },
+            { card: 'T.G. Blade Blaster', title: 'Blade Blaster', color: '#7dd3fc', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'T.G. Halberd Cannon', title: 'Halberd Cannon', color: '#e5e7eb', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'T.G. Close', title: 'T.G. Close', color: '#cbd5e1', face: [0.55, 0.35], pan: [0.27, 0.5] },
+            { card: 'T.G. Glaive Blaster', title: 'Glaive Blaster', color: '#facc15', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'T.G. Star Guardian', title: 'Star Guardian', color: '#a5f3fc', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'T.G. All Clear', title: 'All Clear', color: '#bbf7d0', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Shooting Star Dragon T.G. EX', title: 'T.G. EX', color: '#e0f2fe', face: [0.55, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['gimmick-puppet'] = {
+        kind: 'trail',
+        label: 'The Gimmick Puppet art trail',
+        stops: [
+            { card: 'Number 15: Gimmick Puppet Giant Grinder', title: 'Giant Grinder', color: '#a78bfa', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gimmick Puppet Little Soldiers', title: 'Little Soldiers', color: '#f87171', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Number C15: Gimmick Puppet Giant Hunter', title: 'Giant Hunter', color: '#c084fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Gimmick Puppet Fantasix Machinix', title: 'Fantasix', color: '#fef3c7', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'CXyz Gimmick Puppet Fanatix Machinix', title: 'Fanatix', color: '#e9d5ff', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Number 40: Gimmick Puppet of Strings', title: 'Strings', color: '#94a3b8', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Number 88: Gimmick Puppet of Leo', title: 'Leo', color: '#fde68a', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Number C88: Gimmick Puppet Disaster Leo', title: 'Disaster Leo', color: '#fb923c', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gimmick Puppet Cattle Scream', title: 'Cattle Scream', color: '#fca5a5', face: [0.4, 0.35], pan: [0.27, 0.5] },
+            { card: 'Gimmick Puppet Des Troy', title: 'Des Troy', color: '#d6d3d1', face: [0.35, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gimmick Puppet Humpty Dumpty', title: 'Humpty Dumpty', color: '#fef9c3', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gimmick Puppet Scissor Arms', title: 'Scissor Arms', color: '#cbd5e1', face: [0.5, 0.48], pan: [0.4, 0.63] },
+            { card: 'Gimmick Puppet Rouge Doll', title: 'Rouge Doll', color: '#f43f5e', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gimmick Puppet Gigantes Doll', title: 'Gigantes', color: '#a8a29e', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gimmick Puppet Fiendish Knight', title: 'Fiendish Knight', color: '#c4b5fd', face: [0.5, 0.25], pan: [0.17, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['battlin-boxer'] = {
+        kind: 'trail',
+        label: 'The Battlin\' Boxer art trail',
+        stops: [
+            { card: 'Battlin\' Boxer Glassjaw', title: 'Glassjaw', color: '#bae6fd', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Battlin\' Boxer Headgeared', title: 'Headgeared', color: '#fca5a5', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Battlin\' Boxer Big Bandage', title: 'Big Bandage', color: '#f5f5f4', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Battlin\' Boxer Switchitter', title: 'Switchitter', color: '#fdba74', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Battlin\' Boxer Sparrer', title: 'Sparrer', color: '#fde68a', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlin\' Boxer Counterpunch', title: 'Counter\u00ADpunch', color: '#f87171', face: [0.6, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlin\' Boxer Uppercutter', title: 'Uppercutter', color: '#e5e7eb', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Battlin\' Boxer Rabbit Puncher', title: 'Rabbit Puncher', color: '#d6d3d1', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlin\' Boxer Cheat Commissioner', title: 'Cheat Commis\u00ADsioner', color: '#fcd34d', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlin\' Boxer Chief Second', title: 'Chief Second', color: '#93c5fd', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlin\' Boxer Promoter', title: 'Promoter', color: '#c4b5fd', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlin\' Boxer Lead Yoke', title: 'Lead Yoke', color: '#a8a29e', face: [0.55, 0.25], pan: [0.17, 0.4] },
+            { card: 'Number 105: Battlin\' Boxer Star Cestus', title: 'Star Cestus', color: '#fde047', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Number C105: Battlin\' Boxer Comet Cestus', title: 'Comet Cestus', color: '#fef08a', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Battlin\' Boxer King Dempsey', title: 'King Dempsey', color: '#ef4444', face: [0.52, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['phantom-knights'] = {
+        kind: 'trail',
+        label: 'The Phantom Knights art trail',
+        stops: [
+            { card: 'The Phantom Knights of Ancient Cloak', title: 'Ancient Cloak', color: '#c4b5fd', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'The Phantom Knights of Silent Boots', title: 'Silent Boots', color: '#a5b4fc', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'The Phantom Knights of Stained Greaves', title: 'Stained Greaves', color: '#94a3b8', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'The Phantom Knights of Doomed Soleret', title: 'Doomed Soleret', color: '#818cf8', face: [0.35, 0.25], pan: [0.17, 0.4] },
+            { card: 'The Phantom Knights of Lost Vambrace', title: 'Lost Vambrace', color: '#a78bfa', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'The Phantom Knights of Dark Gauntlets', title: 'Dark Gauntlets', color: '#6366f1', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'The Phantom Knights of Shade Brigandine', title: 'Shade Brigandine', color: '#7c3aed', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'The Phantom Knights of Rusty Bardiche', title: 'Rusty Bardiche', color: '#d6d3d1', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'The Phantom Knights of Break Sword', title: 'Break Sword', color: '#e9d5ff', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Raider\'s Knight', title: 'Raider\'s Knight', color: '#f0abfc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'The Phantom Knights of Malevolent Scythe', title: 'Malevolent Scythe', color: '#c084fc', face: [0.6, 0.25], pan: [0.17, 0.4] },
+            { card: 'Dark Rebellion Xyz Dragon', title: 'Dark Rebellion', color: '#8b5cf6', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Dark Requiem Xyz Dragon', title: 'Dark Requiem', color: '#a855f7', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Arc Rebellion Xyz Dragon', title: 'Arc Rebellion', color: '#ddd6fe', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Dark Rebellion Xyz Dragon, Four Heavenly Dragons', title: 'Four Heavenly', color: '#e0e7ff', face: [0.5, 0.4], pan: [0.32, 0.55] }
+        ]
+    };
+
+    window.LoreReelData['red-dragon-archfiend'] = {
+        kind: 'trail',
+        label: 'The Red Dragon Archfiend art trail',
+        stops: [
+            { card: 'Red Dragon Archfiend', title: 'Red Dragon Archfiend', color: '#f87171', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Red Rising Dragon', title: 'Red Rising', color: '#fca5a5', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Majestic Red Dragon', title: 'Majestic Red', color: '#fde68a', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Red Nova Dragon', title: 'Red Nova', color: '#ef4444', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Red Supernova Dragon', title: 'Red Supernova', color: '#fb923c', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Red Hypernova Dragon', title: 'Red Hypernova', color: '#fdba74', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Scarred Dragon Archfiend', title: 'Scarred', color: '#dc2626', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'The Crimson King', title: 'Crimson King', color: '#f97316', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Hot Red Dragon Archfiend', title: 'Hot Red', color: '#b91c1c', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Hot Red Dragon Archfiend Abyss', title: 'Abyss', color: '#991b1b', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Hot Red Dragon Archfiend Bane', title: 'Bane', color: '#7f1d1d', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Hot Red Dragon Archfiend King Calamity', title: 'King Calamity', color: '#fecaca', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Scarlight Red Dragon Archfiend', title: 'Scarlight', color: '#fda4af', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Tyrant Red Dragon Archfiend', title: 'Tyrant', color: '#f43f5e', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Crimson Gaia', title: 'Crimson Gaia', color: '#fb7185', face: [0.5, 0.3], pan: [0.22, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['black-luster-soldier'] = {
+        kind: 'trail',
+        label: 'The Black Luster Soldier art trail',
+        stops: [
+            { card: 'Black Luster Ritual', title: 'The ritual', color: '#e9d5ff', face: [0.5, 0.4], pan: [0.3, 0.5] },
+            { card: 'Black Luster Soldier', title: 'Black Luster Soldier', color: '#c4b5fd', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Black Luster Soldier - Envoy of the Beginning', title: 'Envoy of the Beginning', color: '#fef3c7', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Black Luster Soldier - Envoy of the Evening Twilight', title: 'Evening Twilight', color: '#818cf8', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Black Luster Soldier - Sacred Soldier', title: 'Sacred Soldier', color: '#f5f5f4', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Beginning Knight', title: 'Beginning Knight', color: '#fde68a', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Evening Twilight Knight', title: 'Twilight Knight', color: '#a5b4fc', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'Black Luster Soldier - Super Soldier', title: 'Super Soldier', color: '#93c5fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Black Luster Soldier - Soldier of Chaos', title: 'Soldier of Chaos', color: '#a78bfa', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Black Luster Soldier - Legendary Swordsman', title: 'Legendary Swordsman', color: '#fcd34d', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Black Luster Soldier - Soldier of Light and Darkness', title: 'Light and Darkness', color: '#ddd6fe', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Toon Black Luster Soldier', title: 'Toon', color: '#f9a8d4', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Chaos Form', title: 'Chaos Form', color: '#d8b4fe', face: [0.5, 0.45], pan: [0.3, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['firewall'] = {
+        kind: 'trail',
+        label: 'The Firewall art trail',
+        stops: [
+            { card: 'Firewall Dragon', title: 'Firewall Dragon', color: '#93c5fd', face: [0.45, 0.38], pan: [0.3, 0.53] },
+            { card: 'Firewall Dragon Darkfluid', title: 'Darkfluid', color: '#60a5fa', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Firewall Dragon Darkfluid - Neo Tempest Terahertz', title: 'Neo Tempest', color: '#f87171', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Firewall Dragon Singularity', title: 'Singularity', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Firewall eXceed Dragon', title: 'eXceed', color: '#a5b4fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Firewall Saber Dragon', title: 'Saber', color: '#e5e7eb', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Firewall Guardian', title: 'Guardian', color: '#7dd3fc', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Firewall Defenser', title: 'Defenser', color: '#38bdf8', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Firewall Phantom', title: 'Phantom', color: '#a78bfa', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Firewall', title: 'Firewall', color: '#fdba74', face: [0.45, 0.45], pan: [0.37, 0.6] }
+        ]
+    };
+
+    window.LoreReelData['speedroid'] = {
+        kind: 'trail',
+        label: 'The Speedroid art trail',
+        stops: [
+            { card: 'Speedroid Terrortop', title: 'Terrortop', color: '#86efac', face: [0.4, 0.6], pan: [0.52, 0.65] },
+            { card: 'Speedroid Taketomborg', title: 'Taketomborg', color: '#bef264', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Speedroid Red-Eyed Dice', title: 'Red-Eyed Dice', color: '#f87171', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Speedroid Tri-Eyed Dice', title: 'Tri-Eyed Dice', color: '#fcd34d', face: [0.45, 0.35], pan: [0.27, 0.5] },
+            { card: 'Speedroid Double Yoyo', title: 'Double Yoyo', color: '#93c5fd', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Speedroid Ohajikid', title: 'Ohajikid', color: '#fdba74', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Speedroid Menko', title: 'Menko', color: '#e5e7eb', face: [0.5, 0.45], pan: [0.37, 0.6] },
+            { card: 'Speedroid Den-Den Daiko Duke', title: 'Den-Den Daiko', color: '#fde68a', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'Speedroid Dominobutterfly', title: 'Domino\u00ADbutterfly', color: '#c4b5fd', face: [0.35, 0.3], pan: [0.22, 0.45] },
+            { card: 'Speedroid Colonel Clackers', title: 'Colonel Clackers', color: '#60a5fa', face: [0.4, 0.15], pan: [0.07, 0.3] },
+            { card: 'Speedroid Pachingo-Kart', title: 'Pachingo-Kart', color: '#fca5a5', face: [0.45, 0.4], pan: [0.32, 0.55] },
+            { card: 'Speedroid Skull Marbles', title: 'Skull Marbles', color: '#a8a29e', face: [0.4, 0.45], pan: [0.37, 0.6] },
+            { card: 'Hi-Speedroid Kendama', title: 'Kendama', color: '#a5f3fc', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Hi-Speedroid Hagoita', title: 'Hagoita', color: '#fef08a', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Hi-Speedroid Kitedrake', title: 'Kitedrake', color: '#7dd3fc', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Speedroid Clear Wing Wonder', title: 'Clear Wing Wonder', color: '#e0f2fe', face: [0.4, 0.45], pan: [0.37, 0.6] },
+            { card: 'Hi-Speedroid Clear Wing Rider', title: 'Clear Wing Rider', color: '#bae6fd', face: [0.55, 0.45], pan: [0.37, 0.6] }
+        ]
+    };
+
+    window.LoreReelData['sacred-beast'] = {
+        kind: 'trail',
+        label: 'The Sacred Beast art trail',
+        stops: [
+            { card: 'Uria, Lord of Searing Flames', title: 'Uria', color: '#f87171', face: [0.7, 0.15], pan: [0.07, 0.3] },
+            { card: 'Hamon, Lord of Striking Thunder', title: 'Hamon', color: '#fde047', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Raviel, Lord of Phantasms', title: 'Raviel', color: '#a78bfa', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Awakening of the Sacred Beasts', title: 'Awakening', color: '#fdba74', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Sacred Beasts Combined Assault', title: 'Combined Assault', color: '#fb923c', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Sacred Beasts Thunderclap', title: 'Thunderclap', color: '#fef08a', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Abyss of the Sacred Beasts', title: 'Abyss', color: '#fca5a5', face: [0.3, 0.2], pan: [0.12, 0.35] },
+            { card: 'Raviel, Lord of Phantasms - Shimmering Scraper', title: 'Shimmering Scraper', color: '#c4b5fd', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Sacred Beasts Skyfall', title: 'Skyfall', color: '#e9d5ff', face: [0.55, 0.4], pan: [0.32, 0.55] },
+            { card: 'Sacred Beasts Released', title: 'Released', color: '#e5e7eb', face: [0.4, 0.4], pan: [0.32, 0.55] },
+            { card: 'Armityle the Chaos Phantasm', title: 'Armityle', color: '#818cf8', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Armityle the Chaos Phantasm - Phantom of Fury', title: 'Phantom of Fury', color: '#6366f1', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Summoner of the Sacred Beasts', title: 'Summoner', color: '#fbbf24', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'The Chaotic Phantasmal Sacred Beasts', title: 'Chaotic Phantasmal', color: '#f43f5e', face: [0.5, 0.25], pan: [0.17, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['superheavy-samurai'] = {
+        kind: 'trail',
+        label: 'The Superheavy Samurai art trail',
+        stops: [
+            { card: 'Superheavy Samurai Big Benkei', title: 'Big Benkei', color: '#d1d5db', face: [0.4, 0.15], pan: [0.07, 0.3] },
+            { card: 'Superheavy Samurai Swordsman', title: 'Swordsman', color: '#e5e7eb', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Superheavy Samurai Blue Brawler', title: 'Blue Brawler', color: '#93c5fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Superheavy Samurai Prodigy Wakaushi', title: 'Wakaushi', color: '#86efac', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Superheavy Samurai Commander Shanawo', title: 'Shanawo', color: '#4ade80', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Superheavy Samurai Brave Masurawo', title: 'Masurawo', color: '#a8a29e', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Superheavy Samurai Flutist', title: 'Flutist', color: '#d6d3d1', face: [0.4, 0.15], pan: [0.07, 0.3] },
+            { card: 'Superheavy Samurai Beast Kyubi', title: 'Kyubi', color: '#fdba74', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Superheavy Samurai Ninja Sarutobi', title: 'Sarutobi', color: '#bef264', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Superheavy Samurai Ogre Shutendoji', title: 'Shutendoji', color: '#f87171', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Superheavy Samurai Swordmaster Musashi', title: 'Musashi', color: '#fde68a', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Superheavy Samurai Wagon', title: 'Wagon', color: '#cbd5e1', face: [0.75, 0.2], pan: [0.12, 0.35] },
+            { card: 'Superheavy Samurai Steam Train King', title: 'Steam Train King', color: '#ef4444', face: [0.25, 0.3], pan: [0.22, 0.45] },
+            { card: 'Superheavy Samurai Warlord Susanowo', title: 'Susanowo', color: '#9ca3af', face: [0.5, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['venom'] = {
+        kind: 'trail',
+        label: 'The Venom art trail',
+        stops: [
+            { card: 'Venom Cobra', title: 'Venom Cobra', color: '#86efac', face: [0.6, 0.15], pan: [0.07, 0.3] },
+            { card: 'Venom Snake', title: 'Venom Snake', color: '#a3e635', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Venom Boa', title: 'Venom Boa', color: '#bef264', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Venom Serpent', title: 'Venom Serpent', color: '#5eead4', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Venom Swamp', title: 'Venom Swamp', color: '#4ade80', face: [0.5, 0.5], pan: [0.42, 0.65] },
+            { card: 'Vennominon the King of Poisonous Snakes', title: 'Vennominon', color: '#16a34a', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Vennominaga the Deity of Poisonous Snakes', title: 'Vennominaga', color: '#22c55e', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'Starving Venom Fusion Dragon', title: 'Starving Venom', color: '#a78bfa', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Greedy Venom Fusion Dragon', title: 'Greedy Venom', color: '#c084fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Starving Venom Predapower Fusion Dragon', title: 'Predapower', color: '#d8b4fe', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Odd-Eyes Venom Dragon', title: 'Odd-Eyes Venom', color: '#f0abfc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Supreme King Dragon Starving Venom', title: 'Supreme King', color: '#7c3aed', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Starving Venom Wing Dragon', title: 'Venom Wing', color: '#e9d5ff', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Starving Venom Fusion Dragon, Four Heavenly Dragons', title: 'Four Heavenly', color: '#ddd6fe', face: [0.5, 0.25], pan: [0.17, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['magnet-warrior'] = {
+        kind: 'trail',
+        label: 'The Magnet Warrior art trail',
+        stops: [
+            { card: 'Alpha The Magnet Warrior', title: 'Alpha', color: '#e5e7eb', face: [0.45, 0.45], pan: [0.37, 0.6] },
+            { card: 'Beta The Magnet Warrior', title: 'Beta', color: '#fcd34d', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gamma the Magnet Warrior', title: 'Gamma', color: '#d6d3d1', face: [0.4, 0.15], pan: [0.07, 0.3] },
+            { card: 'Magnetic Field', title: 'Magnetic Field', color: '#a5b4fc', face: [0.5, 0.45], pan: [0.37, 0.6] },
+            { card: 'Valkyrion the Magna Warrior', title: 'Valkyrion', color: '#cbd5e1', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Delta The Magnet Warrior', title: 'Delta', color: '#94a3b8', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Epsilon The Magnet Warrior', title: 'Epsilon', color: '#93c5fd', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Beta The Electromagnet Warrior', title: 'Electro\u00ADmagnet', color: '#fde68a', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Berserkion the Electromagna Warrior', title: 'Berserkion', color: '#f87171', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Magnet Warrior Sigma Plus', title: 'Sigma Plus', color: '#fca5a5', face: [0.45, 0.35], pan: [0.27, 0.5] },
+            { card: 'Magnet Warrior Sigma Minus', title: 'Sigma Minus', color: '#7dd3fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Magnet Bonding', title: 'Magnet Bonding', color: '#e9d5ff', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Tellusion the Magna Warrior', title: 'Tellusion', color: '#bef264', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Magnet Warrior Omega Plus', title: 'Omega Plus', color: '#fef08a', face: [0.55, 0.25], pan: [0.17, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['code-talker'] = {
+        kind: 'trail',
+        label: 'The Code Talker art trail',
+        stops: [
+            { card: 'Decode Talker', title: 'Decode Talker', color: '#4ade80', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Decode Talker Integration', title: 'Integration', color: '#86efac', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Encode Talker', title: 'Encode', color: '#fef08a', face: [0.6, 0.15], pan: [0.07, 0.3] },
+            { card: 'Excode Talker', title: 'Excode', color: '#bae6fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Powercode Talker', title: 'Powercode', color: '#f87171', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Shootingcode Talker', title: 'Shooting\u00ADcode', color: '#7dd3fc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Transcode Talker', title: 'Transcode', color: '#d6d3d1', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Code Talker', title: 'Code Talker', color: '#a7f3d0', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Code Talker Inverted', title: 'Inverted', color: '#e5e7eb', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Decode Talker Heatsoul', title: 'Heatsoul', color: '#fb923c', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Protectcode Talker', title: 'Protectcode', color: '#a5b4fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Accesscode Talker', title: 'Accesscode', color: '#22c55e', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Allied Code Talker @Ignister', title: 'Allied', color: '#c4b5fd', face: [0.5, 0.15], pan: [0.07, 0.3] }
+        ]
+    };
+
+    window.LoreReelData['masked-hero'] = {
+        kind: 'trail',
+        label: 'The Masked HERO art trail',
+        stops: [
+            { card: 'Mask Change', title: 'Mask Change', color: '#93c5fd', face: [0.3, 0.4], pan: [0.32, 0.55] },
+            { card: 'Masked HERO Goka', title: 'Goka', color: '#f87171', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Masked HERO Vapor', title: 'Vapor', color: '#7dd3fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Masked HERO Dusk Crow', title: 'Dusk Crow', color: '#6b7280', face: [0.78, 0.4], pan: [0.32, 0.55] },
+            { card: 'Masked HERO Acid', title: 'Acid', color: '#60a5fa', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Masked HERO Dark Law', title: 'Dark Law', color: '#4b5563', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Masked HERO Dian', title: 'Dian', color: '#a16207', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Masked HERO Divine Wind', title: 'Divine Wind', color: '#86efac', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Masked HERO Koga', title: 'Koga', color: '#f5f5f4', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Masked HERO Anki', title: 'Anki', color: '#a78bfa', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Masked HERO Blast', title: 'Blast', color: '#bbf7d0', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Masked HERO Fountain', title: 'Fountain', color: '#bae6fd', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Masked HERO Furnace', title: 'Furnace', color: '#fb923c', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Masked HERO Atomic', title: 'Atomic', color: '#fdba74', face: [0.5, 0.15], pan: [0.07, 0.3] }
+        ]
+    };
+
+    window.LoreReelData['horus'] = {
+        kind: 'trail',
+        label: 'The Horus art trail',
+        stops: [
+            { card: 'Horus the Black Flame Dragon LV4', title: 'LV4', color: '#93c5fd', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Horus\' Servant', title: 'Horus\' Servant', color: '#e5e7eb', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Horus the Black Flame Dragon LV6', title: 'LV6', color: '#60a5fa', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Level Up!', title: 'Level Up!', color: '#fde68a', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Horus the Black Flame Dragon LV8', title: 'LV8', color: '#3b82f6', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dark Horus', title: 'Dark Horus', color: '#4b5563', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Metaphys Horus', title: 'Metaphys', color: '#a5b4fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Horus the Black Flame Deity', title: 'Deity', color: '#1d4ed8', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Imsety, Glory of Horus', title: 'Imsety', color: '#fef08a', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Hapi, Guidance of Horus', title: 'Hapi', color: '#bae6fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Duamutef, Blessing of Horus', title: 'Duamutef', color: '#7dd3fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Qebehsenuef, Protection of Horus', title: 'Qebehsenuef', color: '#fca5a5', face: [0.5, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['cubic'] = {
+        kind: 'trail',
+        label: 'The Cubic art trail',
+        stops: [
+            { card: 'Vijam the Cubic Seed', title: 'Vijam', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Cubic Ascension', title: 'Ascension', color: '#e9d5ff', face: [0.5, 0.45], pan: [0.37, 0.6] },
+            { card: 'Blade Garoodia the Cubic Beast', title: 'Garoodia', color: '#fde68a', face: [0.58, 0.42], pan: [0.34, 0.57] },
+            { card: 'Buster Gundil the Cubic Behemoth', title: 'Gundil', color: '#fdba74', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Dark Garnex the Cubic Beast', title: 'Garnex', color: '#a8a29e', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Geira Guile the Cubic King', title: 'Geira Guile', color: '#bae6fd', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Vulcan Dragni the Cubic King', title: 'Vulcan Dragni', color: '#f87171', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Indiora Doom Volt the Cubic Emperor', title: 'Indiora', color: '#fef08a', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Duza the Meteor Cubic Vessel', title: 'Duza', color: '#fca5a5', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Crimson Nova the Dark Cubic Lord', title: 'Crimson Nova', color: '#dc2626', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Crimson Nova Trinity the Dark Cubic Lord', title: 'Trinity', color: '#ef4444', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Cubic Causality', title: 'Causality', color: '#d8b4fe', face: [0.5, 0.45], pan: [0.37, 0.6] },
+            { card: 'Cubic Dharma', title: 'Dharma', color: '#fef9c3', face: [0.4, 0.4], pan: [0.32, 0.55] },
+            { card: 'Cubic Mandala', title: 'Mandala', color: '#a78bfa', face: [0.5, 0.45], pan: [0.37, 0.6] }
+        ]
+    };
+
+    window.LoreReelData['melodious'] = {
+        kind: 'trail',
+        label: 'The Melodious art trail',
+        stops: [
+            { card: 'Aria the Melodious Diva', title: 'Aria', color: '#f9a8d4', face: [0.4, 0.12], pan: [0.05, 0.27] },
+            { card: 'Sonata the Melodious Diva', title: 'Sonata', color: '#fbcfe8', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Canon the Melodious Diva', title: 'Canon', color: '#f0abfc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Elegy the Melodious Diva', title: 'Elegy', color: '#c4b5fd', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Melodious Concerto', title: 'Concerto', color: '#fda4af', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Soprano the Melodious Songstress', title: 'Soprano', color: '#fecdd3', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Bacha the Melodious Maestra', title: 'Bacha', color: '#fde68a', face: [0.35, 0.15], pan: [0.07, 0.3] },
+            { card: 'Mozarta the Melodious Maestra', title: 'Mozarta', color: '#fcd34d', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Shopina the Melodious Maestra', title: 'Shopina', color: '#a5f3fc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Schuberta the Melodious Maestra', title: 'Schuberta', color: '#bae6fd', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Bloom Diva the Melodious Choir', title: 'Bloom Diva', color: '#ec4899', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Bloom Prima the Melodious Choir', title: 'Bloom Prima', color: '#facc15', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Couplet the Melodious Songstress', title: 'Couplet', color: '#f472b6', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Refrain the Melodious Songstress', title: 'Refrain', color: '#e879f9', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Flowering Etoile the Melodious Magnificat', title: 'Flowering Etoile', color: '#fef3c7', face: [0.55, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['wind-up'] = {
+        kind: 'trail',
+        label: 'The Wind-Up art trail',
+        stops: [
+            { card: 'Legendary Wind-Up Key', title: 'The key', color: '#fde68a', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Wind-Up Soldier', title: 'Soldier', color: '#fca5a5', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Wind-Up Dog', title: 'Dog', color: '#d6d3d1', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Wind-Up Snail', title: 'Snail', color: '#bef264', face: [0.55, 0.35], pan: [0.27, 0.5] },
+            { card: 'Wind-Up Bat', title: 'Bat', color: '#a5b4fc', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Wind-Up Honeybee', title: 'Honeybee', color: '#facc15', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Wind-Up Knight', title: 'Knight', color: '#e5e7eb', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Wind-Up Shark', title: 'Shark', color: '#7dd3fc', face: [0.45, 0.4], pan: [0.32, 0.55] },
+            { card: 'Wind-Up Zenmaister', title: 'Zenmaister', color: '#93c5fd', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Wind-Up Zenmaines', title: 'Zenmaines', color: '#a8a29e', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Wind-Up Carrier Zenmaity', title: 'Zenmaity', color: '#60a5fa', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Zenmailstrom', title: 'Zenmail\u00ADstrom', color: '#c4b5fd', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Wind-Up Arsenal Zenmaioh', title: 'Zenmaioh', color: '#fbbf24', face: [0.5, 0.3], pan: [0.22, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['penguin'] = {
+        kind: 'trail',
+        label: 'The Penguin art trail',
+        stops: [
+            { card: 'Penguin Soldier', title: 'Penguin Soldier', color: '#93c5fd', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Penguin Knight', title: 'Penguin Knight', color: '#bae6fd', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Nightmare Penguin', title: 'Nightmare', color: '#a5b4fc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Penguin Torpedo', title: 'Torpedo', color: '#f87171', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'The Great Emperor Penguin', title: 'Great Emperor', color: '#fde68a', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Flying Penguin', title: 'Flying', color: '#7dd3fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Bolt Penguin', title: 'Bolt', color: '#fef08a', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Guard Penguin', title: 'Guard', color: '#e5e7eb', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Nopenguin', title: 'Nopenguin', color: '#cbd5e1', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Penguin Brave', title: 'Penguin Brave', color: '#38bdf8', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Penguin Squire', title: 'Squire', color: '#fdba74', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Penguin Ninja', title: 'Ninja', color: '#a8a29e', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Penguin Cleric', title: 'Cleric', color: '#fef9c3', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Royal Penguins Garden', title: 'Royal Garden', color: '#86efac', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'First Penguin', title: 'First Penguin', color: '#0ea5e9', face: [0.5, 0.4], pan: [0.32, 0.55] }
+        ]
+    };
+
+    window.LoreReelData['gizmek'] = {
+        kind: 'trail',
+        label: 'The Gizmek art trail',
+        stops: [
+            { card: 'Sacred Scrolls of the Gizmek Legend', title: 'The scrolls', color: '#fde68a', face: [0.5, 0.45], pan: [0.37, 0.6] },
+            { card: 'Gizmek Orochi, the Serpentron Sky Slasher', title: 'Orochi', color: '#a5f3fc', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gizmek Kaku, the Supreme Shining Sky Stag', title: 'Kaku', color: '#f87171', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Gizmek Okami, the Dreaded Deluge Dragon', title: 'Okami', color: '#7dd3fc', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Gizmek Inaba, the Hopping Hare of Hakuto', title: 'Inaba', color: '#f5f5f4', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gizmek Uka, the Festive Fox of Fecundity', title: 'Uka', color: '#fdba74', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gizmek Makami, the Ferocious Fanged Fortress', title: 'Makami', color: '#c4b5fd', face: [0.7, 0.35], pan: [0.27, 0.5] },
+            { card: 'Gizmek Yata, the Gleaming Vanguard', title: 'Yata', color: '#facc15', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Gizmek Naganaki, the Sunrise Signaler', title: 'Naganaki', color: '#fef9c3', face: [0.6, 0.3], pan: [0.22, 0.45] },
+            { card: 'Gizmek Taniguku, the Immobile Intellect', title: 'Taniguku', color: '#86efac', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Gizmek Arakami, the Hailbringer Hog', title: 'Arakami', color: '#d6d3d1', face: [0.65, 0.4], pan: [0.32, 0.55] }
+        ]
+    };
+
+    window.LoreReelData['dinowrestler'] = {
+        kind: 'trail',
+        label: 'The Dinowrestler art trail',
+        stops: [
+            { card: 'Dinowrestler Pankratops', title: 'Pankratops', color: '#f87171', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Capoeiraptor', title: 'Capoeiraptor', color: '#fdba74', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Coelasilat', title: 'Coelasilat', color: '#86efac', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Eskrimamenchi', title: 'Eskrima\u00ADmenchi', color: '#bef264', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Capaptera', title: 'Capaptera', color: '#a5f3fc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Systegosaur', title: 'Systegosaur', color: '#fde68a', face: [0.55, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Iguanodraka', title: 'Iguanodraka', color: '#a3e635', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Rambrachio', title: 'Rambrachio', color: '#d6d3d1', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Martial Ankylo', title: 'Martial Ankylo', color: '#a8a29e', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Dinowrestler Valeonyx', title: 'Valeonyx', color: '#fca5a5', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler Giga Spinosavate', title: 'Spinosavate', color: '#fb923c', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Dinowrestler Terra Parkourio', title: 'Terra Parkourio', color: '#93c5fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dinowrestler King T Wrextle', title: 'King T Wrextle', color: '#ef4444', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Dinowrestler Chimera T Wrextle', title: 'Chimera T Wrextle', color: '#dc2626', face: [0.5, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['predaplant'] = {
+        kind: 'trail',
+        label: 'The Predaplant art trail',
+        stops: [
+            { card: 'Predaplant Flytrap', title: 'Flytrap', color: '#86efac', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Predaplant Darlingtonia Cobra', title: 'Darlingtonia Cobra', color: '#4ade80', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Predaplant Moray Nepenthes', title: 'Moray Nepenthes', color: '#5eead4', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Predaplant Squid Drosera', title: 'Squid Drosera', color: '#f9a8d4', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Predaplant Sarraceniant', title: 'Sarrace\u00ADniant', color: '#bef264', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Predaplant Ophrys Scorpio', title: 'Ophrys Scorpio', color: '#fdba74', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Predaplant Spinodionaea', title: 'Spinodionaea', color: '#a3e635', face: [0.4, 0.35], pan: [0.27, 0.5] },
+            { card: 'Predaplant Pterapenthes', title: 'Ptera\u00ADpenthes', color: '#7dd3fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Predaplant Spider Orchid', title: 'Spider Orchid', color: '#fde047', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Predaplant Cordyceps', title: 'Cordyceps', color: '#d6d3d1', face: [0.3, 0.2], pan: [0.12, 0.35] },
+            { card: 'Predaplant Banksiogre', title: 'Banksiogre', color: '#fca5a5', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Predaplant Chimerafflesia', title: 'Chimeraf\u00ADflesia', color: '#a78bfa', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Predaplant Dragostapelia', title: 'Drago\u00ADstapelia', color: '#c084fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Predaplant Triphyoverutum', title: 'Triphyo\u00ADverutum', color: '#e879f9', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Predaplant Verte Anaconda', title: 'Verte Anaconda', color: '#22c55e', face: [0.45, 0.45], pan: [0.37, 0.6] }
+        ]
+    };
+
+    window.LoreReelData['resonator'] = {
+        kind: 'trail',
+        label: 'The Resonator art trail',
+        stops: [
+            { card: 'Dark Resonator', title: 'Dark Resonator', color: '#f87171', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Darkness Resonator', title: 'Darkness', color: '#b91c1c', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Resonator Command', title: 'Command', color: '#fca5a5', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Crimson Resonator', title: 'Crimson', color: '#ef4444', face: [0.5, 0.52], pan: [0.44, 0.65] },
+            { card: 'Clock Resonator', title: 'Clock', color: '#fde68a', face: [0.5, 0.72], pan: [0.64, 0.65] },
+            { card: 'Double Resonator', title: 'Double', color: '#fdba74', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Flare Resonator', title: 'Flare', color: '#fb923c', face: [0.5, 0.42], pan: [0.34, 0.57] },
+            { card: 'Force Resonator', title: 'Force', color: '#a78bfa', face: [0.6, 0.55], pan: [0.47, 0.65] },
+            { card: 'Synkron Resonator', title: 'Synkron', color: '#93c5fd', face: [0.5, 0.5], pan: [0.42, 0.65] },
+            { card: 'Soul Resonator', title: 'Soul', color: '#fef08a', face: [0.5, 0.42], pan: [0.34, 0.57] },
+            { card: 'Vision Resonator', title: 'Vision', color: '#c4b5fd', face: [0.5, 0.48], pan: [0.4, 0.63] }
+        ]
+    };
+
+    window.LoreReelData['battlewasp'] = {
+        kind: 'trail',
+        label: 'The Battlewasp art trail',
+        stops: [
+            { card: 'Battlewasp - Sting the Poison', title: 'Sting', color: '#fde047', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Battlewasp - Dart the Hunter', title: 'Dart', color: '#fef08a', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Battlewasp - Pin the Bullseye', title: 'Pin', color: '#facc15', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Battlewasp - Twinbow the Attacker', title: 'Twinbow', color: '#fcd34d', face: [0.55, 0.45], pan: [0.37, 0.6] },
+            { card: 'Battlewasp - Arbalest the Rapidfire', title: 'Arbalest', color: '#fbbf24', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Battlewasp - Nest', title: 'Nest', color: '#fdba74', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Battlewasp - Azusa the Ghost Bow', title: 'Azusa', color: '#e9d5ff', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlewasp - Hama the Conquering Bow', title: 'Hama', color: '#a5f3fc', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlewasp - Sachi the Ceremonial Bow', title: 'Sachi', color: '#f97316', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlewasp - Halberd the Charge', title: 'Halberd', color: '#d6d3d1', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Battlewasp - Rapier the Onslaught', title: 'Rapier', color: '#e5e7eb', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Battlewasp - Ballista the Armageddon', title: 'Ballista', color: '#ef4444', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Battlewasp - Grand Partisan the Revolution', title: 'Grand Partisan', color: '#dc2626', face: [0.5, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['altergeist'] = {
+        kind: 'trail',
+        label: 'The Altergeist art trail',
+        stops: [
+            { card: 'Altergeist Primebanshee', title: 'Primebanshee', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Marionetter', title: 'Marionetter', color: '#f0abfc', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Meluseek', title: 'Meluseek', color: '#7dd3fc', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Altergeist Silquitous', title: 'Silquitous', color: '#e9d5ff', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Altergeist Multifaker', title: 'Multifaker', color: '#f9a8d4', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Pixiel', title: 'Pixiel', color: '#bef264', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Altergeist Hexstia', title: 'Hexstia', color: '#fb923c', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Kunquery', title: 'Kunquery', color: '#a5b4fc', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Altergeist Fifinellag', title: 'Fifinellag', color: '#86efac', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Altergeist Fijialert', title: 'Fijialert', color: '#5eead4', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Kidolga', title: 'Kidolga', color: '#fca5a5', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Memorygant', title: 'Memorygant', color: '#a78bfa', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Altergeist Dragvirion', title: 'Dragvirion', color: '#d8b4fe', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'Altergeist Adminia', title: 'Adminia', color: '#fde68a', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Altergeist Malwisp', title: 'Malwisp', color: '#cbd5e1', face: [0.5, 0.2], pan: [0.12, 0.35] }
         ]
     };
 })();

@@ -70,6 +70,24 @@ sitemapXml += `  <url>
   </url>
 `;
 
+// Site pages that aren't archetypes, so archetypes-data.js doesn't list them.
+const staticPages = [
+    ['pages/Banlist.html', 'weekly', '0.9'],
+    ['pages/Card-Browser.html', 'monthly', '0.6'],
+    ['pages/Replay-Analyzer.html', 'monthly', '0.6'],
+    ['pages/Replay-Converter.html', 'monthly', '0.6'],
+    ['pages/Contributing.html', 'yearly', '0.3']
+];
+staticPages.forEach(([page, changefreq, priority]) => {
+    sitemapXml += `  <url>
+    <loc>${baseUrl}/${page}</loc>
+    <lastmod>${currentDate}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>
+`;
+});
+
 // Add all archetype pages (with deduplication)
 const processedPaths = new Set();
 let duplicateCount = 0;

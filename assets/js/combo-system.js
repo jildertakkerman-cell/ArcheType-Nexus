@@ -1657,16 +1657,16 @@ class DuelSimulator {
 
             <div class="sim-controls">
                 <button class="sim-btn sim-btn-nav btn-reset"><i class="fas fa-undo"></i> Reset</button>
-                <button class="sim-btn sim-btn-nav btn-prev"><i class="fas fa-step-backward"></i></button>
+                <button class="sim-btn sim-btn-nav btn-prev" title="Previous step" aria-label="Previous step"><i class="fas fa-step-backward" aria-hidden="true"></i></button>
                 <button class="sim-btn sim-btn-play btn-play"><i class="fas fa-play"></i> Play</button>
-                <button class="sim-btn sim-btn-nav btn-next"><i class="fas fa-step-forward"></i></button>
+                <button class="sim-btn sim-btn-nav btn-next" title="Next step" aria-label="Next step"><i class="fas fa-step-forward" aria-hidden="true"></i></button>
                 <button class="sim-btn sim-btn-nav btn-gy" title="View Graveyard"><i class="fas fa-skull"></i> GY</button>
                 <button class="sim-btn sim-btn-nav btn-banish" title="View Banished Cards"><i class="fas fa-fire"></i> Banish</button>
                 <button class="sim-btn sim-btn-sound btn-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
             </div>
             <div class="sim-settings">
                 <i class="fas fa-tachometer-alt" style="color:var(--text-muted); font-size: 0.8rem;"></i>
-                <input type="range" class="sim-speed" min="400" max="2400" step="200" value="1600" style="flex:1;" title="Playback Speed">
+                <input type="range" class="sim-speed" min="400" max="2400" step="200" value="1600" style="flex:1;" title="Playback Speed" aria-label="Playback speed">
             </div>
             <div class="sim-last-effect" style="display:none;">
                 <div class="sim-last-effect-header">
@@ -1676,12 +1676,12 @@ class DuelSimulator {
                 <div class="sim-last-effect-cardname"></div>
                 <div class="sim-last-effect-text"></div>
             </div>
-            <div class="sim-log"><div class="log-entry" style="color:#94a3b8">Ready to duel.</div></div>
+            <div class="sim-log" tabindex="0" role="log" aria-label="Combo log"><div class="log-entry" style="color:#94a3b8">Ready to duel.</div></div>
         `;
 
         const b = document.createElement('div');
         b.innerHTML = 'BETA';
-        b.style.cssText = 'position:absolute; top:10px; right:10px; background:#ef4444; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:10; pointer-events:none;';
+        b.style.cssText = 'position:absolute; top:10px; right:10px; background:#dc2626; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3); z-index:10; pointer-events:none;';
         container.appendChild(b);
 
         container.querySelector('.btn-reset').onclick = () => this.loadCombo(this.currentComboId);

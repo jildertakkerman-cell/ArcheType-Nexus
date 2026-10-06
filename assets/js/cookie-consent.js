@@ -99,6 +99,27 @@
         `;
         iconButton.addEventListener('click', showBanner);
         document.body.appendChild(iconButton);
+        tuckIconWhileReading();
+    }
+
+    /**
+     * The icon sits in a corner over the page, so it steps aside while the reader
+     * scrolls down and comes back when they scroll up or reach the top.
+     */
+    function tuckIconWhileReading() {
+        var lastY = window.scrollY;
+        var ticking = false;
+        window.addEventListener('scroll', function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(function () {
+                ticking = false;
+                var y = window.scrollY;
+                if (Math.abs(y - lastY) < 6) return;
+                iconButton.classList.toggle('is-tucked', y > lastY && y > 200);
+                lastY = y;
+            });
+        }, { passive: true });
     }
 
     /**

@@ -94,7 +94,9 @@ function _pcsInjectStyle() {
         .pcs-toolbar {
             display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; min-height: 1.1rem;
             margin: -0.35rem 0 0.35rem; font-size: 0.68rem;
-            opacity: 0.45; transition: opacity 0.15s ease;
+            /* Dimmed until hover, but still readable (4.5:1) on the dark page backgrounds,
+               and touch screens never hover. */
+            opacity: 0.85; transition: opacity 0.15s ease;
         }
         /* Combo-walkthrough sections center their content (see the intro
            paragraph's text-center above them); a left-stuck toolbar there

@@ -4811,6 +4811,17 @@ window.CardLoader = (function () {
     };
 })();
 
+// Word hints for new players: deck pages load assets/js/glossary-hints.js, which links
+// glossary words in the text to the Beginner's Guide. It decides for itself whether to run.
+(function () {
+    var src = document.currentScript && document.currentScript.src;
+    if (!src || !/Deck%20Analysis\.html$|Deck Analysis\.html$/.test(location.pathname)) return;
+    var s = document.createElement('script');
+    s.src = new URL('glossary-hints.js', src).href;
+    s.defer = true;
+    document.head.appendChild(s);
+})();
+
 // Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

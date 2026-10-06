@@ -236,7 +236,7 @@
 
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.4s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Foundational Combo</h2>
-             <p class="text-amber-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how one card, <strong class="text-accent font-bold">Swordsoul of Mo Ye</strong>, can lead to a powerful end board.</p>
+             <p class="text-amber-100 mb-8 text-center max-w-2xl mx-auto">This walkthrough shows how <strong class="text-accent font-bold">Swordsoul of Mo Ye</strong>, plus one more Swordsoul card or Wyrm in hand for it to reveal, can lead to a powerful end board.</p>
             <div class="flex flex-col items-center gap-6">
                 <div class="card p-6 combo-step-card w-full max-w-lg">
                      <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
@@ -285,6 +285,55 @@
                 </div>
             </div>
         </section>
+
+        <!-- Combo lab: the two-card line from the Beginner's Guide, sharing its JSON
+             (assets/data/combos/beginners-guide-combos.json). Loads when scrolled near. -->
+        <section class="mb-10 md:mb-16" id="swordsoul-lab-section" data-pcs-scope="swordsoul-combo-lab" data-suggest-context="Combo simulator: a two-card line">
+            <h2 class="text-xl md:text-3xl font-bold text-white mb-2 text-center heading-underline">Step Through a Two-Card Line</h2>
+            <p class="text-amber-100 mb-6 text-center max-w-2xl mx-auto">Swordsoul of Mo Ye and Swordsoul Strategist Longyuan become Swordsoul Grandmaster - Chixiao and Swordsoul Sinister Sovereign - Qixing Longyuan. Each step is labelled with the term players use for it, as in the <a class="text-accent underline" href="Beginners-Guide.html#nb-modern">Beginner's Guide</a>.</p>
+            <div id="swordsoul-combo-lab" class="max-w-5xl mx-auto" data-combo-system>
+                <p class="text-center text-amber-100 opacity-80">The combo simulator loads as you scroll here.</p>
+            </div>
+        </section>
+        <script>
+            (function () {
+                'use strict';
+                var lab = document.getElementById('swordsoul-combo-lab');
+                if (!lab) return;
+                var started = false;
+                function load(src) {
+                    return new Promise(function (resolve, reject) {
+                        var s = document.createElement('script');
+                        s.src = src;
+                        s.onload = resolve;
+                        s.onerror = reject;
+                        document.head.appendChild(s);
+                    });
+                }
+                // This page had no combo lab, so the simulator's stylesheet and scripts are
+                // fetched only when a reader gets close to it.
+                function start() {
+                    if (started) return;
+                    started = true;
+                    var css = document.createElement('link');
+                    css.rel = 'stylesheet';
+                    css.href = '../assets/css/Visualizer_Styles.css';
+                    document.head.appendChild(css);
+                    load('../assets/js/combo-system.js')
+                        .then(function () { return load('../assets/js/combo-sounds.js').catch(function () { }); })
+                        .then(function () {
+                            // ComboLoader is a top-level class, not a window property.
+                            if (typeof ComboLoader !== 'undefined') return ComboLoader.renderComboSystem('swordsoul-combo-lab', 'beginners-guide');
+                        })
+                        .catch(function () { lab.textContent = 'The combo simulator didn\'t load. Reload the page to try again.'; });
+                }
+                if (!('IntersectionObserver' in window)) { start(); return; }
+                var io = new IntersectionObserver(function (entries) {
+                    if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); start(); }
+                }, { rootMargin: '700px 0px' });
+                io.observe(lab);
+            })();
+        </script>
 
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.6s;">
             <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">The Final Endboard</h2>

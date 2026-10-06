@@ -1,0 +1,2690 @@
+    <script>
+        (function () {
+            'use strict';
+
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var scrollBehavior = reduceMotion ? 'auto' : 'smooth';
+            var STORE_LEARNED = 'nb-guide-learned';
+            var STORE_PATH = 'nb-guide-path';
+            var STORE_READ = 'nb-guide-read';
+            var STORE_FRAME = 'nb-guide-frame-best';
+            var STORE_FOLD = 'nb-guide-fold';
+
+            // Set by the widgets that other parts of the page can drive.
+            var fieldApi = null;
+            var practiceApi = null;
+            var progressApi = null;
+            var foldApi = null;
+            var modernApi = null;
+
+            // Analytics events. google-analytics.js runs Consent Mode, so the visitor's
+            // cookie choice decides what is stored.
+            function track(name, params) {
+                try { if (typeof window.gtag === 'function') window.gtag('event', name, params || {}); } catch (e) { }
+            }
+
+            // ---------- Small helpers ----------
+            function $(sel, root) { return (root || document).querySelector(sel); }
+            function $$(sel, root) { return [].slice.call((root || document).querySelectorAll(sel)); }
+            function el(tag, cls, text) {
+                var node = document.createElement(tag);
+                if (cls) node.className = cls;
+                if (text !== undefined && text !== null) node.textContent = text;
+                return node;
+            }
+            function button(cls, text) {
+                var b = el('button', cls, text);
+                b.type = 'button';
+                return b;
+            }
+            function shuffle(list) {
+                var a = list.slice();
+                for (var i = a.length - 1; i > 0; i--) {
+                    var j = Math.floor(Math.random() * (i + 1));
+                    var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+                }
+                return a;
+            }
+            function pick(list) { return list[Math.floor(Math.random() * list.length)]; }
+            function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+            // Smooth scrolling across half the page takes seconds, so long jumps are
+            // instant. Returns true when it jumped.
+            function scrollToNode(node, block) {
+                // Anything the page jumps to opens first if its section is folded.
+                if (foldApi) foldApi.reveal(node);
+                var far = Math.abs(node.getBoundingClientRect().top) > window.innerHeight * 3;
+                node.scrollIntoView({ behavior: far ? 'auto' : scrollBehavior, block: block || 'start' });
+                return far || reduceMotion;
+            }
+            // Browser storage only holds conveniences (learned words, the start
+            // picker); a private window or blocked storage just starts fresh.
+            function load(key, fallback) {
+                try {
+                    var v = localStorage.getItem(key);
+                    return v === null ? fallback : JSON.parse(v);
+                } catch (e) { return fallback; }
+            }
+            function save(key, value) {
+                try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { }
+            }
+
+            // Card art, loaded when its section gets close to the screen.
+            var CARD_TYPE_ART = {
+                'ct-normal-img-container': 'Blue-Eyes White Dragon',
+                'ct-effect-img-container': 'Kuriboh',
+                'ct-ritual-img-container': 'Black Luster Soldier',
+                'ct-pendulum-img-container': 'Odd-Eyes Pendulum Dragon',
+                'ct-spell-img-container': 'Dark Hole',
+                'ct-trap-img-container': 'Mirror Force',
+                'ct-fusion-img-container': 'Blue-Eyes Ultimate Dragon',
+                'ct-synchro-img-container': 'Stardust Dragon',
+                'ct-xyz-img-container': 'Number 39: Utopia',
+                'ct-link-img-container': 'Decode Talker'
+            };
+            var BANLIST_ART = {
+                'ban-forbidden-img-container': 'Pot of Greed',
+                'ban-limited-img-container': "Harpie's Feather Duster",
+                'ban-semi-img-container': 'Droll & Lock Bird',
+                'ban-unlimited-img-container': 'Ash Blossom & Joyous Spring'
+            };
+
+            var CAT_LABELS = {
+                basics: 'Game basics',
+                effects: 'Effects & rulings',
+                roles: 'Card roles',
+                actions: 'Actions',
+                strategy: 'Strategy',
+                community: 'Community'
+            };
+
+            // ---------- The glossary is the one source of every word ----------
+            var TERMS = [];
+            var TERM_BY_ID = {};
+
+            function indexTerms() {
+                TERMS = $$('#glossary .term').map(function (node) {
+                    var name = $('.term__name', node);
+                    var short = $('.term__short', node);
+                    return {
+                        id: node.id.slice(5),
+                        node: node,
+                        name: name ? name.textContent.trim() : node.id,
+                        short: short ? short.textContent.trim() : '',
+                        cat: node.dataset.cat,
+                        core: node.hasAttribute('data-core')
+                    };
+                });
+                TERMS.forEach(function (t) { TERM_BY_ID[t.id] = t; });
+            }
+
+            // After an approved community edit a paragraph may lose its class, so
+            // fall back to the entry's first paragraph.
+            function termDefNode(t) {
+                return t.node.querySelector('.term__def') || t.node.querySelector('.term__body p');
+            }
+
+            function catColor(t) {
+                return getComputedStyle(t.node).getPropertyValue('--cat').trim();
+            }
+
+            // Wrong answers for a quiz: same category first, so the choice is a real one.
+            function distractors(t, n) {
+                var same = shuffle(TERMS.filter(function (o) { return o.id !== t.id && o.cat === t.cat; }));
+                var other = shuffle(TERMS.filter(function (o) { return o.id !== t.id && o.cat !== t.cat; }));
+                return same.concat(other).slice(0, n);
+            }
+
+            // ---------- Learned words ----------
+            var learned = {};
+            var learnedListeners = [];
+
+            function initLearned() {
+                var saved = load(STORE_LEARNED, []);
+                if (Array.isArray(saved)) {
+                    saved.forEach(function (id) { if (TERM_BY_ID[id]) learned[id] = true; });
+                }
+            }
+
+            function learnedCount(list) {
+                return (list || TERMS).filter(function (t) { return learned[t.id]; }).length;
+            }
+
+            function setLearned(id, on) {
+                if (!TERM_BY_ID[id]) return;
+                if (on) learned[id] = true;
+                else delete learned[id];
+                save(STORE_LEARNED, Object.keys(learned));
+                renderLearned();
+            }
+
+            function renderLearned() {
+                TERMS.forEach(function (t) {
+                    var on = !!learned[t.id];
+                    t.node.classList.toggle('is-learned', on);
+                    var done = $('.term__done', t.node);
+                    if (done) done.hidden = !on;
+                    var box = $('.term__learn', t.node);
+                    if (box) box.setAttribute('aria-checked', on ? 'true' : 'false');
+                });
+                learnedListeners.forEach(function (fn) { fn(); });
+            }
+
+            // ---------- Card popups ----------
+            function hasCardLoader() {
+                return typeof CardLoader !== 'undefined' && typeof CardLoader.loadCards === 'function';
+            }
+
+            function loadWhenNear(sectionId, art) {
+                var section = document.getElementById(sectionId);
+                if (!section || !hasCardLoader()) return;
+                if (!('IntersectionObserver' in window)) {
+                    CardLoader.loadCards(art);
+                    return;
+                }
+                var io = new IntersectionObserver(function (entries) {
+                    if (entries.some(function (entry) { return entry.isIntersecting; })) {
+                        io.disconnect();
+                        CardLoader.loadCards(art);
+                    }
+                }, { rootMargin: '600px 0px' });
+                io.observe(section);
+            }
+
+            // Inline card names open the shared card popup (fetching the card first
+            // when its art isn't on the page). Bound per element and stopped here,
+            // because CardLoader closes the popup on any document click. They're
+            // spans with role="button" so long names wrap inside the sentence.
+            function openCardPopup(node, event) {
+                if (!window.CardLoader || typeof CardLoader.showPopupByName !== 'function') return;
+                event.preventDefault();
+                event.stopPropagation();
+                var source = event;
+                // Keyboard activation has no pointer position; anchor the popup to the name instead.
+                if (!event.clientX && !event.clientY) {
+                    var rect = node.getBoundingClientRect();
+                    source = {
+                        clientX: rect.left + rect.width / 2,
+                        clientY: rect.bottom,
+                        target: node,
+                        stopPropagation: function () { }
+                    };
+                }
+                CardLoader.showPopupByName(node.dataset.cardname, source);
+            }
+
+            function bindCardRefs(root) {
+                $$('.card-ref[data-cardname]', root).forEach(function (node) {
+                    if (node.dataset.nbBound) return;
+                    node.dataset.nbBound = 'true';
+                    node.addEventListener('click', function (event) { openCardPopup(node, event); });
+                    node.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter' || event.key === ' ') openCardPopup(node, event);
+                    });
+                });
+            }
+
+            // ---------- On-page nav: current section and reading progress ----------
+            function initToc() {
+                var bar = document.getElementById('nb-read-progress');
+                if (bar) {
+                    var ticking = false;
+                    var update = function () {
+                        ticking = false;
+                        var max = document.documentElement.scrollHeight - window.innerHeight;
+                        var pct = max > 0 ? Math.min(100, Math.max(0, window.scrollY / max * 100)) : 0;
+                        bar.style.width = pct + '%';
+                    };
+                    window.addEventListener('scroll', function () {
+                        if (!ticking) {
+                            ticking = true;
+                            requestAnimationFrame(update);
+                        }
+                    }, { passive: true });
+                    window.addEventListener('resize', update);
+                    update();
+                }
+
+                // Mark the bar once it sticks, so the CSS can put a solid band behind it.
+                var toc = $('.nb-toc');
+                if (toc) {
+                    var stickTop = 0;
+                    var stuckTicking = false;
+                    var checkStuck = function () {
+                        stuckTicking = false;
+                        toc.classList.toggle('is-stuck', window.scrollY > 0 && toc.getBoundingClientRect().top <= stickTop + 0.5);
+                    };
+                    var measureToc = function () {
+                        stickTop = parseFloat(getComputedStyle(toc).top) || 0;
+                        toc.style.setProperty('--nb-toc-h', toc.offsetHeight + 'px');
+                        checkStuck();
+                    };
+                    window.addEventListener('scroll', function () {
+                        if (!stuckTicking) {
+                            stuckTicking = true;
+                            requestAnimationFrame(checkStuck);
+                        }
+                    }, { passive: true });
+                    window.addEventListener('resize', measureToc);
+                    measureToc();
+                }
+
+                var links = $$('.nb-toc a[href^="#"]');
+                if (!links.length || !('IntersectionObserver' in window)) return;
+                var byId = {};
+                links.forEach(function (link) { byId[link.getAttribute('href').slice(1)] = link; });
+                var current = null;
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (!entry.isIntersecting) return;
+                        var link = byId[entry.target.id];
+                        if (!link || link === current) return;
+                        if (current) current.removeAttribute('aria-current');
+                        link.setAttribute('aria-current', 'true');
+                        current = link;
+                        var list = link.closest('.nb-toc__list');
+                        if (list) list.scrollTo({ left: link.offsetLeft - 16, behavior: scrollBehavior });
+                    });
+                }, { rootMargin: '-35% 0px -60% 0px' });
+                Object.keys(byId).forEach(function (id) {
+                    var section = document.getElementById(id);
+                    if (section) io.observe(section);
+                });
+            }
+
+            function initReadingTimes() {
+                $$('section[data-readtime]').forEach(function (section) {
+                    var kicker = $('.nb-kicker', section);
+                    if (!kicker) return;
+                    var words = (section.innerText || section.textContent).split(/\s+/).filter(Boolean).length;
+                    var minutes = Math.max(1, Math.round(words / 200));
+                    kicker.appendChild(el('span', 'nb-readtime', '· ' + minutes + ' min read'));
+                });
+            }
+
+            // ---------- Start picker ----------
+            var PATH_SECTIONS = {
+                'new': ['basics', 'field', 'cards', 'read-card', 'turn', 'decoder', 'practice'],
+                'md': ['first-deck', 'where-to-play', 'banlist', 'glossary'],
+                'back': ['field', 'cards', 'decoder', 'nicknames', 'glossary', 'banlist']
+            };
+
+            // Sections every reader keeps open: the start, the FAQ and the reference.
+            var NEVER_FOLD = ['start', 'faq', 'glossary', 'resources'];
+
+            function initPicker() {
+                var root = document.getElementById('nb-picker');
+                if (!root) return;
+                var options = $$('.nb-picker__opt', root);
+                var paths = $$('.nb-path', root);
+                var tocLinks = $$('.nb-toc a[href^="#"]');
+                var current = null;
+
+                // Once a path is picked, the sections off it fold down to their
+                // "In short" box. Opening one (its button, a link or a jump) keeps it
+                // open for this visit.
+                var foldOn = load(STORE_FOLD, true) !== false;
+                var opened = {};
+                var allNote = $('.nb-fold-all', root);
+                var foldable = $$('section.nb-section[id]').filter(function (s) { return NEVER_FOLD.indexOf(s.id) === -1; });
+                foldable.forEach(function (section) {
+                    // Added before the suggestion system walks the page, and always
+                    // present, so its wrapping is the same with or without a path.
+                    var bar = el('div', 'nb-fold');
+                    bar.hidden = true;
+                    bar.setAttribute('data-pcs-skip', '');
+                    bar.appendChild(el('span', 'nb-fold__note', "Not on your path, so it's folded to the summary."));
+                    var open = button('nb-btn nb-fold__btn', 'Show the full section ');
+                    open.appendChild(el('i', 'fas fa-chevron-down')).setAttribute('aria-hidden', 'true');
+                    open.addEventListener('click', function () {
+                        opened[section.id] = true;
+                        applyFold();
+                        var h = $('.nb-h2', section);
+                        if (h) {
+                            h.setAttribute('tabindex', '-1');
+                            h.focus({ preventScroll: true });
+                        }
+                    });
+                    bar.appendChild(open);
+                    section.appendChild(bar);
+                    section.nbFoldBar = bar;
+                });
+
+                function applyFold() {
+                    var keep = PATH_SECTIONS[current];
+                    foldable.forEach(function (s) {
+                        var fold = !!keep && foldOn && keep.indexOf(s.id) === -1 && !opened[s.id];
+                        s.classList.toggle('is-folded', fold);
+                        s.nbFoldBar.hidden = !fold;
+                    });
+                    if (allNote) {
+                        allNote.hidden = !keep;
+                        $('.nb-fold-all__text', allNote).textContent = foldOn ? 'Sections off this path are folded to their summary.' : 'Every section is open.';
+                        $('.nb-fold-all__btn', allNote).textContent = foldOn ? 'Show every section' : 'Fold the others again';
+                    }
+                    if (progressApi) progressApi.render();
+                }
+
+                if (allNote) {
+                    $('.nb-fold-all__btn', allNote).addEventListener('click', function () {
+                        foldOn = !foldOn;
+                        opened = {};
+                        save(STORE_FOLD, foldOn);
+                        applyFold();
+                    });
+                }
+
+                // Returns true when it had to open a section.
+                function reveal(node) {
+                    var section = node && node.closest ? node.closest('section.nb-section.is-folded') : null;
+                    if (!section) return false;
+                    opened[section.id] = true;
+                    applyFold();
+                    return true;
+                }
+
+                // Links open their target's section before the browser scrolls to it.
+                document.addEventListener('click', function (event) {
+                    var a = event.target.closest ? event.target.closest('a[href^="#"]') : null;
+                    if (!a) return;
+                    var id = decodeURIComponent(a.getAttribute('href').slice(1));
+                    var target = id ? document.getElementById(id) : null;
+                    if (target) reveal(target);
+                }, true);
+
+                // A shared link straight to a section opens it.
+                var hashTarget = location.hash.length > 1 ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+                var hashSection = hashTarget && hashTarget.closest('section.nb-section[id]');
+                if (hashSection) opened[hashSection.id] = true;
+
+                foldApi = { reveal: reveal };
+
+                function choose(key, remember) {
+                    current = key;
+                    options.forEach(function (o) { o.setAttribute('aria-pressed', o.dataset.path === key ? 'true' : 'false'); });
+                    paths.forEach(function (p) { p.hidden = p.dataset.path !== key; });
+                    var suggested = PATH_SECTIONS[key] || [];
+                    tocLinks.forEach(function (a) {
+                        a.classList.toggle('is-suggested', suggested.indexOf(a.getAttribute('href').slice(1)) !== -1);
+                    });
+                    applyFold();
+                    if (remember) {
+                        save(STORE_PATH, key || null);
+                        track('guide_path', { path: key || 'none' });
+                    }
+                }
+
+                options.forEach(function (o) {
+                    o.addEventListener('click', function () {
+                        var already = o.getAttribute('aria-pressed') === 'true';
+                        choose(already ? null : o.dataset.path, true);
+                    });
+                });
+                var saved = load(STORE_PATH, null);
+                if (saved && PATH_SECTIONS[saved]) choose(saved, false);
+            }
+
+            // ---------- Definitions where the word is used ----------
+            var pop = null;
+            var popLink = null;
+            var popTimer = null;
+
+            function buildPopover() {
+                pop = el('div', 'nb-pop');
+                pop.hidden = true;
+                pop.setAttribute('role', 'dialog');
+                pop.setAttribute('aria-label', 'Word definition');
+                pop.innerHTML =
+                    '<button type="button" class="nb-pop__close" aria-label="Close"><i class="fas fa-times" aria-hidden="true"></i></button>' +
+                    '<p class="nb-pop__cat"></p><p class="nb-pop__name"></p><p class="nb-pop__short"></p>' +
+                    '<a class="nb-pop__more nb-jump" href="#glossary">Full entry in the glossary <i class="fas fa-arrow-down" aria-hidden="true"></i></a>';
+                document.body.appendChild(pop);
+                $('.nb-pop__close', pop).addEventListener('click', function () { closePopover(true); });
+                pop.addEventListener('mouseenter', function () { clearTimeout(popTimer); });
+                pop.addEventListener('mouseleave', function () { if (!pop.dataset.pinned) scheduleClose(); });
+            }
+
+            function positionPopover(link) {
+                var sheet = window.innerWidth <= 640;
+                pop.classList.toggle('is-sheet', sheet);
+                if (sheet) {
+                    pop.style.left = '';
+                    pop.style.top = '';
+                    return;
+                }
+                var r = link.getBoundingClientRect();
+                var w = pop.offsetWidth;
+                var h = pop.offsetHeight;
+                var left = Math.min(Math.max(12, r.left + r.width / 2 - w / 2), window.innerWidth - w - 12);
+                var top = r.bottom + 8;
+                if (top + h > window.innerHeight - 12 && r.top - h - 8 > 12) top = r.top - h - 8;
+                pop.style.left = (left + window.scrollX) + 'px';
+                pop.style.top = (top + window.scrollY) + 'px';
+            }
+
+            function openPopover(link, pinned) {
+                var t = TERM_BY_ID[link.getAttribute('href').slice(6)];
+                if (!t) return;
+                clearTimeout(popTimer);
+                popLink = link;
+                pop.dataset.pinned = pinned ? 'true' : '';
+                pop.style.setProperty('--cat', catColor(t));
+                $('.nb-pop__cat', pop).textContent = CAT_LABELS[t.cat] || '';
+                $('.nb-pop__name', pop).textContent = t.name;
+                $('.nb-pop__short', pop).textContent = t.short;
+                $('.nb-pop__more', pop).setAttribute('href', '#term-' + t.id);
+                pop.hidden = false;
+                positionPopover(link);
+            }
+
+            function closePopover(refocus) {
+                if (!pop || pop.hidden) return;
+                var link = popLink;
+                pop.hidden = true;
+                pop.dataset.pinned = '';
+                popLink = null;
+                if (refocus && link) link.focus();
+            }
+
+            function scheduleClose() {
+                clearTimeout(popTimer);
+                popTimer = setTimeout(function () { closePopover(false); }, 220);
+            }
+
+            function initPopovers() {
+                buildPopover();
+
+                document.addEventListener('click', function (event) {
+                    var link = event.target.closest('a[href^="#term-"]');
+                    if (!link) {
+                        if (!pop.hidden && !pop.contains(event.target)) closePopover(false);
+                        return;
+                    }
+                    var id = link.getAttribute('href').slice(1);
+                    if (!document.getElementById(id)) return;
+                    event.preventDefault();
+                    // Inside the glossary (and from "full entry" links) a word link
+                    // jumps to the entry; everywhere else it explains the word in place.
+                    if (link.classList.contains('nb-jump') || link.closest('#glossary')) {
+                        closePopover(false);
+                        goToTerm(id, true);
+                        return;
+                    }
+                    if (popLink === link && pop.dataset.pinned) {
+                        closePopover(false);
+                        return;
+                    }
+                    openPopover(link, true);
+                });
+
+                // Hover preview where there's a real pointer; a click pins it.
+                if (window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                    document.addEventListener('mouseover', function (event) {
+                        var link = event.target.closest && event.target.closest('main a[href^="#term-"]');
+                        if (!link || link.closest('#glossary') || link.classList.contains('nb-jump')) return;
+                        if (pop.dataset.pinned) return;
+                        clearTimeout(popTimer);
+                        popTimer = setTimeout(function () { openPopover(link, false); }, 250);
+                    });
+                    document.addEventListener('mouseout', function (event) {
+                        var link = event.target.closest && event.target.closest('main a[href^="#term-"]');
+                        if (!link || pop.dataset.pinned) return;
+                        var to = event.relatedTarget;
+                        if (to && (link.contains(to) || pop.contains(to))) return;
+                        scheduleClose();
+                    });
+                }
+
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape') closePopover(true);
+                });
+                window.addEventListener('resize', function () {
+                    if (!pop.hidden && popLink) positionPopover(popLink);
+                });
+            }
+
+            // ---------- Glossary ----------
+            var glossary = null;
+
+            function goToTerm(id, push) {
+                var t = TERM_BY_ID[id.replace(/^term-/, '')];
+                if (!t) return;
+                if (glossary) glossary.ensureVisible(t);
+                t.node.open = true;
+                t.node.classList.remove('is-flash');
+                void t.node.offsetWidth;
+                t.node.classList.add('is-flash');
+                scrollToNode(t.node, 'start');
+                if (push && location.hash !== '#term-' + t.id) history.pushState(null, '', '#term-' + t.id);
+            }
+
+            function initGlossary() {
+                var root = document.getElementById('glossary');
+                if (!root) return;
+                var input = document.getElementById('gl-search');
+                var countEl = document.getElementById('gl-count');
+                var emptyEl = document.getElementById('gl-empty');
+                var more = document.getElementById('gl-more');
+                var toggleAll = document.getElementById('gl-toggle-all');
+                var unlearnedN = document.getElementById('gl-unlearned-n');
+                var chips = $$('.gl-chip', root);
+                var groups = $$('.gl-group', root);
+                var filter = 'core';
+
+                function norm(s) {
+                    return (s || '').toLowerCase().replace(/[’']/g, '').replace(/\s+/g, ' ').trim();
+                }
+
+                function matches(t, q) {
+                    var head = norm(t.name + ', ' + t.node.dataset.alias);
+                    if (head.indexOf(q) !== -1) return true;
+                    // Full text only for 3+ letters, so "a" doesn't match everything.
+                    return q.length >= 3 && norm(t.node.textContent).indexOf(q) !== -1;
+                }
+
+                function inFilter(t) {
+                    if (filter === 'all') return true;
+                    if (filter === 'core') return t.core;
+                    if (filter === 'unlearned') return !learned[t.id];
+                    return t.cat === filter;
+                }
+
+                function syncToggleAll() {
+                    var visible = TERMS.filter(function (t) { return !t.node.hidden; });
+                    toggleAll.hidden = visible.length === 0;
+                    toggleAll.textContent = visible.some(function (t) { return !t.node.open; }) ? 'Open all' : 'Close all';
+                }
+
+                function apply() {
+                    var raw = input.value.trim();
+                    var q = norm(raw);
+                    var shown = 0;
+                    // A search always looks through every word, whatever the filter.
+                    TERMS.forEach(function (t) {
+                        var visible = q ? matches(t, q) : inFilter(t);
+                        t.node.hidden = !visible;
+                        if (visible) shown++;
+                    });
+                    groups.forEach(function (group) {
+                        var all = $$('.term', group).length;
+                        var visible = $$('.term:not([hidden])', group).length;
+                        group.hidden = !visible;
+                        // "4 of 24" while a filter or search hides some of the group.
+                        var count = $('.gl-group__count', group);
+                        if (count) count.textContent = visible < all ? visible + ' of ' + all : String(all);
+                    });
+                    emptyEl.hidden = shown !== 0;
+                    if (q) countEl.textContent = shown + (shown === 1 ? ' word matches' : ' words match') + ' "' + raw + '"';
+                    else if (filter === 'all') countEl.textContent = 'Showing all ' + TERMS.length + ' words';
+                    else if (filter === 'core') countEl.textContent = 'Showing the ' + shown + ' starred words to learn first';
+                    else if (filter === 'unlearned') countEl.textContent = shown ? shown + " words you haven't marked as learned" : "You've marked every word as learned";
+                    else countEl.textContent = 'Showing ' + shown + ' of ' + TERMS.length + ' words';
+                    more.hidden = !!q || filter === 'all';
+                    syncToggleAll();
+                }
+
+                function setFilter(value) {
+                    filter = value;
+                    chips.forEach(function (chip) {
+                        chip.setAttribute('aria-pressed', chip.dataset.filter === value ? 'true' : 'false');
+                    });
+                }
+
+                chips.forEach(function (chip) {
+                    chip.addEventListener('click', function () {
+                        input.value = '';
+                        setFilter(chip.dataset.filter);
+                        apply();
+                    });
+                });
+
+                var timer = null;
+                input.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(apply, 120);
+                });
+                input.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && input.value) {
+                        input.value = '';
+                        apply();
+                    }
+                });
+
+                document.getElementById('gl-show-all').addEventListener('click', function () {
+                    setFilter('all');
+                    apply();
+                });
+
+                toggleAll.addEventListener('click', function () {
+                    var visible = TERMS.filter(function (t) { return !t.node.hidden; });
+                    var open = visible.some(function (t) { return !t.node.open; });
+                    visible.forEach(function (t) { t.node.open = open; });
+                    syncToggleAll();
+                });
+                // "toggle" doesn't bubble, so listen while it travels down.
+                root.addEventListener('toggle', syncToggleAll, true);
+
+                // "I know this one"
+                function flipLearned(box) {
+                    var term = box.closest('.term');
+                    if (term) setLearned(term.id.slice(5), box.getAttribute('aria-checked') !== 'true');
+                }
+                root.addEventListener('click', function (event) {
+                    var box = event.target.closest('.term__learn');
+                    if (box) flipLearned(box);
+                });
+                root.addEventListener('keydown', function (event) {
+                    var box = event.target.closest && event.target.closest('.term__learn');
+                    if (box && (event.key === ' ' || event.key === 'Enter')) {
+                        event.preventDefault();
+                        flipLearned(box);
+                    }
+                });
+
+                learnedListeners.push(function () {
+                    unlearnedN.textContent = TERMS.length - learnedCount();
+                });
+
+                // Start-picker links that open the glossary on one kind of word.
+                document.addEventListener('click', function (event) {
+                    var link = event.target.closest('a[data-gl-filter]');
+                    if (!link) return;
+                    input.value = '';
+                    setFilter(link.dataset.glFilter);
+                    apply();
+                });
+
+                glossary = {
+                    ensureVisible: function (t) {
+                        if (!t.node.hidden) return;
+                        input.value = '';
+                        setFilter('all');
+                        apply();
+                    }
+                };
+                apply();
+            }
+
+            // ---------- Field diagram: zones and actions ----------
+            var ZONES = {
+                emz: ['Extra Monster Zone (EMZ)', 'The two zones in the middle of the table, shared by both players. You can only use one of them. Link Monsters, and face-up Pendulum Monsters coming from the Extra Deck, must be Summoned here or to a zone a Link Monster\'s arrow points to. Fusion, Synchro and Xyz Monsters can go straight into your Main Monster Zones.'],
+                monster: ['Main Monster Zones', 'Five zones for your monsters. A monster sits upright in Attack Position, sideways in Defense Position, or face-down sideways if it was Set.'],
+                spelltrap: ['Spell & Trap Zones', 'Five zones for Spell and Trap Cards, also called your backrow. Traps have to be Set here face-down before they can be activated. Continuous and Equip cards stay here after you activate them.'],
+                pendulum: ['Spell & Trap Zone + Pendulum Zone', 'Your leftmost and rightmost Spell & Trap Zones double as Pendulum Zones. Place a Pendulum Monster in each one to set your two Pendulum Scales, then Pendulum Summon monsters with Levels between them.'],
+                field: ['Field Zone', 'One Field Spell per player. Field Spells often power up an archetype or change how the whole game plays. A new one replaces the old one.'],
+                gy: ['Graveyard (GY)', 'The face-up pile where destroyed, used, discarded and Tributed cards go. Either player can look through either GY at any time, and many cards have effects that work from here, so it\'s a resource, not just a discard pile.'],
+                deck: ['Main Deck', 'Your face-down draw pile of 40 to 60 cards. You draw from the top, and "search" effects pick specific cards out of it. If you need to draw and it\'s empty, you lose.'],
+                extra: ['Extra Deck', 'Up to 15 Fusion, Synchro, Xyz and Link Monsters, kept face-down. You never draw them; you Summon them straight from here when you meet their requirements. Destroyed Pendulum Monsters also land here face-up.'],
+                hand: ['Your hand', 'You start with 5 cards and draw 1 each turn (except the player going first, on turn one). If you hold more than 6 at the end of your turn, discard down to 6. Handtraps are used straight from here.'],
+                banished: ['Banished', 'Not a real zone: banished cards are just set aside, face-up unless a card says face-down. They\'re much harder to get back than cards in the GY.']
+            };
+
+            // back: the card moves face-down. count: several cards. small: an Xyz material.
+            var VERBS = {
+                'draw': { term: 'draw', from: 'deck', to: 'hand', back: true },
+                'search': { term: 'search', from: 'deck', to: 'hand', note: 'Unlike a draw, you pick which card.' },
+                'normal-summon': { term: 'normal-summon', from: 'hand', to: 'm3' },
+                'set': { term: 'set', from: 'hand', to: 's3', back: true },
+                'extra-summon': { term: 'extra-deck', label: 'Link Summon', from: 'extra', to: 'emz1', note: 'Its materials go to the GY first. A Link Monster from the Extra Deck lands in the Extra Monster Zone, or in a zone another Link Monster points to.' },
+                'dump': { term: 'dump', from: 'deck', to: 'gy', note: 'You choose the card.' },
+                'mill': { term: 'mill', from: 'deck', to: 'gy', count: 3, note: 'Straight off the top: you don\'t choose which cards.' },
+                'discard': { term: 'discard', from: 'hand', to: 'gy' },
+                'tribute': { term: 'tribute', from: 'm2', to: 'gy' },
+                'detach': { term: 'detach', from: 'm4', to: 'gy', small: true, note: 'The material slides out from under the Xyz Monster, which stays on the field.' },
+                'pop': { term: 'pop', from: 's2', to: 'gy', back: true },
+                'banish': { term: 'banish', from: 'gy', to: 'banished' },
+                'bounce': { term: 'bounce', from: 'm3', to: 'hand', note: 'An Extra Deck monster goes back to the Extra Deck instead.' },
+                'spin': { term: 'spin', from: 'm3', to: 'deck', back: true, note: 'An Extra Deck monster goes back to the Extra Deck instead.' },
+                'revive': { term: 'revive', from: 'gy', to: 'm1' },
+                'recycle': { term: 'recycle', from: 'gy', to: 'hand' }
+            };
+
+            var SLOT_NAMES = {
+                deck: 'Deck', hand: 'Hand', gy: 'GY', banished: 'Banished', extra: 'Extra Deck',
+                emz1: 'Extra Monster Zone', m1: 'Monster Zone', m2: 'Monster Zone', m3: 'Monster Zone',
+                m4: 'Monster Zone', s2: 'Spell & Trap Zone', s3: 'Spell & Trap Zone'
+            };
+
+            function initField() {
+                var field = $('.nb-field');
+                var label = document.getElementById('nb-zoneinfo-label');
+                var title = document.getElementById('nb-zoneinfo-title');
+                var text = document.getElementById('nb-zoneinfo-text');
+                var extra = document.getElementById('nb-zoneinfo-extra');
+                var verbsBox = document.getElementById('nb-verbs');
+                if (!field || !title || !text) return;
+                var zones = $$('.nb-zone', field);
+                var verbButtons = verbsBox ? $$('[data-verb]', verbsBox) : [];
+                var litTimer = null;
+
+                function slot(name) { return field.querySelector('[data-slot="' + name + '"]'); }
+
+                function clearLit() {
+                    zones.forEach(function (z) { z.classList.remove('is-from', 'is-to'); });
+                }
+
+                field.addEventListener('click', function (event) {
+                    var zone = event.target.closest('.nb-zone');
+                    if (!zone) return;
+                    var key = zone.dataset.zone;
+                    clearLit();
+                    verbButtons.forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+                    zones.forEach(function (z) {
+                        z.setAttribute('aria-pressed', z === zone ? 'true' : 'false');
+                        z.classList.toggle('is-group-lit', z !== zone && z.dataset.zone === key);
+                    });
+                    label.textContent = 'Zone';
+                    title.textContent = ZONES[key][0];
+                    text.textContent = ZONES[key][1];
+                    extra.textContent = '';
+                });
+
+                if (!verbsBox) return;
+                verbsBox.hidden = false;
+
+                function fly(from, to, verb, delay) {
+                    if (reduceMotion || typeof from.animate !== 'function') return;
+                    var box = field.getBoundingClientRect();
+                    var a = from.getBoundingClientRect();
+                    var b = to.getBoundingClientRect();
+                    var ref = slot('m1').getBoundingClientRect();
+                    var w = ref.width * (verb.small ? 0.4 : 0.62);
+                    var h = w * 86 / 59;
+                    var x0 = a.left - box.left + a.width / 2 - w / 2;
+                    var y0 = a.top - box.top + a.height / 2 - h / 2;
+                    var x1 = b.left - box.left + b.width / 2 - w / 2;
+                    var y1 = b.top - box.top + b.height / 2 - h / 2;
+                    var card = el('div', 'nb-flycard ' + (verb.back ? 'nb-flycard--back' : 'nb-flycard--face'));
+                    card.style.width = w + 'px';
+                    field.appendChild(card);
+                    var start = 'translate(' + x0 + 'px, ' + y0 + 'px)';
+                    var end = 'translate(' + x1 + 'px, ' + y1 + 'px)';
+                    var anim = card.animate([
+                        { transform: start + ' scale(0.85)', opacity: 0 },
+                        { transform: start + ' scale(1)', opacity: 1, offset: 0.15 },
+                        { transform: end + ' scale(1)', opacity: 1, offset: 0.8 },
+                        { transform: end + ' scale(0.9)', opacity: 0 }
+                    ], { duration: 1400, delay: delay || 0, easing: 'ease-in-out', fill: 'both' });
+                    anim.onfinish = function () { card.remove(); };
+                }
+
+                function play(key) {
+                    var btn = verbsBox.querySelector('[data-verb="' + key + '"]');
+                    var verb = VERBS[key];
+                    if (!btn || !verb) return;
+                    var t = TERM_BY_ID[verb.term];
+                    var from = slot(verb.from);
+                    var to = slot(verb.to);
+                    if (!t || !from || !to) return;
+
+                    verbButtons.forEach(function (b) { b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+                    zones.forEach(function (z) {
+                        z.setAttribute('aria-pressed', 'false');
+                        z.classList.remove('is-group-lit');
+                    });
+                    clearLit();
+                    from.classList.add('is-from');
+                    to.classList.add('is-to');
+                    clearTimeout(litTimer);
+                    litTimer = setTimeout(clearLit, 2600);
+
+                    for (var i = 0; i < (verb.count || 1); i++) fly(from, to, verb, i * 220);
+
+                    label.textContent = 'Action';
+                    title.textContent = verb.label || btn.textContent.trim();
+                    text.textContent = t.short + (verb.note ? ' ' + verb.note : '');
+                    extra.textContent = '';
+                    var route = el('span', 'nb-zoneinfo__route');
+                    route.appendChild(document.createTextNode(SLOT_NAMES[verb.from] + ' '));
+                    var arrow = el('i', 'fas fa-arrow-right');
+                    arrow.setAttribute('aria-hidden', 'true');
+                    route.appendChild(arrow);
+                    route.appendChild(el('span', 'sr-only', 'to'));
+                    route.appendChild(document.createTextNode(' ' + SLOT_NAMES[verb.to]));
+                    extra.appendChild(route);
+                    var more = el('a', 'nb-zoneinfo__more nb-jump', 'Full glossary entry: ' + t.name + ' ↓');
+                    more.href = '#term-' + t.id;
+                    extra.appendChild(more);
+                }
+
+                verbsBox.addEventListener('click', function (event) {
+                    var btn = event.target.closest('[data-verb]');
+                    if (btn) play(btn.dataset.verb);
+                });
+                fieldApi = { play: play };
+            }
+
+            // ---------- Battle calculator ----------
+            var MONSTERS = [
+                { name: 'Blue-Eyes White Dragon', atk: 3000, def: 2500 },
+                { name: 'Dark Magician', atk: 2500, def: 2100 },
+                { name: 'Number 39: Utopia', atk: 2500, def: 2000 },
+                { name: 'Stardust Dragon', atk: 2500, def: 2000 },
+                { name: 'Decode Talker', atk: 2300, def: null },
+                { name: 'Mystic Tomato', atk: 1400, def: 1100, floater: true },
+                { name: 'Kuriboh', atk: 300, def: 200 },
+                { name: 'Big Shield Gardna', atk: 100, def: 2600 }
+            ];
+
+            function initCalc() {
+                var box = document.getElementById('nb-calc');
+                if (!box) return;
+                var attSel = document.getElementById('calc-att');
+                var attAtk = document.getElementById('calc-att-atk');
+                var defSel = document.getElementById('calc-def');
+                var defVal = document.getElementById('calc-def-val');
+                var defLabel = document.getElementById('calc-def-label');
+                var defRow = document.getElementById('calc-def-row');
+                var posBtns = $$('[data-pos]', box);
+                var out = document.getElementById('calc-result');
+                var pos = 'atk';
+
+                function option(value, text) {
+                    var o = el('option', null, text);
+                    o.value = value;
+                    return o;
+                }
+                MONSTERS.forEach(function (m, i) {
+                    attSel.appendChild(option(String(i), m.name + ' (' + m.atk + ' ATK)'));
+                });
+                attSel.appendChild(option('custom', 'Your own numbers'));
+                defSel.appendChild(option('none', 'No monster: a direct attack'));
+                MONSTERS.forEach(function (m, i) {
+                    defSel.appendChild(option(String(i), m.name + ' (' + m.atk + ' ATK' + (m.def === null ? ', Link' : ' / ' + m.def + ' DEF') + ')'));
+                });
+                defSel.appendChild(option('custom', 'Your own numbers'));
+                attSel.value = '0';
+                defSel.value = '1';
+
+                function preset(sel) {
+                    return /^\d+$/.test(sel.value) ? MONSTERS[+sel.value] : null;
+                }
+                function num(input) {
+                    var v = parseInt(input.value, 10);
+                    if (isNaN(v) || v < 0) v = 0;
+                    return Math.min(v, 99999);
+                }
+
+                function syncAttacker() {
+                    var m = preset(attSel);
+                    if (m) attAtk.value = m.atk;
+                }
+                function syncDefender() {
+                    var m = preset(defSel);
+                    var direct = defSel.value === 'none';
+                    var isLink = !!m && m.def === null;
+                    if (isLink && pos === 'def') pos = 'atk';
+                    posBtns.forEach(function (b) {
+                        b.setAttribute('aria-pressed', b.dataset.pos === pos ? 'true' : 'false');
+                        b.disabled = direct || (isLink && b.dataset.pos === 'def');
+                    });
+                    defRow.hidden = direct;
+                    defLabel.textContent = pos === 'atk' ? 'ATK' : 'DEF';
+                    if (m) defVal.value = pos === 'atk' ? m.atk : m.def;
+                }
+
+                function render() {
+                    var am = preset(attSel);
+                    var dm = preset(defSel);
+                    var aName = am ? am.name : 'your monster';
+                    var dName = dm ? dm.name : 'their monster';
+                    var a = num(attAtk);
+                    var d = num(defVal);
+                    var direct = defSel.value === 'none';
+                    var attDies = false, defDies = false, youDmg = 0, oppDmg = 0, line;
+
+                    if (direct) {
+                        oppDmg = a;
+                        line = cap(aName) + ' attacks directly: your opponent takes its full ' + a + ' ATK as damage.';
+                    } else if (pos === 'atk') {
+                        if (a > d) {
+                            defDies = true;
+                            oppDmg = a - d;
+                            line = a + ' ATK beats ' + d + ' ATK. ' + cap(dName) + ' is destroyed and your opponent takes the ' + oppDmg + ' difference.';
+                        } else if (a < d) {
+                            attDies = true;
+                            youDmg = d - a;
+                            line = a + ' ATK loses to ' + d + ' ATK. ' + cap(aName) + ' is destroyed and you take the ' + youDmg + ' difference.';
+                        } else if (a > 0) {
+                            attDies = defDies = true;
+                            line = 'Both have ' + a + ' ATK, so both monsters are destroyed and nobody takes damage.';
+                        } else {
+                            line = 'Both have 0 ATK. In that one case neither monster is destroyed, and nobody takes damage.';
+                        }
+                    } else if (a > d) {
+                        defDies = true;
+                        line = a + ' ATK beats ' + d + ' DEF. ' + cap(dName) + ' is destroyed, but nobody takes damage from attacking a Defense Position monster.';
+                    } else if (a < d) {
+                        youDmg = d - a;
+                        line = a + ' ATK is lower than ' + d + ' DEF. Nothing is destroyed, and you take the ' + youDmg + ' difference.';
+                    } else {
+                        line = a + ' ATK equals ' + d + ' DEF, so nothing happens.';
+                    }
+
+                    out.textContent = '';
+                    out.appendChild(el('p', null, line));
+                    var chips = el('div', 'nb-calc__chips');
+                    function chip(text, cls) { chips.appendChild(el('span', 'nb-calc__chip' + (cls ? ' ' + cls : ''), text)); }
+                    chip(cap(aName) + (attDies ? ': destroyed' : ': survives'), attDies ? 'is-destroyed' : '');
+                    if (!direct) chip(cap(dName) + (defDies ? ': destroyed' : ': survives'), defDies ? 'is-destroyed' : '');
+                    if (youDmg) chip('Your LP: 8000 → ' + Math.max(0, 8000 - youDmg), 'is-damage');
+                    if (oppDmg) chip("Opponent's LP: 8000 → " + Math.max(0, 8000 - oppDmg) + (oppDmg >= 8000 ? " (that's game!)" : ''), 'is-damage');
+                    out.appendChild(chips);
+
+                    var notes = [];
+                    if ((defDies && dm && dm.floater) || (attDies && am && am.floater)) {
+                        notes.push('Mystic Tomato is a floater: when it\'s destroyed by battle, its effect can Special Summon a DARK monster with 1500 or less ATK from the Deck.');
+                    }
+                    if (dm && dm.def === null) notes.push('Link Monsters have no DEF, so they\'re always in Attack Position.');
+                    notes.push('Card effects can change any of this; the calculator shows the basic rule.');
+                    out.appendChild(el('p', 'nb-calc__note', notes.join(' ')));
+                }
+
+                attSel.addEventListener('change', function () { syncAttacker(); render(); });
+                defSel.addEventListener('change', function () { syncDefender(); render(); });
+                attAtk.addEventListener('input', function () { if (preset(attSel)) attSel.value = 'custom'; render(); });
+                defVal.addEventListener('input', function () { if (preset(defSel)) defSel.value = 'custom'; render(); });
+                posBtns.forEach(function (b) {
+                    b.addEventListener('click', function () {
+                        pos = b.dataset.pos;
+                        syncDefender();
+                        render();
+                    });
+                });
+
+                syncAttacker();
+                syncDefender();
+                render();
+                box.hidden = false;
+            }
+
+            // ---------- Chain stepper ----------
+            var CHAIN_STEPS = [
+                { text: 'You Normal Summon Snake-Eye Ash, and its effect triggers. Nothing is on the chain yet.', state: ['waiting', 'waiting'] },
+                { text: 'Chain Link 1: you activate Snake-Eye Ash\'s effect to add a card from your Deck to your hand. Before it resolves, your opponent gets a chance to respond.', state: ['on', 'waiting'] },
+                { text: 'Chain Link 2: your opponent discards Ash Blossom & Joyous Spring in response. You don\'t respond to that, so the chain is complete.', state: ['on', 'on'] },
+                { text: 'The chain resolves from the top down, so Chain Link 2 goes first: Ash Blossom negates the effect of Chain Link 1.', state: ['on', 'resolving'] },
+                { text: 'Chain Link 1 resolves last, but its effect was negated, so no card is added to your hand. The chain is over.', state: ['negated', 'done'] }
+            ];
+
+            function initChainStepper() {
+                var list = document.getElementById('nb-chain-list');
+                var controls = document.getElementById('chain-controls');
+                var stepBtn = document.getElementById('chain-step');
+                var resetBtn = document.getElementById('chain-reset');
+                var caption = document.getElementById('chain-caption');
+                if (!list || !controls) return;
+                var items = $$('li[data-link]', list);
+                // If an approved edit replaced the list, keep the static version.
+                if (items.length !== 2) return;
+                var startLabel = stepBtn.innerHTML;
+                var step = -1;
+
+                function show() {
+                    var s = CHAIN_STEPS[step];
+                    list.classList.add('is-stepping');
+                    items.forEach(function (li, i) {
+                        li.classList.remove('is-waiting', 'is-resolving', 'is-done', 'is-negated');
+                        if (s.state[i] !== 'on') li.classList.add('is-' + s.state[i]);
+                    });
+                    caption.hidden = false;
+                    caption.textContent = 'Step ' + (step + 1) + ' of ' + CHAIN_STEPS.length + ': ' + s.text;
+                    var last = step === CHAIN_STEPS.length - 1;
+                    stepBtn.innerHTML = last ? '<i class="fas fa-check" aria-hidden="true"></i> Done' : 'Next step <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+                    stepBtn.disabled = last;
+                    resetBtn.hidden = false;
+                }
+
+                stepBtn.addEventListener('click', function () {
+                    step = Math.min(step + 1, CHAIN_STEPS.length - 1);
+                    show();
+                });
+                resetBtn.addEventListener('click', function () {
+                    step = -1;
+                    list.classList.remove('is-stepping');
+                    items.forEach(function (li) { li.classList.remove('is-waiting', 'is-resolving', 'is-done', 'is-negated'); });
+                    caption.hidden = true;
+                    stepBtn.innerHTML = startLabel;
+                    stepBtn.disabled = false;
+                    resetBtn.hidden = true;
+                    stepBtn.focus();
+                });
+                controls.hidden = false;
+            }
+
+            // ---------- Name that frame ----------
+            var FRAME_TYPES = [
+                { key: 'normal', label: 'Normal', name: 'a Normal Monster', frame: 'a yellow frame', swatch: 'var(--frame-normal)' },
+                { key: 'effect', label: 'Effect', name: 'an Effect Monster', frame: 'an orange frame', swatch: 'var(--frame-effect)' },
+                { key: 'ritual', label: 'Ritual', name: 'a Ritual Monster', frame: 'a blue frame', swatch: 'var(--frame-ritual)' },
+                { key: 'pendulum', label: 'Pendulum', name: 'a Pendulum Monster', frame: 'a frame that turns green at the bottom', swatch: 'linear-gradient(180deg, var(--frame-effect) 50%, var(--frame-spell) 50%)' },
+                { key: 'fusion', label: 'Fusion', name: 'a Fusion Monster', frame: 'a purple frame', swatch: 'var(--frame-fusion)' },
+                { key: 'synchro', label: 'Synchro', name: 'a Synchro Monster', frame: 'a white frame', swatch: 'var(--frame-synchro)' },
+                { key: 'xyz', label: 'Xyz', name: 'an Xyz Monster', frame: 'a black frame', swatch: 'var(--frame-xyz)' },
+                { key: 'link', label: 'Link', name: 'a Link Monster', frame: 'a dark blue frame with arrows around the art', swatch: 'var(--frame-link)' },
+                { key: 'spell', label: 'Spell', name: 'a Spell Card', frame: 'a green frame', swatch: 'var(--frame-spell)' },
+                { key: 'trap', label: 'Trap', name: 'a Trap Card', frame: 'a pink frame', swatch: 'var(--frame-trap)' }
+            ];
+            // Types checked against YGOProDeck (frameType) on 26 September 2026.
+            var FRAME_POOL = {
+                normal: ['Dark Magician', 'Summoned Skull', 'Red-Eyes Black Dragon', 'Celtic Guardian', 'Gaia The Fierce Knight'],
+                effect: ['Sangan', 'Mystic Tomato', 'Card Trooper', 'Big Shield Gardna', 'Droll & Lock Bird', 'Effect Veiler', 'Nibiru, the Primal Being'],
+                ritual: ['Magician of Black Chaos', 'Relinquished', 'Blue-Eyes Chaos MAX Dragon'],
+                pendulum: ['Timegazer Magician', 'Stargazer Magician'],
+                fusion: ['Thousand Dragon', 'Dark Paladin', 'Elemental HERO Flame Wingman'],
+                synchro: ['Black Rose Dragon', 'Red Dragon Archfiend', 'Junk Warrior'],
+                xyz: ['Number 17: Leviathan Dragon', 'Castel, the Skyblaster Musketeer'],
+                link: ['Knightmare Unicorn', 'Accesscode Talker', 'Linkuriboh'],
+                spell: ['Monster Reborn', 'Raigeki', 'Called by the Grave', 'Mystical Space Typhoon', 'Twin Twisters'],
+                trap: ['Solemn Judgment', 'Call of the Haunted', 'Compulsory Evacuation Device', 'Infinite Impermanence', 'Magic Cylinder', 'Skill Drain']
+            };
+
+            function initFrameGame() {
+                var box = document.getElementById('nb-frame-game');
+                var start = document.getElementById('nf-start');
+                var stage = document.getElementById('nf-stage');
+                var cardBox = document.getElementById('nf-card');
+                var optsBox = document.getElementById('nf-opts');
+                var feedback = document.getElementById('nf-feedback');
+                var status = document.getElementById('nf-status');
+                var next = document.getElementById('nf-next');
+                // Without CardLoader there are no card images, so the game stays hidden.
+                if (!box || !hasCardLoader() || typeof CardLoader.loadCard !== 'function') return;
+
+                var rounds = [], round = 0, score = 0, answered = false;
+                var optionButtons = FRAME_TYPES.map(function (type) {
+                    var b = button('nb-btn nf__opt');
+                    b.dataset.type = type.key;
+                    var sw = el('span', 'nb-ct__swatch');
+                    sw.style.background = type.swatch;
+                    b.appendChild(sw);
+                    b.appendChild(document.createTextNode(type.label));
+                    optsBox.appendChild(b);
+                    return b;
+                });
+
+                function newGame() {
+                    rounds = shuffle(FRAME_TYPES).map(function (type) {
+                        return { type: type, card: pick(FRAME_POOL[type.key]) };
+                    });
+                    round = 0;
+                    score = 0;
+                    showRound();
+                }
+
+                function showRound() {
+                    answered = false;
+                    // A fresh container each round, so a slow image from the last
+                    // round can't land on top of this one.
+                    cardBox.textContent = '';
+                    var holder = el('div');
+                    holder.id = 'nf-round-' + round + '-img-container';
+                    holder.appendChild(el('div', 'nf__back'));
+                    cardBox.appendChild(holder);
+                    CardLoader.loadCard(rounds[round].card, holder.id);
+                    optionButtons.forEach(function (b) {
+                        b.disabled = false;
+                        b.classList.remove('is-right', 'is-wrong');
+                    });
+                    feedback.textContent = '';
+                    status.textContent = 'Card ' + (round + 1) + ' of ' + rounds.length + ' · Score ' + score;
+                    next.disabled = true;
+                    next.innerHTML = round === rounds.length - 1 ? 'See my score' : 'Next card <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+                }
+
+                optsBox.addEventListener('click', function (event) {
+                    var b = event.target.closest('.nf__opt');
+                    if (!b || answered) return;
+                    answered = true;
+                    var r = rounds[round];
+                    var ok = b.dataset.type === r.type.key;
+                    if (ok) score++;
+                    optionButtons.forEach(function (o) {
+                        o.disabled = true;
+                        if (o.dataset.type === r.type.key) o.classList.add('is-right');
+                    });
+                    if (!ok) b.classList.add('is-wrong');
+                    feedback.textContent = ok
+                        ? 'Right! ' + r.card + ' is ' + r.type.name + ': ' + r.type.frame + '.'
+                        : 'Not quite. ' + r.card + ' is ' + r.type.name + ', which has ' + r.type.frame + '.';
+                    status.textContent = 'Card ' + (round + 1) + ' of ' + rounds.length + ' · Score ' + score;
+                    next.disabled = false;
+                });
+
+                next.addEventListener('click', function () {
+                    if (round < rounds.length - 1 && rounds.length) {
+                        round++;
+                        showRound();
+                        return;
+                    }
+                    if (answered && round === rounds.length - 1 && next.dataset.finished !== 'true') {
+                        next.dataset.finished = 'true';
+                        if (score > (load(STORE_FRAME, 0) || 0)) save(STORE_FRAME, score);
+                        if (progressApi) progressApi.render();
+                        feedback.textContent = 'You named ' + score + ' of ' + rounds.length + ' frames.' + (score === rounds.length ? ' Perfect!' : ' Scroll up to compare the frames, then try again.');
+                        next.innerHTML = '<i class="fas fa-redo" aria-hidden="true"></i> Play again';
+                        return;
+                    }
+                    next.dataset.finished = '';
+                    newGame();
+                });
+
+                start.hidden = false;
+                start.addEventListener('click', function () {
+                    start.hidden = true;
+                    stage.hidden = false;
+                    newGame();
+                });
+            }
+
+            // ---------- Decoder: one sentence at a time, guess first ----------
+            function initDecoder() {
+                var list = document.getElementById('dc-list');
+                if (!list) return;
+                var sentences = $$('.dc-sentence', list);
+                var bar = document.getElementById('dc-bar');
+                var nav = document.getElementById('dc-nav');
+                var countEl = document.getElementById('dc-count');
+                var scoreEl = document.getElementById('dc-score');
+                var guessBox = document.getElementById('dc-guess');
+                var prev = document.getElementById('dc-prev');
+                var next = document.getElementById('dc-next');
+                var index = 0, right = 0, answered = 0;
+
+                function show(i) {
+                    index = (i + sentences.length) % sentences.length;
+                    sentences.forEach(function (s, k) { s.classList.toggle('is-current', k === index); });
+                    countEl.textContent = 'Sentence ' + (index + 1) + ' of ' + sentences.length;
+                    prev.disabled = index === 0;
+                    next.innerHTML = index === sentences.length - 1
+                        ? '<i class="fas fa-redo" aria-hidden="true"></i> Back to the first'
+                        : 'Next sentence <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+                }
+
+                function renderScore() {
+                    scoreEl.textContent = answered ? 'Guessed right: ' + right + ' of ' + answered : '';
+                }
+
+                function select(sentence, btn) {
+                    $$('.dc-term', sentence).forEach(function (b) {
+                        b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+                    });
+                }
+
+                function renderQuestion(panel, btn) {
+                    var t = TERM_BY_ID[btn.dataset.term];
+                    panel.textContent = '';
+                    panel.appendChild(el('p', 'dc-guess__q', 'What does "' + btn.textContent.trim() + '" mean here?'));
+                    var wrap = el('div', 'dc-guess__opts');
+                    shuffle([t].concat(distractors(t, 2))).forEach(function (o) {
+                        var b = button('nb-btn dc-guess__opt', o.short);
+                        b.dataset.answer = o.id === t.id ? 'yes' : '';
+                        wrap.appendChild(b);
+                    });
+                    panel.appendChild(wrap);
+                }
+
+                function renderReveal(panel, btn, result) {
+                    var t = TERM_BY_ID[btn.dataset.term];
+                    panel.textContent = '';
+                    if (result) {
+                        panel.appendChild(el('p', 'dc-result is-' + result, result === 'right' ? 'Right!' : 'Not quite. Here\'s what it means:'));
+                    }
+                    panel.appendChild(el('p', 'dc-panel__word', '"' + btn.textContent.trim() + '"' + (t ? ' → ' + t.name : '')));
+                    if (btn.dataset.note) {
+                        var note = el('p', null, btn.dataset.note + ' ');
+                        if (btn.dataset.card) {
+                            var ref = el('span', 'card-ref', 'See the card');
+                            ref.setAttribute('role', 'button');
+                            ref.tabIndex = 0;
+                            ref.dataset.cardname = btn.dataset.card;
+                            note.appendChild(ref);
+                        }
+                        panel.appendChild(note);
+                    }
+                    var def = t && termDefNode(t);
+                    if (def) {
+                        var copy = def.cloneNode(true);
+                        copy.removeAttribute('class');
+                        panel.appendChild(copy);
+                    }
+                    if (t) {
+                        var more = el('p', 'dc-panel__more');
+                        var link = el('a', 'nb-jump', 'Full glossary entry ↓');
+                        link.href = '#term-' + t.id;
+                        more.appendChild(link);
+                        panel.appendChild(more);
+                    }
+                    bindCardRefs(panel);
+                }
+
+                sentences.forEach(function (sentence) {
+                    var panel = $('.dc-panel', sentence);
+                    var current = null;
+                    sentence.addEventListener('click', function (event) {
+                        var opt = event.target.closest('.dc-guess__opt');
+                        if (opt && current && !current.dataset.guessed) {
+                            var ok = opt.dataset.answer === 'yes';
+                            current.dataset.guessed = ok ? 'right' : 'wrong';
+                            current.classList.add(ok ? 'is-right' : 'is-wrong');
+                            answered++;
+                            if (ok) right++;
+                            renderScore();
+                            renderReveal(panel, current, ok ? 'right' : 'wrong');
+                            return;
+                        }
+                        var btn = event.target.closest('.dc-term');
+                        if (!btn) return;
+                        if (btn.getAttribute('aria-pressed') === 'true') {
+                            select(sentence, null);
+                            panel.hidden = true;
+                            panel.textContent = '';
+                            current = null;
+                            return;
+                        }
+                        select(sentence, btn);
+                        current = btn;
+                        if (guessBox.checked && !btn.dataset.guessed && TERM_BY_ID[btn.dataset.term]) renderQuestion(panel, btn);
+                        else renderReveal(panel, btn, null);
+                        panel.hidden = false;
+                    });
+                });
+
+                prev.addEventListener('click', function () { show(index - 1); });
+                next.addEventListener('click', function () { show(index + 1); });
+
+                list.classList.add('is-carousel');
+                bar.hidden = false;
+                nav.hidden = false;
+                show(0);
+                renderScore();
+            }
+
+            // ---------- Practice: flashcards and quiz ----------
+            function initPractice() {
+                var root = document.getElementById('nb-practice');
+                if (!root || !TERMS.length) return;
+                root.innerHTML =
+                    '<div class="pr__head">' +
+                        '<div class="pr__tabs" role="tablist" aria-label="Practice mode">' +
+                            '<button type="button" class="pr__tab" role="tab" id="pr-tab-flash" aria-selected="true" aria-controls="pr-flash">Flashcards</button>' +
+                            '<button type="button" class="pr__tab" role="tab" id="pr-tab-quiz" aria-selected="false" aria-controls="pr-quiz" tabindex="-1">Quiz</button>' +
+                        '</div>' +
+                        '<label class="pr__deck">Words <select id="pr-deck">' +
+                            '<option value="core">The 16 starred words</option>' +
+                            '<option value="all">All ' + TERMS.length + ' words</option>' +
+                            '<option value="unlearned" id="pr-deck-unlearned">Words I haven\'t learned</option>' +
+                            '<optgroup label="One kind of word">' +
+                                Object.keys(CAT_LABELS).map(function (cat) {
+                                    return '<option value="cat:' + cat + '">' + CAT_LABELS[cat].replace('&', '&amp;') + '</option>';
+                                }).join('') +
+                            '</optgroup>' +
+                        '</select></label>' +
+                        '<div class="pr__ring"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="pr__ring-bg" cx="22" cy="22" r="18"></circle><circle class="pr__ring-fg" id="pr-ring" cx="22" cy="22" r="18"></circle></svg><span id="pr-ring-text"></span></div>' +
+                    '</div>' +
+                    '<div class="pr__panel" id="pr-flash" role="tabpanel" aria-labelledby="pr-tab-flash">' +
+                        '<div id="fc-live">' +
+                            '<p class="pr__progress" id="fc-progress"></p>' +
+                            '<button type="button" class="fc" id="fc-card"><span class="fc__inner">' +
+                                '<span class="fc__face fc__front" id="fc-front"><span class="fc__cat" id="fc-cat"></span><span class="fc__term" id="fc-term"></span><span class="fc__hint">Tap to see what it means</span></span>' +
+                                '<span class="fc__face fc__back" id="fc-back" aria-hidden="true"><span class="fc__term fc__term--small" id="fc-term-back"></span><span class="fc__short" id="fc-short"></span><span class="fc__def" id="fc-def"></span></span>' +
+                            '</span></button>' +
+                            '<div class="fc__actions">' +
+                                '<button type="button" class="nb-btn" id="fc-again"><i class="fas fa-redo" aria-hidden="true"></i> Again</button>' +
+                                '<button type="button" class="nb-btn nb-btn--primary" id="fc-got"><i class="fas fa-check" aria-hidden="true"></i> Got it</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="pr__done" id="fc-done" hidden></div>' +
+                    '</div>' +
+                    '<div class="pr__panel" id="pr-quiz" role="tabpanel" aria-labelledby="pr-tab-quiz" hidden>' +
+                        '<div id="qz-live">' +
+                            '<div class="qz__dir" role="group" aria-label="Quiz direction">' +
+                                '<button type="button" class="nb-btn" data-dir="meaning" aria-pressed="true">Meaning → word</button>' +
+                                '<button type="button" class="nb-btn" data-dir="word" aria-pressed="false">Word → meaning</button>' +
+                            '</div>' +
+                            '<p class="pr__progress" id="qz-progress"></p>' +
+                            '<p class="qz__prompt" id="qz-prompt">Which word means…</p>' +
+                            '<p class="qz__short" id="qz-short"></p>' +
+                            '<div class="qz__opts" id="qz-opts" role="group" aria-label="Answers"></div>' +
+                            '<p class="qz__feedback" id="qz-feedback" aria-live="polite"></p>' +
+                            '<button type="button" class="nb-btn nb-btn--primary" id="qz-next" hidden></button>' +
+                        '</div>' +
+                        '<div class="pr__done" id="qz-done" hidden></div>' +
+                    '</div>' +
+                    '<div class="pr__foot"><button type="button" class="pr__reset" id="pr-reset">Reset learned words</button></div>';
+
+                var tabs = $$('.pr__tab', root);
+                var deckSel = document.getElementById('pr-deck');
+                var ring = document.getElementById('pr-ring');
+                var ringText = document.getElementById('pr-ring-text');
+                var flashPanel = document.getElementById('pr-flash');
+                var quizPanel = document.getElementById('pr-quiz');
+                var RING = 2 * Math.PI * 18;
+                ring.style.strokeDasharray = RING;
+                var mode = 'flash';
+
+                function deckTerms() {
+                    var v = deckSel.value;
+                    if (v === 'all') return TERMS.slice();
+                    if (v === 'unlearned') return TERMS.filter(function (t) { return !learned[t.id]; });
+                    if (v.indexOf('cat:') === 0) return TERMS.filter(function (t) { return t.cat === v.slice(4); });
+                    return TERMS.filter(function (t) { return t.core; });
+                }
+
+                function renderRing() {
+                    var n = learnedCount();
+                    ring.style.strokeDashoffset = RING * (1 - n / TERMS.length);
+                    ringText.textContent = n + ' / ' + TERMS.length + ' learned';
+                    document.getElementById('pr-deck-unlearned').textContent = "Words I haven't learned (" + (TERMS.length - n) + ')';
+                }
+                learnedListeners.push(renderRing);
+
+                function doneBox(target, title, text, actions) {
+                    target.textContent = '';
+                    target.appendChild(el('p', 'pr__done-title', title));
+                    if (text) target.appendChild(el('p', null, text));
+                    var row = el('div', 'fc__actions');
+                    actions.forEach(function (a) {
+                        var b = button('nb-btn' + (a.primary ? ' nb-btn--primary' : ''), a.label);
+                        b.addEventListener('click', a.run);
+                        row.appendChild(b);
+                    });
+                    target.appendChild(row);
+                    target.hidden = false;
+                }
+
+                // Flashcards
+                var fcLive = document.getElementById('fc-live');
+                var fcDone = document.getElementById('fc-done');
+                var fcCard = document.getElementById('fc-card');
+                var fcFront = document.getElementById('fc-front');
+                var fcBack = document.getElementById('fc-back');
+                var fcProgress = document.getElementById('fc-progress');
+                var queue = [], total = 0, known = 0, flipped = false;
+
+                function setFlipped(on) {
+                    flipped = on;
+                    fcCard.classList.toggle('is-flipped', on);
+                    fcFront.setAttribute('aria-hidden', on ? 'true' : 'false');
+                    fcBack.setAttribute('aria-hidden', on ? 'false' : 'true');
+                }
+
+                function showCard() {
+                    var t = queue[0];
+                    setFlipped(false);
+                    fcCard.style.setProperty('--cat', catColor(t));
+                    document.getElementById('fc-cat').textContent = CAT_LABELS[t.cat] || '';
+                    document.getElementById('fc-term').textContent = t.name;
+                    document.getElementById('fc-term-back').textContent = t.name;
+                    document.getElementById('fc-short').textContent = t.short;
+                    var def = termDefNode(t);
+                    document.getElementById('fc-def').textContent = def ? def.textContent.trim() : '';
+                    fcProgress.textContent = known + ' of ' + total + ' known · ' + queue.length + ' to go';
+                }
+
+                function startFlash() {
+                    queue = shuffle(deckTerms());
+                    total = queue.length;
+                    known = 0;
+                    fcDone.hidden = true;
+                    if (!queue.length) {
+                        fcLive.hidden = true;
+                        doneBox(fcDone, "You've learned every word in this set.", 'Pick another set of words, or reset your progress to start over.', []);
+                        return;
+                    }
+                    fcLive.hidden = false;
+                    showCard();
+                }
+
+                function nextCard() {
+                    if (queue.length) {
+                        showCard();
+                        return;
+                    }
+                    fcLive.hidden = true;
+                    doneBox(fcDone, 'Round done!', 'You went through all ' + total + ' words in this set.', [
+                        { label: 'Go again', run: startFlash },
+                        { label: 'Try the quiz', primary: true, run: function () { selectTab('quiz'); } }
+                    ]);
+                }
+
+                fcCard.addEventListener('click', function () { setFlipped(!flipped); });
+                document.getElementById('fc-got').addEventListener('click', function () {
+                    var t = queue.shift();
+                    if (!t) return;
+                    known++;
+                    setLearned(t.id, true);
+                    nextCard();
+                });
+                document.getElementById('fc-again').addEventListener('click', function () {
+                    var t = queue.shift();
+                    if (!t) return;
+                    // Back in a few cards' time, not straight away.
+                    queue.splice(Math.min(queue.length, 3), 0, t);
+                    nextCard();
+                });
+
+                // Quiz
+                var qzLive = document.getElementById('qz-live');
+                var qzDone = document.getElementById('qz-done');
+                var qzOpts = document.getElementById('qz-opts');
+                var qzFeedback = document.getElementById('qz-feedback');
+                var qzNext = document.getElementById('qz-next');
+                var questions = [], qi = 0, qRight = 0, missed = [], qAnswered = false;
+                // "meaning": show a meaning, pick the word. "word": show a word, pick its meaning.
+                var quizDir = 'meaning';
+                var dirButtons = $$('[data-dir]', root);
+
+                function showQuestion() {
+                    var t = questions[qi];
+                    var asWord = quizDir === 'word';
+                    qAnswered = false;
+                    document.getElementById('qz-progress').textContent = 'Question ' + (qi + 1) + ' of ' + questions.length + ' · ' + qRight + ' right';
+                    document.getElementById('qz-prompt').textContent = asWord ? 'What does this word mean?' : 'Which word means…';
+                    document.getElementById('qz-short').textContent = asWord ? t.name : t.short;
+                    qzOpts.textContent = '';
+                    shuffle([t].concat(distractors(t, 3))).forEach(function (o) {
+                        var b = button('nb-btn qz__opt', asWord ? o.short : o.name);
+                        b.dataset.id = o.id;
+                        qzOpts.appendChild(b);
+                    });
+                    qzFeedback.textContent = '';
+                    qzNext.hidden = true;
+                }
+
+                dirButtons.forEach(function (b) {
+                    b.addEventListener('click', function () {
+                        quizDir = b.dataset.dir;
+                        dirButtons.forEach(function (o) { o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); });
+                        startQuiz();
+                    });
+                });
+
+                function startQuiz() {
+                    var deck = shuffle(deckTerms());
+                    qzDone.hidden = true;
+                    if (!deck.length) {
+                        qzLive.hidden = true;
+                        doneBox(qzDone, "You've learned every word in this set.", 'Pick another set of words to keep practising.', []);
+                        return;
+                    }
+                    questions = deck.slice(0, 10);
+                    qi = 0;
+                    qRight = 0;
+                    missed = [];
+                    qzLive.hidden = false;
+                    showQuestion();
+                }
+
+                qzOpts.addEventListener('click', function (event) {
+                    var b = event.target.closest('.qz__opt');
+                    if (!b || qAnswered) return;
+                    qAnswered = true;
+                    var t = questions[qi];
+                    var ok = b.dataset.id === t.id;
+                    $$('.qz__opt', qzOpts).forEach(function (o) {
+                        o.disabled = true;
+                        if (o.dataset.id === t.id) o.classList.add('is-right');
+                    });
+                    if (ok) {
+                        qRight++;
+                        setLearned(t.id, true);
+                        qzFeedback.textContent = 'Right!';
+                    } else {
+                        b.classList.add('is-wrong');
+                        missed.push(t);
+                        qzFeedback.textContent = quizDir === 'word'
+                            ? 'Not quite: "' + t.name + '" means: ' + t.short
+                            : 'Not quite: that\'s "' + t.name + '".';
+                    }
+                    qzNext.innerHTML = qi === questions.length - 1 ? 'See my score' : 'Next question <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+                    qzNext.hidden = false;
+                    qzNext.focus();
+                });
+
+                qzNext.addEventListener('click', function () {
+                    qi++;
+                    if (qi < questions.length) {
+                        showQuestion();
+                        return;
+                    }
+                    qzLive.hidden = true;
+                    doneBox(qzDone, 'You got ' + qRight + ' of ' + questions.length + ' right.', missed.length ? 'Worth another look:' : 'Perfect round!', [
+                        { label: 'Another round', primary: true, run: startQuiz },
+                        { label: 'Practise with flashcards', run: function () { selectTab('flash'); } }
+                    ]);
+                    if (missed.length) {
+                        var listEl = el('ul', 'pr__missed');
+                        missed.forEach(function (t) {
+                            var li = el('li');
+                            var a = el('a', null, t.name);
+                            a.href = '#term-' + t.id;
+                            li.appendChild(a);
+                            listEl.appendChild(li);
+                        });
+                        qzDone.insertBefore(listEl, qzDone.lastChild);
+                    }
+                });
+
+                // Tabs
+                function selectTab(which) {
+                    mode = which;
+                    tabs.forEach(function (tab) {
+                        var on = tab.id === 'pr-tab-' + which;
+                        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+                        tab.tabIndex = on ? 0 : -1;
+                    });
+                    flashPanel.hidden = which !== 'flash';
+                    quizPanel.hidden = which !== 'quiz';
+                    if (which === 'flash') startFlash();
+                    else startQuiz();
+                }
+                tabs.forEach(function (tab) {
+                    tab.addEventListener('click', function () { selectTab(tab.id.replace('pr-tab-', '')); });
+                    tab.addEventListener('keydown', function (event) {
+                        if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+                        var other = tabs[(tabs.indexOf(tab) + 1) % tabs.length];
+                        selectTab(other.id.replace('pr-tab-', ''));
+                        other.focus();
+                    });
+                });
+                deckSel.addEventListener('change', function () { selectTab(mode); });
+
+                // Reset asks twice, without a blocking dialog.
+                var reset = document.getElementById('pr-reset');
+                var resetTimer = null;
+                reset.addEventListener('click', function () {
+                    if (reset.dataset.armed !== 'true') {
+                        reset.dataset.armed = 'true';
+                        reset.textContent = 'Click again to clear every learned word';
+                        resetTimer = setTimeout(function () {
+                            reset.dataset.armed = '';
+                            reset.textContent = 'Reset learned words';
+                        }, 4000);
+                        return;
+                    }
+                    clearTimeout(resetTimer);
+                    reset.dataset.armed = '';
+                    reset.textContent = 'Reset learned words';
+                    learned = {};
+                    save(STORE_LEARNED, []);
+                    renderLearned();
+                    selectTab(mode);
+                });
+
+                practiceApi = {
+                    // From the glossary's "Practise these" links: open flashcards on one set.
+                    open: function (deck) {
+                        if ($('option[value="' + deck + '"]', deckSel)) deckSel.value = deck;
+                        selectTab('flash');
+                        scrollToNode(document.getElementById('practice'), 'start');
+                    },
+                    restart: function () { selectTab(mode); }
+                };
+                startFlash();
+            }
+
+            // ---------- How to read a card ----------
+            function initReadCard() {
+                var root = document.getElementById('nb-read-card');
+                if (!root) return;
+                var spotsBox = document.getElementById('rc-spots');
+                var imgBox = document.getElementById('rc-img-container');
+                var spots = $$('.rc__spot', root);
+                var parts = $$('#rc-parts li[data-part]');
+
+                var caption = document.getElementById('rc-caption');
+
+                // Copies an explanation into a caption (shown on phones, where the
+                // full list sits below the card or text, out of sight).
+                function mirror(target, source) {
+                    if (!target || !source) return;
+                    target.textContent = '';
+                    [].slice.call(source.childNodes).forEach(function (n) { target.appendChild(n.cloneNode(true)); });
+                    target.hidden = false;
+                }
+
+                function selectPart(key) {
+                    spots.forEach(function (s) { s.setAttribute('aria-pressed', s.dataset.part === key ? 'true' : 'false'); });
+                    parts.forEach(function (li) { li.classList.toggle('is-on', li.dataset.part === key); });
+                    mirror(caption, parts.filter(function (p) { return p.dataset.part === key; })[0]);
+                }
+                spots.forEach(function (s) {
+                    s.addEventListener('click', function (event) {
+                        // The card image under the spots opens CardLoader's popup; a spot shouldn't.
+                        event.stopPropagation();
+                        selectPart(s.dataset.part);
+                    });
+                });
+
+                // The spots only line up over the real card image, so they wait for it.
+                function showSpotsWhenLoaded() {
+                    var img = imgBox.querySelector('img');
+                    if (!img) return false;
+                    var show = function () { spotsBox.hidden = false; };
+                    if (img.complete && img.naturalWidth) show();
+                    else img.addEventListener('load', show);
+                    return true;
+                }
+                if (hasCardLoader()) {
+                    loadWhenNear('read-card', { 'rc-img-container': 'Ash Blossom & Joyous Spring' });
+                    if (!showSpotsWhenLoaded() && 'MutationObserver' in window) {
+                        var watcher = new MutationObserver(function () {
+                            if (showSpotsWhenLoaded()) watcher.disconnect();
+                        });
+                        watcher.observe(imgBox, { childList: true, subtree: true });
+                    }
+                }
+
+                // Card text: each coloured part lights up its explanation.
+                var segs = $$('#rc-text .rc-seg');
+                var legend = $$('#rc-legend > div[data-seg]');
+                var textCaption = document.getElementById('rc-text-caption');
+                function selectSeg(key) {
+                    segs.forEach(function (s) { s.classList.toggle('is-on', s.dataset.seg === key); });
+                    legend.forEach(function (d) { d.classList.toggle('is-on', d.dataset.seg === key); });
+                    var row = legend.filter(function (d) { return d.dataset.seg === key; })[0];
+                    if (row && textCaption) {
+                        textCaption.dataset.seg = key;
+                        textCaption.textContent = '';
+                        var dt = $('dt', row);
+                        var dd = $('dd', row);
+                        var strong = el('strong');
+                        if (dt) [].slice.call(dt.childNodes).forEach(function (n) { strong.appendChild(n.cloneNode(true)); });
+                        textCaption.appendChild(strong);
+                        textCaption.appendChild(document.createTextNode(': '));
+                        if (dd) [].slice.call(dd.childNodes).forEach(function (n) { textCaption.appendChild(n.cloneNode(true)); });
+                        textCaption.hidden = false;
+                    }
+                }
+                segs.forEach(function (s) {
+                    s.addEventListener('click', function () { selectSeg(s.dataset.seg); });
+                    s.addEventListener('keydown', function (event) {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            selectSeg(s.dataset.seg);
+                        }
+                    });
+                });
+            }
+
+            // ---------- Watch a turn ----------
+            // Cards checked against YGOProDeck on 4 October 2026.
+            var TURN_CARDS = {
+                rota: { name: 'Reinforcement of the Army', frame: 'spell' },
+                mf: { name: 'Mirror Force', frame: 'trap' },
+                kuriboh: { name: 'Kuriboh', frame: 'effect', atk: 300 },
+                mst: { name: 'Mystical Space Typhoon', frame: 'spell' },
+                sangan: { name: 'Sangan', frame: 'effect', atk: 1000 },
+                celtic: { name: 'Celtic Guardian', frame: 'normal', atk: 1400 },
+                alex: { name: 'Alexandrite Dragon', frame: 'normal', atk: 2000 }
+            };
+            var TURN_HAND = ['rota', 'mf', 'kuriboh', 'mst', 'sangan'];
+            var TURN_DECK = 35;
+            // One entry per caption in #wt-steps: the moves made in that step.
+            var TURN_STEPS = [
+                { phase: 'Your turn · Draw Phase', ops: [] },
+                { phase: 'Your turn · Main Phase 1', ops: [{ card: 'rota', to: 's3' }] },
+                { phase: 'Your turn · Main Phase 1', ops: [{ card: 'celtic', from: 'deck', to: 'hand' }] },
+                { phase: 'Your turn · Main Phase 1', ops: [{ card: 'rota', to: 'gy' }] },
+                { phase: 'Your turn · Main Phase 1', ops: [{ card: 'celtic', to: 'm3' }] },
+                { phase: 'Your turn · Main Phase 1', ops: [{ card: 'mf', to: 's2', down: true }] },
+                { phase: 'Your turn · End Phase', ops: [] },
+                { phase: 'Opponent\'s turn · Main Phase 1', ops: [{ card: 'alex', from: 'opp', to: 'o-m3' }] },
+                { phase: 'Opponent\'s turn · Battle Phase', ops: [], attack: ['alex', 'celtic'] },
+                { phase: 'Opponent\'s turn · Battle Phase', ops: [{ card: 'mf', to: 's2', down: false }], attack: ['alex', 'celtic'] },
+                { phase: 'Opponent\'s turn · Battle Phase', ops: [{ card: 'alex', to: 'o-gy' }] },
+                { phase: 'Opponent\'s turn · Battle Phase', ops: [{ card: 'mf', to: 'gy' }] }
+            ];
+
+            function turnState(n) {
+                var s = { at: {}, down: {}, order: {}, deck: TURN_DECK, moved: {}, from: {} };
+                var seq = 0;
+                TURN_HAND.forEach(function (c) { s.at[c] = 'hand'; s.order[c] = seq++; });
+                for (var i = 0; i <= n; i++) {
+                    TURN_STEPS[i].ops.forEach(function (op) {
+                        if (op.from === 'deck') s.deck--;
+                        s.at[op.card] = op.to;
+                        s.down[op.card] = !!op.down;
+                        s.order[op.card] = seq++;
+                        if (i === n) {
+                            s.moved[op.card] = true;
+                            if (op.from) s.from[op.card] = op.from;
+                        }
+                    });
+                }
+                return s;
+            }
+
+            function initTurn() {
+                var widget = document.getElementById('nb-turn');
+                var list = document.getElementById('wt-steps');
+                var board = document.getElementById('wt-board');
+                if (!widget || !list || !board) return;
+                var captions = $$('li', list);
+                // If an approved edit changed the steps, keep the plain list instead.
+                if (captions.length !== TURN_STEPS.length) return;
+                var phaseEl = document.getElementById('wt-phase');
+                var captionEl = document.getElementById('wt-caption');
+                var dotsEl = document.getElementById('wt-dots');
+                var prev = document.getElementById('wt-prev');
+                var next = document.getElementById('wt-next');
+                var zones = {};
+                var step = 0;
+
+                function zone(key, cls, label, rowStyle) {
+                    var z = el('div', 'wt__zone ' + cls);
+                    z.dataset.zone = key;
+                    if (label) z.appendChild(el('span', 'wt__zone-label', label));
+                    if (rowStyle) z.style.gridRow = rowStyle;
+                    zones[key] = z;
+                    board.appendChild(z);
+                }
+                function labelRow(left, right) {
+                    var row = el('div', 'wt__label');
+                    row.appendChild(el('span', null, left));
+                    row.appendChild(el('span', null, right));
+                    board.appendChild(row);
+                    return row;
+                }
+
+                var oppLabel = labelRow('Opponent', 'LP 8000');
+                for (var i = 1; i <= 5; i++) zone('o-m' + i, 'wt__zone--monster', '');
+                zone('o-gy', 'wt__zone--pile', 'GY');
+                board.appendChild(el('div', 'wt__divider'));
+                for (i = 1; i <= 5; i++) zone('m' + i, 'wt__zone--monster', '');
+                zone('gy', 'wt__zone--pile', 'GY');
+                for (i = 1; i <= 5; i++) zone('s' + i, 'wt__zone--st', '');
+                zone('deck', 'wt__zone--pile', 'Deck');
+                var hand = el('div', 'wt__hand');
+                hand.setAttribute('aria-label', 'Your hand');
+                zones.hand = hand;
+                board.appendChild(hand);
+                labelRow('You', 'LP 8000');
+
+                TURN_STEPS.forEach(function () { dotsEl.appendChild(el('span')); });
+
+                function tile(id, down) {
+                    var c = TURN_CARDS[id];
+                    var t = el('span', 'wt-card wt-card--' + (down ? 'down' : c.frame));
+                    t.dataset.card = id;
+                    t.dataset.cardname = c.name;
+                    t.setAttribute('role', 'button');
+                    t.tabIndex = 0;
+                    t.setAttribute('aria-label', c.name + (down ? ' (Set face-down)' : ''));
+                    t.appendChild(el('span', 'wt-card__name', down ? 'Set' : c.name));
+                    if (!down && c.atk !== undefined) t.appendChild(el('span', 'wt-card__stat', String(c.atk)));
+                    return t;
+                }
+
+                function pileCount(z, n) {
+                    var badge = $('.wt__count', z);
+                    if (!n) {
+                        if (badge) badge.remove();
+                        return;
+                    }
+                    if (!badge) {
+                        badge = el('span', 'wt__count');
+                        z.appendChild(badge);
+                    }
+                    badge.textContent = n;
+                }
+
+                function render(animate) {
+                    var before = {};
+                    $$('.wt-card', board).forEach(function (t) { before[t.dataset.card] = t.getBoundingClientRect(); });
+                    $$('.wt-card', board).forEach(function (t) { t.remove(); });
+
+                    var s = turnState(step);
+                    var ids = Object.keys(s.at).sort(function (a, b) { return s.order[a] - s.order[b]; });
+                    var piles = { gy: [], 'o-gy': [] };
+                    ids.forEach(function (id) {
+                        var where = s.at[id];
+                        if (piles[where]) piles[where].push(id);
+                        else zones[where].appendChild(tile(id, s.down[id]));
+                    });
+                    // A GY shows its top card and how many cards are in it.
+                    Object.keys(piles).forEach(function (key) {
+                        var pile = piles[key];
+                        if (pile.length) zones[key].appendChild(tile(pile[pile.length - 1], false));
+                        pileCount(zones[key], pile.length);
+                    });
+                    var deckTile = el('span', 'wt-card wt-card--down');
+                    deckTile.dataset.card = 'deck-pile';
+                    deckTile.setAttribute('aria-hidden', 'true');
+                    zones.deck.appendChild(deckTile);
+                    pileCount(zones.deck, s.deck);
+
+                    var attack = TURN_STEPS[step].attack;
+                    $$('.wt-card', board).forEach(function (t) {
+                        var id = t.dataset.card;
+                        t.classList.toggle('is-moved', !!s.moved[id]);
+                        if (attack) {
+                            t.classList.toggle('is-attacking', id === attack[0]);
+                            t.classList.toggle('is-target', id === attack[1]);
+                        }
+                        if (!animate || reduceMotion || typeof t.animate !== 'function' || id === 'deck-pile') return;
+                        var now = t.getBoundingClientRect();
+                        var was = before[id];
+                        if (!was && s.from[id] === 'deck') was = zones.deck.getBoundingClientRect();
+                        if (!was && s.from[id] === 'opp') was = oppLabel.getBoundingClientRect();
+                        if (!was) return;
+                        var dx = (was.left + was.width / 2) - (now.left + now.width / 2);
+                        var dy = (was.top + was.height / 2) - (now.top + now.height / 2);
+                        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+                        t.animate([
+                            { transform: 'translate(' + dx + 'px, ' + dy + 'px)' },
+                            { transform: 'none' }
+                        ], { duration: 600, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' });
+                    });
+
+                    phaseEl.textContent = 'Step ' + (step + 1) + ' of ' + TURN_STEPS.length + ' · ' + TURN_STEPS[step].phase;
+                    captionEl.textContent = '';
+                    var p = el('p');
+                    [].slice.call(captions[step].childNodes).forEach(function (n) { p.appendChild(n.cloneNode(true)); });
+                    captionEl.appendChild(p);
+                    bindCardRefs(captionEl);
+                    $$('span', dotsEl).forEach(function (d, k) {
+                        d.classList.toggle('is-done', k < step);
+                        d.classList.toggle('is-now', k === step);
+                    });
+                    prev.disabled = step === 0;
+                    next.innerHTML = step === TURN_STEPS.length - 1
+                        ? '<i class="fas fa-redo" aria-hidden="true"></i> Watch again'
+                        : 'Next step <i class="fas fa-arrow-right" aria-hidden="true"></i>';
+                }
+
+                function go(n) {
+                    step = (n + TURN_STEPS.length) % TURN_STEPS.length;
+                    render(true);
+                }
+                prev.addEventListener('click', function () { go(step - 1); });
+                next.addEventListener('click', function () { go(step + 1); });
+                widget.addEventListener('keydown', function (event) {
+                    if (event.target.closest('.wt-card')) return;
+                    if (event.key === 'ArrowRight') go(step + 1);
+                    if (event.key === 'ArrowLeft' && step > 0) go(step - 1);
+                });
+                board.addEventListener('click', function (event) {
+                    var t = event.target.closest('.wt-card[data-cardname]');
+                    if (t) openCardPopup(t, event);
+                });
+                board.addEventListener('keydown', function (event) {
+                    var t = event.target.closest('.wt-card[data-cardname]');
+                    if (t && (event.key === 'Enter' || event.key === ' ')) openCardPopup(t, event);
+                });
+
+                list.hidden = true;
+                widget.hidden = false;
+                render(false);
+            }
+
+            // ---------- Card nicknames: test yourself ----------
+            function initNicknames() {
+                var root = document.getElementById('nb-nicknames');
+                var tools = document.getElementById('nk-tools');
+                var box = document.getElementById('nk-test');
+                if (!root || !tools || !box) return;
+                tools.hidden = false;
+
+                box.addEventListener('change', function () {
+                    root.classList.toggle('is-testing', box.checked);
+                    $$('li.is-revealed', root).forEach(function (li) { li.classList.remove('is-revealed'); });
+                });
+
+                // While testing, the first tap on a hidden row reveals it instead of
+                // opening the card (capture phase, so it runs before the card link).
+                function reveal(event) {
+                    if (!root.classList.contains('is-testing')) return;
+                    var li = event.target.closest('.nk-list li');
+                    if (!li || li.classList.contains('is-revealed')) return;
+                    if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    li.classList.add('is-revealed');
+                }
+                root.addEventListener('click', reveal, true);
+                root.addEventListener('keydown', reveal, true);
+            }
+
+            // ---------- Links between the widgets ----------
+            function initCrossLinks() {
+                document.addEventListener('click', function (event) {
+                    var demo = event.target.closest('a[data-verb-demo]');
+                    if (demo) {
+                        event.preventDefault();
+                        closePopover(false);
+                        var wrap = $('.nb-field-wrap') || document.getElementById('field');
+                        var jumped = scrollToNode(wrap, 'center');
+                        // Wait for a smooth scroll to settle, so the card flies where you can see it.
+                        setTimeout(function () {
+                            if (fieldApi) fieldApi.play(demo.dataset.verbDemo);
+                        }, jumped ? 50 : 600);
+                        return;
+                    }
+                    var practise = event.target.closest('a[data-practice-deck]');
+                    if (practise && practiceApi) {
+                        event.preventDefault();
+                        practiceApi.open(practise.dataset.practiceDeck);
+                    }
+                });
+            }
+
+            // ---------- Reading progress ----------
+            function initProgress() {
+                var card = document.getElementById('nb-progress');
+                var sections = $$('section[data-readtime]');
+                var order = sections.map(function (s) { return s.id; });
+                var read = {};
+                var saved = load(STORE_READ, []);
+                if (Array.isArray(saved)) {
+                    saved.forEach(function (id) { if (order.indexOf(id) !== -1) read[id] = true; });
+                }
+                var navLinks = {};
+                $$('.nb-toc a[href^="#"]').forEach(function (a) { navLinks[a.getAttribute('href').slice(1)] = a; });
+                var titles = {};
+                sections.forEach(function (s) {
+                    var h = $('h2', s);
+                    titles[s.id] = h ? h.textContent.trim() : s.id;
+                });
+
+                function render() {
+                    Object.keys(navLinks).forEach(function (id) { navLinks[id].classList.toggle('is-read', !!read[id]); });
+                    if (!card) return;
+                    var nRead = order.filter(function (id) { return read[id]; }).length;
+                    var nWords = learnedCount();
+                    var best = load(STORE_FRAME, 0) || 0;
+                    card.hidden = !(nRead || nWords || best);
+                    document.getElementById('pg-read').textContent = nRead;
+                    document.getElementById('pg-read-total').textContent = order.length;
+                    document.getElementById('pg-words').textContent = nWords;
+                    document.getElementById('pg-frame-wrap').hidden = !best;
+                    document.getElementById('pg-frame').textContent = best;
+                    // Sections on the reader's path come first; folded ones after.
+                    var unread = order.filter(function (id) { return !read[id] && !document.getElementById(id).classList.contains('is-folded'); })[0] ||
+                        order.filter(function (id) { return !read[id]; })[0];
+                    var cont = document.getElementById('pg-continue');
+                    if (unread) {
+                        cont.href = '#' + unread;
+                        cont.textContent = 'Continue: ' + titles[unread];
+                    } else {
+                        cont.href = '#practice';
+                        cont.textContent = "You've read it all. Keep practising";
+                    }
+                }
+
+                // A section counts as read once its "Next" link has been on screen for
+                // a moment, so scrolling straight past doesn't tick it off.
+                var io = null;
+                var timers = new Map();
+                function watchUnread() {
+                    if (!io) return;
+                    sections.forEach(function (s) {
+                        var end = $('.nb-next', s) || s.lastElementChild;
+                        if (end && !read[s.id]) io.observe(end);
+                    });
+                }
+                if ('IntersectionObserver' in window) {
+                    io = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                            var section = entry.target.closest('section');
+                            if (!section) return;
+                            if (!entry.isIntersecting) {
+                                clearTimeout(timers.get(entry.target));
+                                return;
+                            }
+                            timers.set(entry.target, setTimeout(function () {
+                                if (read[section.id]) return;
+                                read[section.id] = true;
+                                save(STORE_READ, Object.keys(read));
+                                io.unobserve(entry.target);
+                                render();
+                            }, 1200));
+                        });
+                    }, { threshold: 1 });
+                    watchUnread();
+                }
+
+                var clear = document.getElementById('pg-clear');
+                var clearTimer = null;
+                if (clear) {
+                    clear.addEventListener('click', function () {
+                        if (clear.dataset.armed !== 'true') {
+                            clear.dataset.armed = 'true';
+                            clear.textContent = 'Click again to clear everything';
+                            clearTimer = setTimeout(function () {
+                                clear.dataset.armed = '';
+                                clear.textContent = 'Clear my progress';
+                            }, 4000);
+                            return;
+                        }
+                        clearTimeout(clearTimer);
+                        clear.dataset.armed = '';
+                        clear.textContent = 'Clear my progress';
+                        read = {};
+                        learned = {};
+                        save(STORE_READ, []);
+                        save(STORE_LEARNED, []);
+                        save(STORE_FRAME, 0);
+                        renderLearned();
+                        if (practiceApi) practiceApi.restart();
+                        watchUnread();
+                        render();
+                    });
+                }
+
+                learnedListeners.push(render);
+                progressApi = { render: render };
+                render();
+            }
+
+            // ---------- A modern first turn: the combo simulator, loaded when near ----------
+            var MODERN_COMBO = 'beginners-guide'; // assets/data/combos/beginners-guide-combos.json
+
+            function loadScript(src) {
+                return new Promise(function (resolve, reject) {
+                    var s = document.createElement('script');
+                    s.src = src;
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.head.appendChild(s);
+                });
+            }
+
+            function initModernTurn() {
+                var lab = document.getElementById('nb-modern-lab');
+                if (!lab) return;
+                var ready = null;
+                function start() {
+                    if (ready) return ready;
+                    var css = document.createElement('link');
+                    css.rel = 'stylesheet';
+                    css.href = '../assets/css/Visualizer_Styles.css';
+                    document.head.appendChild(css);
+                    // combo-system.js declares ComboLoader as a top-level class, which is
+                    // not a property of window, so check it with typeof. Sound is optional.
+                    ready = loadScript('../assets/js/combo-system.js')
+                        .then(function () { return loadScript('../assets/js/combo-sounds.js').catch(function () { }); })
+                        .then(function () {
+                            if (typeof ComboLoader === 'undefined') throw new Error('no ComboLoader');
+                            return ComboLoader.renderComboSystem('nb-modern-lab', MODERN_COMBO);
+                        })
+                        .catch(function () {
+                            lab.innerHTML = '<p class="nb-modern__loading">The combo simulator didn\'t load. Reload the page to try again, or see the line on the <a href="Swordsoul%20Deck%20Analysis.html">Swordsoul page</a>.</p>';
+                        });
+                    return ready;
+                }
+                modernApi = { load: start };
+                // A folded section has no size, so this also waits until it's opened.
+                if (!('IntersectionObserver' in window)) {
+                    start();
+                    return;
+                }
+                var io = new IntersectionObserver(function (entries) {
+                    if (entries.some(function (entry) { return entry.isIntersecting; })) {
+                        io.disconnect();
+                        start();
+                    }
+                }, { rootMargin: '700px 0px' });
+                io.observe(lab);
+            }
+
+            // ---------- Deck finder ----------
+            // Editorial picks: each deck has a page on this site, and none of its key cards
+            // is Forbidden in the TCG (checked 5 October 2026; results also get a live check).
+            // s = play styles, main one first; c = how much thinking, 1 to 3; t = looks;
+            // card = the art shown; q = the name to search for when it differs from n.
+            var DECKS = [
+                { n: 'Blue-Eyes', card: 'Blue-Eyes White Dragon', s: ['beatdown', 'combo'], c: 2, t: ['dragons'], why: 'Bring out the legendary 3000 ATK dragon fast, then climb into its Synchro and Ritual forms.' },
+                { n: 'Dark Magician', card: 'Dark Magician', s: ['control', 'beatdown'], c: 2, t: ['magic'], why: 'Yugi\'s ace, with Spells and Traps built to protect it.' },
+                { n: 'Swordsoul', card: 'Swordsoul Grandmaster - Chixiao', s: ['combo', 'control'], c: 2, t: ['dragons', 'warriors'], why: 'Two-card Synchro combos that end on negates. It\'s the deck in this guide\'s modern turn.' },
+                { n: 'Red-Eyes', card: 'Red-Eyes Black Dragon', s: ['beatdown'], c: 1, t: ['dragons'], why: 'An aggressive classic Dragon deck built around Red-Eyes Black Dragon and its many upgrades.' },
+                { n: 'Cyber Dragon', card: 'Cyber Dragon', s: ['beatdown'], c: 1, t: ['machines', 'dragons'], why: 'Machine dragons that swarm the field and fuse into Cyber End Dragon for one big turn.' },
+                { n: 'Elemental HERO', page: 'Elemental Hero Deck Analysis.html', card: 'Elemental HERO Neos', s: ['combo'], c: 3, t: ['warriors'], why: 'The heroes from Yu-Gi-Oh! GX, fused into big Fusion Monsters. Lots of options, lots of decisions.' },
+                { n: 'Sky Striker', card: 'Sky Striker Ace - Raye', s: ['control', 'grind'], c: 2, t: ['machines', 'cute'], why: 'One pilot and a toolbox of Quick-Play Spells; her Link forms bring the Spells back.' },
+                { n: 'Labrynth', card: 'Lady Labrynth of the Silver Castle', s: ['control'], c: 2, t: ['dark', 'cute'], why: 'A haunted castle of Fiends that thrives on Normal Traps.' },
+                { n: 'Kashtira', card: 'Kashtira Fenrir', s: ['control'], c: 1, t: ['dark'], why: 'Banish your opponent\'s cards face-down and shut down their zones.' },
+                { n: 'Snake-Eyes', q: 'Snake-Eye', card: 'Snake-Eyes Flamberge Dragon', s: ['combo', 'grind'], c: 3, t: ['dragons', 'dark'], why: 'FIRE monsters that turn cards into Continuous Spells and back, led by Snake-Eyes Flamberge Dragon.' },
+                { n: 'Purrely', card: 'Purrely', s: ['grind'], c: 2, t: ['cute'], why: 'A tiny cat that turns into Xyz Monsters with the help of its own Quick-Play Spells.' },
+                { n: 'Witchcrafter', card: 'Witchcrafter Madame Verre', s: ['grind'], c: 2, t: ['magic', 'cute'], why: 'Witches that discard Spells for power, then get those Spells back at the end of your turn.' },
+                { n: 'Stardust', card: 'Stardust Dragon', s: ['combo'], c: 2, t: ['dragons'], why: 'Yusei\'s signature dragon and its Synchro evolutions.' },
+                { n: 'Horus', card: 'King\'s Sarcophagus', s: ['beatdown', 'grind'], c: 1, t: ['dragons', 'magic'], why: 'King\'s Sarcophagus brings Horus\'s Level 8 guardians back from the GY again and again.' },
+                { n: 'Dragonmaid', card: 'House Dragonmaid', s: ['control', 'grind'], c: 2, t: ['dragons', 'cute'], why: 'Maids that swap into Dragon forms and back again around the Battle Phase.' },
+                { n: 'Exosister', card: 'Exosister Elis', s: ['control'], c: 2, t: ['magic'], why: 'Nun Spellcasters that become Xyz Monsters when your opponent moves a card out of the GY.' },
+                { n: 'Six Samurai', card: 'Legendary Six Samurai - Shi En', s: ['beatdown', 'combo'], c: 2, t: ['warriors'], why: 'Samurai that swarm the field together and protect each other.' },
+                { n: 'Mitsurugi', card: 'Mitsurugi no Mikoto, Kusanagi', s: ['combo'], c: 3, t: ['warriors', 'nature'], why: 'Serpent swordsmen and the Ritual Monsters they become, with plenty of ways to get cards back.' },
+                { n: 'Lightsworn', card: 'Judgment Dragon', s: ['grind'], c: 1, t: ['warriors', 'dragons'], why: 'Send cards from your own Deck to the GY each turn until Judgment Dragon can clear the field.' },
+                { n: 'Ancient Gear', card: 'Ancient Gear Golem', s: ['beatdown'], c: 1, t: ['machines'], why: 'Huge Machines that stop your opponent\'s Spells and Traps when they attack.' },
+                { n: 'Superheavy Samurai', card: 'Superheavy Samurai Big Benkei', s: ['beatdown', 'control'], c: 2, t: ['machines', 'warriors'], why: 'Armored Machine samurai that attack from Defense Position using their DEF.' },
+                { n: 'Drytron', card: 'Drytron Alpha Thuban', s: ['combo'], c: 3, t: ['machines'], why: 'Space-age Machines that Special Summon each other and Ritual Summon huge bosses.' },
+                { n: 'Synchron', card: 'Junk Synchron', s: ['combo'], c: 3, t: ['machines', 'warriors'], why: 'Yusei\'s Tuners: a puzzle box of Synchro Summons.' },
+                { n: 'Madolche', card: 'Madolche Queen Tiaramisu', s: ['grind'], c: 1, t: ['cute'], why: 'Dessert monsters that shuffle back into your Deck when your opponent destroys them.' },
+                { n: 'Kuriboh', card: 'Kuriboh', s: ['control'], c: 1, t: ['cute', 'dark'], why: 'The famous furball and friends: block attacks, stop damage and stall.' },
+                { n: 'Traptrix', card: 'Traptrix Rafflesia', s: ['control'], c: 1, t: ['nature', 'cute'], why: 'Plant and insect girls that set Hole Traps and spring them on your opponent.' },
+                { n: 'Tri-Brigade', card: 'Tri-Brigade Shuraig the Ominous Omen', s: ['combo', 'grind'], c: 2, t: ['nature'], why: 'Beasts, Beast-Warriors and Winged Beasts that Link Summon by banishing from the GY.' },
+                { n: 'Floowandereeze', card: 'Floowandereeze & Empen', s: ['control'], c: 2, t: ['nature', 'cute'], why: 'Birds that Tribute Summon again and again and barely touch the Extra Deck.' },
+                { n: 'Fire King', card: 'Fire King High Avatar Garunix', s: ['combo', 'grind'], c: 2, t: ['nature'], why: 'FIRE monsters that destroy themselves on purpose and come back stronger.' },
+                { n: 'Gladiator Beast', card: 'Gladiator Beast Heraklinos', s: ['beatdown'], c: 2, t: ['nature', 'warriors'], why: 'Gladiators that tag out after a battle, swapping in a fresh fighter from the Deck.' },
+                { n: 'Lunalight', card: 'Lunalight Panther Dancer', s: ['beatdown'], c: 2, t: ['nature', 'dark'], why: 'Dancing Beast-Warriors that fuse into attackers able to hit every monster your opponent has.' },
+                { n: 'Mermail', card: 'Mermail Abyssmegalo', s: ['combo'], c: 2, t: ['nature'], why: 'Sea creatures that discard each other to Special Summon straight from the hand.' },
+                { n: 'Eldlich', card: 'Eldlich the Golden Lord', s: ['control'], c: 1, t: ['dark'], why: 'A golden Zombie lord that keeps returning to your hand, backed by a wall of Traps.' },
+                { n: 'Fiendsmith', card: 'Fiendsmith Engraver', s: ['combo'], c: 3, t: ['dark'], why: 'A LIGHT Fiend engine that searches its own Spells and Traps and builds big boards fast.' }
+            ];
+            var DF_STYLE = { combo: 'Big first turns', control: 'Stopping their plays', beatdown: 'Big attacks', grind: 'Never running out' };
+            var DF_LEVEL = { 1: 'Simple', 2: 'Some thinking', 3: 'Puzzles' };
+            var DF_LOOK = { dragons: 'Dragons', magic: 'Magic', warriors: 'Warriors', machines: 'Machines', cute: 'Cute', nature: 'Beasts & nature', dark: 'Dark' };
+
+            function deckPage(d) {
+                return encodeURI(d.page || d.n + ' Deck Analysis.html');
+            }
+
+            // The look counts most (a deck you like the look of stays fun), then the play
+            // style, then how much thinking it asks for.
+            function deckScore(d, a) {
+                var score = d.s[0] === a.style ? 3 : d.s.indexOf(a.style) !== -1 ? 2 : 0;
+                var gap = Math.abs(d.c - a.level);
+                score += gap === 0 ? 2 : gap === 1 ? 1 : 0;
+                if (a.look !== 'any' && d.t.indexOf(a.look) !== -1) score += 4;
+                return score;
+            }
+
+            function initDeckFinder() {
+                var root = document.getElementById('deck-finder');
+                if (!root) return;
+                var results = document.getElementById('df-results');
+                var hint = document.getElementById('df-hint');
+                var answers = {};
+                var shown = false;
+
+                function render() {
+                    if (!answers.style || !answers.level || !answers.look) return;
+                    var a = { style: answers.style, level: +answers.level, look: answers.look };
+                    // "Surprise me" shuffles first, so ties come out differently each time.
+                    var pool = a.look === 'any' ? shuffle(DECKS) : DECKS.slice();
+                    var ranked = pool.map(function (d, i) { return { d: d, score: deckScore(d, a), i: i }; })
+                        .sort(function (x, y) { return y.score - x.score || x.i - y.i; })
+                        .slice(0, 3);
+                    var art = {};
+                    results.innerHTML = '';
+                    results.appendChild(el('p', 'df__results-title', 'Decks to look at first'));
+                    var list = el('ol', 'df__list');
+                    ranked.forEach(function (r, i) {
+                        var d = r.d;
+                        var item = el('li', 'df-card');
+                        var artId = 'df-art-' + i + '-img-container';
+                        var pic = el('div', 'df-card__art');
+                        pic.id = artId;
+                        pic.appendChild(el('div', 'card-placeholder', d.card));
+                        art[artId] = d.card;
+                        var body = el('div', 'df-card__body');
+                        var name = el('p', 'df-card__name');
+                        var link = el('a', null, d.n);
+                        link.href = deckPage(d);
+                        name.appendChild(link);
+                        body.appendChild(name);
+                        body.appendChild(el('p', 'df-card__why', d.why));
+                        var tags = el('ul', 'df-card__tags');
+                        d.s.forEach(function (s) { tags.appendChild(el('li', s === a.style ? 'is-match' : null, DF_STYLE[s])); });
+                        tags.appendChild(el('li', d.c === a.level ? 'is-match' : null, DF_LEVEL[d.c]));
+                        d.t.forEach(function (t) { tags.appendChild(el('li', t === a.look ? 'is-match' : null, DF_LOOK[t])); });
+                        tags.setAttribute('aria-label', 'Highlighted tags match your answers');
+                        body.appendChild(tags);
+                        var more = el('a', 'df-card__link', 'Read the ' + d.n + ' page ');
+                        more.href = deckPage(d);
+                        more.appendChild(el('i', 'fas fa-arrow-right')).setAttribute('aria-hidden', 'true');
+                        body.appendChild(more);
+                        item.appendChild(pic);
+                        item.appendChild(body);
+                        list.appendChild(item);
+                    });
+                    results.appendChild(list);
+                    track('deck_finder', { style: a.style, level: a.level, look: a.look, top_deck: ranked[0].d.n });
+                    // A live check of each result: name any of its cards that are Forbidden right now.
+                    $$('.df-card', list).forEach(function (item, i) {
+                        var d = ranked[i].d;
+                        fetchGroupBans(d.q || d.n).then(function (hit) {
+                            if (!hit.length || !item.isConnected) return;
+                            var note = el('p', 'df-card__ban', hit.length === 1
+                                ? 'Heads-up: ' + hit[0] + ' is Forbidden in the TCG right now.'
+                                : 'Heads-up: ' + hit.length + ' of its cards are Forbidden in the TCG right now, including ' + hit[0] + '.');
+                            var body = $('.df-card__body', item);
+                            body.insertBefore(note, $('.df-card__link', body));
+                        }).catch(function () { });
+                    });
+                    var again = el('p', 'df__hint df__again');
+                    again.appendChild(document.createTextNode('Not quite right? Change any answer above, or '));
+                    var all = el('a', null, 'browse every archetype');
+                    all.href = '../index.html';
+                    again.appendChild(all);
+                    again.appendChild(document.createTextNode('.'));
+                    results.appendChild(again);
+                    results.hidden = false;
+                    hint.hidden = true;
+                    if (hasCardLoader()) CardLoader.loadCards(art);
+                    if (!shown) {
+                        shown = true;
+                        var box = results.getBoundingClientRect();
+                        if (box.bottom > window.innerHeight) results.scrollIntoView({ behavior: scrollBehavior, block: 'nearest' });
+                    }
+                }
+
+                $$('.df__opt', root).forEach(function (opt) {
+                    opt.addEventListener('click', function () {
+                        var q = opt.dataset.q;
+                        answers[q] = opt.dataset.v;
+                        $$('.df__opt[data-q="' + q + '"]', root).forEach(function (o) {
+                            o.setAttribute('aria-pressed', o === opt ? 'true' : 'false');
+                        });
+                        var left = ['style', 'level', 'look'].filter(function (k) { return !answers[k]; }).length;
+                        if (left) hint.textContent = left === 1 ? 'One more answer to see your matches.' : 'Answer all three to see your matches.';
+                        render();
+                    });
+                });
+            }
+
+            // ---------- Printable cheat sheet ----------
+            var SHEET_PHASES = [
+                ['Draw Phase', 'draw 1 card (the player going first skips this on turn 1).'],
+                ['Standby Phase', 'a few card effects happen here; usually nothing does.'],
+                ['Main Phase 1', 'Summon monsters, activate Spells, Set cards.'],
+                ['Battle Phase', 'each of your monsters can attack once (not on the very first turn).'],
+                ['Main Phase 2', 'another Main Phase, after combat.'],
+                ['End Phase', '"end of turn" effects happen; discard down to 6 cards.']
+            ];
+            var SHEET_SUMMON = [
+                'One Normal Summon (or Set) per turn. Level 1 to 4: free. Level 5 and 6: Tribute 1. Level 7 or higher: Tribute 2.',
+                'Special Summons have no limit: they come from card effects and the Extra Deck.',
+                'Fusion: usually a Fusion Spell sends the listed materials to the GY.',
+                'Synchro: 1 Tuner plus non-Tuners whose Levels add up to the Synchro\'s Level.',
+                'Xyz: stack monsters with the same Level; they become its materials.',
+                'Link: send face-up monsters equal to its Link Rating. Link Monsters go to the Extra Monster Zone or a zone a Link points to.'
+            ];
+            var SHEET_BATTLE = [
+                'Into Attack Position: the lower ATK is destroyed and its controller takes the difference. Equal: both are destroyed, no damage.',
+                'Into Defense Position: ATK above DEF destroys it, no damage. ATK below DEF: you take the difference.',
+                'Into an empty field: a direct attack for your monster\'s full ATK.'
+            ];
+            var SHEET_TABLE = [
+                'Chains resolve last in, first out.',
+                'Say what you activate, then ask "any responses?"',
+                'You can always ask to read a card, or check either GY.',
+                'Write Life Points down. Both players start at 8000.'
+            ];
+
+            function buildSheet(sheet) {
+                if (sheet.dataset.built) return;
+                sheet.dataset.built = 'true';
+                function section(title, node) {
+                    var s = el('section');
+                    s.appendChild(el('h2', null, title));
+                    s.appendChild(node);
+                    return s;
+                }
+                function list(tag, items) {
+                    var l = el(tag);
+                    items.forEach(function (text) { l.appendChild(el('li', null, text)); });
+                    return l;
+                }
+                sheet.appendChild(el('h1', null, 'Yu-Gi-Oh! cheat sheet'));
+                sheet.appendChild(el('p', 'nb-sheet__sub', 'From the Archetype Nexus Beginner\'s Guide: archetypesnexus.com/pages/Beginners-Guide.html'));
+                var cols = el('div', 'nb-sheet__cols');
+                var phases = el('ol');
+                SHEET_PHASES.forEach(function (p) {
+                    var li = el('li');
+                    li.appendChild(el('strong', null, p[0] + ': '));
+                    li.appendChild(document.createTextNode(p[1]));
+                    phases.appendChild(li);
+                });
+                cols.appendChild(section('A turn, in order', phases));
+                cols.appendChild(section('Summoning', list('ul', SHEET_SUMMON)));
+                cols.appendChild(section('Battle', list('ul', SHEET_BATTLE)));
+                cols.appendChild(section('At the table', list('ul', SHEET_TABLE)));
+                var words = el('dl');
+                TERMS.filter(function (t) { return t.core; }).forEach(function (t) {
+                    words.appendChild(el('dt', null, t.name));
+                    words.appendChild(el('dd', null, t.short));
+                });
+                cols.appendChild(section('The ' + TERMS.filter(function (t) { return t.core; }).length + ' words to know first', words));
+                sheet.appendChild(cols);
+                sheet.appendChild(el('p', 'nb-sheet__foot', 'The full guide explains all ' + TERMS.length + ' words, with a field diagram, a card reader and a combo you can step through.'));
+            }
+
+            function initCheatSheet() {
+                var sheet = document.getElementById('cheat-sheet');
+                if (!sheet) return;
+                var root = document.documentElement;
+                document.addEventListener('click', function (event) {
+                    var trigger = event.target.closest ? event.target.closest('[data-print-sheet]') : null;
+                    if (!trigger) return;
+                    event.preventDefault();
+                    var from = trigger.closest('section[id]');
+                    track('cheat_sheet_print', { from: from ? from.id : 'page' });
+                    buildSheet(sheet);
+                    root.classList.add('nb-printing-sheet');
+                    window.print();
+                });
+                // Printing from the browser menu prints the whole guide as usual.
+                window.addEventListener('afterprint', function () { root.classList.remove('nb-printing-sheet'); });
+            }
+
+            // ---------- Live banlist checks ----------
+            // Statuses written on the page are checked against YGOProDeck's current lists,
+            // cached for a day in this browser. The written text stays if the check fails.
+            var BAN_API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
+            var STORE_BANS = 'nb-guide-bans';
+            var BAN_TTL = 24 * 60 * 60 * 1000;
+            var banMem = null;
+
+            function banCache() {
+                if (banMem) return banMem;
+                var c = load(STORE_BANS, null);
+                banMem = (c && c.t && Date.now() - c.t < BAN_TTL) ? c : { t: Date.now(), cards: {}, groups: {} };
+                banMem.cards = banMem.cards || {};
+                banMem.groups = banMem.groups || {};
+                return banMem;
+            }
+
+            function banStatus(card, list) {
+                return (card.banlist_info || {})['ban_' + list] || 'Unlimited';
+            }
+
+            function fetchJson(url) {
+                return fetch(url).then(function (r) { return r.ok ? r.json() : Promise.reject(new Error(r.status)); });
+            }
+
+            function fetchCardBans(names) {
+                var cache = banCache();
+                var missing = names.filter(function (n) { return !cache.cards[n]; });
+                if (!missing.length) return Promise.resolve(cache.cards);
+                return fetchJson(BAN_API + '?name=' + missing.map(encodeURIComponent).join('|')).then(function (j) {
+                    (j.data || []).forEach(function (c) { cache.cards[c.name] = { tcg: banStatus(c, 'tcg'), ocg: banStatus(c, 'ocg') }; });
+                    save(STORE_BANS, cache);
+                    return cache.cards;
+                });
+            }
+
+            // Every card whose name contains q (an archetype's name) that is Forbidden in the TCG.
+            function fetchGroupBans(q) {
+                var cache = banCache();
+                if (cache.groups[q]) return Promise.resolve(cache.groups[q]);
+                return fetchJson(BAN_API + '?fname=' + encodeURIComponent(q)).then(function (j) {
+                    var hit = (j.data || []).filter(function (c) { return banStatus(c, 'tcg') === 'Forbidden'; }).map(function (c) { return c.name; });
+                    cache.groups[q] = hit;
+                    save(STORE_BANS, cache);
+                    return hit;
+                });
+            }
+
+            function initLiveBans() {
+                var nodes = $$('[data-ban-card]');
+                if (!nodes.length || !window.fetch) return;
+                var names = [];
+                nodes.forEach(function (n) { if (names.indexOf(n.dataset.banCard) === -1) names.push(n.dataset.banCard); });
+                function apply(cards) {
+                    var rows = 0, rowsLive = 0;
+                    nodes.forEach(function (node) {
+                        var live = cards[node.dataset.banCard];
+                        if (node.tagName === 'TR') {
+                            rows++;
+                            if (!live) return;
+                            rowsLive++;
+                            $$('[data-ban-list]', node).forEach(function (td) { td.textContent = live[td.dataset.banList]; });
+                            return;
+                        }
+                        if (!live || live.tcg === node.dataset.banExpect || node.dataset.banNoted) return;
+                        // The sentence was true when written; say what changed next to it.
+                        node.dataset.banNoted = 'true';
+                        var text = 'Update: ' + node.dataset.banCard + ' is now ' + live.tcg + ' in the TCG.';
+                        if (node.classList.contains('nb-ban')) {
+                            var p = el('p', 'nb-ban__update', text);
+                            p.setAttribute('data-pcs-skip', '');
+                            node.appendChild(p);
+                        } else {
+                            var note = el('span', 'nb-ban-update', ' (' + text + ')');
+                            note.setAttribute('data-pcs-skip', '');
+                            node.insertAdjacentElement('afterend', note);
+                        }
+                    });
+                    var asof = $('[data-ban-asof]');
+                    if (asof && rows && rows === rowsLive) asof.textContent = 'right now';
+                }
+                function run() { fetchCardBans(names).then(apply).catch(function () { }); }
+                // After the page has settled: one request a day per browser.
+                if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 4000 });
+                else setTimeout(run, 1500);
+            }
+
+            // ---------- Stop the combo: the reader plays the opponent ----------
+            var STOP_COMBO = [
+                {
+                    step: 2,
+                    q: 'Mo Ye\'s effect is activated to Special Summon a Swordsoul Token. Which of your cards stops it?',
+                    options: ['Ash Blossom', 'Effect Veiler', 'Both of them', 'Neither'],
+                    answer: 1,
+                    why: 'Ash Blossom only stops effects that add a card from the Deck, Special Summon from the Deck or send a card from the Deck to the GY, and the Token doesn\'t come from the Deck. Effect Veiler negates a face-up monster\'s effects, so chained to Mo Ye it stops the Token (Infinite Impermanence would too). No Token means no Synchro Summon: this is the combo\'s choke point.'
+                },
+                {
+                    step: 10,
+                    q: 'Longyuan\'s effect is activated from the hand to Special Summon itself. Which of your cards stops it?',
+                    options: ['Ash Blossom', 'Effect Veiler', 'Infinite Impermanence', 'None of them'],
+                    answer: 3,
+                    why: 'Ash Blossom needs the Deck, and Effect Veiler and Infinite Impermanence both target a face-up monster on the field. Longyuan uses its effect from the hand, out of their reach. Being hard to stop is what makes it a good extender.'
+                },
+                {
+                    step: 17,
+                    q: 'It\'s your turn now, and you activate a Spell Card. What can Qixing Longyuan do about it?',
+                    options: ['Negate it', 'Banish it and deal you 1200 damage', 'Nothing, it only stops monsters'],
+                    answer: 1,
+                    why: 'It banishes the Spell and deals 1200 damage, but it doesn\'t negate it, so the Spell\'s effect still happens. Its other effect banishes a monster you Special Summon, and Chixiao can negate a monster\'s effects. Knowing exactly what each card on an end board does is how you find a way through it.'
+                }
+            ];
+
+            function waitFor(test, ms) {
+                return new Promise(function (resolve, reject) {
+                    var waited = 0;
+                    (function poll() {
+                        if (test()) return resolve();
+                        if ((waited += 150) > ms) return reject(new Error('timeout'));
+                        setTimeout(poll, 150);
+                    })();
+                });
+            }
+
+            // Reset the simulator and step it to the moment a question is about.
+            function showComboStep(n) {
+                var lab = document.getElementById('nb-modern-lab');
+                if (!lab) return;
+                if (foldApi) foldApi.reveal(lab);
+                if (modernApi) modernApi.load();
+                scrollToNode(lab, 'start');
+                waitFor(function () { return !!lab.querySelector('.btn-next'); }, 15000).then(function () {
+                    lab.querySelector('.btn-reset').click();
+                    for (var i = 0; i < n; i++) lab.querySelector('.btn-next').click();
+                }).catch(function () { });
+            }
+
+            function initStopCombo() {
+                var list = document.getElementById('sc-list');
+                var score = document.getElementById('sc-score');
+                if (!list) return;
+                var first = {};
+                STOP_COMBO.forEach(function (item, qi) {
+                    var li = el('li', 'sc-q');
+                    var text = el('p', 'sc-q__text');
+                    text.appendChild(el('span', 'sc-q__num', String(qi + 1)));
+                    text.appendChild(document.createTextNode(item.q));
+                    li.appendChild(text);
+                    var opts = el('div', 'sc-q__opts');
+                    opts.setAttribute('role', 'group');
+                    opts.setAttribute('aria-label', 'Answers to question ' + (qi + 1));
+                    var why = el('p', 'sc-q__why');
+                    why.hidden = true;
+                    why.setAttribute('aria-live', 'polite');
+                    item.options.forEach(function (label, oi) {
+                        var b = button('sc-q__opt', label);
+                        b.setAttribute('aria-pressed', 'false');
+                        b.addEventListener('click', function () {
+                            var right = oi === item.answer;
+                            $$('.sc-q__opt', opts).forEach(function (o) {
+                                o.setAttribute('aria-pressed', o === b ? 'true' : 'false');
+                                o.classList.remove('is-right', 'is-wrong');
+                            });
+                            b.classList.add(right ? 'is-right' : 'is-wrong');
+                            why.textContent = '';
+                            why.appendChild(el('strong', null, right ? 'Right. ' : 'Not quite. '));
+                            why.appendChild(document.createTextNode(right ? item.why : 'Try another answer, or see it on the board.'));
+                            why.hidden = false;
+                            if (!(qi in first)) {
+                                first[qi] = right;
+                                track('stop_combo_answer', { question: qi + 1, correct: right });
+                            }
+                            if (right) why.classList.add('is-right'); else why.classList.remove('is-right');
+                            var done = Object.keys(first).length;
+                            if (done === STOP_COMBO.length) {
+                                var got = Object.keys(first).filter(function (k) { return first[k]; }).length;
+                                score.textContent = 'You got ' + got + ' of ' + STOP_COMBO.length + ' on your first try.' +
+                                    (got === STOP_COMBO.length ? ' You found the choke point: you\'re ready to use handtraps.' : ' Read the explanations, then try the board again.');
+                            }
+                        });
+                        opts.appendChild(b);
+                    });
+                    li.appendChild(opts);
+                    li.appendChild(why);
+                    var show = button('sc-q__show', 'Show me step ' + item.step + ' ');
+                    show.appendChild(el('i', 'fas fa-arrow-up')).setAttribute('aria-hidden', 'true');
+                    show.addEventListener('click', function () { showComboStep(item.step); });
+                    li.appendChild(show);
+                    list.appendChild(li);
+                });
+            }
+
+            // ---------- Word hints on deck pages (assets/js/glossary-hints.js) ----------
+            // The same browser setting the hints' own "Hide word hints" button writes.
+            var STORE_HINTS = 'nexus-word-hints';
+            function initWordHintsToggle() {
+                var btn = document.getElementById('gl-word-hints');
+                if (!btn) return;
+                function render() {
+                    var on = true;
+                    try { on = localStorage.getItem(STORE_HINTS) !== 'off'; } catch (e) { }
+                    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+                    btn.textContent = 'Word hints on deck pages: ' + (on ? 'on' : 'off');
+                }
+                btn.addEventListener('click', function () {
+                    var on = btn.getAttribute('aria-pressed') !== 'true';
+                    try {
+                        if (on) localStorage.removeItem(STORE_HINTS);
+                        else localStorage.setItem(STORE_HINTS, 'off');
+                    } catch (e) { }
+                    track('word_hints_' + (on ? 'on' : 'off'), { from: 'guide' });
+                    render();
+                });
+                render();
+            }
+
+            // ---------- Start ----------
+            function revealFromHash() {
+                var id = decodeURIComponent(location.hash.slice(1));
+                if (id.indexOf('term-') === 0) {
+                    goToTerm(id, false);
+                    return;
+                }
+                // A hash typed or pasted into a folded section: open it, then go there.
+                var target = id ? document.getElementById(id) : null;
+                if (target && foldApi && foldApi.reveal(target)) scrollToNode(target, 'start');
+            }
+
+            // ---------- Lore Archive: a short teaser on phones ----------
+            function initLore() {
+                var lore = $('.nb-lore');
+                var more = lore ? $('.nb-lore__more', lore) : null;
+                if (!more) return;
+                var expanded = false;
+                var label = more.firstChild;
+                // Looked up each time: the suggestion system may replace the paragraph.
+                function check() {
+                    if (expanded) return;
+                    var p = $('p', lore);
+                    lore.classList.add('is-clamped');
+                    var clipped = !!p && p.scrollHeight > p.clientHeight + 2;
+                    lore.classList.toggle('is-clamped', clipped);
+                    more.hidden = !clipped;
+                }
+                more.addEventListener('click', function () {
+                    expanded = !expanded;
+                    lore.classList.toggle('is-clamped', !expanded);
+                    more.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                    label.textContent = expanded ? 'Show less' : 'Read more';
+                    if (!expanded) check();
+                });
+                window.addEventListener('resize', check);
+                check();
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                indexTerms();
+                initLearned();
+                bindCardRefs(document);
+                initPopovers();
+                initToc();
+                initField();
+                initCalc();
+                initChainStepper();
+                initFrameGame();
+                initReadCard();
+                initTurn();
+                initDecoder();
+                initNicknames();
+                initGlossary();
+                initPractice();
+                initCrossLinks();
+                initProgress();
+                renderLearned();
+                initReadingTimes();
+                // After the reading times, which count the full text of every section.
+                initPicker();
+                initLore();
+                initModernTurn();
+                initDeckFinder();
+                initCheatSheet();
+                initStopCombo();
+                initLiveBans();
+                initWordHintsToggle();
+                loadWhenNear('cards', CARD_TYPE_ART);
+                loadWhenNear('banlist', BANLIST_ART);
+
+                window.addEventListener('popstate', revealFromHash);
+                window.addEventListener('hashchange', revealFromHash);
+                // A shared link: the browser scrolls to it before the page settles.
+                // Folding, the lore teaser and the suggestion toolbars (added after a
+                // network round trip) all move things afterwards, so land on it
+                // again, unless the reader has started scrolling by then.
+                var readerMoved = false;
+                ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (type) {
+                    window.addEventListener(type, function () { readerMoved = true; }, { once: true, passive: true });
+                });
+                function landOnHash(first) {
+                    if (readerMoved || location.hash.length < 2) return;
+                    var id = decodeURIComponent(location.hash.slice(1));
+                    if (first && id.indexOf('term-') === 0) {
+                        revealFromHash();
+                        return;
+                    }
+                    var target = document.getElementById(id);
+                    if (target) target.scrollIntoView({ block: 'start' });
+                }
+                setTimeout(function () { landOnHash(true); }, 150);
+
+                var sectionsReady = typeof initPageSections === 'function' ? initPageSections('Beginners Guide') : null;
+                if (sectionsReady && sectionsReady.then) {
+                    sectionsReady.then(function () { setTimeout(function () { landOnHash(false); }, 50); }, function () { });
+                }
+            });
+        })();
+    </script>
+
+    <!-- Cookie Consent -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>
