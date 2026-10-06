@@ -292,7 +292,27 @@
             'predaplant': { palette: 'horror' },
             'resonator': { palette: 'horror' },
             'battlewasp': { palette: 'japanese' },
-            'altergeist': { palette: 'electronic' }
+            'altergeist': { palette: 'electronic' },
+            'exodia': { palette: 'sacred' },
+            'yubel': { palette: 'horror' },
+            'magician-girl': { palette: 'playful' },
+            'scrap': { palette: 'electronic' },
+            'frog': { palette: 'playful' },
+            'evol': { palette: 'tribal' },
+            'rose-dragon': { palette: 'fantasy' },
+            'gearfried': { palette: 'medieval' },
+            'cloudian': { palette: 'fantasy' },
+            'gogogo': { palette: 'tribal' },
+            'gate-guardian': { palette: 'fantasy' },
+            'buster-blader': { palette: 'medieval' },
+            'flame-swordsman': { palette: 'medieval' },
+            'neo-spacian': { palette: 'electronic' },
+            'batteryman': { palette: 'electronic' },
+            'gadget': { palette: 'playful' },
+            'fluffal': { palette: 'horror' },
+            'paleozoic': { palette: 'tribal' },
+            'volcanic': { palette: 'tribal' },
+            'silent-magician': { palette: 'sacred' }
         }
     };
 })();
