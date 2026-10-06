@@ -312,7 +312,17 @@
             'fluffal': { palette: 'horror' },
             'paleozoic': { palette: 'tribal' },
             'volcanic': { palette: 'tribal' },
-            'silent-magician': { palette: 'sacred' }
+            'silent-magician': { palette: 'sacred' },
+            'blitzclique': { palette: 'electronic' },
+            'heroic': { palette: 'medieval' },
+            'gmx': { palette: 'horror' },
+            'mimighoul': { palette: 'fantasy' },
+            'mitsurugi': { palette: 'japanese' },
+            'dododo': { palette: 'tribal' },
+            'battleguard': { palette: 'tribal' },
+            'metaphys': { palette: 'sacred' },
+            'appliancer': { palette: 'playful' },
+            'ashened': { palette: 'horror' }
         }
     };
 })();

@@ -4424,11 +4424,15 @@ window.CardLoader = (function () {
             : `relative group w-full p-4 rounded-xl shadow-lg text-center font-bold text-white transition-all duration-300 transform hover:scale-[1.02] hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] bg-gradient-to-r ${buttonColor} hover:${buttonHoverColor} flex items-center justify-center gap-3 no-underline overflow-hidden`;
 
         const iconSize = isCompact ? 'text-lg lg:text-xl' : 'text-xl';
-        const targetUrl = `../pages/Card-Browser.html?archetype=${encodeURIComponent(archetypeName)}`;
+        // `from` names this page, so the card browser can link back to it. The live
+        // site serves clean URLs ("blue-eyes-deck-analysis"), so the .html is optional.
+        const fromPage = decodeURIComponent(window.location.pathname.split('/').pop() || '');
+        const targetUrl = `../pages/Card-Browser.html?archetype=${encodeURIComponent(archetypeName)}`
+            + (fromPage && (/\.html$/i.test(fromPage) || !fromPage.includes('.')) ? `&from=${encodeURIComponent(fromPage)}` : '');
 
         if (isCompact) {
             container.innerHTML = `
-                <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors" title="${options.buttonText || 'Card Browser'}">
+                <a href="${targetUrl}" target="_blank" rel="noopener" class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors" title="${options.buttonText || 'Card Browser'}">
                     <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
                         <i class="fas fa-layer-group ${iconSize}"></i>
                     </div>

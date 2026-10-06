@@ -74,6 +74,9 @@
     // "Followed Archetypes" panel (my-replays.js).
     // ------------------------------------------------------------------
     window.FollowArchetypes = {
+        /** The archetypes row ({archetypeid, archetypename}) for a name, or null. */
+        findArchetype: _lookupArchetype,
+
         async isFollowing(archetypeid) {
             const client = _client();
             const session = await window.Auth?.getSession?.();
@@ -143,6 +146,10 @@
     }
 
     async function _initFloatingButton() {
+        // Pages that place their own Follow button (Card-Browser.html) opt out.
+        const mode = document.querySelector('meta[name="follow-archetype"]');
+        if (mode && mode.content === 'manual') return;
+
         const name = _deriveNameFromCanonical();
         if (!name) return;
 

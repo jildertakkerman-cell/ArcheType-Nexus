@@ -1,0 +1,2334 @@
+/*
+ * Card Browser (pages/Card-Browser.html, rendered by assets/js/card-browser.js).
+ *
+ * One set of markup serves both layouts: on wide screens the filters sit in a
+ * sticky toolbar and the card details open in a panel beside the grid; at
+ * phone width (max-width: 760px) both become bottom sheets.
+ *
+ * Its own stylesheet rather than Tailwind classes: output.css is compiled from
+ * the classes the site already uses, so new utility classes would not exist.
+ */
+
+.cb-page {
+    --cb-bg: #0f172a;
+    --cb-bg-deep: #0b1222;
+    --cb-surface: #151f33;
+    --cb-surface-2: #1b2740;
+    --cb-panel: #131c2e;
+    --cb-line: #1f2b42;
+    --cb-border: #2a3854;
+    --cb-border-strong: #3b4b6b;
+    --cb-text: #e6ebf3;
+    --cb-text-soft: #dbe2ec;
+    --cb-muted: #c3cddc;
+    --cb-faint: #a3afc2;
+    --cb-accent: #a5b4fc;
+    --cb-accent-fill: #4f46e5;
+    --cb-accent-edge: #6366f1;
+    --cb-ring: #8b93ff;
+    --cb-good: #86efac;
+    --cb-gold: #fcd34d;
+    --cb-gutter: clamp(16px, 3vw, 40px);
+    --cb-max: 1360px;
+
+    margin: 0;
+    min-height: 100vh;
+    background: var(--cb-bg);
+    color: var(--cb-text);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+}
+
+.cb-page *,
+.cb-page *::before,
+.cb-page *::after {
+    box-sizing: border-box;
+}
+
+/* :where() keeps this at one class of specificity, so .cb-chip, .cb-btn and
+   friends can still set their own font size and colour. */
+.cb-page :where(button, input, select) {
+    font: inherit;
+    color: inherit;
+}
+
+.cb-page button {
+    cursor: pointer;
+}
+
+.cb-page :focus-visible {
+    outline: 2px solid var(--cb-ring);
+    outline-offset: 2px;
+}
+
+.cb-page img {
+    display: block;
+}
+
+.cb-page [hidden] {
+    display: none !important;
+}
+
+.cb-wrap {
+    max-width: var(--cb-max);
+    margin: 0 auto;
+    padding-left: var(--cb-gutter);
+    padding-right: var(--cb-gutter);
+}
+
+.cb-skip {
+    position: absolute;
+    left: 12px;
+    top: -60px;
+    z-index: 100;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--cb-accent-fill);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.cb-skip:focus {
+    top: 12px;
+}
+
+.cb-visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.cb-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ---------- Buttons and chips ---------- */
+
+.cb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 9px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface);
+    color: var(--cb-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.cb-btn:hover {
+    border-color: var(--cb-border-strong);
+    background: var(--cb-surface-2);
+}
+
+.cb-btn[aria-pressed="true"],
+.cb-btn--primary {
+    background: var(--cb-accent-fill);
+    border-color: var(--cb-accent-edge);
+    color: #fff;
+}
+
+.cb-btn--primary:hover {
+    background: #4338ca;
+    border-color: var(--cb-accent-edge);
+}
+
+.cb-btn--icon {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+}
+
+.cb-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.cb-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface);
+    color: #d5dce8;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+
+.cb-chip:hover {
+    border-color: var(--cb-border-strong);
+}
+
+.cb-chip[aria-pressed="true"] {
+    background: var(--cb-accent-fill);
+    border-color: var(--cb-accent-edge);
+    color: #fff;
+}
+
+.cb-chip--ghost {
+    background: var(--cb-surface-2);
+    border-color: var(--cb-border-strong);
+    color: var(--cb-text);
+    font-weight: 600;
+}
+
+.cb-chip--ghost[aria-expanded="true"] {
+    border-color: var(--cb-accent-edge);
+}
+
+.cb-chip.is-zero {
+    opacity: 0.55;
+}
+
+.cb-chip .cb-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.cb-zone-short {
+    display: none;
+}
+
+.cb-btn.is-following {
+    background: var(--cb-accent-fill);
+    border-color: var(--cb-accent-edge);
+    color: #fff;
+}
+
+.cb-chip--small {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.cb-count {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.72;
+}
+
+.cb-seg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 11px;
+    background: var(--cb-surface);
+    border: 1px solid var(--cb-border);
+}
+
+.cb-seg-label {
+    padding: 0 8px 0 6px;
+    font-size: 12px;
+    color: var(--cb-faint);
+}
+
+.cb-seg button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--cb-muted);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cb-seg button:hover {
+    color: var(--cb-text);
+}
+
+.cb-seg button[aria-pressed="true"] {
+    background: var(--cb-text);
+    color: var(--cb-bg);
+}
+
+.cb-seg--small button {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cb-label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cb-faint);
+}
+
+/* ---------- Top bar and header ---------- */
+
+.cb-topbar {
+    background: var(--cb-bg-deep);
+    border-bottom: 1px solid var(--cb-line);
+}
+
+.cb-topbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    min-height: 60px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.cb-home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 10px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface-2);
+    color: #c7d2fe;
+}
+
+.cb-home .cb-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.cb-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--cb-faint);
+}
+
+.cb-crumbs a {
+    color: var(--cb-faint);
+    text-decoration: none;
+}
+
+.cb-crumbs a:hover {
+    color: var(--cb-text);
+    text-decoration: underline;
+}
+
+.cb-crumbs [aria-current] {
+    color: var(--cb-text);
+    font-weight: 600;
+}
+
+.cb-crumb-sep {
+    color: #4a5b7d;
+}
+
+.cb-top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* Phone-only pieces, hidden on wider screens. */
+.cb-topbar-title,
+.cb-icon--phone,
+.cb-shown,
+.cb-art-foot,
+.cb-detail-steps {
+    display: none;
+}
+
+.cb-fmt-note {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--cb-faint);
+}
+
+.cb-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 20px 32px;
+    padding-top: 32px;
+}
+
+.cb-hero-text {
+    flex: 1 1 480px;
+    min-width: 0;
+}
+
+.cb-eyebrow {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cb-accent);
+}
+
+.cb-title {
+    margin: 0;
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+}
+
+.cb-summary {
+    margin: 10px 0 0;
+    font-size: 15px;
+    color: var(--cb-faint);
+}
+
+.cb-legality {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cb-legality-cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cb-legality-cell {
+    min-width: 120px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface);
+}
+
+.cb-legality-cell span {
+    display: block;
+}
+
+.cb-legality-fmt {
+    font-size: 12px;
+    color: var(--cb-faint);
+}
+
+.cb-legality-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cb-good);
+}
+
+.cb-legality-text.is-restricted {
+    color: var(--cb-gold);
+}
+
+/* ---------- Newest support ---------- */
+
+.cb-newest {
+    padding-top: 28px;
+}
+
+.cb-newest-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 12px;
+}
+
+.cb-h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.cb-newest-note {
+    font-size: 13px;
+    color: var(--cb-faint);
+}
+
+.cb-newest-head .cb-chip {
+    margin-left: auto;
+}
+
+.cb-rail {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.cb-rail-card {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface);
+    text-align: left;
+    transition: border-color 0.15s, transform 0.15s;
+}
+
+.cb-rail-card:hover {
+    border-color: var(--cb-border-strong);
+    transform: translateY(-2px);
+}
+
+.cb-rail-card.is-selected {
+    outline: 2px solid var(--cb-ring);
+    outline-offset: 2px;
+}
+
+.cb-rail-art {
+    width: 76px;
+    flex: none;
+}
+
+.cb-rail-text {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.cb-rail-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.cb-rail-type {
+    font-size: 12px;
+    color: var(--cb-faint);
+}
+
+.cb-rail-release {
+    font-size: 12px;
+    color: var(--cb-muted);
+}
+
+/* ---------- Badges ---------- */
+
+.cb-badge {
+    display: inline-block;
+    align-self: flex-start;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.cb-badge-short {
+    display: none;
+}
+
+.cb-badge--new {
+    background: #065f46;
+    color: #d1fae5;
+}
+
+.cb-badge--soon {
+    background: #1e3a8a;
+    color: #dbeafe;
+}
+
+.cb-badge--ocg {
+    background: #9f1239;
+    color: #ffe4e6;
+}
+
+.cb-badge--debut {
+    background: #3730a3;
+    color: #e0e7ff;
+}
+
+.cb-badge--forbidden {
+    background: #b91c1c;
+    color: #fff;
+}
+
+.cb-badge--limited {
+    background: #b45309;
+    color: #fff;
+}
+
+.cb-badge--semi-limited {
+    background: #854d0e;
+    color: #fff;
+}
+
+/* ---------- Card art ---------- */
+
+.cb-art {
+    position: relative;
+    display: block;
+    border-radius: 8px;
+    background: var(--cb-surface);
+}
+
+.cb-art img {
+    width: 100%;
+    aspect-ratio: 59 / 86;
+    object-fit: cover;
+    border-radius: inherit;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.cb-art-badges {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.cb-art-badges .cb-badge,
+.cb-art-ban .cb-badge {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+.cb-art-ban {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    pointer-events: none;
+}
+
+/* ---------- Toolbar ---------- */
+
+.cb-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin-top: 28px;
+    background: rgba(15, 23, 42, 0.96);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--cb-line);
+    border-bottom: 1px solid var(--cb-line);
+}
+
+/* An open tag or filter panel makes the toolbar too tall to keep on screen. */
+.cb-toolbar.has-open-panel {
+    position: relative;
+}
+
+.cb-toolbar-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 14px;
+    padding-bottom: 12px;
+}
+
+.cb-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+}
+
+.cb-search {
+    position: relative;
+    flex: 1 1 180px;
+    max-width: 340px;
+}
+
+.cb-search .cb-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cb-faint);
+    pointer-events: none;
+}
+
+.cb-search input {
+    width: 100%;
+    height: 40px;
+    padding: 0 34px 0 36px;
+    border-radius: 10px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface);
+    color: var(--cb-text);
+    font-size: 14px;
+}
+
+.cb-search input::placeholder {
+    color: #8592a8;
+}
+
+.cb-search input:focus {
+    border-color: var(--cb-accent-edge);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35);
+}
+
+.cb-tools-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.cb-sort {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--cb-faint);
+}
+
+/* The dropdown's value says what it does; "Sort" stays for screen readers. */
+.cb-sort-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.cb-sort select {
+    height: 40px;
+    padding: 0 10px;
+    border-radius: 10px;
+    border: 1px solid var(--cb-border);
+    background: var(--cb-surface);
+    color: var(--cb-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cb-filters-btn {
+    display: none;
+}
+
+.cb-filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--cb-accent-fill);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cb-filter-count[hidden] {
+    display: none;
+}
+
+.cb-sheet-head,
+.cb-sheet-foot,
+.cb-filters .cb-fmt-mobile {
+    display: none;
+}
+
+.cb-filters,
+.cb-sheet-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cb-btn-text--short {
+    display: none;
+}
+
+.cb-roles-row .cb-label {
+    margin-right: 4px;
+}
+
+.cb-divider {
+    width: 1px;
+    height: 22px;
+    margin: 0 4px;
+    background: var(--cb-border);
+}
+
+.cb-match {
+    border-radius: 999px;
+}
+
+.cb-match button {
+    height: 26px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.cb-panel {
+    display: none;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--cb-border);
+    background: #121b2e;
+}
+
+.cb-panel.is-open {
+    display: grid;
+}
+
+.cb-panel--tags {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px 24px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.cb-panel--more {
+    grid-template-columns: repeat(auto-fill, minmax(240px, max-content));
+    gap: 16px 32px;
+}
+
+.cb-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.cb-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.cb-cat-label {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.cb-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 32px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.cb-check input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--cb-accent-edge);
+}
+
+.cb-status-row {
+    min-height: 28px;
+    gap: 8px;
+}
+
+.cb-status {
+    margin: 0 6px 0 0;
+    font-size: 13px;
+    color: var(--cb-muted);
+}
+
+.cb-status strong {
+    color: #fff;
+}
+
+.cb-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 8px 0 11px;
+    border-radius: 999px;
+    border: 1px solid var(--cb-accent-fill);
+    background: rgba(79, 70, 229, 0.18);
+    color: #e0e7ff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.cb-active .cb-icon {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2.4;
+}
+
+.cb-link-btn {
+    height: 28px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    color: var(--cb-accent);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ---------- Results ---------- */
+
+.cb-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 28px;
+    padding-top: 28px;
+    padding-bottom: 72px;
+}
+
+.cb-results {
+    flex: 999 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    scroll-margin-top: 200px;
+    /* The list view sizes its columns to this, not to the window: the card panel takes 400px of it. */
+    container-type: inline-size;
+    container-name: cb-results;
+}
+
+.cb-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.cb-section[hidden] {
+    display: none;
+}
+
+.cb-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--cb-line);
+}
+
+.cb-dot {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    border-radius: 3px;
+}
+
+.cb-section-count {
+    font-size: 13px;
+    color: var(--cb-faint);
+}
+
+.cb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+    gap: 28px 20px;
+}
+
+.cb-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+}
+
+.cb-tile .cb-art {
+    transition: transform 0.15s;
+}
+
+.cb-tile:hover .cb-art {
+    transform: translateY(-3px);
+}
+
+.cb-tile.is-selected .cb-art {
+    outline: 2px solid var(--cb-ring);
+    outline-offset: 3px;
+}
+
+.cb-tile-name {
+    margin-top: 4px;
+    min-height: 35px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.cb-tile-meta {
+    overflow: hidden;
+    font-size: 12px;
+    color: var(--cb-faint);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.cb-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 22px;
+}
+
+.cb-role {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--cb-surface-2);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.cb-clamp2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cb-more-btn {
+    display: none;
+}
+
+.cb-skeleton {
+    border-radius: 8px;
+    aspect-ratio: 59 / 86;
+    background: linear-gradient(100deg, #151f33 30%, #1d2a45 50%, #151f33 70%);
+    background-size: 200% 100%;
+    animation: cb-shimmer 1.4s linear infinite;
+}
+
+@keyframes cb-shimmer {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+}
+
+.cb-empty {
+    padding: 48px 24px;
+    border: 1px dashed var(--cb-border);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.cb-empty p {
+    margin: 0 0 6px;
+}
+
+.cb-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.cb-empty-note {
+    margin-bottom: 16px !important;
+    color: var(--cb-faint);
+}
+
+.cb-message {
+    padding: 64px 16px;
+    text-align: center;
+    color: var(--cb-faint);
+}
+
+.cb-message a {
+    color: var(--cb-accent);
+}
+
+/* List view */
+
+.cb-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--cb-line);
+    border-radius: 12px;
+}
+
+.cb-table {
+    width: 100%;
+    min-width: 940px;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.cb-table th {
+    padding: 10px 14px;
+    background: #121b2e;
+    color: var(--cb-faint);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.cb-table th button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cb-muted);
+    font-weight: 700;
+}
+
+.cb-table td {
+    padding: 6px 14px;
+    border-top: 1px solid #1d2940;
+    color: var(--cb-muted);
+    vertical-align: middle;
+}
+
+.cb-table tr.is-selected td {
+    background: var(--cb-surface-2);
+}
+
+.cb-row-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    max-width: 320px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--cb-text) !important;
+    font-weight: 600;
+    text-align: left;
+}
+
+.cb-row-card img {
+    width: 32px;
+    flex: none;
+    aspect-ratio: 59 / 86;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.cb-num {
+    color: var(--cb-text);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.cb-print {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--cb-surface-2);
+    color: var(--cb-muted);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cb-ban-text {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.cb-table td.cb-col-card {
+    min-width: 200px;
+}
+
+.cb-inline-attr,
+.cb-inline-print {
+    display: none;
+}
+
+/* Narrower list (card panel open, or a small window): Attribute moves into the
+   Lv column and Print becomes a badge after the name for OCG-only and upcoming cards. */
+@container cb-results (max-width: 1059px) {
+    .cb-table {
+        min-width: 0;
+    }
+
+    .cb-table th,
+    .cb-table td {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .cb-col-attr,
+    .cb-col-print {
+        display: none;
+    }
+
+    .cb-inline-attr {
+        display: inline;
+    }
+
+    .cb-table .cb-col-lv {
+        white-space: nowrap;
+    }
+
+    .cb-inline-print {
+        display: inline-block;
+        margin-left: 6px;
+        vertical-align: 1px;
+    }
+}
+
+@container cb-results (max-width: 819px) {
+    .cb-col-type,
+    .cb-col-date {
+        display: none;
+    }
+
+    .cb-table .cb-col-lv {
+        white-space: normal;
+    }
+}
+
+@container cb-results (max-width: 599px) {
+    .cb-col-roles {
+        display: none;
+    }
+}
+
+/* Anime-only */
+
+.cb-anime {
+    padding: 4px 16px;
+    border: 1px dashed var(--cb-border);
+    border-radius: 12px;
+}
+
+.cb-anime-heading {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.cb-anime-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+}
+
+.cb-anime-toggle .cb-icon {
+    margin-left: auto;
+    color: var(--cb-faint);
+    transition: transform 0.2s;
+}
+
+.cb-anime-toggle[aria-expanded="true"] .cb-icon {
+    transform: rotate(180deg);
+}
+
+.cb-anime-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 0 14px;
+}
+
+.cb-anime-item {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--cb-surface);
+}
+
+.cb-anime-item p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--cb-muted);
+}
+
+.cb-anime-item .cb-anime-name {
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #f9a8d4;
+}
+
+/* ---------- Card details panel ---------- */
+
+/* A popover over the cards at the right-hand side; placeDetail() in
+   card-browser.js sets top/left so it lines up with the results and sits
+   just under the sticky toolbar. */
+.cb-detail {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 35;
+    width: min(400px, calc(100vw - 32px));
+    border-radius: 16px;
+    border: 1px solid var(--cb-border-strong);
+    background: var(--cb-panel);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.25);
+    animation: cb-slide-in 0.16s ease-out;
+}
+
+@keyframes cb-slide-in {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: none; }
+}
+
+.cb-detail[hidden] {
+    display: none;
+}
+
+.cb-detail-inner {
+    display: block;
+    padding: 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: inherit;
+}
+
+.cb-detail-inner > * + *,
+.cb-detail-main > * + *,
+.cb-detail-side > * + * {
+    margin-top: 14px;
+}
+
+/* Every card the same way round: details on the left, gameplay tags and
+   what the effect does on the right. The divider is a background line so it
+   runs the full height whichever side is taller. */
+.cb-detail-cols {
+    display: grid;
+    grid-template-columns: var(--cb-main-w, 352px) minmax(0, 1fr);
+    align-items: start;
+    background: linear-gradient(var(--cb-line), var(--cb-line)) no-repeat calc(var(--cb-main-w, 352px) + 14px) 0 / 1px 100%;
+}
+
+/* card-browser.js gives either side two newspaper columns when one is too
+   tall for the screen; --cb-main-w then widens the left side. */
+.cb-detail-main,
+.cb-detail-side {
+    column-gap: 28px;
+    column-rule: 1px solid var(--cb-line);
+}
+
+.cb-detail-side {
+    padding-left: 28px;
+}
+
+.cb-detail-main > *,
+.cb-detail-side > * {
+    break-inside: avoid;
+}
+
+/* The tag and action lists may continue in the next column, never mid-item or after a heading. */
+.cb-detail-side > .cb-detail-block--flow {
+    break-inside: auto;
+}
+
+.cb-detail-inner .cb-label,
+.cb-tag-group,
+.cb-action {
+    break-inside: avoid;
+}
+
+.cb-detail-inner .cb-label {
+    break-after: avoid;
+}
+
+.cb-detail-none {
+    margin: 0;
+    font-size: 13px;
+    color: var(--cb-faint);
+}
+
+.cb-detail-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* When a very long card still has to scroll (small screens), the nav row stays put.
+   Sticky offsets count from inside the panel's padding, hence the negative top. */
+.cb-detail-inner > .cb-detail-nav {
+    position: sticky;
+    top: -18px;
+    z-index: 1;
+    margin: -18px -18px 0;
+    padding: 18px 18px 10px;
+    background: var(--cb-panel);
+    border-radius: 16px 16px 0 0;
+}
+
+.cb-detail-pos {
+    margin-right: auto;
+    font-size: 12px;
+    color: var(--cb-faint);
+}
+
+.cb-detail-nav .cb-btn--icon {
+    width: 36px;
+    height: 36px;
+    background: var(--cb-surface-2);
+}
+
+.cb-grabber {
+    display: none;
+}
+
+.cb-detail-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.cb-detail-art {
+    width: 124px;
+    flex: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    border-radius: 8px;
+}
+
+.cb-detail-art img {
+    width: 100%;
+    aspect-ratio: 59 / 86;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.cb-detail-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.cb-detail-name {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.25;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.cb-detail-type {
+    margin: 0;
+    font-size: 13px;
+    color: var(--cb-muted);
+}
+
+.cb-detail-stats {
+    margin: 2px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cb-text);
+}
+
+.cb-detail-atk {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--cb-gold);
+    font-variant-numeric: tabular-nums;
+}
+
+.cb-detail-atk span {
+    margin: 0 2px;
+    color: var(--cb-faint);
+    font-weight: 500;
+}
+
+.cb-bans {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.cb-ban-cell {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--cb-surface-2);
+}
+
+.cb-ban-cell.is-current {
+    box-shadow: inset 0 0 0 1px var(--cb-accent-edge);
+}
+
+.cb-ban-cell span {
+    display: block;
+}
+
+.cb-ban-fmt {
+    font-size: 11px;
+    color: var(--cb-faint);
+}
+
+.cb-ban-status {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cb-detail-block .cb-label {
+    margin-bottom: 6px;
+}
+
+.cb-detail-release {
+    margin: 0;
+    font-size: 13px;
+    color: var(--cb-text-soft);
+}
+
+.cb-desc {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--cb-text-soft);
+    white-space: pre-line;
+}
+
+.cb-label-note {
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.cb-tag-group {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    border-top: 1px solid #1d2940;
+}
+
+.cb-tag-group-label {
+    width: 88px;
+    flex: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.cb-tag-group .cb-chip {
+    height: 26px;
+    padding: 0 9px;
+    font-size: 12px;
+    background: var(--cb-surface-2);
+    color: var(--cb-text-soft);
+}
+
+.cb-tag-group .cb-chip[aria-pressed="true"] {
+    background: #3730a3;
+    color: #fff;
+}
+
+/* "What the effect does": one line per action with the tags it adds. */
+.cb-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Text and its tag chips share a line when they fit. */
+.cb-action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: #111a2c;
+    transition: opacity 0.15s, border-color 0.15s;
+}
+
+.cb-action-text {
+    display: block;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--cb-text-soft);
+}
+
+.cb-action-text {
+    flex: 1 1 150px;
+}
+
+.cb-action-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.cb-chip--tiny {
+    height: 24px;
+    padding: 0 8px;
+    border-color: var(--cb-border);
+    background: var(--cb-surface-2);
+    color: var(--cb-chip-fg, var(--cb-text-soft));
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.cb-chip--tiny[aria-pressed="true"] {
+    color: #fff;
+}
+
+/* Pointing at a tag (or an action) lights up its partners and dims the rest. */
+.cb-detail.is-linking .cb-action:not(.is-linked),
+.cb-detail.is-linking .cb-tag-group .cb-chip:not(.is-linked) {
+    opacity: 0.4;
+}
+
+.cb-detail .cb-action.is-linked {
+    border-color: var(--cb-accent-edge);
+}
+
+.cb-detail .cb-tag-group .cb-chip.is-linked {
+    box-shadow: 0 0 0 2px var(--cb-ring);
+}
+
+.cb-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cb-scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    border: 0;
+    padding: 0;
+    background: rgba(2, 6, 23, 0.66);
+}
+
+/* ---------- Phone layout ---------- */
+
+@media (max-width: 760px) {
+    /* App bar: "‹ Deck guide", the archetype name, Follow. Sticks with the toolbar. */
+    .cb-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+    }
+
+    .cb-topbar-inner {
+        flex-wrap: nowrap;
+        min-height: 56px;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        gap: 6px;
+    }
+
+    .cb-crumbs {
+        display: none;
+    }
+
+    .cb-top-actions {
+        display: contents;
+    }
+
+    .cb-has-guide .cb-home {
+        display: none;
+    }
+
+    #cb-guide-link {
+        order: 1;
+        height: 44px;
+        margin-left: -6px;
+        padding: 0 8px 0 2px;
+        gap: 4px;
+        border: 0;
+        background: none;
+        color: var(--cb-accent);
+        font-size: 14px;
+    }
+
+    #cb-guide-link .cb-icon--wide,
+    #cb-guide-link .cb-btn-text {
+        display: none;
+    }
+
+    #cb-guide-link .cb-icon--phone {
+        display: block;
+        width: 18px;
+        height: 18px;
+    }
+
+    #cb-guide-link .cb-btn-text--short {
+        display: inline;
+    }
+
+    .cb-topbar-title {
+        display: block;
+        order: 2;
+        flex: 1 1 auto;
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .cb-topbar-title span {
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--cb-faint);
+    }
+
+    #cb-follow {
+        order: 3;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    #cb-follow .cb-btn-text {
+        display: none;
+    }
+
+    /* The app bar carries the name; the header stays for screen readers only. */
+    .cb-hero {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* Search and filters come before the newest-support row. */
+    #browser-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Full width explicitly: .cb-wrap's auto margins would otherwise shrink each
+       block to its content, and the size-contained results area reports none. */
+    #browser-content > * {
+        width: 100%;
+    }
+
+    #browser-content > .cb-toolbar {
+        order: 1;
+    }
+
+    #browser-content > .cb-newest {
+        order: 2;
+    }
+
+    #browser-content > .cb-body {
+        order: 3;
+    }
+
+    .cb-newest {
+        padding-top: 18px;
+    }
+
+    .cb-rail-text .cb-badge {
+        display: none;
+    }
+
+    .cb-art-foot {
+        position: absolute;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+    }
+
+    .cb-art-foot .cb-badge {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    }
+
+    .cb-shown {
+        display: block;
+        margin: 0 auto 0 4px;
+        font-size: 13px;
+        color: var(--cb-muted);
+        white-space: nowrap;
+    }
+
+    .cb-shown strong {
+        color: #fff;
+    }
+
+    /* The count sits next to Filters; the status line stays for screen readers. */
+    .cb-status-row {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .cb-detail-nav [data-action="prev-card"],
+    .cb-detail-nav [data-action="next-card"] {
+        display: none;
+    }
+
+    .cb-detail-steps {
+        display: flex;
+        gap: 8px;
+    }
+
+    .cb-detail-steps .cb-btn {
+        flex: 1;
+        height: 44px;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .cb-newest.is-hidden-phone {
+        display: none;
+    }
+
+    .cb-newest-note {
+        display: none;
+    }
+
+    .cb-rail {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        margin: 0 calc(var(--cb-gutter) * -1);
+        padding: 0 var(--cb-gutter) 6px;
+        scrollbar-width: none;
+    }
+
+    .cb-rail-card {
+        flex: none;
+        flex-direction: column;
+        width: 112px;
+        padding: 0;
+        border: 0;
+        background: none;
+        gap: 6px;
+    }
+
+    .cb-rail-card:hover {
+        transform: none;
+    }
+
+    .cb-rail-art {
+        width: 112px;
+    }
+
+    .cb-rail-type,
+    .cb-rail-release {
+        display: none;
+    }
+
+    .cb-rail-name {
+        font-size: 12px;
+    }
+
+    .cb-rail-card .cb-badge {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cb-rail-card .cb-badge-long {
+        display: none;
+    }
+
+    .cb-rail-card .cb-badge-short {
+        display: inline;
+    }
+
+    .cb-legality .cb-label {
+        display: none;
+    }
+
+    .cb-legality-fmt,
+    .cb-legality-text {
+        font-size: 12px;
+    }
+
+    /* No backdrop-filter here: it would make the fixed filters sheet inside
+       the toolbar position against the toolbar instead of the screen. */
+    .cb-toolbar {
+        top: 56px;
+        margin-top: 0;
+        border-top: 0;
+        background: var(--cb-bg);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .cb-filters-open .cb-toolbar {
+        z-index: 70;
+    }
+
+    .cb-zone-long {
+        display: none;
+    }
+
+    .cb-zone-short {
+        display: inline;
+    }
+
+    .cb-toolbar-inner {
+        gap: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .cb-row--main {
+        gap: 10px 8px;
+    }
+
+    .cb-search {
+        flex: 1 1 100%;
+        max-width: none;
+    }
+
+    .cb-search input {
+        height: 44px;
+        font-size: 16px;
+    }
+
+    .cb-zones {
+        flex-wrap: nowrap;
+        width: calc(100% + var(--cb-gutter) * 2);
+        margin: 0 calc(var(--cb-gutter) * -1);
+        padding: 0 var(--cb-gutter);
+        overflow-x: auto;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        gap: 6px;
+        scrollbar-width: none;
+    }
+
+    .cb-zones button {
+        flex: none;
+        height: 36px;
+        border: 1px solid var(--cb-border);
+        border-radius: 999px;
+        background: var(--cb-surface);
+    }
+
+    .cb-zones button[aria-pressed="true"] {
+        background: var(--cb-accent-fill);
+        border-color: var(--cb-accent-edge);
+        color: #fff;
+    }
+
+    .cb-tools-right {
+        flex-wrap: nowrap;
+        width: 100%;
+        margin-left: 0;
+        gap: 8px;
+    }
+
+    .cb-filters-btn {
+        display: inline-flex;
+        height: 40px;
+    }
+
+    .cb-tools-right .cb-fmt-desktop,
+    .cb-tools-right .cb-view {
+        display: none;
+    }
+
+    .cb-sort {
+        flex: none;
+    }
+
+
+    .cb-sort select {
+        height: 40px;
+        max-width: 132px;
+    }
+
+    .cb-status-row .cb-active,
+    .cb-status-row .cb-link-btn {
+        display: none;
+    }
+
+    /* Filters become a bottom sheet */
+    .cb-filters {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        max-height: 88vh;
+        gap: 0;
+        border-radius: 20px 20px 0 0;
+        border-top: 1px solid var(--cb-border);
+        background: var(--cb-panel);
+        transform: translateY(105%);
+        visibility: hidden;
+        transition: transform 0.22s ease, visibility 0s linear 0.22s;
+    }
+
+    .cb-filters-open .cb-filters {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.22s ease;
+    }
+
+    .cb-sheet-head {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 16px 0;
+    }
+
+    .cb-sheet-head-row {
+        display: flex;
+        align-items: center;
+    }
+
+    .cb-sheet-head-row .cb-link-btn {
+        height: 44px;
+        margin-left: auto;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .cb-sheet-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    .cb-sheet-body {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 4px 16px 16px;
+        overflow-y: auto;
+    }
+
+    .cb-sheet-foot {
+        display: block;
+        padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--cb-line);
+    }
+
+    .cb-sheet-foot .cb-btn {
+        width: 100%;
+        height: 48px;
+        justify-content: center;
+        font-size: 15px;
+    }
+
+    .cb-filters .cb-fmt-mobile {
+        display: flex;
+    }
+
+    .cb-roles-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cb-roles-row .cb-chip-list .cb-chip {
+        height: 36px;
+    }
+
+    .cb-roles-row .cb-divider,
+    .cb-panel-toggle--more {
+        display: none !important;
+    }
+
+    .cb-roles-row .cb-panel-toggle {
+        align-self: flex-start;
+        height: 36px;
+    }
+
+    .cb-panel--more,
+    .cb-panel--more.is-open {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 0;
+        border: 0;
+        background: none;
+    }
+
+    .cb-panel--tags.is-open {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .cb-panel--tags .cb-filter-group .cb-chip {
+        height: 32px;
+    }
+
+    .cb-results {
+        gap: 28px;
+    }
+
+    .cb-body {
+        padding-top: 16px;
+    }
+
+    .cb-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px 10px;
+    }
+
+    .cb-tile-name {
+        min-height: 0;
+        font-size: 12px;
+    }
+
+    .cb-tile-meta,
+    .cb-roles {
+        display: none;
+    }
+
+    .cb-art-badges {
+        top: 4px;
+        left: 4px;
+        right: 4px;
+        gap: 3px;
+    }
+
+    .cb-badge {
+        padding: 1px 5px;
+    }
+
+    .cb-section.is-collapsed .cb-grid > .cb-tile:nth-child(n + 7) {
+        display: none;
+    }
+
+    .cb-more-btn {
+        display: block;
+        height: 44px;
+        border-radius: 10px;
+        border: 1px solid var(--cb-border);
+        background: var(--cb-surface);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .cb-more-btn[hidden] {
+        display: none;
+    }
+
+    /* Card details become a bottom sheet */
+    .cb-detail {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        z-index: 60;
+        width: auto;
+        border-radius: 20px 20px 0 0;
+        border-width: 1px 0 0;
+        animation: none;
+    }
+
+    .cb-detail-inner {
+        max-height: 82vh;
+        padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .cb-detail-inner > * + *,
+    .cb-detail-main > * + *,
+    .cb-detail-side > * + * {
+        margin-top: 14px;
+    }
+
+    /* Phones stack the two sides: details first, then the tags. */
+    .cb-detail-cols {
+        display: block;
+        background: none;
+    }
+
+    .cb-detail-side {
+        margin-top: 14px;
+        padding-left: 0;
+    }
+
+    .cb-grabber {
+        display: block;
+        margin: 0 auto;
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--cb-border-strong);
+    }
+
+    .cb-detail-nav .cb-btn--icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .cb-detail-art {
+        width: 112px;
+    }
+
+    .cb-detail-name {
+        font-size: 17px;
+    }
+
+    .cb-desc {
+        font-size: 14px;
+    }
+
+    .cb-detail-open .cb-scrim--detail,
+    .cb-filters-open .cb-scrim--filters {
+        display: block;
+    }
+
+    .cb-sheet-lock,
+    .cb-sheet-lock body {
+        overflow: hidden;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cb-page *,
+    .cb-page *::before,
+    .cb-page *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Touch screens can't point at a tag; the action lines show the tags instead. */
+@media (hover: none) {
+    .cb-hover-note {
+        display: none;
+    }
+}
+
+/* The grabber only shows on phones; on wider screens the nav row starts the
+   panel, pulled into the padding so it can stay pinned with its own background. */
+.cb-detail-inner > .cb-grabber + .cb-detail-nav {
+    margin-top: -18px;
+}
+
+@media (max-width: 760px) {
+    .cb-detail-inner > .cb-grabber + .cb-detail-nav {
+        top: -8px;
+        margin: 2px -16px 0;
+        padding: 6px 16px 8px;
+        border-radius: 0;
+    }
+}
+
+/* "/" focuses the search box; the hint hides once it is in use, and on touch screens. */
+.cb-kbd {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border: 1px solid var(--cb-border-strong);
+    border-radius: 5px;
+    background: var(--cb-surface-2);
+    color: var(--cb-faint);
+    font: 600 11px/18px 'Inter', system-ui, sans-serif;
+    text-align: center;
+    pointer-events: none;
+}
+
+.cb-search input:focus ~ .cb-kbd,
+.cb-search input:not(:placeholder-shown) ~ .cb-kbd {
+    display: none;
+}
+
+@media (hover: none), (max-width: 760px) {
+    .cb-kbd {
+        display: none;
+    }
+}
+
+/* Where the search matched, in the card panel. */
+.cb-mark {
+    padding: 0 1px;
+    border-radius: 3px;
+    background: rgba(250, 204, 21, 0.3);
+    color: inherit;
+}
+
+/* Wider screens: the role chips stay on one line (card-browser.js hides the
+   ones that don't fit), keeping the sticky toolbar short. The padding keeps
+   focus rings from being clipped. */
+@media (min-width: 761px) {
+    .cb-roles-row {
+        flex-wrap: nowrap;
+    }
+
+    .cb-roles-row > * {
+        flex: none;
+    }
+
+    .cb-roles-row .cb-chip-list {
+        flex: 0 1 auto;
+        min-width: 0;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        padding: 3px;
+        margin: -3px;
+    }
+}

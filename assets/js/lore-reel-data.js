@@ -286,6 +286,9 @@
  * Batch 30 (2026-10-06): art trails gate-guardian, buster-blader, flame-swordsman, neo-spacian, Batteryman, Gadget, Fluffal,
  * Paleozoic, Volcanic and silent-magician
  * (Yugipedia card trivia).
+ * Batch 31 (2026-10-06): art trails Blitzclique, Heroic, GMX, Mimighoul, Mitsurugi, Dododo, Battleguard, Metaphys,
+ * Appliancer and Ashened
+ * (Yugipedia card trivia).
  * Sources (checked September 2026, via Yugipedia): K9, The Valuable Book EX 6 No. 9
  * (the personnel files); Ghostrick, Master Guide 4 File No. 07 (where each ghost
  * lives); Mikanko, The Valuable Book EX 3 No. 07 (the three families; each girl's
@@ -6723,6 +6726,187 @@
             { card: 'Silent Burning', title: 'Silent Burning', color: '#c7d2fe', face: [0.5, 0.35], pan: [0.27, 0.5] },
             { card: 'Silent Magician Zero', title: 'Zero', color: '#e0f2fe', face: [0.6, 0.2], pan: [0.12, 0.35] },
             { card: 'Future Silence', title: 'Future Silence', color: '#f0f9ff', face: [0.5, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['blitzclique'] = {
+        kind: 'trail',
+        label: 'The Blitzclique art trail',
+        stops: [
+            { card: 'Blitzclique - Steppleader', title: 'Steppleader', color: '#fde047', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Crackle Blitzclique', title: 'Crackle', color: '#fef08a', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Emi Blitzclique', title: 'Emi', color: '#fcd34d', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Grain Blitzclique', title: 'Grain', color: '#fbbf24', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Surge Blitzclique', title: 'Surge', color: '#f59e0b', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Whisker Blitzclique', title: 'Whisker', color: '#fde68a', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Blitzclique - Breakaway', title: 'Breakaway', color: '#fef9c3', face: [0.4, 0.4], pan: [0.32, 0.55] },
+            { card: 'Blitzclique Alternator', title: 'Alternator', color: '#facc15', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Blitzclique Return Stroke', title: 'Return Stroke', color: '#eab308', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Blitzclique Overvolt', title: 'Overvolt', color: '#ca8a04', face: [0.5, 0.25], pan: [0.17, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['heroic'] = {
+        kind: 'trail',
+        label: 'The Heroic art trail',
+        stops: [
+            { card: 'Heroic Challenger - Spartan', title: 'Spartan', color: '#93c5fd', face: [0.35, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Envoy', title: 'Envoy', color: '#bfdbfe', face: [0.55, 0.5], pan: [0.42, 0.65] },
+            { card: 'Heroic Challenger - Double Lance', title: 'Double Lance', color: '#a5b4fc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Advance', title: 'Advance', color: '#c7d2fe', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Heroic Challenger - Ambush Soldier', title: 'Ambush Soldier', color: '#86efac', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Challenger - Thousand Blades', title: 'Thousand Blades', color: '#fca5a5', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Heroic Challenger - War Hammer', title: 'War Hammer', color: '#d6d3d1', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Heroic Champion - Excalibur', title: 'Excalibur', color: '#fef08a', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Champion - Kusanagi', title: 'Kusanagi', color: '#a7f3d0', face: [0.55, 0.18], pan: [0.1, 0.33] },
+            { card: 'Number 86: Heroic Champion - Rhongomyniad', title: 'Rhongo\u00ADmyniad', color: '#c084fc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Champion - Claivesolish', title: 'Claivesolish', color: '#f0abfc', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Champion - Gandiva', title: 'Gandiva', color: '#fdba74', face: [0.4, 0.2], pan: [0.12, 0.35] },
+            { card: 'Heroic Champion - Jarngreipr', title: 'Jarngreipr', color: '#fcd34d', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Heroic Champion - Magnum Excalibur', title: 'Magnum Excalibur', color: '#fef9c3', face: [0.45, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['gmx'] = {
+        kind: 'trail',
+        label: 'The GMX art trail',
+        stops: [
+            { card: 'GMX Researcher Selande', title: 'Selande', color: '#86efac', face: [0.6, 0.2], pan: [0.12, 0.35] },
+            { card: 'GMX Lab #5', title: 'Lab #5', color: '#bbf7d0', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'GMX Chairman Kimridge', title: 'Kimridge', color: '#d1d5db', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'GMX Associate Noma', title: 'Noma', color: '#a7f3d0', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'GMX Applied Experiment #55', title: 'Experiment #55', color: '#fde68a', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'GMX - ALLOS', title: 'ALLOS', color: '#4ade80', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'GMX - VELOX', title: 'VELOX', color: '#22d3ee', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'GMX Suppression Squad', title: 'Suppression Squad', color: '#fca5a5', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'GMX 55th Experiment Report', title: '55th Report', color: '#fef08a', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'GMX - COMPREX', title: 'COMPREX', color: '#a3e635', face: [0.6, 0.25], pan: [0.17, 0.4] },
+            { card: 'GMX Partner Selandea', title: 'Selandea', color: '#f0abfc', face: [0.45, 0.3], pan: [0.22, 0.45] },
+            { card: 'Anti-GMX Final Experiment', title: 'Anti-GMX', color: '#ef4444', face: [0.5, 0.3], pan: [0.22, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['mimighoul'] = {
+        kind: 'trail',
+        label: 'The Mimighoul art trail',
+        stops: [
+            { card: 'Mimighoul Room', title: 'Room', color: '#fdba74', face: [0.5, 0.55], pan: [0.47, 0.65] },
+            { card: 'Mimighoul Archfiend', title: 'Archfiend', color: '#c084fc', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Mimighoul Cerberus', title: 'Cerberus', color: '#f87171', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Mimighoul Dragon', title: 'Dragon', color: '#fca5a5', face: [0.55, 0.3], pan: [0.22, 0.45] },
+            { card: 'Mimighoul Charm', title: 'Charm', color: '#f9a8d4', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Mimighoul Fairy', title: 'Fairy', color: '#fbcfe8', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Mimighoul Maker', title: 'Maker', color: '#fde68a', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Mimighoul Armor', title: 'Armor', color: '#d6d3d1', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Mimighoul Master', title: 'Master', color: '#facc15', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Mimighoul Throne', title: 'Throne', color: '#f59e0b', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Mimighoul Flower', title: 'Flower', color: '#86efac', face: [0.5, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['mitsurugi'] = {
+        kind: 'trail',
+        label: 'The Mitsurugi art trail',
+        stops: [
+            { card: 'Mitsurugi no Mikoto, Kusanagi', title: 'Kusanagi', color: '#fca5a5', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Ame no Murakumo no Mitsurugi', title: 'Ame no Murakumo', color: '#ef4444', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Mitsurugi no Mikoto, Saji', title: 'Saji', color: '#93c5fd', face: [0.4, 0.15], pan: [0.07, 0.3] },
+            { card: 'Futsu no Mitama no Mitsurugi', title: 'Futsu no Mitama', color: '#60a5fa', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Mitsurugi no Mikoto, Aramasa', title: 'Aramasa', color: '#fde68a', face: [0.6, 0.15], pan: [0.07, 0.3] },
+            { card: 'Ame no Habakiri no Mitsurugi', title: 'Ame no Habakiri', color: '#f59e0b', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Mitsurugi no Miko, Wousu', title: 'Wousu', color: '#e9d5ff', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Mitsurugi Ritual', title: 'Ritual', color: '#fecaca', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Mitsurugi Mirror', title: 'Mirror', color: '#e5e7eb', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Mitsurugi Prayers', title: 'Prayers', color: '#fef9c3', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Mitsurugi Great Purification', title: 'Great Purification', color: '#bfdbfe', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Mitsurugi Sacred Boundary', title: 'Sacred Boundary', color: '#d6d3d1', face: [0.5, 0.3], pan: [0.22, 0.45] }
+        ]
+    };
+
+    window.LoreReelData['dododo'] = {
+        kind: 'trail',
+        label: 'The Dododo art trail',
+        stops: [
+            { card: 'Dododo Warrior', title: 'Warrior', color: '#fde047', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Dododo Buster', title: 'Buster', color: '#fdba74', face: [0.45, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dododo Witch', title: 'Witch', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Dododo Driver', title: 'Driver', color: '#fcd34d', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Dododo Bot', title: 'Bot', color: '#d6d3d1', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dododo Swordsman', title: 'Swordsman', color: '#a8a29e', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Dodododraw', title: 'Dodododraw', color: '#fef08a', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Guard Go!', title: 'Guard Go!', color: '#bef264', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Onomatopia', title: 'Onomatopia', color: '#93c5fd', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Dodododo Warrior', title: 'Dodododo', color: '#facc15', face: [0.5, 0.25], pan: [0.17, 0.4] }
+        ]
+    };
+
+    window.LoreReelData['battleguard'] = {
+        kind: 'trail',
+        label: 'The Battleguard art trail',
+        stops: [
+            { card: 'Swamp Battleguard', title: 'Swamp', color: '#86efac', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Lava Battleguard', title: 'Lava', color: '#f87171', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Feast of the Wild LV5', title: 'Feast of the Wild', color: '#fde68a', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Battleguard Rage', title: 'Rage', color: '#ef4444', face: [0.5, 0.3], pan: [0.22, 0.45] },
+            { card: 'Battleguard Howling', title: 'Howling', color: '#4ade80', face: [0.45, 0.4], pan: [0.32, 0.55] },
+            { card: 'Battleguard Echoes', title: 'Echoes', color: '#fcd34d', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Battleguard King', title: 'King', color: '#d6d3d1', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Battleguard Cadet', title: 'Cadet', color: '#bef264', face: [0.45, 0.2], pan: [0.12, 0.35] }
+        ]
+    };
+
+    window.LoreReelData['metaphys'] = {
+        kind: 'trail',
+        label: 'The Metaphys art trail',
+        stops: [
+            { card: 'Metaphys Tyrant Dragon', title: 'Tyrant Dragon', color: '#a5b4fc', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Asymmetaphys', title: 'Asymme\u00ADtaphys', color: '#c7d2fe', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Metaphys Ragnarok', title: 'Ragnarok', color: '#818cf8', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Metaphys Armed Dragon', title: 'Armed Dragon', color: '#6366f1', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Metaphys Factor', title: 'Factor', color: '#e0e7ff', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Metaphys Daedalus', title: 'Daedalus', color: '#93c5fd', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Metaphys Nephthys', title: 'Nephthys', color: '#fca5a5', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Metaphys Horus', title: 'Horus', color: '#4f46e5', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Metaphys Executor', title: 'Executor', color: '#a78bfa', face: [0.4, 0.35], pan: [0.27, 0.5] },
+            { card: 'Metaphys Decoy Dragon', title: 'Decoy Dragon', color: '#c4b5fd', face: [0.5, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['appliancer'] = {
+        kind: 'trail',
+        label: 'The Appliancer art trail',
+        stops: [
+            { card: 'Appliancer Socketroll', title: 'Socketroll', color: '#7dd3fc', face: [0.45, 0.35], pan: [0.27, 0.5] },
+            { card: 'Appliancer Breakerbuncle', title: 'Breaker\u00ADbuncle', color: '#a5f3fc', face: [0.55, 0.45], pan: [0.37, 0.6] },
+            { card: 'Appliancer Copybokkle', title: 'Copybokkle', color: '#e0f2fe', face: [0.45, 0.25], pan: [0.17, 0.4] },
+            { card: 'Appliancer Reuse', title: 'Reuse', color: '#bae6fd', face: [0.4, 0.45], pan: [0.37, 0.6] },
+            { card: 'Appliancer Kappa Scale', title: 'Kappa Scale', color: '#86efac', face: [0.45, 0.2], pan: [0.12, 0.35] },
+            { card: 'Appliancer Vacculephant', title: 'Vaccu\u00ADlephant', color: '#c4b5fd', face: [0.5, 0.2], pan: [0.12, 0.35] },
+            { card: 'Appliancer Conversion', title: 'Conversion', color: '#fef9c3', face: [0.5, 0.5], pan: [0.42, 0.65] },
+            { card: 'Appliancer Propelion', title: 'Propelion', color: '#fde68a', face: [0.5, 0.4], pan: [0.32, 0.55] },
+            { card: 'Appliancer Laundry Dragon', title: 'Laundry Dragon', color: '#93c5fd', face: [0.6, 0.25], pan: [0.17, 0.4] },
+            { card: 'Appliancer Test', title: 'Test', color: '#d1d5db', face: [0.5, 0.45], pan: [0.37, 0.6] },
+            { card: 'Appliancer Electrilyrical World', title: 'Electri\u00ADlyrical World', color: '#f0abfc', face: [0.5, 0.35], pan: [0.27, 0.5] }
+        ]
+    };
+
+    window.LoreReelData['ashened'] = {
+        kind: 'trail',
+        label: 'The Ashened art trail',
+        stops: [
+            { card: 'Veidos the Eruption Dragon of Extinction', title: 'Veidos', color: '#f87171', face: [0.65, 0.3], pan: [0.22, 0.45] },
+            { card: 'Obsidim, the Ashened City', title: 'Obsidim', color: '#9ca3af', face: [0.4, 0.3], pan: [0.22, 0.45] },
+            { card: 'Priestess of the Ashened City', title: 'Priestess', color: '#d1d5db', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'King of the Ashened City', title: 'King', color: '#fca5a5', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Hero of the Ashened City', title: 'Hero', color: '#fdba74', face: [0.55, 0.2], pan: [0.12, 0.35] },
+            { card: 'Shaman of the Ashened City', title: 'Shaman', color: '#c4b5fd', face: [0.5, 0.15], pan: [0.07, 0.3] },
+            { card: 'Inferno of the Ashened', title: 'Inferno', color: '#ef4444', face: [0.45, 0.55], pan: [0.47, 0.65] },
+            { card: 'Ashened for Eternity', title: 'For Eternity', color: '#fb923c', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Ashened to Endlessness', title: 'To Endlessness', color: '#b91c1c', face: [0.5, 0.25], pan: [0.17, 0.4] },
+            { card: 'Veidos the Dragon of Endless Darkness', title: 'Endless Darkness', color: '#7f1d1d', face: [0.5, 0.35], pan: [0.27, 0.5] },
+            { card: 'Rekindling the Ashened', title: 'Rekindling', color: '#fde68a', face: [0.6, 0.4], pan: [0.32, 0.55] },
+            { card: 'Embers of the Ashened', title: 'Embers', color: '#fbbf24', face: [0.4, 0.25], pan: [0.17, 0.4] },
+            { card: 'Extinguishing the Ashened', title: 'Extin\u00ADguishing', color: '#a8a29e', face: [0.5, 0.3], pan: [0.22, 0.45] }
         ]
     };
 })();
