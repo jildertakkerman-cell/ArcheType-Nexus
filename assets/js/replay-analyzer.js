@@ -35,6 +35,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadingState.style.display = 'none';
         }
     }
+
+    // Check for combo guide upload mode via query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const archetypeParam = urlParams.get('archetype');
+    const isComboMode = urlParams.get('action') === 'combo' || !!archetypeParam;
+    if (isComboMode && archetypeParam) {
+        initComboUploadMode(archetypeParam);
+    }
 });
 
 // Drag and drop handlers
@@ -123,8 +131,10 @@ async function handleFile(file) {
             if (userToken) headers['Authorization'] = `Bearer ${userToken}`;
         }
 
-        // Save replay when: checkbox is checked (anonymous community share) OR user is logged in (personal library)
-        if ((contributeCheckbox && contributeCheckbox.checked) || userToken) {
+        // Save replay when: in combo mode OR checkbox is checked (anonymous community share) OR user is logged in (personal library)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isComboMode = urlParams.get('action') === 'combo' || !!urlParams.get('archetype');
+        if (isComboMode || (contributeCheckbox && contributeCheckbox.checked) || userToken) {
             headers['x-save-replay'] = 'true';
             headers['x-filename'] = file.name;
         }
@@ -503,6 +513,9 @@ async function displayAnalysis(data) {
 
     // Show analysis container
     analysisContainer.classList.add('visible');
+
+    // Wire combo submission if in combo mode or saved replay exists
+    setupComboSubmitSection(data);
 }
 
 // Enhanced Technical Tags Display with Explanation
@@ -1498,5 +1511,222 @@ function updateChainAnalysis(chainData) {
         renderBar('p2ChainWin', p2.chainWinRate);
         document.getElementById('p2EffectsUsed').textContent = p2.effectsActivated || 0;
         document.getElementById('p2ChainsWon').textContent = p2.chainsWon || 0;
+    }
+}
+
+/* ==========================================================================
+   Combo Guide Upload & Direct Submission System
+   ========================================================================== */
+
+function getDeckGuideUrl(archetypeName) {
+    if (!archetypeName) return '../index.html';
+    if (document.referrer && (document.referrer.includes('Deck%20Analysis') || document.referrer.includes('Archetype'))) {
+        return document.referrer;
+    }
+    if (window._synergyUrlMap && window._synergyUrlMap[archetypeName]) {
+        return `../pages/${window._synergyUrlMap[archetypeName]}`;
+    }
+    return `../pages/${encodeURIComponent(archetypeName)} Deck Analysis.html`;
+}
+
+function initComboUploadMode(archetypeName) {
+    const banner = document.getElementById('combo-upload-banner');
+    const bannerArchetype = document.getElementById('combo-banner-archetype');
+    const returnLink = document.getElementById('combo-banner-return');
+    const backLink = document.getElementById('combo-submit-back-link');
+
+    if (banner) banner.style.display = 'block';
+    if (bannerArchetype) bannerArchetype.textContent = archetypeName;
+
+    const deckGuideUrl = getDeckGuideUrl(archetypeName);
+    if (returnLink) returnLink.href = deckGuideUrl;
+    if (backLink) backLink.href = deckGuideUrl;
+
+    const dropText = dropZone ? dropZone.querySelector('p') : null;
+    if (dropText) {
+        dropText.innerHTML = `Drop your <strong>${archetypeName}</strong> .yrpx replay file here or click to upload`;
+    }
+}
+
+async function resolveArchetypeId(client, archetypeName) {
+    if (!client) return 1;
+    try {
+        const { data } = await client.from('archetypes').select('archetypeid, archetypename');
+        if (!data || !data.length) return 1;
+
+        if (!archetypeName) return data[0].archetypeid;
+
+        const clean = archetypeName.trim().toLowerCase();
+        // 1. Exact match
+        let match = data.find(a => a.archetypename.toLowerCase() === clean);
+        if (match) return match.archetypeid;
+
+        // 2. Normalized alphanumeric match (handles plural/singular, punctuation differences)
+        const norm = clean.replace(/[^a-z0-9]/g, '');
+        match = data.find(a => a.archetypename.toLowerCase().replace(/[^a-z0-9]/g, '') === norm);
+        if (match) return match.archetypeid;
+
+        // 3. Substring match
+        match = data.find(a => a.archetypename.toLowerCase().includes(clean) || clean.includes(a.archetypename.toLowerCase()));
+        if (match) return match.archetypeid;
+
+        return data[0].archetypeid;
+    } catch (e) {
+        console.warn('[resolveArchetypeId] Failed to resolve archetype ID:', e);
+        return 1;
+    }
+}
+
+function setupComboSubmitSection(data) {
+    const section = document.getElementById('comboSubmitSection');
+    if (!section) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const archetypeParam = urlParams.get('archetype');
+    const isComboMode = urlParams.get('action') === 'combo' || !!archetypeParam;
+
+    // Show section if in combo mode OR if server created a replay ID
+    if (!isComboMode && !data.replayid) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+
+    const titleInput = document.getElementById('combo-guide-title');
+    const descInput = document.getElementById('combo-guide-desc');
+    const submitBtn = document.getElementById('combo-guide-submit-btn');
+    const statusBadge = document.getElementById('combo-submit-status-badge');
+    const loginPrompt = document.getElementById('combo-submit-login-prompt');
+    const msgEl = document.getElementById('combo-submit-msg');
+    const formEl = document.getElementById('combo-submit-form');
+    const successEl = document.getElementById('combo-submit-success');
+    const backLink = document.getElementById('combo-submit-back-link');
+
+    if (backLink) {
+        backLink.href = getDeckGuideUrl(archetypeParam);
+    }
+
+    // Default title pre-fill
+    if (titleInput && (!titleInput.value || titleInput.value.startsWith('Combo Guide'))) {
+        const arch = archetypeParam || (data.decks?.[0]?.archetype || 'Combo');
+        titleInput.value = `${arch} - Turn 1 Line`;
+    }
+
+    // Check auth status
+    const checkAuth = async () => {
+        if (!window.Auth) {
+            if (loginPrompt) loginPrompt.style.display = 'block';
+            return null;
+        }
+        const session = await window.Auth.getSession();
+        if (!session || !session.user) {
+            if (loginPrompt) loginPrompt.style.display = 'block';
+            return null;
+        }
+        if (loginPrompt) loginPrompt.style.display = 'none';
+        return session;
+    };
+
+    checkAuth();
+
+    // Wire submit action
+    if (submitBtn) {
+        submitBtn.onclick = async () => {
+            const session = await checkAuth();
+            if (!session) {
+                if (loginPrompt) loginPrompt.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            const title = titleInput?.value?.trim();
+            if (!title) {
+                if (msgEl) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = 'Please provide a title for this combo guide.';
+                }
+                return;
+            }
+
+            const replayId = data.replayid;
+            if (!replayId) {
+                if (msgEl) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = 'Replay ID was not created. Please ensure "Share with community" is enabled or re-upload.';
+                }
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            if (msgEl) {
+                msgEl.style.color = '#a3a3a3';
+                msgEl.textContent = 'Saving combo guide...';
+            }
+
+            try {
+                const client = window.Auth._getClient();
+                const archetypeId = await resolveArchetypeId(client, archetypeParam);
+
+                const { data: insertedCombo, error } = await client
+                    .from('combos')
+                    .insert({
+                        userid: session.user.id,
+                        replayid: replayId,
+                        archetypeid: archetypeId,
+                        title: title,
+                        description: descInput?.value?.trim() || null,
+                        status: 'pending',
+                        steps: [],
+                        startinghand: [],
+                        endboard: {}
+                    })
+                    .select('comboid, replayid')
+                    .single();
+
+                if (error) throw error;
+
+                // Fire-and-forget: generate DuelSimulator combo JSON in the background
+                let rawpath = data.gcsrawpath || data.rawpath;
+                if (!rawpath) {
+                    const { data: repRow } = await client
+                        .from('replays')
+                        .select('gcsrawpath')
+                        .eq('replayid', replayId)
+                        .single();
+                    if (repRow?.gcsrawpath) rawpath = repRow.gcsrawpath;
+                }
+
+                if (rawpath && insertedCombo?.comboid) {
+                    const token = await window.Auth.getToken?.();
+                    if (token) {
+                        fetch('https://yrp-10714964039.europe-west1.run.app/generate-combo-json', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({ rawpath: rawpath, comboid: insertedCombo.comboid }),
+                        }).catch(err => console.warn('[submitCombo] combo JSON generation failed:', err));
+                    }
+                }
+
+                if (formEl) formEl.style.display = 'none';
+                if (successEl) successEl.style.display = 'block';
+                if (statusBadge) {
+                    statusBadge.textContent = 'Submitted (Pending Review)';
+                    statusBadge.style.background = 'rgba(34,197,94,0.2)';
+                    statusBadge.style.color = '#4ade80';
+                }
+            } catch (err) {
+                console.error('[submitCombo] Error:', err);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Submit for Review';
+                if (msgEl) {
+                    msgEl.style.color = '#ef4444';
+                    msgEl.textContent = `Submission failed: ${err.message || 'Unknown error'}`;
+                }
+            }
+        };
     }
 }

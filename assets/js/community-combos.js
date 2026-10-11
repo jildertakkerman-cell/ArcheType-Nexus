@@ -151,7 +151,7 @@ async function initCommunityCombos(containerId, archetypeName) {
 
     // Standalone fallback for pages without ComboLoader
     if (!combos || combos.length === 0) {
-        _renderCTA(containerId, session);
+        _renderCTA(containerId, session, archetypeName);
         return;
     }
 
@@ -397,13 +397,14 @@ window._buildCommunityCombosView = function(mountEl, combos, session, archetypeN
 
 window._loadComboSim = _loadComboSim;
 
-function _renderCTA(containerId, session) {
+function _renderCTA(containerId, session, archetypeName) {
     if (!session) return;
     const wrapper = document.getElementById(containerId);
     if (!wrapper) return;
     const cta = document.createElement('p');
     cta.style.cssText = 'font-size:0.82rem;color:#737373;margin-top:1rem;';
-    cta.innerHTML = `Have a replay for this archetype? <a href="../pages/My-Replays.html" style="color:#f59e0b;text-decoration:none;">Submit a combo guide →</a>`;
+    const uploadUrl = `../pages/Replay-Analyzer.html?archetype=${encodeURIComponent(archetypeName || '')}&action=combo`;
+    cta.innerHTML = `Have a replay for this archetype? <a href="${uploadUrl}" style="color:#f59e0b;text-decoration:none;">Submit a combo guide →</a>`;
     wrapper.appendChild(cta);
 }
 

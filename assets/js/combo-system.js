@@ -148,6 +148,8 @@ class ComboLoader {
 
             const curatedCount = Object.keys(comboData.combos).length;
 
+            const submitComboUrl = `../pages/Replay-Analyzer.html?archetype=${encodeURIComponent(archetypeName)}&action=combo`;
+
             // 2. Setup container structure with unified Combo Hub navigation tabs
             container.innerHTML = `
                 <div class="combo-hub-nav">
@@ -159,7 +161,7 @@ class ComboLoader {
                             <i class="fas fa-users"></i> Community Lines (<span id="${containerId}-community-count">0</span>)
                         </button>
                     </div>
-                    <a href="../pages/My-Replays.html" class="combo-hub-submit-btn" title="Submit a verified combo line">
+                    <a href="${submitComboUrl}" class="combo-hub-submit-btn" title="Submit a verified combo line for ${archetypeName}">
                         <i class="fas fa-plus-circle"></i> Submit Replay
                     </a>
                 </div>
@@ -173,7 +175,7 @@ class ComboLoader {
                         <div class="combo-hub-empty-icon"><i class="fas fa-users"></i></div>
                         <div class="combo-hub-empty-title">No Community Lines Yet</div>
                         <p class="combo-hub-empty-desc">No duelist combo guides have been submitted for ${archetypeName} yet. Be the first to analyze a replay and submit a route!</p>
-                        <a href="../pages/My-Replays.html" class="combo-hub-submit-btn" style="display:inline-flex;">
+                        <a href="${submitComboUrl}" class="combo-hub-submit-btn" style="display:inline-flex;">
                             <i class="fas fa-cloud-upload-alt mr-1"></i> Submit a Combo Guide →
                         </a>
                     </div>
@@ -1391,8 +1393,9 @@ class ComboGuide {
         // way to contribute your own rather than leaving that undiscoverable.
         const uploadCta = document.createElement('div');
         uploadCta.style.cssText = `padding:1rem 0.5rem 0; text-align:center; font-size:0.82rem; color:${textMain}; opacity:0.85;`;
+        const ctaUrl = `../pages/Replay-Analyzer.html?archetype=${encodeURIComponent(archetypeSlug || '')}&action=combo`;
         uploadCta.innerHTML = `<i class="fas fa-upload" style="margin-right:0.45rem;"></i>Got a replay of your own?
-            <a href="../pages/My-Replays.html#replays" style="color:${accent}; font-weight:600; text-decoration:none;">Upload it and share your combo guide &rarr;</a>`;
+            <a href="${ctaUrl}" style="color:${accent}; font-weight:600; text-decoration:none;">Upload it and share your combo guide &rarr;</a>`;
         container.appendChild(uploadCta);
 
         // Defer card loading to existing CardLoader
