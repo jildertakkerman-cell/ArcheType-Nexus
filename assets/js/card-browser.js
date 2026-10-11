@@ -1846,10 +1846,10 @@ window.CardBrowser = (function () {
         for (const m of text.matchAll(QUOTED_NAME)) {
             const target = cardByName.get(m[1].toLowerCase());
             if (!target || target === c) continue;
-            const start = m.index + 1;
-            out += highlight(text.slice(from, start));
-            out += `<button type="button" class="cb-text-link" data-action="open-card" data-id="${target.id}" data-focus="name:${start}" title="Open ${esc(target.name)}">${highlight(m[1])}</button>`;
-            from = start + m[1].length;
+            // The quotes go inside the link, so a line never breaks between a quote and the name.
+            out += highlight(text.slice(from, m.index));
+            out += `<button type="button" class="cb-text-link" data-action="open-card" data-id="${target.id}" data-focus="name:${m.index}" title="Open ${esc(target.name)}">${highlight(m[0])}</button>`;
+            from = m.index + m[0].length;
         }
         return out + highlight(text.slice(from));
     }

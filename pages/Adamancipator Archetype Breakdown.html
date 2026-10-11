@@ -1426,17 +1426,13 @@
             });
         </script>
 
-        <!-- Guide tabs (WAI-ARIA tabs pattern, automatic activation) -->
+        <!-- Guide tabs: shared assets/js/guide-tabs.js (tabs, deep links, sticky bar) -->
+        <script src="../assets/js/guide-tabs.js"></script>
         <script>
-            (function () {
-                const tablist = document.querySelector('[data-guide-tabs]');
-                if (!tablist) return;
-                const tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
-                const panelOf = tab => document.getElementById(tab.getAttribute('aria-controls'));
-
-                // Card art for a panel is only fetched the first time that panel is
-                // opened, so readers who never open it don't pay for its images.
-                const panelArt = {
+            // Card art for a panel is only fetched the first time that panel is
+            // opened, so readers who never open it don't pay for its images.
+            GuideTabs.init({
+                panelArt: {
                     'tab-betb': [
                         {
                             'betb-conductor-img': 'Adamancipator Conductor',
@@ -1454,67 +1450,8 @@
                             'betb-step-5-img': 'Adamancipator Resonance'
                         }
                     ]
-                };
-
-                async function loadPanelArt(panelId) {
-                    const batches = panelArt[panelId];
-                    if (!batches || !window.CardLoader) return;
-                    delete panelArt[panelId];
-                    for (const batch of batches) {
-                        await CardLoader.loadCards(batch);
-                    }
                 }
-
-                function activate(tab, { focus = false, updateHash = true } = {}) {
-                    tabs.forEach(t => {
-                        const selected = t === tab;
-                        t.setAttribute('aria-selected', String(selected));
-                        t.tabIndex = selected ? 0 : -1;
-                        panelOf(t).hidden = !selected;
-                    });
-                    if (focus) tab.focus();
-                    if (updateHash) {
-                        const hash = tab === tabs[0] ? '' : '#' + tab.getAttribute('aria-controls');
-                        history.replaceState(history.state, '', location.pathname + location.search + hash);
-                    }
-                    loadPanelArt(tab.getAttribute('aria-controls'));
-                }
-
-                tablist.addEventListener('click', e => {
-                    const tab = e.target.closest('[role="tab"]');
-                    if (tab) activate(tab);
-                });
-
-                tablist.addEventListener('keydown', e => {
-                    const i = tabs.indexOf(document.activeElement);
-                    if (i < 0) return;
-                    const next = {
-                        ArrowRight: tabs[(i + 1) % tabs.length],
-                        ArrowLeft: tabs[(i - 1 + tabs.length) % tabs.length],
-                        Home: tabs[0],
-                        End: tabs[tabs.length - 1]
-                    }[e.key];
-                    if (!next) return;
-                    e.preventDefault();
-                    activate(next, { focus: true });
-                });
-
-                // Deep links: #tab-betb opens that tab, and a link to anything inside a
-                // hidden panel opens the panel holding it before scrolling there.
-                function openFromHash() {
-                    let target = null;
-                    try {
-                        target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
-                    } catch (err) { /* malformed hash: ignore */ }
-                    const panel = target && target.closest('[role="tabpanel"]');
-                    const tab = panel && tabs.find(t => t.getAttribute('aria-controls') === panel.id);
-                    if (!tab) return;
-                    activate(tab, { updateHash: false });
-                    (target === panel ? tablist : target).scrollIntoView({ block: 'start' });
-                }
-                window.addEventListener('hashchange', openFromHash);
-                openFromHash();
-            })();
+            });
         </script>
 
         <!-- Cookie Consent Banner -->

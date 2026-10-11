@@ -1706,7 +1706,7 @@ window.CardLoader = (function () {
     // or missing, and then this is simply skipped.
     const STORED_CARD_PREFIX = 'cl-card:v1:';
     const STORED_CARD_TTL = 7 * 24 * 60 * 60 * 1000;
-    const UNSTORED_FIELDS = new Set(['card_sets', 'card_prices', 'misc_info', 'hosted_image_url']);
+    const UNSTORED_FIELDS = new Set(['card_sets', 'card_prices', 'misc_info', 'printings', 'hosted_image_url']);
 
     function readStoredCard(cardName) {
         try {
@@ -1770,12 +1770,48 @@ window.CardLoader = (function () {
         return cardDataPromises[key];
     }
 
+    /**
+     * Every printing of a card in every region, from the Supabase cards → cardsets → sets
+     * tables (Yugipedia's print lists, which YGOProDeck's English-only card_sets misses
+     * prints from). Plain REST rather than the client, so it works on the pages that load
+     * supabase-config.js without the supabase-js CDN.
+     * @param {number|string} passcode - Card passcode (ID)
+     * @returns {Promise<Array|null>} [{ region, set_name, set_code, rarity }], or null when
+     *          Supabase has no prints for the card, so the popup falls back to card_sets.
+     */
+    async function fetchPrintings(passcode) {
+        if (!passcode || !CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) return null;
+        try {
+            const select = 'cardsets(setcode,rarity,sets(setname,region))';
+            const response = await fetch(
+                `${CONFIG.SUPABASE_URL}/rest/v1/cards?select=${select}&passcode=eq.${encodeURIComponent(passcode)}`,
+                { headers: { apikey: CONFIG.SUPABASE_ANON_KEY, Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}` } }
+            );
+            if (!response.ok) return null;
+            // A passcode can have more than one card row; their prints are pooled.
+            const printings = [];
+            (await response.json()).forEach(card => (card.cardsets || []).forEach(print => {
+                if (!print.sets) return;
+                printings.push({
+                    region: (print.sets.region || '').toLowerCase(),
+                    set_name: print.sets.setname || '',
+                    set_code: print.setcode || '',
+                    rarity: print.rarity || ''
+                });
+            }));
+            return printings.length ? printings : null;
+        } catch (error) {
+            console.warn('[CardLoader] Failed to fetch printings from Supabase:', error);
+            return null;
+        }
+    }
+
     // Fills in card_sets, card_prices and misc_info (the release date) from the YGOProDeck API
-    // for a record that came from Supabase or storage without them. Once per card; the popup
-    // calls it when it opens.
+    // for a record that came from Supabase or storage without them, and the printings in every
+    // region from Supabase (fetchPrintings). Once per card; the popup calls it when it opens.
     const enrichPromises = {};
     function enrichCardData(record) {
-        if (!record || record.is_dummy || record._enriched || (record.card_sets && record.card_prices && record.misc_info)) {
+        if (!record || record.is_dummy || record._enriched) {
             return Promise.resolve(record);
         }
         const key = String(record.id || record.name);
@@ -1784,20 +1820,25 @@ window.CardLoader = (function () {
                 const response = await fetch(`${CONFIG.API_URL}?${query}&misc=yes`);
                 return response.ok ? (await response.json())?.data?.[0] : null;
             };
-            enrichPromises[key] = lookup(`name=${encodeURIComponent(record.name)}`)
-                .then(apiData => apiData || (record.id ? lookup(`id=${encodeURIComponent(record.id)}`) : null))
-                .then(apiData => {
-                    if (apiData) {
-                        if (!record.card_sets) record.card_sets = apiData.card_sets;
-                        if (!record.card_prices) record.card_prices = apiData.card_prices;
-                        if (!record.misc_info) record.misc_info = apiData.misc_info;
-                    }
-                })
-                .catch(error => console.warn('[CardLoader] Failed to fetch sets and prices:', error))
-                .then(() => {
-                    record._enriched = true;
-                    return record;
-                });
+            const fromApi = record.card_sets && record.card_prices && record.misc_info
+                ? Promise.resolve()
+                : lookup(`name=${encodeURIComponent(record.name)}`)
+                    .then(apiData => apiData || (record.id ? lookup(`id=${encodeURIComponent(record.id)}`) : null))
+                    .then(apiData => {
+                        if (apiData) {
+                            if (!record.card_sets) record.card_sets = apiData.card_sets;
+                            if (!record.card_prices) record.card_prices = apiData.card_prices;
+                            if (!record.misc_info) record.misc_info = apiData.misc_info;
+                        }
+                    })
+                    .catch(error => console.warn('[CardLoader] Failed to fetch sets and prices:', error));
+            const fromSupabase = fetchPrintings(record.id).then(printings => {
+                if (printings) record.printings = printings;
+            });
+            enrichPromises[key] = Promise.all([fromApi, fromSupabase]).then(() => {
+                record._enriched = true;
+                return record;
+            });
         }
         return enrichPromises[key];
     }
@@ -2590,54 +2631,200 @@ window.CardLoader = (function () {
         return iconMap[race] || '✨'; // Default to sparkle if no specific icon
     }
 
+    // The Sets tab's languages, in button order. Region codes are Yugipedia's (as stored in
+    // the Supabase sets table); the English, French and Japanese sub-regions fold into their
+    // language and get a tag on their rows instead (SET_SUBREGIONS).
+    const SET_LANGUAGES = [
+        { key: 'en', name: 'English', regions: ['en', 'na', 'eu', 'au', 'oc'] },
+        { key: 'jp', name: 'Japanese', regions: ['jp', 'ja'] },
+        { key: 'ae', name: 'Asian-English', regions: ['ae'] },
+        { key: 'kr', name: 'Korean', regions: ['kr'] },
+        { key: 'sc', name: 'Simplified Chinese', regions: ['sc'] },
+        { key: 'tc', name: 'Traditional Chinese', regions: ['tc'] },
+        { key: 'fr', name: 'French', regions: ['fr', 'fc'] },
+        { key: 'de', name: 'German', regions: ['de'] },
+        { key: 'it', name: 'Italian', regions: ['it'] },
+        { key: 'pt', name: 'Portuguese', regions: ['pt'] },
+        { key: 'sp', name: 'Spanish', regions: ['sp'] }
+    ];
+    const SET_SUBREGIONS = {
+        na: 'North American', eu: 'European', au: 'Australian', oc: 'Oceanic',
+        ja: 'Japanese-Asian', fc: 'French-Canadian'
+    };
+
+    // Rarity colour coding. Hex rather than Tailwind classes so the rows
+    // still read correctly without output.css.
+    function rarityColor(rarity) {
+        if (rarity.includes('Secret')) return '#fde047';
+        if (rarity.includes('Ultra')) return '#fbbf24';
+        if (rarity.includes('Super')) return '#60a5fa';
+        if (rarity.includes('Rare')) return '#22d3ee';
+        return '#94a3b8';
+    }
+
+    // A set row's rarities run from the plain print to the collector prints, so the
+    // ones a row shows before "+N" are the ones most readers will own.
+    function rarityRank(rarity) {
+        if (/short print/i.test(rarity)) return 0;
+        if (/starlight|collector|quarter century|ghost|gold|platinum|prismatic|ultimate|10000|parallel|holographic|millennium|extra secret|\d+(st|nd|rd|th) secret/i.test(rarity)) return 5;
+        if (/secret/i.test(rarity)) return 4;
+        if (/ultra/i.test(rarity)) return 3;
+        if (/super/i.test(rarity)) return 2;
+        if (/rare/i.test(rarity)) return 1;
+        return 0;
+    }
+
+    // Rows with more rarities than this show the first SET_RARITIES_SHOWN and a "+N" button.
+    const SET_RARITIES_MAX = 3;
+    const SET_RARITIES_SHOWN = 2;
+
+    /**
+     * The prints the Sets tab lists: Supabase's printings (every region), plus any
+     * YGOProDeck print whose set code Supabase doesn't have yet. Without Supabase
+     * printings it is YGOProDeck's English list alone, as before. YGOProDeck's per-print
+     * prices are carried over by set code and rarity.
+     */
+    function collectPrintings(cardInfo) {
+        const apiSets = cardInfo.card_sets || [];
+        const printKey = (code, rarity) => `${code}|${rarity}`.toLowerCase();
+        const prices = {};
+        apiSets.forEach(set => {
+            const price = parseFloat(set.set_price);
+            if (price > 0) prices[printKey(set.set_code || '', set.set_rarity || '')] = price;
+        });
+
+        const printings = (cardInfo.printings || []).map(print => Object.assign({}, print));
+        const knownCodes = new Set(printings.map(print => print.set_code.toLowerCase()));
+        apiSets.forEach(set => {
+            if (knownCodes.has((set.set_code || '').toLowerCase())) return;
+            printings.push({ region: 'en', set_name: set.set_name || '', set_code: set.set_code || '', rarity: set.set_rarity || '' });
+        });
+        printings.forEach(print => { print.price = prices[printKey(print.set_code, print.rarity)] || 0; });
+        return printings;
+    }
+
     /**
      * Format sets section HTML for card popup
-     * Uses card_sets from YGOProDeck API
-     * @param {Object} cardInfo - Card data object from API
+     * One button per language (when there is more than one), each showing that
+     * language's sets with every rarity they were printed in.
+     * @param {Object} cardInfo - Card data object
      * @returns {string} HTML string for sets section
      */
     function formatSetsSection(cardInfo) {
-        if (!cardInfo || !cardInfo.card_sets || cardInfo.card_sets.length === 0) {
+        const printings = cardInfo ? collectPrintings(cardInfo) : [];
+        if (printings.length === 0) {
             return '<p class="cp-note">No set data available.</p>';
         }
 
-        const sets = cardInfo.card_sets;
+        // Language -> one entry per set and code, holding every rarity it was printed in.
+        const languages = new Map();
+        printings.forEach(print => {
+            const known = SET_LANGUAGES.find(language => language.regions.includes(print.region));
+            const language = known || { key: print.region || '?', name: (print.region || 'Other').toUpperCase() };
+            if (!languages.has(language.key)) languages.set(language.key, Object.assign({ entries: new Map() }, language));
+            const entries = languages.get(language.key).entries;
+            const entryKey = `${print.set_name}|${print.set_code}|${print.region}`;
+            if (!entries.has(entryKey)) entries.set(entryKey, { ...print, rarities: [] });
+            const rarities = entries.get(entryKey).rarities;
+            if (!rarities.some(r => r.rarity === print.rarity)) rarities.push({ rarity: print.rarity, price: print.price });
+        });
+        const order = key => {
+            const index = SET_LANGUAGES.findIndex(language => language.key === key);
+            return index === -1 ? SET_LANGUAGES.length : index;
+        };
+        const groups = [...languages.values()].sort((a, b) => order(a.key) - order(b.key) || a.key.localeCompare(b.key));
 
-        // Sort by set name alphabetically
-        const sortedSets = [...sets].sort((a, b) => a.set_name.localeCompare(b.set_name));
-
-        const setItems = sortedSets.map(set => {
-            const rarity = set.set_rarity || 'Unknown';
-            const rarityShort = set.set_rarity_code || '';
-            const setCode = set.set_code || '';
-            const priceVal = set.set_price ? parseFloat(set.set_price) : 0;
-            const price = priceVal > 0 ? `$${priceVal.toFixed(2)}` : '';
-
-            // Rarity colour coding. Hex rather than Tailwind classes so the rows
-            // still read correctly without output.css.
-            let rarityColor = '#94a3b8';
-            if (rarity.includes('Secret')) rarityColor = '#fde047';
-            else if (rarity.includes('Ultra')) rarityColor = '#fbbf24';
-            else if (rarity.includes('Super')) rarityColor = '#60a5fa';
-            else if (rarity.includes('Rare')) rarityColor = '#22d3ee';
-
+        const formatEntry = entry => {
+            const subregion = SET_SUBREGIONS[entry.region];
+            const sorted = entry.rarities.filter(r => r.rarity)
+                .sort((a, b) => rarityRank(a.rarity) - rarityRank(b.rarity));
+            const shown = sorted.length > SET_RARITIES_MAX ? SET_RARITIES_SHOWN : sorted.length;
+            const hidden = sorted.slice(shown);
+            const rarities = sorted.map((r, index) => `
+                <span class="cp-rarity${index < shown ? '' : ' cp-hidden'}">
+                    <span class="cp-label" style="color:${rarityColor(r.rarity)};">${esc(r.rarity)}</span>
+                    ${r.price > 0 ? `<span class="cp-price">$${r.price.toFixed(2)}</span>` : ''}
+                </span>`).join('') + (hidden.length ? `
+                <button type="button" class="cp-rarity-more" aria-label="Show ${hidden.length} more rarities"
+                    title="${esc(hidden.map(r => r.rarity).join(', '))}">+${hidden.length}</button>` : '');
             return `
                 <div class="cp-setrow">
                     <div style="flex:1;min-width:0;">
-                        <div class="cp-setname" title="${esc(set.set_name)}">${esc(set.set_name)}</div>
+                        <div class="cp-setname" title="${esc(entry.set_name)}">${esc(entry.set_name)}</div>
                         <div class="cp-setmeta">
-                            <span class="cp-setcode">${esc(setCode)}</span>
-                            <span class="cp-label" style="color:${rarityColor};">${esc(rarityShort || rarity)}</span>
+                            ${entry.set_code ? `<span class="cp-setcode">${esc(entry.set_code)}</span>` : ''}
+                            ${subregion ? `<span class="cp-setregion" title="${esc(subregion)} print">${esc(entry.region.toUpperCase())}</span>` : ''}
+                            ${rarities}
                         </div>
                     </div>
-                    ${price ? `<span class="cp-price">${price}</span>` : ''}
+                </div>`;
+        };
+
+        const lists = groups.map((group, index) => {
+            const entries = [...group.entries.values()].sort((a, b) =>
+                a.set_name.localeCompare(b.set_name) || a.set_code.localeCompare(b.set_code));
+            const count = `${entries.length} Set${entries.length > 1 ? 's' : ''}`;
+            return `
+                <div class="cp-region-list${index ? ' cp-hidden' : ''}" data-region="${esc(group.key)}">
+                    <div class="cp-head">📦 ${count}${groups.length > 1 ? ` · ${esc(group.name)}` : ''}</div>
+                    <div>${entries.map(formatEntry).join('')}</div>
                 </div>`;
         }).join('');
 
-        return `
-            <div class="cp-head">📦 ${sets.length} Set${sets.length > 1 ? 's' : ''}</div>
-            <div>${setItems}</div>
-        `;
+        const buttons = groups.length > 1 ? `
+            <div class="cp-regions" role="group" aria-label="Printing language">
+                ${groups.map((group, index) => `
+                    <button type="button" class="cp-region${index ? '' : ' is-active'}" data-region="${esc(group.key)}"
+                        aria-pressed="${index ? 'false' : 'true'}"
+                        title="${esc(group.name)} · ${group.entries.size} set${group.entries.size > 1 ? 's' : ''}">${esc(group.key.toUpperCase())}</button>`).join('')}
+            </div>` : '';
+
+        return buttons + lists;
+    }
+
+    /**
+     * Sets tab clicks: a language button shows that language's list from the top,
+     * and a row's "+N" button shows the rest of its rarities.
+     */
+    function bindSetsArea(setsArea) {
+        setsArea.addEventListener('click', (e) => {
+            const more = e.target.closest('.cp-rarity-more');
+            if (more) {
+                e.stopPropagation();
+                more.parentElement.querySelectorAll('.cp-rarity.cp-hidden').forEach(r => r.classList.remove('cp-hidden'));
+                more.remove();
+                keepPopupInView();
+                return;
+            }
+            const button = e.target.closest('.cp-region');
+            if (!button) return;
+            e.stopPropagation();
+            setsArea.querySelectorAll('.cp-region').forEach(other => {
+                const active = other === button;
+                other.classList.toggle('is-active', active);
+                other.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            setsArea.querySelectorAll('.cp-region-list').forEach(list => {
+                list.classList.toggle('cp-hidden', list.dataset.region !== button.dataset.region);
+            });
+            const body = setsArea.closest('.cp-body-area');
+            if (body) body.scrollTop = 0;
+            keepPopupInView();
+        });
+    }
+
+    /**
+     * Switching tabs or languages changes the popup's height after movePopup() placed
+     * it. The height is capped at the viewport (card-popup.css), so moving it back up
+     * keeps the bottom on screen. Desktop only: on phones the popup is centred.
+     */
+    function keepPopupInView() {
+        if (!popup || window.innerWidth <= 768) return;
+        const cushion = 20;
+        const rect = popup.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight - cushion) {
+            popup.style.top = `${Math.max(cushion, window.innerHeight - cushion - rect.height)}px`;
+        }
     }
 
     /**
@@ -2771,6 +2958,11 @@ window.CardLoader = (function () {
         popup.querySelectorAll('.popup-tab-content').forEach(content => {
             content.classList.toggle('cp-hidden', content.id !== `tab-${tabName}`);
         });
+
+        // The tab body scrolls on its own, so each tab opens at its top.
+        const body = popup.querySelector('.cp-body-area');
+        if (body) body.scrollTop = 0;
+        keepPopupInView();
     };
 
     /**
@@ -2843,8 +3035,7 @@ window.CardLoader = (function () {
 
         // Lazy load the description if it's missing, and the sets, prices and release date,
         // which card lookups no longer fetch up front (see enrichCardData).
-        const needsFetch = !cardInfo.desc
-            || (!cardInfo._enriched && (!cardInfo.card_sets || !cardInfo.card_prices || !cardInfo.misc_info));
+        const needsFetch = !cardInfo.desc || !cardInfo._enriched;
 
         if (needsFetch && !cardInfo.is_dummy && !cardInfo._fetching) {
             cardInfo._fetching = true;
@@ -2970,7 +3161,7 @@ window.CardLoader = (function () {
                     <!-- Sets Tab -->
                     <div id="tab-sets" class="popup-tab-content cp-hidden">
                         <div id="popup-sets-area">
-                            ${cardInfo._fetching && !cardInfo.card_sets ? '<p class="cp-note">Loading sets…</p>' : formatSetsSection(cardInfo)}
+                            ${cardInfo._fetching && !cardInfo.printings ? '<p class="cp-note">Loading sets…</p>' : formatSetsSection(cardInfo)}
                         </div>
                     </div>
                 </div>
@@ -2992,6 +3183,9 @@ window.CardLoader = (function () {
                 window.switchPopupTab(btn.dataset.tab);
             });
         });
+        // On the container, so it keeps working when the lazy load replaces the list.
+        const setsArea = popup.querySelector('#popup-sets-area');
+        if (setsArea) bindSetsArea(setsArea);
 
         popup.style.display = 'block';
         popup.style.zIndex = '10000';
@@ -4824,6 +5018,24 @@ window.CardLoader = (function () {
     s.src = new URL('glossary-hints.js', src).href;
     s.defer = true;
     document.head.appendChild(s);
+})();
+
+// Tab bars on phones: deck pages with their own onclick tab switchers
+// (onclick="switchTab('betb')") load assets/js/guide-tabs.js, which pins their
+// tab row while reading and lines it up on phones. The switching stays the page's.
+(function () {
+    var src = document.currentScript && document.currentScript.src;
+    if (!src) return;
+    function load() {
+        if (window.GuideTabs || document.querySelector('script[src*="guide-tabs.js"]')) return;
+        // Deck pages only: deck-dock.js swaps the #deck-dock placeholder for #deck-resources-compact.
+        if (!document.querySelector('#deck-dock, #deck-resources-compact') || !document.querySelector('[onclick*="Tab("]')) return;
+        var s = document.createElement('script');
+        s.src = new URL('guide-tabs.js', src).href;
+        document.head.appendChild(s);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load);
+    else load();
 })();
 
 // Auto-initialize when DOM is ready

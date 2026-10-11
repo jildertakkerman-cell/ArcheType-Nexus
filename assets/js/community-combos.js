@@ -11,7 +11,9 @@
  *     });
  *   </script>
  *
- * Requires: supabase-config.js, auth.js, combo-system.js, text-utils.js loaded first.
+ * Requires: supabase-config.js and auth.js loaded first. combo-system.js,
+ * combo-sounds.js and Visualizer_Styles.css are fetched on first use when the
+ * page doesn't load them.
  */
 
 // Fallback: most archetype pages load this file without text-utils.js —
@@ -30,6 +32,41 @@ if (typeof window.escapeHtml !== 'function') {
 
 const GCS_BASE_CC = 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/';
 const ANALYZER_URL_CC = '../pages/Replay-Analyzer.html';
+// Resolved against this script's own URL, so it works at any page depth.
+const _CC_SCRIPT_SRC = (document.currentScript && document.currentScript.src) || '';
+const _CC_SIM_LOADING_HTML = '<div style="text-align:center;padding:1.5rem;color:#737373;font-size:0.82rem;"><i class="fas fa-spinner fa-spin" style="margin-right:0.4rem;"></i>Loading combo steps…</div>';
+
+// Most deck pages (469 of 519 in Oct 2026) don't load the combo simulator up
+// front, so fetch it the first time someone opens a community combo instead
+// of telling them it isn't available.
+let _ccSimulatorPromise = null;
+function _ensureComboSimulator() {
+    if (typeof DuelSimulator !== 'undefined') return Promise.resolve();
+    if (!_ccSimulatorPromise) {
+        const url = path => new URL(path, _CC_SCRIPT_SRC || document.baseURI).href;
+        const addScript = src => new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = src;
+            s.onload = resolve;
+            s.onerror = () => reject(new Error('could not load ' + src));
+            document.head.appendChild(s);
+        });
+        if (!document.querySelector('link[href*="Visualizer_Styles.css"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = url('../css/Visualizer_Styles.css');
+            document.head.appendChild(link);
+        }
+        _ccSimulatorPromise = addScript(url('combo-system.js'))
+            // Sounds are optional; the board works without them.
+            .then(() => (typeof ComboSounds === 'undefined' ? addScript(url('combo-sounds.js')).catch(() => {}) : null))
+            .catch(err => {
+                _ccSimulatorPromise = null; // let the next click try again
+                throw err;
+            });
+    }
+    return _ccSimulatorPromise;
+}
 
 // Favorite-archetype badge next to a submitter's name. Self-contained CSS
 // injection: most pages loading this file don't have synergy-tags.css, and an
@@ -45,6 +82,24 @@ function _ccFavBadge(profile) {
         document.head.appendChild(style);
     }
     return `<span class="fav-badge" title="${window.escapeHtml(fav.archetypename)} fan">${fav.iconsvg}</span>`;
+}
+
+// Signed-out vote row: the Yes/No buttons are disabled, so say why and offer
+// the sign-in right there (same markup as combo-system.js's static vote bar).
+function _ccLoginToVoteHtml() {
+    const loginBtn = (provider, label, bg, icon) => `
+        <button onclick="window.Auth && window.Auth.signInWith${provider}()" title="Log in with ${label}"
+                style="display:inline-flex;align-items:center;justify-content:center;width:1.85rem;height:1.85rem;
+                       border-radius:50%;background:${bg};border:1px solid rgba(255,255,255,0.2);
+                       color:#fff;font-size:0.8rem;cursor:pointer;font-family:inherit;">
+            <i class="fab ${icon}"></i>
+        </button>`;
+    return `
+        <span style="display:inline-flex;align-items:center;gap:0.5rem;">
+            <span style="font-size:0.72rem;color:#737373;">Log in to vote:</span>
+            ${loginBtn('Discord', 'Discord', '#5865F2', 'fa-discord')}
+            ${loginBtn('Google', 'Google', '#4285F4', 'fa-google')}
+        </span>`;
 }
 
 async function initCommunityCombos(containerId, archetypeName) {
@@ -106,7 +161,10 @@ function _injectGuideEntry(container, key, combo, session) {
 
     const metaItems = [];
 
-    const playerNames = Array.isArray(m.playerNames) ? m.playerNames.join(' vs ') : '';
+    // Only "A vs B" when both names are known: replays often store an empty
+    // opponent, which used to print as "Player vs ·".
+    const names = Array.isArray(m.playerNames) ? m.playerNames.map(n => String(n || '').trim()).filter(Boolean) : [];
+    const playerNames = names.length >= 2 ? names.join(' vs ') : '';
 
     const simId = `community-sim-${combo.comboid}`;
     const simToggleId = `community-sim-toggle-${combo.comboid}`;
@@ -144,8 +202,8 @@ function _injectGuideEntry(container, key, combo, session) {
                                    background:${userVote === 1 ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)'};
                                    border:1px solid ${userVote === 1 ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.15)'};
                                    color:${userVote === 1 ? '#4ade80' : '#d4d4d4'};
-                                   font-size:0.82rem;font-weight:600;
-                                   cursor:${session ? 'pointer' : 'default'};font-family:inherit;transition:all 0.15s;"
+                                   font-size:0.82rem;font-weight:600;${session ? '' : 'opacity:0.5;'}
+                                   cursor:${session ? 'pointer' : 'not-allowed'};font-family:inherit;transition:all 0.15s;"
                             ${!session ? 'disabled title="Log in to vote"' : ''}
                             data-vote="1">
                         <i class="fas fa-thumbs-up" style="font-size:0.8rem;"></i> Yes
@@ -161,27 +219,31 @@ function _injectGuideEntry(container, key, combo, session) {
                                    background:${userVote === -1 ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)'};
                                    border:1px solid ${userVote === -1 ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.15)'};
                                    color:${userVote === -1 ? '#f87171' : '#d4d4d4'};
-                                   font-size:0.82rem;font-weight:600;
-                                   cursor:${session ? 'pointer' : 'default'};font-family:inherit;transition:all 0.15s;"
+                                   font-size:0.82rem;font-weight:600;${session ? '' : 'opacity:0.5;'}
+                                   cursor:${session ? 'pointer' : 'not-allowed'};font-family:inherit;transition:all 0.15s;"
                             ${!session ? 'disabled title="Log in to vote"' : ''}
                             data-vote="-1">
                         <i class="fas fa-thumbs-down" style="font-size:0.8rem;"></i> No
                     </button>
                 </div>
+                <span id="vote-msg-${combo.comboid}" style="display:none;font-size:0.72rem;color:#f87171;"></span>
+                ${session ? '' : _ccLoginToVoteHtml()}
             </div>
             ${hasComboJson ? `
             <div style="border-bottom:1px solid rgba(255,255,255,0.07);">
-                <button id="${simToggleId}"
+                <button id="${simToggleId}" aria-expanded="true" aria-controls="${simId}"
                         onclick="toggleComboSim('${simId}', '${combo.gcscombojsonpath}', this)"
                         style="width:100%;display:flex;align-items:center;justify-content:space-between;
                                padding:0.85rem 1.5rem;background:none;border:none;cursor:pointer;
                                color:#f59e0b;font-size:0.82rem;font-weight:600;font-family:inherit;
                                text-align:left;">
-                    <span><i class="fas fa-play-circle" style="margin-right:0.5rem;"></i>View Combo Steps</span>
-                    <i class="fas fa-chevron-down" style="transition:transform 0.2s;"></i>
+                    <span><i class="fas fa-play-circle" style="margin-right:0.5rem;"></i><span data-sim-label>Hide Combo Steps</span></span>
+                    <i class="fas fa-chevron-down" style="transition:transform 0.2s;transform:rotate(180deg);"></i>
                 </button>
-                <div id="${simId}" style="display:none;padding:0 0.75rem 0.75rem;"
-                     data-combo-title="${window.escapeHtml(combo.title)}"></div>
+                <!-- Open by default; _buildStandaloneSection loads the board once it nears the viewport -->
+                <div id="${simId}" style="padding:0 0.75rem 0.75rem;"
+                     data-combo-title="${window.escapeHtml(combo.title)}"
+                     data-combo-path="${window.escapeHtml(combo.gcscombojsonpath)}">${_CC_SIM_LOADING_HTML}</div>
             </div>` : ''}
         </div>`;
     container.appendChild(div);
@@ -252,12 +314,32 @@ function _buildStandaloneSection(containerId, combos, session, archetypeName) {
         }
     });
 
+    // Combo steps start open, but the simulator and combo JSON load only when
+    // a panel nears the viewport. A panel inside a guide the selector hides,
+    // or one the reader closed, never intersects, so it waits until shown.
+    const panels = list.querySelectorAll('[id^="community-sim-"][data-combo-path]');
+    const load = panel => _loadComboSim(panel, panel.dataset.comboPath);
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                observer.unobserve(entry.target);
+                load(entry.target);
+            });
+        }, { rootMargin: '400px 0px' });
+        panels.forEach(panel => observer.observe(panel));
+    } else if (panels[0]) {
+        load(panels[0]);
+    }
+
     // Selector handler
     window.switchComboGuide = function (idx) {
         idx = parseInt(idx, 10);
         ranked.forEach(({ combo }, i) => {
             const el = document.getElementById(`combo-cc_${combo.comboid}-content`);
             if (el) el.style.display = i === idx ? '' : 'none';
+            const panel = i === idx && el && el.querySelector('[data-combo-path]');
+            if (panel && panel.style.display !== 'none') load(panel);
         });
     };
 }
@@ -277,31 +359,40 @@ function _calcScore(votes) {
     return votes.reduce((s, v) => s + v.value, 0);
 }
 
-window.toggleComboSim = async function (simId, gcscombojsonpath, btn) {
+// Show/hide a guide's combo steps panel (open by default).
+window.toggleComboSim = function (simId, gcscombojsonpath, btn) {
     const panel = document.getElementById(simId);
     if (!panel) return;
 
+    const open = panel.style.display === 'none';
+    panel.style.display = open ? '' : 'none';
+
     const chevron = btn.querySelector('.fa-chevron-down');
-    const isOpen = panel.style.display !== 'none';
+    if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : '';
+    const label = btn.querySelector('[data-sim-label]');
+    if (label) label.textContent = open ? 'Hide Combo Steps' : 'View Combo Steps';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 
-    if (isOpen) {
-        panel.style.display = 'none';
-        if (chevron) chevron.style.transform = '';
-        return;
-    }
+    if (open) _loadComboSim(panel, gcscombojsonpath);
+};
 
-    panel.style.display = 'block';
-    if (chevron) chevron.style.transform = 'rotate(180deg)';
-
-    if (panel.dataset.loaded === '1') return;
+// Build the board and step list into the panel, once. A failed load resets
+// the flag so hiding and showing the steps again retries.
+async function _loadComboSim(panel, gcscombojsonpath) {
+    if (!panel || !gcscombojsonpath || panel.dataset.loaded === '1') return;
     panel.dataset.loaded = '1';
+    const simId = panel.id;
 
-    if (typeof DuelSimulator === 'undefined') {
-        panel.innerHTML = '<p style="color:#f59e0b;font-size:0.8rem;padding:0.5rem;">Combo simulator not available on this page.</p>';
+    panel.innerHTML = _CC_SIM_LOADING_HTML;
+
+    try {
+        await _ensureComboSimulator();
+    } catch (e) {
+        console.error('[CommunityCombos] Combo simulator failed to load:', e);
+        panel.innerHTML = '<p style="color:#f87171;font-size:0.8rem;padding:0.5rem;">The combo simulator could not be loaded. Hide and show the combo steps to try again.</p>';
+        panel.dataset.loaded = '0';
         return;
     }
-
-    panel.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#737373;font-size:0.82rem;"><i class="fas fa-spinner fa-spin" style="margin-right:0.4rem;"></i>Loading combo steps…</div>';
 
     try {
         const res = await fetch(GCS_BASE_CC + gcscombojsonpath);
@@ -332,7 +423,7 @@ window.toggleComboSim = async function (simId, gcscombojsonpath, btn) {
         panel.innerHTML = '<p style="color:#f87171;font-size:0.8rem;padding:0.5rem;">Could not load combo steps: ' + e.message + '</p>';
         panel.dataset.loaded = '0';
     }
-};
+}
 
 function _renderComboSteps(panel, simId, combo) {
     const cardNameMap = {};
@@ -425,15 +516,19 @@ window.castVote = async function (comboid, value, btn) {
 
     // Determine new vote (toggle off if same direction)
     const newVote = currentVote === value ? 0 : value;
+    const msgEl = document.getElementById(`vote-msg-${comboid}`);
+    if (msgEl) msgEl.style.display = 'none';
 
     try {
-        if (newVote === 0) {
-            await client.from('combovotes').delete().eq('comboid', comboid).eq('userid', userId);
-        } else {
-            await client.from('combovotes').upsert({ userid: userId, comboid, value: newVote });
-        }
+        // supabase-js reports failures (RLS, expired session) in `error`
+        // instead of throwing; without this check the buttons showed a vote
+        // that was never saved.
+        const { error } = newVote === 0
+            ? await client.from('combovotes').delete().eq('comboid', comboid).eq('userid', userId)
+            : await client.from('combovotes').upsert({ userid: userId, comboid, value: newVote });
+        if (error) throw error;
 
-        // Optimistically update UI
+        // Update the UI once the vote is saved
         const upBtn = btn.closest('div').querySelector('[data-vote="1"]');
         const downBtn = btn.closest('div').querySelector('[data-vote="-1"]');
         [upBtn, downBtn].forEach(b => {
@@ -452,6 +547,10 @@ window.castVote = async function (comboid, value, btn) {
         }
     } catch (e) {
         console.error('Vote failed:', e.message);
+        if (msgEl) {
+            msgEl.textContent = "Your vote didn't save. Please try again.";
+            msgEl.style.display = '';
+        }
     }
 };
 
