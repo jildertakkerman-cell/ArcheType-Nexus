@@ -50,6 +50,8 @@ window.CardLoader = (function () {
     const BANLIST_JSON_URL = resolveAssetUrl('../data/banlist.json', '../assets/data/banlist.json');
     const GENESYS_JSON_URL = resolveAssetUrl('../data/genesys_points.json', '../assets/data/genesys_points.json');
     const DISCORD_LINKS_URL = resolveAssetUrl('../data/discord_links.json', '/assets/data/discord_links.json');
+    const DECKLIST_INDEX_URL = resolveAssetUrl('../data/decklists/index.json', '../assets/data/decklists/index.json');
+    const DECKLIST_SCRIPT_URL = resolveAssetUrl('decklist.js', '../assets/js/decklist.js');
 
     // Banlist format display names and icons
     // NOTE: Full class names must be spelled out for Tailwind to detect them at build time
@@ -4594,20 +4596,31 @@ window.CardLoader = (function () {
         }
 
         // Deck searches go by YGOProDeck's archetype tag, so only its own archetype names get one.
-        Promise.all([isApiArchetype(archetypeName), fetchDiscordLinks()])
-            .then(([isKnown, discordLinks]) => {
+        Promise.all([isApiArchetype(archetypeName), fetchDiscordLinks(), fetchDeckListIndex()])
+            .then(([isKnown, discordLinks, deckLists]) => {
                 if (container._deckResourcesArchetype !== archetypeName) return;
                 const discordUrl = discordLinks[archetypeName.toLowerCase()] || null;
-                const html = buildDeckResourcesCompactHtml(archetypeName, isKnown !== false, discordUrl, showAllDecks);
+                const hasDeckList = Object.prototype.hasOwnProperty.call(deckLists, archetypeName);
+                const html = buildDeckResourcesCompactHtml(archetypeName, isKnown !== false, discordUrl, showAllDecks, hasDeckList);
                 if (html !== container._deckResourcesHtml) {
+                    // Don't snap the Decks menu shut if the reader opened it before this finished.
+                    const wasOpen = !!container.querySelector('.decks-menu:not([hidden])');
+                    const hadFocus = container.contains(document.activeElement);
                     container.innerHTML = html;
                     container._deckResourcesHtml = html;
+                    if (wasOpen) setDecksMenu(container.querySelector('.decks-menu-wrap'), true);
+                    if (hadFocus) container.querySelector('.decks-menu-btn')?.focus();
+                }
+                // A link ending in #test-deck (or the old #decklist) opens the list straight away.
+                if (hasDeckList && !deckListHashHandled && /^#(test-deck|decklist)$/.test(location.hash)) {
+                    deckListHashHandled = true;
+                    openDeckList(archetypeName, container.querySelector('.decks-menu-btn'));
                 }
             })
             .catch(error => console.error('[CardLoader] Failed to finish deck resources:', error));
     }
 
-    function buildDeckResourcesCompactHtml(archetypeName, archetypeExists, discordUrl, showAllDecks) {
+    function buildDeckResourcesCompactHtml(archetypeName, archetypeExists, discordUrl, showAllDecks, hasDeckList) {
         let competitiveUrl, casualUrl;
 
         if (archetypeExists) {
@@ -4628,30 +4641,41 @@ window.CardLoader = (function () {
             casualUrl = `https://ygoprodeck.com/deck-search/?cardcode=${encodedCardName}%7C&offset=0`;
         }
 
-        // Generate sidebar button HTML
+        const name = escapeAttr(archetypeName);
+        const external = '<i class="fas fa-external-link-alt decks-menu-ext" aria-hidden="true"></i>';
+
+        // Generate sidebar button HTML. The deck lists share one "Decks" menu so the
+        // bar stays on one row; its styles are in synergy-tags.css.
         const html = `
-            <!-- Competitive Decks Button -->
-            <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" 
-               class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors"
-               title="View tournament and tiered deck lists for ${archetypeName}">
-                <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
-                    <i class="fas fa-trophy text-lg lg:text-xl"></i>
+            <!-- Decks menu: the test deck (assets/js/decklist.js) and YGOProDeck's lists -->
+            <div class="decks-menu-wrap relative inline-block w-full lg:w-auto">
+                <button type="button" class="decks-menu-btn group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors"
+                        aria-expanded="false" aria-controls="decks-menu" title="Deck lists for ${name}">
+                    <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
+                        <i class="fas fa-clone text-lg lg:text-xl"></i>
+                    </div>
+                    <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">Decks<i class="fas fa-chevron-down decks-menu-caret" aria-hidden="true"></i></span>
+                </button>
+                <div class="decks-menu" id="decks-menu" hidden>
+                    <p class="decks-menu-title">${name} decks</p>
+                    ${hasDeckList ? `
+                    <a href="#test-deck" class="decks-menu-item decks-menu-item--test" data-decklist-open="${name}">
+                        <i class="fas fa-flask" aria-hidden="true"></i>
+                        <span><strong>Test deck</strong><small>Pure build · draw hands · .ydk</small></span>
+                    </a>
+                    <div class="decks-menu-sep"></div>` : ''}
+                    <a href="${competitiveUrl}" target="_blank" rel="noopener noreferrer" class="decks-menu-item">
+                        <i class="fas fa-trophy" aria-hidden="true"></i>
+                        <span><strong>Meta decks</strong><small>Tournament lists on YGOProDeck</small></span>${external}
+                    </a>
+                    ${showAllDecks ? `
+                    <a href="${casualUrl}" target="_blank" rel="noopener noreferrer" class="decks-menu-item">
+                        <i class="fas fa-users" aria-hidden="true"></i>
+                        <span><strong>All decks</strong><small>Every list on YGOProDeck</small></span>${external}
+                    </a>` : ''}
                 </div>
-                <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">Meta Decks</span>
-            </a>
-            
-            ${showAllDecks ? `
-            <!-- All Decks Button -->
-            <a href="${casualUrl}" target="_blank" rel="noopener noreferrer"
-               class="group flex items-center justify-center lg:justify-start gap-3 w-full lg:px-4 lg:py-2 lg:rounded-full hover:bg-slate-800 transition-colors"
-               title="View all community-submitted deck lists for ${archetypeName}">
-                <div class="relative flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-[#1e293b] text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all duration-300 shadow-md border border-indigo-500/30 lg:border-none">
-                    <i class="fas fa-users text-lg lg:text-xl"></i>
-                </div>
-                <span class="hidden lg:inline-block font-semibold text-gray-300 group-hover:text-white transition-colors text-left">All Decks</span>
-            </a>
-            ` : ''}
-            
+            </div>
+
             ${discordUrl ? `
             <!-- Discord Button -->
             <a href="${discordUrl}" target="_blank" rel="noopener noreferrer" 
@@ -4667,6 +4691,96 @@ window.CardLoader = (function () {
 
         return html;
     }
+
+    function escapeAttr(value) {
+        return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    // ---- Decks menu ----
+
+    function setDecksMenu(wrap, open, focusButton) {
+        if (!wrap) return;
+        const menu = wrap.querySelector('.decks-menu');
+        const button = wrap.querySelector('.decks-menu-btn');
+        menu.hidden = !open;
+        button.setAttribute('aria-expanded', String(open));
+        if (!open && focusButton) button.focus();
+    }
+
+    // Capture phase: the Synergies button stops its click from bubbling, and
+    // opening it should still close this menu.
+    document.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof Element) || !target.isConnected) return;
+        const button = target.closest('.decks-menu-btn');
+        if (button) {
+            const wrap = button.closest('.decks-menu-wrap');
+            setDecksMenu(wrap, wrap.querySelector('.decks-menu').hidden);
+            return;
+        }
+        document.querySelectorAll('.decks-menu:not([hidden])').forEach(menu => {
+            const wrap = menu.closest('.decks-menu-wrap');
+            if (!wrap.contains(target) || target.closest('.decks-menu-item')) setDecksMenu(wrap, false);
+        });
+    }, true);
+
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        const menu = document.querySelector('.decks-menu:not([hidden])');
+        if (menu) setDecksMenu(menu.closest('.decks-menu-wrap'), false, true);
+    });
+
+    // ========================================
+    // TEST DECK (assets/js/decklist.js)
+    // ========================================
+    // Archetypes listed in decklists/index.json get a "Test deck" entry in the
+    // Decks menu. The index is a few bytes; decklist.js itself loads on the first
+    // click and opens the list in a dialog.
+
+    let deckListIndexPromise = null;
+    let deckListModulePromise = null;
+    let deckListHashHandled = false;
+
+    function fetchDeckListIndex() {
+        if (!deckListIndexPromise) {
+            deckListIndexPromise = fetch(DECKLIST_INDEX_URL)
+                .then(response => (response.ok ? response.json() : {}))
+                .catch(() => ({}));
+        }
+        return deckListIndexPromise;
+    }
+
+    function loadDeckListModule() {
+        if (window.DeckList && window.DeckList.open) return Promise.resolve(window.DeckList);
+        if (!deckListModulePromise) {
+            deckListModulePromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = DECKLIST_SCRIPT_URL;
+                script.onload = () => resolve(window.DeckList);
+                script.onerror = () => {
+                    deckListModulePromise = null;
+                    reject(new Error('decklist.js failed to load'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        return deckListModulePromise;
+    }
+
+    // Focus goes back to `opener` when the dialog closes.
+    function openDeckList(archetypeName, opener) {
+        loadDeckListModule()
+            .then(deckList => deckList.open(archetypeName, opener))
+            .catch(error => console.error('[CardLoader] Test deck unavailable:', error));
+    }
+
+    document.addEventListener('click', event => {
+        const trigger = event.target.closest && event.target.closest('[data-decklist-open]');
+        if (!trigger) return;
+        event.preventDefault();
+        const wrap = trigger.closest('.decks-menu-wrap');
+        openDeckList(trigger.dataset.decklistOpen, wrap ? wrap.querySelector('.decks-menu-btn') : trigger);
+    });
 
     // ========================================
     // ARCHETYPE CARDS BROWSER (Supabase)
@@ -5069,7 +5183,7 @@ window.CardLoader = (function () {
     }
 
     // Archetype pages `await` the banlist render first and only then render the
-    // deck dock (Meta Decks / Cards buttons). The banlist does several slow
+    // deck dock (Decks / Cards buttons). The banlist does several slow
     // network fetches and nothing on the pages depends on it having finished, so
     // the public versions start it and resolve right away instead of stalling the
     // rest of the page's init chain behind it.

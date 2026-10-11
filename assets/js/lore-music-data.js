@@ -322,7 +322,27 @@
             'battleguard': { palette: 'tribal' },
             'metaphys': { palette: 'sacred' },
             'appliancer': { palette: 'playful' },
-            'ashened': { palette: 'horror' }
+            'ashened': { palette: 'horror' },
+            'therion': { palette: 'electronic' },
+            'ashtra': { palette: 'japanese' },
+            'primite': { palette: 'tribal' },
+            'lyrilusc': { palette: 'playful' },
+            'phantasm-spiral': { palette: 'fantasy' },
+            'triamid': { palette: 'sacred' },
+            'thunder-dragon': { palette: 'fantasy' },
+            'spright': { palette: 'electronic' },
+            'fortune-lady': { palette: 'fantasy' },
+            'amorphage': { palette: 'horror' },
+            'rokket': { palette: 'electronic' },
+            'valkyrie': { palette: 'medieval' },
+            'ragnaraika': { palette: 'japanese' },
+            'zera': { palette: 'horror' },
+            'tistina': { palette: 'sacred' },
+            'regenesis': { palette: 'sacred' },
+            'butterspy': { palette: 'playful' },
+            'mirror-force': { palette: 'fantasy' },
+            'doriado': { palette: 'fantasy' },
+            'shinobird': { palette: 'japanese' }
         }
     };
 })();
