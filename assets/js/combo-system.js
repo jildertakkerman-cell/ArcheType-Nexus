@@ -137,14 +137,8 @@ class ComboLoader {
             selectorOptions = {}
         } = options;
 
-        // 1. Setup container structure
-        container.innerHTML = `
-            <div id="${selectorContainerId}"></div>
-            <div id="${guideContainerId}"></div>
-        `;
-
         try {
-            // 2. Load combo data
+            // 1. Load combo data first
             const comboData = await this.loadCombos(archetypeName);
 
             if (!comboData || !comboData.combos) {
@@ -152,7 +146,108 @@ class ComboLoader {
                 return null;
             }
 
-            // 3. Define the showCombo callback for switching between combos
+            const curatedCount = Object.keys(comboData.combos).length;
+
+            // 2. Setup container structure with unified Combo Hub navigation tabs
+            container.innerHTML = `
+                <div class="combo-hub-nav">
+                    <div class="combo-hub-tabs" role="tablist" aria-label="Combo Guide Sources">
+                        <button type="button" class="combo-hub-tab active" data-tab="curated" id="${containerId}-tab-curated" role="tab" aria-selected="true" aria-controls="${containerId}-curated-view">
+                            <i class="fas fa-film"></i> Curated Guides (<span id="${containerId}-curated-count">${curatedCount}</span>)
+                        </button>
+                        <button type="button" class="combo-hub-tab" data-tab="community" id="${containerId}-tab-community" role="tab" aria-selected="false" aria-controls="${containerId}-community-view">
+                            <i class="fas fa-users"></i> Community Lines (<span id="${containerId}-community-count">0</span>)
+                        </button>
+                    </div>
+                    <a href="../pages/My-Replays.html" class="combo-hub-submit-btn" title="Submit a verified combo line">
+                        <i class="fas fa-plus-circle"></i> Submit Replay
+                    </a>
+                </div>
+                <div id="${containerId}-curated-view" class="combo-hub-view">
+                    <div id="${selectorContainerId}"></div>
+                    <div id="${guideContainerId}"></div>
+                </div>
+                <div id="${containerId}-community-view" class="combo-hub-view" style="display: none;">
+                    <div id="${containerId}-community-mount"></div>
+                    <div id="${containerId}-community-empty" class="combo-hub-empty-state" style="display: none;">
+                        <div class="combo-hub-empty-icon"><i class="fas fa-users"></i></div>
+                        <div class="combo-hub-empty-title">No Community Lines Yet</div>
+                        <p class="combo-hub-empty-desc">No duelist combo guides have been submitted for ${archetypeName} yet. Be the first to analyze a replay and submit a route!</p>
+                        <a href="../pages/My-Replays.html" class="combo-hub-submit-btn" style="display:inline-flex;">
+                            <i class="fas fa-cloud-upload-alt mr-1"></i> Submit a Combo Guide →
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            // 3. Tab switching logic
+            const tabCurated = document.getElementById(`${containerId}-tab-curated`);
+            const tabCommunity = document.getElementById(`${containerId}-tab-community`);
+            const curatedView = document.getElementById(`${containerId}-curated-view`);
+            const communityView = document.getElementById(`${containerId}-community-view`);
+
+            const switchHubTab = (tabName) => {
+                if (tabName === 'curated') {
+                    tabCurated.classList.add('active');
+                    tabCurated.setAttribute('aria-selected', 'true');
+                    tabCommunity.classList.remove('active');
+                    tabCommunity.setAttribute('aria-selected', 'false');
+                    curatedView.style.display = '';
+                    communityView.style.display = 'none';
+                } else {
+                    tabCommunity.classList.add('active');
+                    tabCommunity.setAttribute('aria-selected', 'true');
+                    tabCurated.classList.remove('active');
+                    tabCurated.setAttribute('aria-selected', 'false');
+                    curatedView.style.display = 'none';
+                    communityView.style.display = '';
+                    const panels = communityView.querySelectorAll('[id^="community-sim-"][data-combo-path]');
+                    panels.forEach(p => {
+                        if (p.style.display !== 'none' && typeof window._loadComboSim === 'function') {
+                            window._loadComboSim(p, p.dataset.comboPath);
+                        }
+                    });
+                }
+            };
+
+            if (tabCurated && tabCommunity) {
+                tabCurated.addEventListener('click', () => switchHubTab('curated'));
+                tabCommunity.addEventListener('click', () => switchHubTab('community'));
+            }
+
+            // 4. Register active hub for community-combos.js integration
+            window.ComboHubs = window.ComboHubs || {};
+            ComboLoader.activeHubs = window.ComboHubs;
+            const hubEntry = {
+                containerId,
+                archetypeName,
+                switchTab: switchHubTab,
+                mountCommunity: (combos, session) => {
+                    const countEl = document.getElementById(`${containerId}-community-count`);
+                    if (countEl) countEl.textContent = combos ? combos.length : 0;
+                    const mount = document.getElementById(`${containerId}-community-mount`);
+                    const empty = document.getElementById(`${containerId}-community-empty`);
+                    if (!combos || combos.length === 0) {
+                        if (mount) mount.innerHTML = '';
+                        if (empty) empty.style.display = '';
+                    } else {
+                        if (empty) empty.style.display = 'none';
+                        if (mount && typeof window._buildCommunityCombosView === 'function') {
+                            mount.innerHTML = '';
+                            window._buildCommunityCombosView(mount, combos, session, archetypeName);
+                        }
+                    }
+                }
+            };
+            window.ComboHubs[archetypeName.toLowerCase()] = hubEntry;
+
+            // Check if community combos arrived before renderComboSystem completed
+            if (window.ComboHubData && window.ComboHubData[archetypeName.toLowerCase()]) {
+                const cached = window.ComboHubData[archetypeName.toLowerCase()];
+                hubEntry.mountCommunity(cached.combos, cached.session);
+            }
+
+            // 5. Define the showCombo callback for switching between combos
             const showCombo = (comboKey) => {
                 const combos = comboData.combos || {};
                 Object.keys(combos).forEach(key => {
@@ -169,19 +264,18 @@ class ComboLoader {
                 }
             };
 
-            // 3.5. Kick off a single shared vote fetch for every combo on this page;
-            // both the selector (badges + sort) and guide (vote bar) consume it.
+            // 6. Shared vote fetch
             const archetypeSlug = archetypeName.toLowerCase();
             const comboIds = Object.keys(comboData.combos).map(key => `${archetypeSlug}-${key}`);
             const votesPromise = fetchStaticComboVotes(comboIds);
 
-            // 4. Render combo selector
+            // 7. Render combo selector
             ComboSelector.render(selectorContainerId, comboData, showCombo, { ...selectorOptions, archetypeSlug, votesPromise });
 
-            // 5. Render combo guide (includes simulators)
+            // 8. Render combo guide (includes simulators)
             ComboGuide.render(guideContainerId, comboData, archetypeSlug, votesPromise);
 
-            // 6. Initialize all DuelSimulator instances
+            // 9. Initialize all DuelSimulator instances
             const simulators = {};
             Object.keys(comboData.combos).forEach(key => {
                 const normalizedKey = key.replace('combo', '');
@@ -2610,3 +2704,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// Explicit window exports for cross-script module interoperability
+window.ComboLoader = ComboLoader;
+window.ComboSelector = ComboSelector;
+window.ComboGuide = ComboGuide;
+window.DuelSimulator = DuelSimulator;
+window.ComboHubs = window.ComboHubs || {};
+ComboLoader.activeHubs = window.ComboHubs;

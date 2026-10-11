@@ -110,15 +110,16 @@ async function initCommunityCombos(containerId, archetypeName) {
 
     // ilike ignores case, and a few names have a lowercase duplicate row (Roid, Sphinx):
     // take the row spelled like the page, else the first.
-    const { data: archetypeRows } = await client
+    const { data: archetypeRows, error: archError } = await client
         .from('archetypes')
         .select('archetypeid, archetypename')
         .ilike('archetypename', archetypeName);
+    if (archError) console.error('[CommunityCombos] archError:', archError);
     const archetypeRow = archetypeRows?.find(r => r.archetypename === archetypeName) || archetypeRows?.[0];
 
     if (!archetypeRow) return;
 
-    const { data: combos } = await client
+    const { data: combos, error: comboError } = await client
         .from('combos')
         .select(`
             comboid, title, createdon, gcscombojsonpath,
@@ -131,14 +132,51 @@ async function initCommunityCombos(containerId, archetypeName) {
         .eq('archetypeid', archetypeRow.archetypeid)
         .eq('status', 'approved');
 
+    if (comboError) console.error('[CommunityCombos] comboError:', comboError);
+
     const session = await window.Auth.getSession();
 
+    // Cache community data globally for this archetype so either loader can consume it
+    window.ComboHubData = window.ComboHubData || {};
+    window.ComboHubData[archetypeName.toLowerCase()] = { combos: combos || [], session };
+
+    // Check if an active unified Combo Hub is present
+    const hub = window.ComboLoader?.activeHubs?.[archetypeName.toLowerCase()]
+             || window.ComboHubs?.[archetypeName.toLowerCase()];
+    if (hub) {
+        hub.mountCommunity(combos || [], session);
+        _cleanUpStandalone(containerId, hub);
+        return;
+    }
+
+    // Standalone fallback for pages without ComboLoader
     if (!combos || combos.length === 0) {
         _renderCTA(containerId, session);
         return;
     }
 
     _buildStandaloneSection(containerId, combos, session, archetypeName);
+}
+
+function _cleanUpStandalone(containerId, hub) {
+    const standalone = document.getElementById(containerId);
+    if (standalone) {
+        const section = standalone.closest('section#community-combos') || standalone.parentElement;
+        if (section && (section.id === 'community-combos' || section.tagName.toLowerCase() === 'section')) {
+            section.style.display = 'none';
+        } else {
+            standalone.style.display = 'none';
+        }
+    }
+    const jumpLinks = document.querySelectorAll('.page-jump a[href="#community-combos"]');
+    jumpLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            hub.switchTab('community');
+            const target = document.getElementById(hub.containerId);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
 }
 
 function _injectSelectorOption(container, key, combo, index) {
@@ -252,6 +290,11 @@ function _injectGuideEntry(container, key, combo, session) {
 function _buildStandaloneSection(containerId, combos, session, archetypeName) {
     const wrapper = document.getElementById(containerId);
     if (!wrapper) return;
+    _renderCommunityCombosContent(wrapper, combos, session, archetypeName, false);
+}
+
+function _renderCommunityCombosContent(mountEl, combos, session, archetypeName, isHub = false) {
+    if (!mountEl) return;
 
     // Sort by vote score descending so highest-rated appears first
     const ranked = combos
@@ -261,46 +304,52 @@ function _buildStandaloneSection(containerId, combos, session, archetypeName) {
     const topScore = ranked[0]?.score ?? 0;
     const showSelector = ranked.length > 1;
 
-    wrapper.innerHTML = `
+    const selectorHtml = showSelector ? `
+        <div style="margin-bottom:1rem;max-width:32rem;">
+            <label style="display:block;font-size:0.72rem;font-weight:600;color:#f59e0b;
+                          text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">
+                <i class="fas fa-layer-group" style="margin-right:0.35rem;"></i>Select Community Line
+            </label>
+            <div style="position:relative;">
+                <select id="cc-guide-selector" onchange="window.switchComboGuide(this.value)"
+                        style="appearance:none;width:100%;
+                               padding:0.7rem 2.5rem 0.7rem 1rem;
+                               background:rgba(245,158,11,0.07);
+                               border:1.5px solid rgba(245,158,11,0.35);
+                               border-radius:0.5rem;color:#f5f5f5;
+                               font-weight:600;font-size:0.88rem;
+                               cursor:pointer;font-family:inherit;
+                               transition:border-color 0.2s;">
+                    ${ranked.map(({ combo, score }, i) => {
+                        const isTop = score === topScore && topScore > 0;
+                        const scoreStr = score !== 0 ? ` (${score > 0 ? '+' : ''}${score})` : '';
+                        return `<option value="${i}" style="background:#1a1a2e;color:#f5f5f5;">
+                            ${isTop ? '★ ' : ''}${window.escapeHtml(combo.title)}${scoreStr}
+                        </option>`;
+                    }).join('')}
+                </select>
+                <div style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);
+                            pointer-events:none;color:#f59e0b;font-size:0.8rem;">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>` : '';
+
+    mountEl.innerHTML = isHub ? `
+        <div>
+            ${selectorHtml}
+            <div id="standalone-combo-list"></div>
+        </div>` : `
         <div style="margin-top:1.5rem;">
             <h2 style="font-size:1.1rem;font-weight:700;color:#f5f5f5;margin-bottom:1rem;">
                 <i class="fas fa-users" style="color:#f59e0b;margin-right:0.5rem;"></i>Community Combo Guides
             </h2>
-            ${showSelector ? `
-            <div style="margin-bottom:1rem;max-width:32rem;">
-                <label style="display:block;font-size:0.72rem;font-weight:600;color:#f59e0b;
-                              text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">
-                    <i class="fas fa-layer-group" style="margin-right:0.35rem;"></i>Select Combo Guide
-                </label>
-                <div style="position:relative;">
-                    <select id="cc-guide-selector" onchange="window.switchComboGuide(this.value)"
-                            style="appearance:none;width:100%;
-                                   padding:0.7rem 2.5rem 0.7rem 1rem;
-                                   background:rgba(245,158,11,0.07);
-                                   border:1.5px solid rgba(245,158,11,0.35);
-                                   border-radius:0.5rem;color:#f5f5f5;
-                                   font-weight:600;font-size:0.88rem;
-                                   cursor:pointer;font-family:inherit;
-                                   transition:border-color 0.2s;">
-                        ${ranked.map(({ combo, score }, i) => {
-                            const isTop = score === topScore && topScore > 0;
-                            const scoreStr = score !== 0 ? ` (${score > 0 ? '+' : ''}${score})` : '';
-                            return `<option value="${i}" style="background:#1a1a2e;color:#f5f5f5;">
-                                ${isTop ? '★ ' : ''}${window.escapeHtml(combo.title)}${scoreStr}
-                            </option>`;
-                        }).join('')}
-                    </select>
-                    <div style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);
-                                pointer-events:none;color:#f59e0b;font-size:0.8rem;">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                </div>
-            </div>` : ''}
+            ${selectorHtml}
             <div id="standalone-combo-list"></div>
         </div>`;
 
     // Render all combo cards (only first visible)
-    const list = document.getElementById('standalone-combo-list');
+    const list = mountEl.querySelector('#standalone-combo-list') || document.getElementById('standalone-combo-list');
     ranked.forEach(({ combo }, i) => {
         const key = `cc_${combo.comboid}`;
         const placeholder = document.createElement('div');
@@ -314,9 +363,7 @@ function _buildStandaloneSection(containerId, combos, session, archetypeName) {
         }
     });
 
-    // Combo steps start open, but the simulator and combo JSON load only when
-    // a panel nears the viewport. A panel inside a guide the selector hides,
-    // or one the reader closed, never intersects, so it waits until shown.
+    // Combo steps observer / loader
     const panels = list.querySelectorAll('[id^="community-sim-"][data-combo-path]');
     const load = panel => _loadComboSim(panel, panel.dataset.comboPath);
     if ('IntersectionObserver' in window) {
@@ -343,6 +390,12 @@ function _buildStandaloneSection(containerId, combos, session, archetypeName) {
         });
     };
 }
+
+window._buildCommunityCombosView = function(mountEl, combos, session, archetypeName) {
+    _renderCommunityCombosContent(mountEl, combos, session, archetypeName, true);
+};
+
+window._loadComboSim = _loadComboSim;
 
 function _renderCTA(containerId, session) {
     if (!session) return;
