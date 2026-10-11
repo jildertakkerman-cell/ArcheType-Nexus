@@ -1,0 +1,40 @@
+name: Weekly Banlist & Genesys Points Update
+
+on:
+  schedule:
+    # Runs automatically every Sunday at 03:00 UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Data Update Script
+        run: node scripts/update-genesys-points.js
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if any data files changed
+          if git diff --quiet assets/data/; then
+            echo "No data changes detected. Everything is up to date."
+          else
+            echo "Data changes detected. Committing and pushing..."
+            git add assets/data/
+            git commit -m "chore(data): auto-update banlist and genesys points [skip ci]"
+            git push
+          fi

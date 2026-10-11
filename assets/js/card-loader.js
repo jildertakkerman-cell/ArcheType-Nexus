@@ -48,6 +48,7 @@ window.CardLoader = (function () {
     }
 
     const BANLIST_JSON_URL = resolveAssetUrl('../data/banlist.json', '../assets/data/banlist.json');
+    const GENESYS_JSON_URL = resolveAssetUrl('../data/genesys_points.json', '../assets/data/genesys_points.json');
     const DISCORD_LINKS_URL = resolveAssetUrl('../data/discord_links.json', '/assets/data/discord_links.json');
 
     // Banlist format display names and icons
@@ -83,6 +84,15 @@ window.CardLoader = (function () {
         ocg: {},
         masterduel: {}
     };
+    const genesysCache = {
+        tcg: {},
+        ocg: {}
+    };
+    const genesysLowerIndex = {
+        tcg: {},
+        ocg: {}
+    };
+    let genesysPromise = null;
     const discordLinksCache = {};
     const cardTagsCache = {}; // Cache for gameplay tags by passcode
     let supabaseClient = null; // Lazy-initialized Supabase client
@@ -662,6 +672,7 @@ window.CardLoader = (function () {
             return;
         }
         initialized = true;
+        fetchGenesysData();
         createPopup();
         setupGlobalClickListener();
         console.log('CardLoader initialized');
@@ -1176,6 +1187,95 @@ window.CardLoader = (function () {
             // Return empty object on error
             return {};
         }
+    }
+
+    /**
+     * Fetch Genesys format points from local JSON, falling back gracefully
+     */
+    async function fetchGenesysData() {
+        if (genesysCache.tcg && Object.keys(genesysCache.tcg).length > 0) {
+            return genesysCache;
+        }
+
+        if (!genesysPromise) {
+            genesysPromise = fetch(GENESYS_JSON_URL)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.tcg) {
+                        genesysCache.tcg = data.tcg || {};
+                        genesysCache.ocg = data.ocg || {};
+                        const lowerTcg = {};
+                        for (const [name, pts] of Object.entries(genesysCache.tcg)) {
+                            lowerTcg[name.toLowerCase()] = pts;
+                        }
+                        genesysLowerIndex.tcg = lowerTcg;
+                        const lowerOcg = {};
+                        for (const [name, pts] of Object.entries(genesysCache.ocg)) {
+                            lowerOcg[name.toLowerCase()] = pts;
+                        }
+                        genesysLowerIndex.ocg = lowerOcg;
+                        console.log(`[CardLoader] Genesys points loaded. TCG: ${Object.keys(genesysCache.tcg).length}, OCG: ${Object.keys(genesysCache.ocg).length}`);
+                    }
+                    return genesysCache;
+                })
+                .catch(error => {
+                    console.warn('[CardLoader] Failed to fetch Genesys points JSON:', error);
+                    return genesysCache;
+                })
+                .finally(() => {
+                    genesysPromise = null;
+                });
+        }
+
+        return genesysPromise;
+    }
+
+    /**
+     * Get Genesys points for a card name
+     * @param {string} cardName
+     * @param {string} format - 'tcg' or 'ocg' (defaults to currentBanlistFormat)
+     * @returns {number} Point cost (0 if legal with 0 cost or unknown)
+     */
+    function getGenesysPoints(cardName, format = currentBanlistFormat) {
+        if (!cardName) return 0;
+        const region = (format === 'ocg') ? 'ocg' : 'tcg';
+        const map = genesysCache[region];
+        if (map && map[cardName] !== undefined) return map[cardName];
+        const lowerIdx = genesysLowerIndex[region];
+        if (lowerIdx && lowerIdx[cardName.toLowerCase()] !== undefined) return lowerIdx[cardName.toLowerCase()];
+        // Check cardDataCache misc_info if populated from live API
+        const cardInfo = cardDataCache[cardName];
+        if (cardInfo && cardInfo.misc_info && cardInfo.misc_info[0]) {
+            const misc = cardInfo.misc_info[0];
+            const pts = (region === 'ocg') ? misc.genesys_ocg_points : misc.genesys_points;
+            if (typeof pts === 'number') return pts;
+        }
+        return 0;
+    }
+
+    /**
+     * Formats the Genesys Points chip HTML
+     * @param {number} points
+     * @returns {string} HTML markup
+     */
+    function formatGenesysBadge(points) {
+        let tierClass = 'cp-genesys-zero';
+        if (points >= 50) {
+            tierClass = 'cp-genesys-high';
+        } else if (points >= 20) {
+            tierClass = 'cp-genesys-mid';
+        } else if (points > 0) {
+            tierClass = 'cp-genesys-low';
+        }
+
+        const title = points === 0
+            ? 'Genesys Format: 0 points'
+            : `Genesys Format: ${points} points (100 pts deck cap)`;
+
+        return `<span id="popup-genesys-points" class="cp-chip cp-chip-genesys ${tierClass}" title="${title}"><i class="fas fa-cube"></i>${points} pts</span>`;
     }
 
     /**
@@ -3065,6 +3165,13 @@ window.CardLoader = (function () {
                             }
                         }
 
+                        // Update Genesys points badge
+                        const genesysBadge = document.getElementById('popup-genesys-points');
+                        if (genesysBadge && !cardInfo.is_dummy) {
+                            const pts = getGenesysPoints(cardName, currentBanlistFormat);
+                            genesysBadge.outerHTML = formatGenesysBadge(pts);
+                        }
+
                         // Re-position the popup after content update to prevent it from going off-screen
                         // We must wait for the DOM to update with the new content
                         requestAnimationFrame(() => {
@@ -3107,6 +3214,10 @@ window.CardLoader = (function () {
             releaseDateHtml = `Release: ${misc.tcg_date || misc.ocg_date}`;
         }
 
+        // Genesys points extraction
+        const genesysPoints = cardInfo.is_dummy ? null : getGenesysPoints(cardInfo.name, currentBanlistFormat);
+        const genesysBadgeHtml = (genesysPoints !== null) ? formatGenesysBadge(genesysPoints) : '';
+
         // The Prices tab supplies its own container.
         const priceHtml = formatPriceSection(cardInfo, { wrapper: false });
 
@@ -3115,7 +3226,10 @@ window.CardLoader = (function () {
                 <div class="cp-head-area">
                     <div class="cp-titlebar">
                         <h3 class="cp-title">${esc(cardInfo.name)}</h3>
-                        <span id="popup-release-date" class="cp-chip ${releaseDateHtml ? '' : 'cp-hidden'}">${releaseDateHtml}</span>
+                        <div class="cp-title-meta">
+                            ${genesysBadgeHtml}
+                            <span id="popup-release-date" class="cp-chip ${releaseDateHtml ? '' : 'cp-hidden'}">${releaseDateHtml}</span>
+                        </div>
                     </div>
 
                     ${identityBar}
@@ -3200,6 +3314,19 @@ window.CardLoader = (function () {
         activePopup = popup;
         lastShown = Date.now();
         currentCard = cardName;
+
+        // Asynchronously update Genesys badge if cache was not ready yet
+        if (!cardInfo.is_dummy && (!genesysCache.tcg || Object.keys(genesysCache.tcg).length === 0)) {
+            fetchGenesysData().then(() => {
+                if (activePopup && currentCard === cardName) {
+                    const badge = activePopup.querySelector('#popup-genesys-points');
+                    if (badge) {
+                        const pts = getGenesysPoints(cardName, currentBanlistFormat);
+                        badge.outerHTML = formatGenesysBadge(pts);
+                    }
+                }
+            });
+        }
 
         // Fetch and display tags asynchronously
         if (cardPasscode && getSupabaseClient()) {
@@ -3574,6 +3701,14 @@ window.CardLoader = (function () {
                     const titleSpan = parentSection?.querySelector('.banlist-title-text');
                     if (titleSpan) {
                         titleSpan.textContent = `${BANLIST_FORMATS[newFormat].name} Banlist Impact`;
+                    }
+                    // Update active popup if open
+                    if (activePopup && currentCard) {
+                        const badge = activePopup.querySelector('#popup-genesys-points');
+                        if (badge) {
+                            const pts = getGenesysPoints(currentCard, newFormat);
+                            badge.outerHTML = formatGenesysBadge(pts);
+                        }
                     }
                     // Re-render with new format
                     await renderBanlistContent(container, cards, options, newFormat, pageColors);
@@ -5005,7 +5140,10 @@ window.CardLoader = (function () {
         showLargeImageByUrl,
         hideLargeImageModal,
         showCardPreview,
-        hideCardPreview
+        hideCardPreview,
+        // Genesys format points
+        getGenesysPoints,
+        fetchGenesysData
     };
 })();
 
