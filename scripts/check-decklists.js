@@ -58,6 +58,9 @@ const store = card => {
 
 async function lookupNames(names) {
     const todo = [...new Set(names)].filter(n => !cardInfo.has(n.toLowerCase()));
+    if (todo.length > 0) {
+        console.log(`[Deck Check] Looking up card info for ${todo.length} cards in batches of 40...`);
+    }
     for (let i = 0; i < todo.length; i += 40) {
         const batch = todo.slice(i, i + 40);
         const { data = [] } = await fetchJson(`${API}?misc=yes&name=${encodeURIComponent(batch.join('|'))}`);
@@ -143,7 +146,13 @@ async function run() {
         }));
     }
 
+    console.log(`[Deck Check] Verifying ${decks.length} test decks against the banlist...`);
+    let checkedCount = 0;
     for (const { file, deck } of decks) {
+        checkedCount++;
+        if (checkedCount % 25 === 0 || checkedCount === decks.length) {
+            console.log(`[Deck Check] Progress: ${checkedCount}/${decks.length} decks checked...`);
+        }
         const errors = [];
         const review = [];
         const warnings = [];
