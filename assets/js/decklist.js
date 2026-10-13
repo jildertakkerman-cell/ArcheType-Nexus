@@ -5,6 +5,9 @@
  *   <archetype>.json  the archetype's own cards, plus named exceptions (allow)
  *   packages.json     generic staples shared by every list, in priority order
  *   index.json        archetype -> file; written by scripts/check-decklists.js
+ *   profiles.json     file -> its Main Deck monsters by Level/Attribute/Type; same script
+ *   packages.generated.json  Extra Deck packages for "auto" fill, rebuilt weekly
+ *                     by scripts/build-extra-packages.js
  *
  * A list is its own cards topped up to 40 (and 15) from the staples packages it
  * names. assemble() applies the current banlist as it goes: a Forbidden or
@@ -15,7 +18,10 @@
  *
  * A deck file (see lunalight.json):
  *   archetype  the name the page passes to CardLoader.renderDeckResourcesCompact
+ *   aliases    other page names that open this same list, when two pages cover one deck
  *   title, summary
+ *              summary is a string, or an array of lead strings and
+ *              { title, text | steps | points } sections (see sphinx.json)
  *   status     "draft" until someone has played it, then "reviewed"
  *   reviewed   ISO date; the checker reports archetype cards released after it
  *   match      name fragments that make a card the archetype's own (default: archetype)
@@ -24,7 +30,9 @@
  *   combos     combo JSON files (relative to assets/data/) whose cards the list must run
  *   main/extra [name, count, role] rows; the role is the hover text
  *   fill       { main: [...], extra: [...] } packages to top up from, in order;
- *              { package, max } caps how many cards one package may add
+ *              { package, max } caps how many cards one package may add;
+ *              "auto" picks from packages.generated.json what the list's
+ *              profile (profiles.json) can reach: see autoSpecs()
  * After adding or editing one, run: node scripts/check-decklists.js
  *
  * card-loader.js loads this file on demand: for archetypes in index.json the
@@ -79,6 +87,135 @@
         return status in LIMITS ? LIMITS[status] : 3;
     }
 
+    // ------------------------------------------------------------------
+    // "auto" Extra Deck fill: packages.generated.json + profiles.json
+    // ------------------------------------------------------------------
+
+    const ATTRIBUTE = /^(DARK|LIGHT|EARTH|WATER|FIRE|WIND|DIVINE)$/;
+    const SUMMON_KIND = /^(xyz|synchro|fusion|link)$/;
+    const TYPES = new Set(['Aqua', 'Beast', 'Beast-Warrior', 'Creator God', 'Cyberse', 'Dinosaur', 'Divine-Beast', 'Dragon', 'Fairy', 'Fiend', 'Fish',
+        'Illusion', 'Insect', 'Machine', 'Plant', 'Psychic', 'Pyro', 'Reptile', 'Rock', 'Sea Serpent', 'Spellcaster', 'Thunder', 'Warrior',
+        'Winged Beast', 'Wyrm', 'Zombie']);
+
+    // The Extra Deck lock in a card's text, as "WIND", "Dragon", "xyz",
+    // "WIND+synchro", or "own" for an archetype-only lock; null if none.
+    function extraLock(desc) {
+        const m = desc.match(/cannot Special Summon (?:any )?monsters? from the Extra Deck[^.]*?, except ([^.;]+?) monsters?\b/i)
+            || desc.match(/cannot Special Summon (?:any )?monsters?(?: for the rest of this turn)?, except ([^.;]+?) monsters?\b/i);
+        if (!m) return null;
+        const clause = m[1];
+        if (clause.includes('"')) return 'own';
+        const parts = [];
+        const attribute = clause.match(/\b(DARK|LIGHT|EARTH|WATER|FIRE|WIND)\b/);
+        if (attribute) parts.push(attribute[1]);
+        const kind = clause.match(/\b(Xyz|Synchro|Fusion|Link)\b/);
+        if (kind) parts.push(kind[1].toLowerCase());
+        const type = [...TYPES].find(t => new RegExp(`\\b${t}(?:-Type)?\\b`).test(clause) && !(t === 'Beast' && /Beast-|Winged Beast|Divine-Beast/.test(clause)));
+        if (type) parts.push(type);
+        return parts.length ? parts.join('+') : null;
+    }
+
+    /**
+     * What a list's Main Deck monsters add up to: counts by Level, Attribute and
+     * Type, its Tuners, and the Extra Deck locks that 3+ copies carry.
+     * scripts/check-decklists.js writes one per list to profiles.json.
+     * @param info name -> { type, level, attribute, race, desc } or null
+     */
+    function deckProfile(rows, info) {
+        const p = { monsters: 0, levels: {}, attributes: {}, types: {}, levelWith: {}, tuners: { count: 0, levels: {}, with: {} }, nonTunerLevels: {}, locks: [] };
+        const bump = (obj, key, n) => { obj[key] = (obj[key] || 0) + n; };
+        const lockCopies = {};
+        rows.forEach(raw => {
+            const { name, count } = readRow(raw);
+            const card = info(name);
+            if (!card) return;
+            const lock = extraLock(card.desc || '');
+            if (lock) bump(lockCopies, lock, count);
+            if (!/Monster/.test(card.type) || /Fusion|Synchro|XYZ|Link/.test(card.type)) return;
+            const traits = [card.attribute, card.race].filter(Boolean);
+            p.monsters += count;
+            if (card.attribute) bump(p.attributes, card.attribute, count);
+            if (card.race) bump(p.types, card.race, count);
+            if (!card.level) return;
+            bump(p.levels, card.level, count);
+            p.levelWith[card.level] = p.levelWith[card.level] || {};
+            traits.forEach(t => bump(p.levelWith[card.level], t, count));
+            if (/Tuner/.test(card.type)) {
+                p.tuners.count += count;
+                bump(p.tuners.levels, card.level, count);
+                traits.forEach(t => bump(p.tuners.with, t, count));
+            } else {
+                bump(p.nonTunerLevels, card.level, count);
+            }
+        });
+        p.locks = Object.entries(lockCopies).filter(([, n]) => n >= 3).map(([lock]) => lock).sort();
+        return p;
+    }
+
+    // Synchro Level -> how readily a Tuner plus one or two non-Tuners reach it.
+    function synchroWeights(profile) {
+        const weights = {};
+        const tuners = Object.entries(profile.tuners.levels).map(([l, n]) => [Number(l), n]);
+        const others = Object.entries(profile.nonTunerLevels).map(([l, n]) => [Number(l), n]);
+        tuners.forEach(([t, tn]) => others.forEach(([a, an], i) => {
+            weights[t + a] = (weights[t + a] || 0) + tn * an;
+            others.slice(i).forEach(([b, bn]) => {
+                if (a === b && an < 2) return;
+                weights[t + a + b] = (weights[t + a + b] || 0) + tn * Math.min(an, bn) / 4;
+            });
+        }));
+        return weights;
+    }
+
+    // Generated rows carry attribute, race and kind, so a lock can filter them.
+    function lockFilter(locks) {
+        if (!locks || !locks.length) return null;
+        return raw => locks.every(lock => lock.split('+').every(part =>
+            part === 'own' ? false
+                : ATTRIBUTE.test(part) ? raw.attribute === part
+                    : SUMMON_KIND.test(part) ? raw.kind === part
+                        : raw.race === part));
+    }
+
+    /**
+     * "auto" -> the generated packages a list's profile can reach, most specific
+     * first: Links for its main Attribute or Type, Xyz for its Levels, Synchros
+     * when it runs Tuners, then generic Links, then the hand-picked "links"
+     * package so the Extra Deck always reaches 15.
+     */
+    function autoSpecs(packages, profile) {
+        const fallback = [{ package: 'links', last: true }];
+        if (!profile) return fallback;
+        const accept = lockFilter(profile.locks);
+        const has = key => (profile.attributes[key] || 0) + (profile.types[key] || 0);
+        const synchro = synchroWeights(profile);
+        const easiest = new Set(Object.entries(synchro).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([level]) => Number(level)));
+        const specs = [];
+        Object.entries(packages || {}).forEach(([id, pkg]) => {
+            const needs = pkg.auto && pkg.zone === 'extra' ? pkg.auto.needs || {} : null;
+            if (!needs) return;
+            if (needs.has) {
+                if (has(needs.has) < needs.min) return;
+                specs.push({ package: id, max: 1, tier: 0, score: has(needs.has) });
+            } else if (needs.level) {
+                const count = needs.with ? ((profile.levelWith[needs.level] || {})[needs.with] || 0) : (profile.levels[needs.level] || 0);
+                if (count < needs.min) return;
+                specs.push({ package: id, max: needs.with || count < 8 ? 2 : 3, tier: needs.with ? 1 : 2, score: count });
+            } else if (needs.synchro) {
+                if (profile.tuners.count < 2 || !easiest.has(needs.synchro)) return;
+                if (needs.tuner && !profile.tuners.with[needs.tuner]) return;
+                if (needs.nonTuner && has(needs.nonTuner) - (profile.tuners.with[needs.nonTuner] || 0) < 2) return;
+                specs.push({ package: id, max: 2, tier: needs.tuner || needs.nonTuner ? 3 : 4, score: synchro[needs.synchro] });
+            } else if (needs.link) {
+                specs.push({ package: id, max: { 2: 4, 3: 2 }[needs.link] || 2, tier: 4 + needs.link, score: 0 });
+            }
+        });
+        return specs
+            .sort((a, b) => a.tier - b.tier || b.score - a.score || a.package.localeCompare(b.package))
+            .map(({ package: id, max }) => ({ package: id, max, accept }))
+            .concat(fallback);
+    }
+
     // Deck and package rows are written as [name, count, note].
     function readRow(entry) {
         return Array.isArray(entry)
@@ -94,7 +231,7 @@
      *   Entry: { name, count, note, source: 'core' | 'staple', pkg? }
      *   Issue: { level: 'review' | 'error' | 'warn', card?, message }
      */
-    function assemble(deck, packages, banMap) {
+    function assemble(deck, packages, banMap, profile) {
         const zones = { main: [], extra: [] };
         const copies = new Map();
         const issues = [];
@@ -130,10 +267,15 @@
 
         // Two passes: the deck's own caps first ({ package, max }), then, if the
         // banlist has cut so much that the deck is still short, the same packages
-        // without caps, so a list stays at 40 without anyone touching it.
+        // without caps, so a list stays at 40 without anyone touching it. A
+        // "last" package (auto's fallback) only fills what both passes left.
         for (const zone of ['main', 'extra']) {
-            const specs = ((deck.fill && deck.fill[zone]) || []).map(spec => (typeof spec === 'string' ? { package: spec } : spec));
-            for (const [pass, spec] of [...specs.map(s => [1, s]), ...specs.map(s => [2, s])]) {
+            const specs = ((deck.fill && deck.fill[zone]) || [])
+                .map(spec => (typeof spec === 'string' ? { package: spec } : spec))
+                .flatMap(spec => (spec.package === 'auto' ? autoSpecs(packages, profile) : [spec]));
+            const regular = specs.filter(s => !s.last);
+            const ordered = [...regular.map(s => [1, s]), ...regular.map(s => [2, s]), ...specs.filter(s => s.last).map(s => [2, s])];
+            for (const [pass, spec] of ordered) {
                 const pkgName = spec.package;
                 const pkg = packages && packages[pkgName];
                 if (!pkg) {
@@ -150,7 +292,7 @@
                     if (room <= 0) break;
                     const { name, count: wanted, note } = readRow(raw);
                     const key = name.toLowerCase();
-                    if (excluded.has(key)) continue;
+                    if (excluded.has(key) || (spec.accept && !spec.accept(raw))) continue;
                     const take = Math.min(Math.min(wanted, copyLimit(name, banMap)) - (copies.get(key) || 0), room);
                     if (take > 0) {
                         add(zone, { name, count: take, note, source: 'staple', pkg: pkgName });
@@ -164,6 +306,8 @@
         const extra = size('extra');
         if (main < SIZE.main) issues.push({ level: 'error', message: `The Main Deck has ${main} cards and needs at least 40. Add cards or another staples package.` });
         if (main > MAIN_MAX) issues.push({ level: 'error', message: `The Main Deck has ${main} cards; 60 is the most allowed.` });
+        // Every test deck runs a full Extra Deck, so a short one is an error too.
+        if (extra < SIZE.extra) issues.push({ level: 'error', message: `The Extra Deck has ${extra} cards and needs exactly 15. Add cards or another staples package.` });
         if (extra > SIZE.extra) issues.push({ level: 'error', message: `The Extra Deck has ${extra} cards; 15 is the most allowed.` });
         return { main: zones.main, extra: zones.extra, issues };
     }
@@ -212,7 +356,7 @@
         return lines.join('\n');
     }
 
-    const core = { SIZE, banMapFromJson, banStatus, copyLimit, ownMatcher, readRow, assemble, expand, toYdk, toYdke, toText };
+    const core = { SIZE, banMapFromJson, banStatus, copyLimit, ownMatcher, readRow, extraLock, deckProfile, autoSpecs, assemble, expand, toYdk, toYdke, toText };
     if (typeof document === 'undefined') return core;
 
     // ------------------------------------------------------------------
@@ -251,12 +395,16 @@
         const index = await fetchJson(DATA_URL + 'index.json');
         const file = index[archetype];
         if (!file) throw new Error(`There's no test deck for ${archetype} yet.`);
-        const [deck, staples, banlist] = await Promise.all([
+        const [deck, staples, generated, profiles, banlist] = await Promise.all([
             fetchJson(DATA_URL + file),
             fetchJson(DATA_URL + 'packages.json'),
+            // Without these, "auto" falls back to the hand-picked Links.
+            fetchJson(DATA_URL + 'packages.generated.json').catch(() => ({ packages: {} })),
+            fetchJson(DATA_URL + 'profiles.json').catch(() => ({})),
             fetchJson(BANLIST_URL).catch(() => null)
         ]);
-        const list = assemble(deck, staples.packages, banlist ? banMapFromJson(banlist) : {});
+        const packages = Object.assign({}, generated.packages, staples.packages);
+        const list = assemble(deck, packages, banlist ? banMapFromJson(banlist) : {}, profiles[file]);
         if (!banlist) list.issues.push({ level: 'warn', message: "The banlist didn't load, so the staples below ignore it." });
         return { deck, list, banlistDate: banlist && banlist.tcg && banlist.tcg.effectiveDate };
     }
@@ -307,6 +455,25 @@
             }
             return html;
         }).join('');
+    }
+
+    // A summary is one paragraph, or an array of blocks: a string is a lead
+    // paragraph, { title, text | steps | points } a section with a paragraph,
+    // numbered list or bullet list. Sections flow into columns on wide screens.
+    function summaryHtml(summary) {
+        if (!summary) return '';
+        if (!Array.isArray(summary)) return `<p class="dl-summary">${escapeHtml(summary)}</p>`;
+        const list = (tag, rows) => `<${tag}>${rows.map(r => `<li>${escapeHtml(r)}</li>`).join('')}</${tag}>`;
+        const leads = summary.filter(b => typeof b === 'string');
+        const parts = summary.filter(b => b && typeof b === 'object');
+        return `<div class="dl-summary">
+            ${leads.map(text => `<p class="dl-summary-lead">${escapeHtml(text)}</p>`).join('')}
+            ${parts.length ? `<div class="dl-summary-parts">${parts.map(b => `
+                <section class="dl-summary-part">
+                    ${b.title ? `<p class="dl-summary-title">${escapeHtml(b.title)}</p>` : ''}
+                    ${b.steps ? list('ol', b.steps) : b.points ? list('ul', b.points) : `<p>${escapeHtml(b.text || '')}</p>`}
+                </section>`).join('')}</div>` : ''}
+        </div>`;
     }
 
     function issuesHtml(issues) {
@@ -376,7 +543,7 @@
                     </div>
                 </div>
                 <p class="dl-status" role="status" aria-live="polite"></p>
-                ${deck.summary ? `<p class="dl-summary">${escapeHtml(deck.summary)}</p>` : ''}
+                ${summaryHtml(deck.summary)}
                 ${issuesHtml(list.issues)}
                 <div class="dl-hand" hidden>
                     <div class="dl-hand-head">

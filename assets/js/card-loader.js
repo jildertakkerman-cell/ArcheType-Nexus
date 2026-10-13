@@ -1970,7 +1970,14 @@ window.CardLoader = (function () {
             'Ashtrashen - Gateway to the Worlds Beyond': 'Ashtrashen - Gate to the Worlds Beyond',
             // Number: the Supabase row still carries the pre-release name (same passcode 16908882)
             'Number 104: Masquerade V': 'Number 104: Masquerade Vain',
-            'Number 104: Masquerade Vain': 'Number 104: Masquerade V'
+            'Number 104: Masquerade Vain': 'Number 104: Masquerade V',
+            // Light and Darkness Ritual: pre-release translations several pages still use -> official TCG names
+            'Ritual of Light and Darkness': 'Light and Darkness Ritual',
+            'Black Chaos the Dark Chaos Magician': 'Magician of Dark Chaos - Black Chaos',
+            'Black Chaos the Ultimate Magical Swordsman': 'Black Chaos',
+            'Mystic Box of Chaos': 'Chaos Mystic Box',
+            'Corrupted Ritual Records': 'Ragged Records of Rites',
+            'Mystical Celtic Sage': 'Celtic Mystic'
         };
 
         async function attemptFetch(name) {

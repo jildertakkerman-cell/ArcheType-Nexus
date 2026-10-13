@@ -1,5 +1,6 @@
 /**
- * admin.js — Moderation panel: Combo guides, Synergy Links, Synergy Reasons, Section Rewrites.
+ * admin.js — Moderation panel: Combo guides, Synergy Links, Synergy Reasons, Section Rewrites,
+ * plus a read-only Test Decks view of the decklist checker's report.json.
  * Requires: supabase-config.js, auth.js, text-utils.js loaded first.
  */
 (function () {
@@ -28,8 +29,14 @@
     // a per-domain callback since combos/links/reasons render genuinely
     // different content.
     // ------------------------------------------------------------------
+    // Each tab renders this many cards, then a "Show more" button. Approved and
+    // rejected only ever grow, and section previews render card art, so
+    // rendering every row up front gets slower over time.
+    const PAGE_SIZE = 20;
+
     function createModerationTabGroup({ group, table, pkColumn, countBadgeId, fetchRows, renderCard, approveFn, afterRenderTab }) {
         const cache = { pending: [], approved: [], rejected: [] };
+        const shown = { pending: PAGE_SIZE, approved: PAGE_SIZE, rejected: PAGE_SIZE };
 
         function renderTab(tab) {
             const container = document.getElementById(`tab-${group}-${tab}`);
@@ -39,21 +46,44 @@
                 container.innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i>No ${tab} submissions</div>`;
                 return;
             }
-            container.innerHTML = rows.map(r => renderCard(r, tab)).join('');
+            const visible = rows.slice(0, shown[tab]);
+            const left = rows.length - visible.length;
+            container.innerHTML = visible.map(r => renderCard(r, tab)).join('') + (left
+                ? `<button class="btn-more" onclick="adminShowMore('${group}', '${tab}')">
+                       Show ${Math.min(left, PAGE_SIZE)} more <span>(${left} left)</span>
+                   </button>`
+                : '');
             // Optional per-group post-insert step — sections uses this to load
             // combo-walkthrough card art, which needs the container elements to
             // already exist in the live DOM (see sectionsAfterRenderTab).
-            if (afterRenderTab) afterRenderTab(tab, rows);
+            if (afterRenderTab) afterRenderTab(tab, visible);
+        }
+
+        function showMore(tab) {
+            shown[tab] += PAGE_SIZE;
+            renderTab(tab);
         }
 
         function updateCount() {
+            const n = cache.pending.length;
             const el = document.getElementById(countBadgeId);
-            if (el) el.textContent = cache.pending.length ? `(${cache.pending.length})` : '';
+            if (el) el.textContent = n ? `(${n})` : '';
+            setModeCount(group, n);
         }
 
-        function removeCard(id) {
-            const card = document.getElementById(`card-${group}-${id}`);
-            if (card) card.remove();
+        // Moves a row between tabs after a successful status change. The
+        // moderator stays on the tab they're working through; a toast says
+        // where the item went.
+        function move(id, from, to, patch) {
+            const idx = cache[from].findIndex(r => String(r[pkColumn]) === String(id));
+            if (idx === -1) return false;
+            const [row] = cache[from].splice(idx, 1);
+            Object.assign(row, { status: to }, patch);
+            cache[to].unshift(row);
+            renderTab(from);
+            renderTab(to);
+            updateCount();
+            return true;
         }
 
         async function setStatus(id, status, modnotes) {
@@ -64,61 +94,27 @@
         }
 
         async function approve(id) {
-            try {
+            await withBusyCard(`card-${group}-${id}`, async () => {
                 // Most groups just flip status; `sections` needs the
                 // supersede-then-approve RPC so the one-live-version-per-key
                 // invariant can't be violated by a plain update.
                 if (approveFn) await approveFn(id); else await setStatus(id, 'approved');
-                removeCard(id);
-                for (const tab of ['pending', 'rejected']) {
-                    const idx = cache[tab].findIndex(r => String(r[pkColumn]) === String(id));
-                    if (idx !== -1) {
-                        const [row] = cache[tab].splice(idx, 1);
-                        row.status = 'approved';
-                        cache.approved.unshift(row);
-                        renderTab(tab);
-                        renderTab('approved');
-                        updateCount();
-                        window.switchTab(group, 'approved');
-                        break;
-                    }
-                }
-            } catch (e) { alert('Error: ' + e.message); }
+                if (move(id, 'pending', 'approved') || move(id, 'rejected', 'approved')) toast('Approved — moved to the Approved tab.');
+            });
         }
 
         async function reject(id, notes) {
-            try {
+            await withBusyCard(`card-${group}-${id}`, async () => {
                 await setStatus(id, 'rejected', notes);
-                removeCard(id);
-                const idx = cache.pending.findIndex(r => String(r[pkColumn]) === String(id));
-                if (idx !== -1) {
-                    const [row] = cache.pending.splice(idx, 1);
-                    row.status = 'rejected';
-                    row.modnotes = notes;
-                    cache.rejected.unshift(row);
-                    renderTab('pending');
-                    renderTab('rejected');
-                    updateCount();
-                    window.switchTab(group, 'rejected');
-                }
-            } catch (e) { alert('Error: ' + e.message); }
+                if (move(id, 'pending', 'rejected', { modnotes: notes })) toast('Rejected — moved to the Rejected tab.');
+            });
         }
 
         async function unapprove(id) {
-            try {
+            await withBusyCard(`card-${group}-${id}`, async () => {
                 await setStatus(id, 'pending');
-                removeCard(id);
-                const idx = cache.approved.findIndex(r => String(r[pkColumn]) === String(id));
-                if (idx !== -1) {
-                    const [row] = cache.approved.splice(idx, 1);
-                    row.status = 'pending';
-                    cache.pending.unshift(row);
-                    renderTab('approved');
-                    renderTab('pending');
-                    updateCount();
-                    window.switchTab(group, 'pending');
-                }
-            } catch (e) { alert('Error: ' + e.message); }
+                if (move(id, 'approved', 'pending')) toast('Moved back to Pending.');
+            });
         }
 
         async function init() {
@@ -127,7 +123,7 @@
                 rows = await fetchRows(client());
             } catch (e) {
                 const el = document.getElementById(`tab-${group}-pending`);
-                if (el) el.innerHTML = `<p style="color:#f87171;">Failed to load: ${e.message}</p>`;
+                if (el) el.innerHTML = `<p style="color:#f87171;">Failed to load: ${window.escapeHtml(e.message)}</p>`;
                 return;
             }
             cache.pending = rows.filter(r => r.status === 'pending');
@@ -139,7 +135,7 @@
             renderTab('rejected');
         }
 
-        return { init, approve, reject, unapprove, cache };
+        return { init, approve, reject, unapprove, showMore, cache };
     }
 
     const groups = {}; // populated in init(), keyed by group name
@@ -147,6 +143,66 @@
     window.adminApprove = (group, id) => groups[group]?.approve(id);
     window.adminReject = (group, id) => groups[group]?.reject(id, document.getElementById(`notes-${group}-${id}`)?.value?.trim() || '');
     window.adminUnapprove = (group, id) => groups[group]?.unapprove(id);
+    window.adminShowMore = (group, tab) => groups[group]?.showMore(tab);
+
+    // ------------------------------------------------------------------
+    // Feedback helpers: a card stays locked while its request runs (so a
+    // double click can't send it twice), errors show inside the card instead
+    // of an alert(), and successes get a short toast.
+    // ------------------------------------------------------------------
+    async function withBusyCard(cardId, fn) {
+        const card = document.getElementById(cardId);
+        if (card) {
+            if (card.classList.contains('is-busy')) return;
+            card.classList.add('is-busy');
+            card.querySelectorAll('button, input').forEach(el => { el.disabled = true; });
+            card.querySelector('.card-error')?.remove();
+        }
+        try {
+            await fn();
+        } catch (e) {
+            showCardError(card, e.message || String(e));
+        } finally {
+            // A successful move re-renders the tab, so this card is usually gone already.
+            if (card && card.isConnected) {
+                card.classList.remove('is-busy');
+                card.querySelectorAll('button, input').forEach(el => { el.disabled = false; });
+            }
+        }
+    }
+
+    function showCardError(card, message) {
+        if (!card) { toast(message, true); return; }
+        card.querySelector('.card-error')?.remove();
+        card.insertAdjacentHTML('beforeend',
+            `<div class="card-error"><i class="fas fa-exclamation-triangle"></i> ${window.escapeHtml(message)}</div>`);
+    }
+
+    let toastTimer = null;
+    function toast(message, isError) {
+        let el = document.getElementById('admin-toast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'admin-toast';
+            el.setAttribute('role', 'status');
+            document.body.appendChild(el);
+        }
+        el.textContent = message;
+        el.classList.toggle('is-error', !!isError);
+        el.classList.add('is-visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2600);
+    }
+
+    // Sidebar badge: pending count per moderation group, or the number of
+    // test decks needing attention ("!" when the report is out of date).
+    function setModeCount(mode, value, title) {
+        const el = document.getElementById(`mode-count-${mode}`);
+        if (!el) return;
+        el.textContent = value ? String(value) : '';
+        el.hidden = !value;
+        if (title) el.title = title; else el.removeAttribute('title');
+    }
 
     window.switchTab = function (group, tab, btn) {
         ['pending', 'approved', 'rejected'].forEach(t => {
@@ -159,14 +215,26 @@
         if (activeBtn) activeBtn.classList.add('active');
     };
 
+    const MODES = ['combos', 'links', 'reasons', 'sections', 'decks'];
+
+    // The open mode lives in the URL hash (Admin.html#decks), so a reload or a
+    // shared link lands on the same section.
     window.switchMode = function (mode, btn) {
-        ['combos', 'links', 'reasons', 'sections'].forEach(m => {
+        if (!MODES.includes(mode)) return;
+        MODES.forEach(m => {
             const el = document.getElementById(`mode-${m}`);
             if (el) el.style.display = m === mode ? '' : 'none';
         });
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
+        const active = btn || document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+        document.querySelectorAll('.mode-btn').forEach(b => {
+            b.classList.toggle('active', b === active);
+            b.setAttribute('aria-pressed', String(b === active));
+        });
+        if (location.hash.slice(1) !== mode) history.replaceState(null, '', `#${mode}`);
+        if (mode === 'decks' && !deckReport.requested) loadDeckReport();
     };
+
+    window.addEventListener('hashchange', () => window.switchMode(location.hash.slice(1)));
 
     function actionRow(group, id, tab, existingNotes) {
         if (tab === 'pending') {
@@ -215,7 +283,7 @@
         } catch (e) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-chart-line"></i> Analyze replay';
-            alert('Could not load replay: ' + e.message);
+            showCardError(btn.closest('.combo-admin-card'), 'Could not load replay: ' + e.message);
         }
     };
 
@@ -248,7 +316,7 @@
         } catch (e) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-cogs"></i> Generate Combo Steps';
-            alert('Failed to generate combo steps: ' + e.message);
+            showCardError(btn.closest('.combo-admin-card'), 'Failed to generate combo steps: ' + e.message);
         }
     };
 
@@ -286,7 +354,8 @@
                     </button>
                     ${!hasSteps && rawpath ? `
                     <button id="gen-btn-${combo.comboid}"
-                            onclick="generateComboSteps('${combo.comboid}', '${rawpath}', this)"
+                            data-comboid="${window.escapeHtml(String(combo.comboid))}" data-rawpath="${window.escapeHtml(rawpath)}"
+                            onclick="generateComboSteps(this.dataset.comboid, this.dataset.rawpath, this)"
                             style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.35);
                                    color:#f59e0b;font-size:0.8rem;font-weight:700;
                                    padding:0.4rem 0.9rem;border-radius:0.5rem;cursor:pointer;font-family:inherit;">
@@ -300,7 +369,7 @@
 
         const gcsjsonpath = combo.replays?.gcsjsonpath || '';
         const analyzeBtn = gcsjsonpath
-            ? `<button onclick="openReplayInAnalyzer('${gcsjsonpath}', this)"
+            ? `<button data-path="${window.escapeHtml(gcsjsonpath)}" onclick="openReplayInAnalyzer(this.dataset.path, this)"
                        style="display:inline-flex;align-items:center;gap:0.4rem;
                               background:rgba(165,180,252,0.1);border:1px solid rgba(165,180,252,0.25);
                               color:#a5b4fc;font-size:0.78rem;font-weight:600;
@@ -584,6 +653,177 @@
     }
 
     // ------------------------------------------------------------------
+    // Test Decks: a read-only view of assets/data/decklists/report.json,
+    // which scripts/check-decklists.js writes (the weekly workflow runs it
+    // after each banlist update). No Supabase involved; loaded the first
+    // time the mode is opened.
+    // ------------------------------------------------------------------
+    const DECK_REPORT_URL = '../assets/data/decklists/report.json';
+    const DECK_INDEX_URL = '../assets/data/decklists/index.json';
+    const DECK_STATES = {
+        fix:    { label: 'Needs fixing', badge: 'mbadge-loss',   order: 0 },
+        review: { label: 'Needs review', badge: 'mbadge-review', order: 1 },
+        ok:     { label: 'OK',           badge: 'mbadge-win',    order: 2 },
+    };
+    const deckReport = { requested: false, data: null, missing: [], updated: null, filter: 'all', query: '' };
+
+    const deckState = d => ((d.errors || []).length ? 'fix' : (d.review || []).length ? 'review' : 'ok');
+
+    async function loadDeckReport() {
+        deckReport.requested = true;
+        const body = document.getElementById('decks-body');
+        body.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading report…</div>';
+        try {
+            const [res, indexRes] = await Promise.all([
+                fetch(DECK_REPORT_URL, { cache: 'no-cache' }),
+                fetch(DECK_INDEX_URL, { cache: 'no-cache' }),
+            ]);
+            if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+            deckReport.data = await res.json();
+            deckReport.updated = res.headers.get('last-modified');
+            // Lists in index.json that the report doesn't cover yet: the report
+            // is older than those files, so the checker needs another run.
+            if (indexRes.ok) {
+                const index = await indexRes.json();
+                const inReport = new Set(Object.values(deckReport.data.decks || {}).map(d => d.file));
+                deckReport.missing = [...new Set(Object.values(index))].filter(f => !inReport.has(f)).sort();
+            }
+            renderDeckReport();
+            const attention = Object.values(deckReport.data.decks || {}).filter(d => deckState(d) !== 'ok').length
+                + (deckReport.data.packages || []).length;
+            if (attention) setModeCount('decks', attention, `${attention} finding${attention === 1 ? '' : 's'} to look at`);
+            else if (deckReport.missing.length) setModeCount('decks', '!', 'The report is older than some test decks');
+            else setModeCount('decks', 0);
+        } catch (error) {
+            deckReport.requested = false;
+            body.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>Couldn't load report.json (${window.escapeHtml(error.message)}).</div>`;
+        }
+    }
+
+    // Re-reads report.json, e.g. after running the checker locally.
+    window.reloadDeckReport = () => loadDeckReport();
+
+    window.filterDeckReport = function (filter, btn) {
+        deckReport.filter = filter;
+        document.querySelectorAll('.tab-btn[data-group="decks"]').forEach(b => b.classList.toggle('active', b === btn));
+        renderDeckList();
+    };
+
+    window.searchDeckReport = function (value) {
+        deckReport.query = value.trim().toLowerCase();
+        renderDeckList();
+    };
+
+    function renderDeckReport() {
+        const { data, missing, updated } = deckReport;
+        const decks = Object.entries(data.decks || {});
+        const counts = { all: decks.length, fix: 0, review: 0, ok: 0 };
+        decks.forEach(([, d]) => { counts[deckState(d)]++; });
+        const drafts = decks.filter(([, d]) => d.status === 'draft').length;
+
+        const chip = (key, label) => `
+            <button class="tab-btn${deckReport.filter === key ? ' active' : ''}" data-group="decks" onclick="filterDeckReport('${key}', this)">
+                ${label}<span style="margin-left:0.35rem;opacity:0.6;">${counts[key]}</span>
+            </button>`;
+
+        const meta = [
+            `Banlist of <span>${window.escapeHtml(data.banlist || 'unknown date')}</span>`,
+            `<span>${decks.length}</span> lists, ${drafts} still draft`,
+            updated ? `report file updated <span>${formatDate(updated)}</span>` : '',
+        ].filter(Boolean).join(' · ')
+            + ` <button class="deckrep-reload" onclick="reloadDeckReport()" title="Read report.json again"><i class="fas fa-sync-alt"></i> Reload</button>`;
+
+        const missingNote = missing.length ? `
+            <div class="deckrep-notice deckrep-notice-warn">
+                <i class="fas fa-history"></i>
+                <div><strong>${missing.length} test deck${missing.length === 1 ? ' isn\'t' : 's aren\'t'} in this report yet</strong>, so the report is older than they are.
+                Run <code>node scripts/check-decklists.js --report assets/data/decklists/report.json</code>, or start the weekly workflow from the Actions tab.
+                <details class="deckrep-missing"><summary>Show the files</summary>${missing.map(f => window.escapeHtml(f)).join(', ')}</details></div>
+            </div>` : '';
+
+        const packages = data.packages || [];
+        const packageNote = packages.length ? `
+            <div class="deckrep-notice deckrep-notice-error">
+                <i class="fas fa-box-open"></i>
+                <div><strong>packages.json</strong> (generic staples shared by every list)
+                <ul class="deckrep-msgs">${packages.map(m => `<li class="deckrep-msg-error">${window.escapeHtml(m)}</li>`).join('')}</ul></div>
+            </div>` : '';
+
+        // What the weekly scripts/build-extra-packages.js run moved in or out of
+        // the "auto" Extra Deck packages.
+        const generated = data.generated || {};
+        const changed = Object.entries(generated.changes || {});
+        const generatedNote = changed.length ? `
+            <div class="deckrep-notice">
+                <i class="fas fa-layer-group"></i>
+                <div><strong>Extra Deck packages changed</strong> in the run of ${window.escapeHtml(formatDate(generated.updated) || 'the last update')} (packages.generated.json, ordered by views this week)
+                <details class="deckrep-missing"><summary>Show the ${changed.length} package${changed.length === 1 ? '' : 's'}</summary>
+                <ul class="deckrep-msgs">${changed.map(([label, c]) => `<li><strong>${window.escapeHtml(label)}</strong>: ${[
+                    ...(c.added || []).map(n => `+ ${window.escapeHtml(n)}`),
+                    ...(c.removed || []).map(n => `− ${window.escapeHtml(n)}`)
+                ].join(', ')}</li>`).join('')}</ul></details>
+                Pin or exclude cards in the <code>generated</code> section of packages.json.</div>
+            </div>` : '';
+
+        document.getElementById('decks-body').innerHTML = `
+            <div class="combo-admin-sub" style="margin-bottom:1rem;">${meta}</div>
+            ${missingNote}${packageNote}${generatedNote}
+            <div class="deckrep-toolbar">
+                ${chip('all', 'All')}${chip('fix', 'Needs fixing')}${chip('review', 'Needs review')}${chip('ok', 'OK')}
+                <input type="search" class="modnotes-input deckrep-search" placeholder="Search archetype or message…"
+                       value="${window.escapeHtml(deckReport.query)}" oninput="searchDeckReport(this.value)">
+            </div>
+            <div id="decks-list"></div>`;
+        renderDeckList();
+    }
+
+    function renderDeckList() {
+        const list = document.getElementById('decks-list');
+        if (!list) return;
+        const { filter, query } = deckReport;
+        const rows = Object.entries(deckReport.data.decks || {})
+            .map(([name, d]) => ({ name, d, state: deckState(d) }))
+            .filter(r => filter === 'all' || r.state === filter)
+            .filter(r => !query || [r.name, r.d.file, ...(r.d.errors || []), ...(r.d.review || []), ...(r.d.warnings || [])]
+                .some(s => String(s).toLowerCase().includes(query)))
+            .sort((a, b) => DECK_STATES[a.state].order - DECK_STATES[b.state].order || a.name.localeCompare(b.name));
+
+        if (!rows.length) {
+            list.innerHTML = `<div class="empty-state"><i class="fas fa-check-double"></i>${query ? 'No list matches that search.' : 'Nothing here.'}</div>`;
+            return;
+        }
+        list.innerHTML = rows.map(renderDeckCard).join('');
+    }
+
+    function renderDeckCard({ name, d, state }) {
+        const page = findArchetypePageUrl(name);
+        const link = page
+            ? `<a class="pcs-admin-live-link" href="${window.escapeHtml(page)}#test-deck" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i>Open test deck</a>`
+            : '';
+        const msgs = [
+            ...(d.errors || []).map(m => ['error', 'fa-times-circle', m]),
+            ...(d.review || []).map(m => ['review', 'fa-exclamation-circle', m]),
+            ...(d.warnings || []).map(m => ['warn', 'fa-info-circle', m]),
+        ];
+        const s = DECK_STATES[state];
+        return `
+            <div class="combo-admin-card deckrep-card">
+                <div class="combo-admin-card-header">
+                    <div class="combo-admin-meta">
+                        <div class="combo-admin-title">${window.escapeHtml(name)}${link}</div>
+                        <div class="combo-admin-sub">
+                            <span>${window.escapeHtml(d.file)}</span> · ${d.status === 'reviewed' ? 'Reviewed' : 'Draft'}, review date <span>${window.escapeHtml(d.reviewed || '—')}</span>
+                            · Main <span>${d.main ?? '?'}</span> + Extra <span>${d.extra ?? '?'}</span>
+                        </div>
+                    </div>
+                    <span class="mbadge ${s.badge}">${s.label}</span>
+                </div>
+                ${msgs.length ? `<ul class="deckrep-msgs">${msgs.map(([level, icon, m]) =>
+                    `<li class="deckrep-msg-${level}"><i class="fas ${icon}"></i>${window.escapeHtml(m)}</li>`).join('')}</ul>` : ''}
+            </div>`;
+    }
+
+    // ------------------------------------------------------------------
     // Bootstrap
     // ------------------------------------------------------------------
     async function init() {
@@ -601,6 +841,10 @@
 
         document.getElementById('admin-content').style.display = '';
         window.CardLoader && window.CardLoader.initAmbientBackdropForCards('admin');
+        if (MODES.includes(location.hash.slice(1))) window.switchMode(location.hash.slice(1));
+        // report.json is a small static file: load it now so the sidebar badge
+        // shows decks needing attention before the mode is opened.
+        if (!deckReport.requested) loadDeckReport();
 
         groups.combos = createModerationTabGroup({
             group: 'combos', table: 'combos', pkColumn: 'comboid',

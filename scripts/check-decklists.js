@@ -1,6 +1,8 @@
 // scripts/check-decklists.js
 // Checks every test deck in assets/data/decklists/ and rewrites index.json
-// (the archetype -> file map card-loader.js reads to show the Test Deck button).
+// (the archetype -> file map card-loader.js reads to show the Test Deck button)
+// and profiles.json (each list's Main Deck monsters, which "auto" Extra Deck
+// fill reads; run scripts/build-extra-packages.js first for fresh packages).
 //
 //   node scripts/check-decklists.js                      report, exit 1 on errors
 //   node scripts/check-decklists.js --report <file>      also write the report as JSON
@@ -21,7 +23,7 @@ const DeckList = require('../assets/js/decklist.js');
 
 const DATA_DIR = path.join(__dirname, '..', 'assets', 'data');
 const DECK_DIR = path.join(DATA_DIR, 'decklists');
-const RESERVED = new Set(['index.json', 'packages.json', 'report.json']);
+const RESERVED = new Set(['index.json', 'packages.json', 'packages.generated.json', 'profiles.json', 'report.json']);
 const API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
 const EXTRA_TYPES = /fusion|synchro|xyz|link/i;
 
@@ -29,7 +31,8 @@ const args = process.argv.slice(2);
 const reportPath = args.includes('--report') ? args[args.indexOf('--report') + 1] : null;
 const noFail = args.includes('--no-fail');
 
-const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
+// Some data files start with a UTF-8 byte-order mark, which JSON.parse rejects.
+const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''));
 // YGOProDeck lists announced cards with their future TCG date.
 const TODAY = new Date().toISOString().slice(0, 10);
 const released = info => !!info.tcgDate && info.tcgDate <= TODAY;
@@ -43,11 +46,14 @@ async function fetchJson(url) {
     return res.json();
 }
 
-// name (lowercased) -> { name, type, archetype, tcgDate }
+// name (lowercased) -> { name, type, archetype, tcgDate, level, attribute, race, desc }
 const cardInfo = new Map();
 const store = card => {
     const misc = (card.misc_info && card.misc_info[0]) || {};
-    cardInfo.set(card.name.toLowerCase(), { name: card.name, type: card.type, archetype: card.archetype || null, tcgDate: misc.tcg_date || null });
+    cardInfo.set(card.name.toLowerCase(), {
+        name: card.name, type: card.type, archetype: card.archetype || null, tcgDate: misc.tcg_date || null,
+        level: card.level || null, attribute: card.attribute || null, race: card.race || null, desc: card.desc || ''
+    });
 };
 
 async function lookupNames(names) {
@@ -94,10 +100,15 @@ async function run() {
     const banlist = readJson(path.join(DATA_DIR, 'banlist.json'));
     const banMap = DeckList.banMapFromJson(banlist);
     const { packages } = readJson(path.join(DECK_DIR, 'packages.json'));
+    const generatedFile = path.join(DECK_DIR, 'packages.generated.json');
+    const generated = fs.existsSync(generatedFile) ? readJson(generatedFile) : { packages: {} };
+    const allPackages = Object.assign({}, generated.packages, packages);
+    const profilesFile = path.join(DECK_DIR, 'profiles.json');
+    const oldProfiles = fs.existsSync(profilesFile) ? readJson(profilesFile) : {};
     const files = fs.readdirSync(DECK_DIR).filter(f => f.endsWith('.json') && !RESERVED.has(f)).sort();
 
     const packageNames = new Map();   // lowercased card -> package
-    Object.entries(packages).forEach(([pkg, def]) => def.cards.forEach(([name]) => packageNames.set(name.toLowerCase(), pkg)));
+    Object.entries(allPackages).forEach(([pkg, def]) => def.cards.forEach(row => packageNames.set(DeckList.readRow(row).name.toLowerCase(), pkg)));
 
     const decks = files.map(file => ({ file, deck: readJson(path.join(DECK_DIR, file)) }));
 
@@ -111,8 +122,14 @@ async function run() {
         console.warn(`Card data unavailable (${error.message}); skipping the name, TCG, zone, purity and new-card checks.\n`);
     }
 
-    const report = { banlist: (banlist.tcg && banlist.tcg.effectiveDate) || null, packages: [], decks: {} };
+    const report = {
+        banlist: (banlist.tcg && banlist.tcg.effectiveDate) || null,
+        packages: [],
+        generated: { updated: generated.updated || null, changes: generated.changes || {} },
+        decks: {}
+    };
     const index = {};
+    const profiles = {};
 
     // Packages: every name real, out in the TCG and in the right zone.
     if (apiOk) {
@@ -134,10 +151,22 @@ async function run() {
         if (!archetype) { errors.push('Missing "archetype".'); }
         if (!['draft', 'reviewed'].includes(deck.status)) errors.push('"status" must be "draft" or "reviewed".');
         if (!/^\d{4}-\d{2}-\d{2}$/.test(deck.reviewed || '')) errors.push('"reviewed" must be a date like 2026-10-12.');
-        if (archetype && index[archetype]) errors.push(`${index[archetype]} is already the list for ${archetype}.`);
-        if (archetype) index[archetype] = file;
+        // "aliases" are other pages that open this same list (Resonator -> Red Dragon Archfiend).
+        [archetype, ...(deck.aliases || [])].filter(Boolean).forEach(name => {
+            if (index[name]) errors.push(`${index[name]} is already the list for ${name}.`);
+            else index[name] = file;
+        });
 
-        const list = DeckList.assemble(deck, packages, banMap);
+        // Only "auto" lists need a profile; without card data, keep the last run's.
+        const usesAuto = ((deck.fill && deck.fill.extra) || []).some(s => (typeof s === 'string' ? s : s.package) === 'auto');
+        const profile = !usesAuto ? null
+            : apiOk ? DeckList.deckProfile(deck.main || [], name => cardInfo.get(name.toLowerCase()) || null) : oldProfiles[file];
+        if (profile) profiles[file] = profile;
+        if (profile && profile.locks.length) {
+            warnings.push(`Main Deck cards lock the Extra Deck (${profile.locks.join(', ')}): the auto picks follow it, the generic Links at the end don't.`);
+        }
+
+        const list = DeckList.assemble(deck, allPackages, banMap, profile);
         list.issues.forEach(issue => (issue.level === 'review' ? review : issue.level === 'error' ? errors : warnings).push(issue.message));
 
         const isOwn = DeckList.ownMatcher(deck);
@@ -153,8 +182,11 @@ async function run() {
                 if (info.name !== name) errors.push(`"${name}" should be written "${info.name}".`);
                 if (!released(info)) errors.push(notOut(name, info));
                 if (EXTRA_TYPES.test(info.type) !== (zone === 'extra')) errors.push(`${name} is a ${info.type}; move it to the ${zone === 'extra' ? 'Main' : 'Extra'} Deck.`);
-                if (!isOwn(name) && !packageNames.has(name.toLowerCase()) && !allowed.has(name.toLowerCase()) && info.archetype) {
-                    errors.push(`${name} is a "${info.archetype}" card: add it to "allow" with a reason, or take it out.`);
+                // The API's tag can't be trusted to list every card of an archetype, but a card
+                // it tags as this deck's own archetype ("always treated as" cards) does belong.
+                const taggedOwn = info.archetype && archetype && info.archetype.toLowerCase() === archetype.toLowerCase();
+                if (!isOwn(name) && !taggedOwn && !packageNames.has(name.toLowerCase()) && !allowed.has(name.toLowerCase()) && info.archetype) {
+                    errors.push(`${name} belongs to "${info.archetype}": add it to "allow" with a reason, or take it out.`);
                 }
             }));
 
@@ -196,6 +228,7 @@ async function run() {
 
     const sortedIndex = Object.fromEntries(Object.entries(index).sort(([a], [b]) => a.localeCompare(b)));
     fs.writeFileSync(path.join(DECK_DIR, 'index.json'), JSON.stringify(sortedIndex, null, 4) + '\n');
+    fs.writeFileSync(profilesFile, JSON.stringify(profiles) + '\n');
     if (reportPath) fs.writeFileSync(path.resolve(reportPath), JSON.stringify(report, null, 4) + '\n');
 
     // ---- Console summary ----
@@ -214,7 +247,9 @@ async function run() {
         d.review.forEach(m => console.log(`  ! ${m}`));
         d.warnings.forEach(m => console.log(`  · ${m}`));
     });
-    console.log(`\nindex.json: ${Object.keys(sortedIndex).length} list(s).`);
+    const listCount = new Set(Object.values(sortedIndex)).size;
+    const pageCount = Object.keys(sortedIndex).length;
+    console.log(`\nindex.json: ${listCount} list(s)${pageCount > listCount ? ` for ${pageCount} pages` : ''}.`);
     if (errorCount && !noFail) process.exit(1);
 }
 

@@ -24,6 +24,12 @@ jobs:
       - name: Run Data Update Script
         run: node scripts/update-genesys-points.js
 
+      # Rebuilds the Extra Deck packages that "auto" test decks fill from, ordered
+      # by YGOProDeck's views this week (history in scripts/data/). If the API is
+      # down it keeps last week's packages.
+      - name: Build Extra Deck Packages
+        run: node scripts/build-extra-packages.js
+
       # Re-checks every test deck (assets/data/decklists) against the banlist just
       # fetched. report.json lists what needs fixing or a review; it only changes,
       # and so only gets committed below, when the findings change.
@@ -36,11 +42,12 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
           # Check if any data files changed
-          if git diff --quiet assets/data/; then
+          git add assets/data/
+          if [ -d scripts/data ]; then git add scripts/data/; fi
+          if git diff --cached --quiet; then
             echo "No data changes detected. Everything is up to date."
           else
             echo "Data changes detected. Committing and pushing..."
-            git add assets/data/
-            git commit -m "chore(data): auto-update banlist and genesys points [skip ci]"
+            git commit -m "chore(data): auto-update banlist, genesys points and Extra Deck packages [skip ci]"
             git push
           fi
