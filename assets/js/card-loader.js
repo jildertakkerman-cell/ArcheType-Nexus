@@ -1361,7 +1361,7 @@ window.CardLoader = (function () {
             }
         } catch (error) {
             console.error(`Failed to load card "${cardName}":`, error);
-            container.innerHTML = `<div class="card-placeholder">${cardName}</div>`;
+            container.innerHTML = `<div class="card-placeholder">${esc(cardName)}</div>`;
         }
     }
 
@@ -1705,7 +1705,7 @@ window.CardLoader = (function () {
             }
         } catch (error) {
             console.error(`Failed to load card ID "${cardId}":`, error);
-            container.innerHTML = `<div class="card-placeholder">ID: ${cardId}</div>`;
+            container.innerHTML = `<div class="card-placeholder">ID: ${esc(cardId)}</div>`;
         }
     }
 
@@ -2099,7 +2099,7 @@ window.CardLoader = (function () {
     async function displayCardImage(cardInfo, container) {
         const imageUrl = cardInfo.hosted_image_url;
         if (!imageUrl) {
-            container.innerHTML = `<div class="card-placeholder">${cardInfo.name}</div>`;
+            container.innerHTML = `<div class="card-placeholder">${esc(cardInfo.name)}</div>`;
             return;
         }
 
@@ -2162,7 +2162,7 @@ window.CardLoader = (function () {
             } else {
                 // Both custom and public failed
                 console.error(`Image not found in both custom bucket and public API: ${cardInfo.name} (ID: ${cardInfo.id})`);
-                container.innerHTML = `<div class="card-placeholder">${cardInfo.name}<br><small>Missing: ${cardInfo.id}</small></div>`;
+                container.innerHTML = `<div class="card-placeholder">${esc(cardInfo.name)}<br><small>Missing: ${esc(cardInfo.id)}</small></div>`;
             }
         };
 

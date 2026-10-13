@@ -46,10 +46,21 @@
         return entry?.icon || null;
     }
 
+    function _esc(str) {
+        if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function playerNames(replay) {
         const m = replay.metadata || {};
         if (Array.isArray(m.playerNames) && m.playerNames.length) {
-            return m.playerNames.join(' vs ');
+            return m.playerNames.map(_esc).join(' vs ');
         }
         return '—';
     }
@@ -273,10 +284,11 @@
 
     function arcLink(name) {
         const u = archetypeUrl(name);
+        const safeName = _esc(name);
         const style = 'color:#a5b4fc;text-decoration:none;border-bottom:1px solid rgba(165,180,252,0.35);transition:color 0.15s,border-color 0.15s;';
         return u
-            ? `<a href="${u}" style="${style}" onmouseover="this.style.color='#c7d2fe';this.style.borderBottomColor='rgba(199,210,254,0.7)'" onmouseout="this.style.color='#a5b4fc';this.style.borderBottomColor='rgba(165,180,252,0.35)'">${name}</a>`
-            : name;
+            ? `<a href="${encodeURI(u)}" style="${style}" onmouseover="this.style.color='#c7d2fe';this.style.borderBottomColor='rgba(199,210,254,0.7)'" onmouseout="this.style.color='#a5b4fc';this.style.borderBottomColor='rgba(165,180,252,0.35)'">${safeName}</a>`
+            : safeName;
     }
 
     // Bold leading result badge (WIN/LOSS) in the card header

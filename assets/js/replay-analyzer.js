@@ -14,6 +14,17 @@ let tempoChartInstance = null;
 let currentAnalysisData = null;
 let currentReplayBrowser = null;
 
+function esc(str) {
+    if (typeof window.escapeHtml === 'function') return window.escapeHtml(str);
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Initialize CardLoader + check for pre-loaded replay JSON from My Replays page
 document.addEventListener('DOMContentLoaded', async () => {
     if (window.CardLoader) {
@@ -162,10 +173,10 @@ async function handleFile(file) {
     } catch (error) {
         console.error('Analysis error:', error);
 
-        let msg = error.message;
+        let msg = esc(error.message);
         // "Failed to fetch" is the generic browser error for network/CORS issues
         // This happens if the backend doesn't whitelist x-save-replay header
-        if (msg === 'Failed to fetch' || msg.includes('NetworkError')) {
+        if (error.message === 'Failed to fetch' || String(error.message).includes('NetworkError')) {
             msg = 'Network or Server Error.<br><br>' +
                 '<span style="font-size:0.9em; color:var(--text-muted)">' +
                 'If "Share with community" is checked, unchecking it might fix CORS/Permission issues.<br>' +
@@ -1520,8 +1531,13 @@ function updateChainAnalysis(chainData) {
 
 function getDeckGuideUrl(archetypeName) {
     if (!archetypeName) return '../index.html';
-    if (document.referrer && (document.referrer.includes('Deck%20Analysis') || document.referrer.includes('Archetype'))) {
-        return document.referrer;
+    if (document.referrer) {
+        try {
+            const ref = new URL(document.referrer);
+            if (ref.origin === window.location.origin && (ref.pathname.includes('Deck%20Analysis') || ref.pathname.includes('Archetype'))) {
+                return ref.href;
+            }
+        } catch (_) { /* invalid referrer URL */ }
     }
     if (window._synergyUrlMap && window._synergyUrlMap[archetypeName]) {
         return `../pages/${window._synergyUrlMap[archetypeName]}`;
@@ -1544,7 +1560,7 @@ function initComboUploadMode(archetypeName) {
 
     const dropText = dropZone ? dropZone.querySelector('p') : null;
     if (dropText) {
-        dropText.innerHTML = `Drop your <strong>${archetypeName}</strong> .yrpx replay file here or click to upload`;
+        dropText.innerHTML = `Drop your <strong>${esc(archetypeName)}</strong> .yrpx replay file here or click to upload`;
     }
 }
 
