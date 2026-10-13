@@ -166,10 +166,11 @@ async function run() {
             else index[name] = file;
         });
 
-        // Only "auto" lists need a profile; without card data, keep the last run's.
-        const usesAuto = ((deck.fill && deck.fill.extra) || []).some(s => (typeof s === 'string' ? s : s.package) === 'auto');
-        const profile = !usesAuto ? null
-            : apiOk ? DeckList.deckProfile(deck.main || [], name => cardInfo.get(name.toLowerCase()) || null) : oldProfiles[file];
+        // Build or preserve a profile for each test deck so that both Extra Deck auto
+        // picks and Main Deck tailored spell packages have profile data.
+        const profile = apiOk
+            ? DeckList.deckProfile(deck.main || [], name => cardInfo.get(name.toLowerCase()) || null)
+            : oldProfiles[file] || null;
         if (profile) profiles[file] = profile;
         if (profile && profile.locks.length) {
             warnings.push(`Main Deck cards lock the Extra Deck (${profile.locks.join(', ')}): the auto picks follow it, the generic Links at the end don't.`);
@@ -237,7 +238,7 @@ async function run() {
 
     const sortedIndex = Object.fromEntries(Object.entries(index).sort(([a], [b]) => a.localeCompare(b)));
     fs.writeFileSync(path.join(DECK_DIR, 'index.json'), JSON.stringify(sortedIndex, null, 4) + '\n');
-    fs.writeFileSync(profilesFile, JSON.stringify(profiles) + '\n');
+    fs.writeFileSync(profilesFile, JSON.stringify(profiles, null, 2) + '\n');
     if (reportPath) fs.writeFileSync(path.resolve(reportPath), JSON.stringify(report, null, 4) + '\n');
 
     // ---- Console summary ----

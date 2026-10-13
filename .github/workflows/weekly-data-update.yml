@@ -6,6 +6,11 @@ on:
     - cron: '0 3 * * 0'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
+# Prevent overlapping runs of this workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -22,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Run Data Update Script
         run: node scripts/update-genesys-points.js
@@ -51,10 +56,18 @@ jobs:
 
           git fetch origin "$branch"
 
+          # Try a standard rebase first; if it conflicts on generated data files, 
+          # fallback to preferring our freshly generated files (-X theirs).
           if git rebase "origin/$branch"; then
             git push origin "$branch"
           else
-            echo "Rebase failed (likely conflict). Aborting rebase and exiting with error."
+            echo "Standard rebase conflicted. Retrying rebase preferring freshly generated data..."
             git rebase --abort || true
-            exit 1
+            if git rebase -X theirs "origin/$branch"; then
+              git push origin "$branch"
+            else
+              echo "Rebase failed even with auto-resolution. Aborting and exiting."
+              git rebase --abort || true
+              exit 1
+            fi
           fi

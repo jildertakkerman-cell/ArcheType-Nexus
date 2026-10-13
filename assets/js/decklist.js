@@ -122,7 +122,11 @@
      * @param info name -> { type, level, attribute, race, desc } or null
      */
     function deckProfile(rows, info) {
-        const p = { monsters: 0, levels: {}, attributes: {}, types: {}, levelWith: {}, tuners: { count: 0, levels: {}, with: {} }, nonTunerLevels: {}, locks: [] };
+        const p = {
+            monsters: 0, levels: {}, attributes: {}, types: {}, levelWith: {},
+            tuners: { count: 0, levels: {}, with: {} }, nonTunerLevels: {}, locks: [],
+            hasField: false, rituals: 0, normalLow: 0, psychicLow: 0, spells: 0, traps: 0
+        };
         const bump = (obj, key, n) => { obj[key] = (obj[key] || 0) + n; };
         const lockCopies = {};
         rows.forEach(raw => {
@@ -131,7 +135,24 @@
             if (!card) return;
             const lock = extraLock(card.desc || '');
             if (lock) bump(lockCopies, lock, count);
+            if (/Spell/.test(card.type)) {
+                p.spells += count;
+                if (card.race === 'Field') p.hasField = true;
+                if (card.race === 'Ritual') p.rituals += count;
+                return;
+            }
+            if (/Trap/.test(card.type)) {
+                p.traps += count;
+                return;
+            }
             if (!/Monster/.test(card.type) || /Fusion|Synchro|XYZ|Link/.test(card.type)) return;
+            if (/Ritual/.test(card.type)) p.rituals += count;
+            if (/Normal Monster|Normal Tuner/i.test(card.type) && card.level && card.level <= 4) {
+                p.normalLow += count;
+            }
+            if (card.race === 'Psychic' && card.level && card.level <= 3) {
+                p.psychicLow += count;
+            }
             const traits = [card.attribute, card.race].filter(Boolean);
             p.monsters += count;
             if (card.attribute) bump(p.attributes, card.attribute, count);
@@ -216,6 +237,94 @@
             .concat(fallback);
     }
 
+    /**
+     * "auto" or "staple-spells" in Main Deck -> tailored spell packages
+     * that a list's profile qualifies for (such as typal searchers, Field Spell
+     * searchers, Level-specific draw spells, and specialized Pots), followed by
+     * the generic staple-spells.
+     */
+    function autoSpellSpecs(packages, profile, deck) {
+        const arch = ((deck && deck.archetype) || '').toLowerCase();
+        const extraCount = ((deck && deck.extra) || []).reduce((s, r) => s + readRow(r).count, 0);
+
+        // Pot determination:
+        // 1. Pot of Duality: Tribute/Normal summon archetypes, or decks with 0 Extra Deck and 0 Rituals
+        const isDualityArch = ['floowandereeze', 'true draco', 'yosenju', 'monarch', 'barrier statue', 'morganite'].some(a => arch.includes(a));
+        const isNoExtraDeck = extraCount === 0 && (!profile || (profile.rituals || 0) === 0) && !arch.includes('kaiju');
+        const wantsDuality = isDualityArch || isNoExtraDeck;
+
+        // 2. Pot of Extravagance: Trap-heavy control decks (win via backrow, Extra Deck is pure fodder)
+        const isTrapControl = profile && (profile.traps || 0) >= 8 && (profile.monsters || 0) <= 16 && !arch.includes('phantom knights');
+        const wantsExtravagance = !wantsDuality && isTrapControl;
+
+        // 3. Pot of Desires: High 3-of redundancy / banish synergy
+        const isDesiresArch = ['swordsoul', 'tenyi', 'virtual world', 'gren maju'].some(a => arch.includes(a));
+        const wantsDesires = !wantsDuality && !wantsExtravagance && isDesiresArch;
+
+        let potPackage = null;
+        if (wantsDuality) potPackage = 'pot-duality';
+        else if (wantsExtravagance) potPackage = 'pot-extravagance';
+        else if (wantsDesires) potPackage = 'pot-desires';
+
+        // If a specialized pot was selected, exclude Pot of Prosperity from the fallback
+        const fallback = potPackage
+            ? [{ package: 'staple-spells', accept: raw => readRow(raw).name !== 'Pot of Prosperity' }]
+            : [{ package: 'staple-spells' }];
+
+        if (!profile) return fallback;
+        const specs = [];
+        Object.entries(packages || {}).forEach(([id, pkg]) => {
+            const needs = pkg.auto && pkg.zone === 'main' ? pkg.auto.needs || {} : null;
+            if (!needs) return;
+            if (needs.type) {
+                let count = 0;
+                if (needs.maxLevel) {
+                    for (let lvl = 1; lvl <= needs.maxLevel; lvl++) {
+                        const lvlData = (profile.levelWith && (profile.levelWith[String(lvl)] || profile.levelWith[lvl])) || null;
+                        if (lvlData && lvlData[needs.type]) count += lvlData[needs.type];
+                    }
+                } else {
+                    count = (profile.types && profile.types[needs.type]) || 0;
+                }
+                if (count < (needs.min || 3)) return;
+                specs.push({ package: id, max: needs.max || 1, tier: 0, score: count });
+            } else if (needs.psychicLow) {
+                const count = profile.psychicLow || 0;
+                if (count < (needs.min || 3)) return;
+                specs.push({ package: id, max: needs.max || 2, tier: 1, score: count });
+            } else if (needs.normalLow) {
+                const count = profile.normalLow || 0;
+                if (count < (needs.min || 3)) return;
+                specs.push({ package: id, max: needs.max || 2, tier: 1, score: count });
+            } else if (needs.hasField) {
+                if (!profile.hasField) return;
+                specs.push({ package: id, max: needs.max || 1, tier: 2, score: 10 });
+            } else if (needs.ritual) {
+                const count = profile.rituals || 0;
+                if (count < (needs.min || 3)) return;
+                specs.push({ package: id, max: needs.max || 2, tier: 3, score: count });
+            } else if (needs.attribute) {
+                const count = (profile.attributes && profile.attributes[needs.attribute]) || 0;
+                if (count < (needs.min || 10)) return;
+                specs.push({ package: id, max: needs.max || 2, tier: 4, score: count });
+            } else if (needs.level) {
+                const count = (profile.levels && profile.levels[needs.level]) || 0;
+                if (count < (needs.min || 5)) return;
+                const tier = needs.level === 1 ? 1 : 4;
+                specs.push({ package: id, max: needs.max || 1, tier, score: count });
+            }
+        });
+
+        if (potPackage && packages && packages[potPackage]) {
+            specs.push({ package: potPackage, max: 2, tier: 5, score: 50 });
+        }
+
+        return specs
+            .sort((a, b) => a.tier - b.tier || b.score - a.score || a.package.localeCompare(b.package))
+            .map(({ package: id, max }) => ({ package: id, max }))
+            .concat(fallback);
+    }
+
     // Deck and package rows are written as [name, count, note].
     function readRow(entry) {
         return Array.isArray(entry)
@@ -272,7 +381,13 @@
         for (const zone of ['main', 'extra']) {
             const specs = ((deck.fill && deck.fill[zone]) || [])
                 .map(spec => (typeof spec === 'string' ? { package: spec } : spec))
-                .flatMap(spec => (spec.package === 'auto' ? autoSpecs(packages, profile) : [spec]));
+                .flatMap(spec => {
+                    if (zone === 'extra' && spec.package === 'auto') return autoSpecs(packages, profile);
+                    if (zone === 'main' && (spec.package === 'auto' || (spec.package === 'staple-spells' && spec.max === undefined))) {
+                        return autoSpellSpecs(packages, profile, deck);
+                    }
+                    return [spec];
+                });
             const regular = specs.filter(s => !s.last);
             const ordered = [...regular.map(s => [1, s]), ...regular.map(s => [2, s]), ...specs.filter(s => s.last).map(s => [2, s])];
             for (const [pass, spec] of ordered) {
@@ -356,7 +471,7 @@
         return lines.join('\n');
     }
 
-    const core = { SIZE, banMapFromJson, banStatus, copyLimit, ownMatcher, readRow, extraLock, deckProfile, autoSpecs, assemble, expand, toYdk, toYdke, toText };
+    const core = { SIZE, banMapFromJson, banStatus, copyLimit, ownMatcher, readRow, extraLock, deckProfile, autoSpecs, autoSpellSpecs, assemble, expand, toYdk, toYdke, toText };
     if (typeof document === 'undefined') return core;
 
     // ------------------------------------------------------------------
