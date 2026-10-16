@@ -339,12 +339,10 @@ for (let i = 0; i < htmlFiles.length; i++) {
             : `${archetype} - "${combo.comboTitle}"`;
 
         process.stdout.write(`[${totalCombosScanned}] ${comboLabel} (${combo.steps.length} steps)... `);
-
         const startTime = Date.now();
-        const comboObj = await buildComboFromHtml(combo);
-
         let replayResult;
         try {
+            const comboObj = await buildComboFromHtml(combo);
             replayResult = await runComboReplay(comboObj);
         } catch (err) {
             replayResult = {

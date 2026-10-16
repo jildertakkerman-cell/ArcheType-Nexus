@@ -25,9 +25,10 @@ if (!fs.existsSync(CDB_PATH)) {
 }
 
 const db = new DatabaseSync(CDB_PATH);
-const stmtByCode = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE datas.id = ?');
-const stmtByName = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE LOWER(texts.name) = LOWER(?) LIMIT 1');
-const stmtByNameLike = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE LOWER(texts.name) LIKE ? LIMIT 1');
+const SELECT_CARD_SQL = 'SELECT datas.id, datas.ot, datas.alias, CAST(datas.setcode AS TEXT) AS setcode, datas.type, datas.atk, datas.def, datas.level, CAST(datas.race AS TEXT) AS race, datas.attribute, CAST(datas.category AS TEXT) AS category, texts.name FROM datas JOIN texts ON datas.id = texts.id';
+const stmtByCode = db.prepare(`${SELECT_CARD_SQL} WHERE datas.id = ?`);
+const stmtByName = db.prepare(`${SELECT_CARD_SQL} WHERE LOWER(texts.name) = LOWER(?) LIMIT 1`);
+const stmtByNameLike = db.prepare(`${SELECT_CARD_SQL} WHERE LOWER(texts.name) LIKE ? LIMIT 1`);
 
 const stmtInsertData = db.prepare('INSERT OR REPLACE INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 const stmtInsertText = db.prepare('INSERT OR REPLACE INTO texts (id, name, desc) VALUES (?, ?, ?)');

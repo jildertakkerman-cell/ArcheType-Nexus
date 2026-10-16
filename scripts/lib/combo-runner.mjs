@@ -22,8 +22,9 @@ const __dirname = path.dirname(__filename);
 const CDB_PATH = path.resolve(__dirname, '../../assets/data/cards.cdb');
 
 const db = new DatabaseSync(CDB_PATH);
-const stmtByCode = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE datas.id = ?');
-const stmtByName = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE LOWER(texts.name) = LOWER(?) LIMIT 1');
+const SELECT_CARD_SQL = 'SELECT datas.id, datas.ot, datas.alias, CAST(datas.setcode AS TEXT) AS setcode, datas.type, datas.atk, datas.def, datas.level, CAST(datas.race AS TEXT) AS race, datas.attribute, CAST(datas.category AS TEXT) AS category, texts.name FROM datas JOIN texts ON datas.id = texts.id';
+const stmtByCode = db.prepare(`${SELECT_CARD_SQL} WHERE datas.id = ?`);
+const stmtByName = db.prepare(`${SELECT_CARD_SQL} WHERE LOWER(texts.name) = LOWER(?) LIMIT 1`);
 
 // Generic legal discard/token dummy card (Normal Monster with no effects)
 const DUMMY_DISCARD_CODE = 12607053; // "Beaver Warrior"
@@ -183,6 +184,17 @@ export async function runComboReplay(combo, options = {}) {
             legal: false,
             message: `Combo contains ${missing.length} unresolvable or unofficial card(s): ${missing.map(m => m.name || m.id).join(', ')}`,
             missingCards: missing,
+            stepsCompleted: 0,
+            totalSteps: (combo.steps || []).length
+        };
+    }
+
+    if (resolved.length === 0) {
+        return {
+            status: 'UNOFFICIAL_CARDS',
+            legal: false,
+            message: 'No cards could be resolved for this combo.',
+            missingCards: [],
             stepsCompleted: 0,
             totalSteps: (combo.steps || []).length
         };
