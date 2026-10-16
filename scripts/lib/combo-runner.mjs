@@ -237,6 +237,7 @@ export async function runComboReplay(combo, options = {}) {
 
         function findStepCardCode(step) {
             if (!step) return null;
+            if (step.targetCode) return step.targetCode;
             if (step.card && idMap.has(step.card)) {
                 return idMap.get(step.card).code;
             }
@@ -247,8 +248,26 @@ export async function runComboReplay(combo, options = {}) {
                     }
                 }
             }
+            if (step.featuredCard && nameMap.has(step.featuredCard.toLowerCase())) {
+                return nameMap.get(step.featuredCard.toLowerCase()).code;
+            }
+
+            // Direct verb target match e.g. "Activate <Card>", "Normal Summon <Card>"
+            const verbMatch = (step.text || '').match(/(?:normal summon|activate|special summon|link summon|synchro summon|xyz summon|fusion summon|set)\s+([A-Za-z0-9'\s-:]+?)(?::|\.|\s+to|\s+from|,|\s+and|$)/i);
+            if (verbMatch) {
+                const candidate = verbMatch[1].trim().toLowerCase();
+                if (nameMap.has(candidate)) return nameMap.get(candidate).code;
+                for (const [name, c] of nameMap.entries()) {
+                    if (name.includes(candidate) || candidate.includes(name)) {
+                        return c.code;
+                    }
+                }
+            }
+
+            // Match by longest name first to avoid false sub-string matches
             const textLower = (step.text || '').toLowerCase();
-            for (const [name, c] of nameMap.entries()) {
+            const sortedEntries = [...nameMap.entries()].sort((a, b) => b[0].length - a[0].length);
+            for (const [name, c] of sortedEntries) {
                 if (textLower.includes(name)) {
                     return c.code;
                 }
@@ -382,9 +401,10 @@ export async function runComboReplay(combo, options = {}) {
                         }
                     }
 
-                    // If unhandled, check if it was a passive resolution step
+                    // If unhandled, check if it was a purely passive resolution step (NOT an attempted summon/activate/set)
                     if (!acted) {
-                        if (/(add |send |move to|draw|detach|tribute|discard)/i.test(text)) {
+                        const isMainAction = isNormalSummon || isSpSummon || isActivate || isSet;
+                        if (!isMainAction && /(add |send |move to|draw|detach|tribute|discard)/i.test(text)) {
                             stepIdx++;
                             skipRedundantVisualSteps();
                             continue;
@@ -394,20 +414,15 @@ export async function runComboReplay(combo, options = {}) {
                     }
 
                 } else if (m.type === 12) { // SELECT_EFFECTYN
-                    // Optional trigger effect prompt: scan forward up to 3 steps
-                    let wantsEffect = false;
+                    // In solitaire combos, player 0 always accepts optional trigger effects
+                    let wantsEffect = true;
                     let matchedStepIdx = -1;
                     for (let s = stepIdx; s < Math.min(steps.length, stepIdx + 3); s++) {
                         const code = findStepCardCode(steps[s]);
                         if (code === m.code && /(activate|trigger|effect)/i.test(steps[s].text || '')) {
-                            wantsEffect = true;
                             matchedStepIdx = s;
                             break;
                         }
-                    }
-                    // Default to true if current step card matches
-                    if (!wantsEffect && findStepCardCode(steps[stepIdx]) === m.code) {
-                        wantsEffect = true;
                     }
 
                     lib.duelSetResponse(duel, {

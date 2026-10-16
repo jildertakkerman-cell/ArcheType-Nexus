@@ -27,12 +27,21 @@ if (!fs.existsSync(CDB_PATH)) {
 const db = new DatabaseSync(CDB_PATH);
 const stmtByCode = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE datas.id = ?');
 const stmtByName = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE LOWER(texts.name) = LOWER(?) LIMIT 1');
+const stmtByNameLike = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE LOWER(texts.name) LIKE ? LIMIT 1');
 
 const stmtInsertData = db.prepare('INSERT OR REPLACE INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 const stmtInsertText = db.prepare('INSERT OR REPLACE INTO texts (id, name, desc) VALUES (?, ?, ?)');
 
 const SUPABASE_URL = 'https://pdvrdrmmykbznmojacwp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ia1JW1tEjKQgUFe2ni5WQA_qgBU45JZ';
+
+export function cleanCardName(name) {
+    if (!name) return '';
+    return name
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .trim();
+}
 
 export function parseSetcodes(rawSetcode) {
     const setcodes = [];
@@ -198,8 +207,14 @@ export async function resolveCardAsync(nameOrCode) {
         const found = getCardByCode(nameOrCode);
         if (found) return found;
     } else {
-        const found = getCardByName(String(nameOrCode));
+        const clean = String(nameOrCode).replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"').trim();
+        const found = getCardByName(clean);
         if (found) return found;
+
+        if (clean.length >= 4) {
+            const likeRow = stmtByNameLike.get(`%${clean.toLowerCase()}%`);
+            if (likeRow) return formatCardData(likeRow);
+        }
     }
 
     // 2. Query Supabase
