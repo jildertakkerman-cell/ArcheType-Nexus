@@ -7,6 +7,7 @@ import {
     getCardByCode,
     getCardByName,
     getScript,
+    resolveCardAsync,
     OcgDuelMode,
     OcgLocation,
     OcgPosition,
@@ -38,7 +39,7 @@ export function cleanCardName(name) {
 /**
  * Resolves all cards in a combo to cards.cdb entries.
  */
-export function resolveComboCards(combo) {
+export async function resolveComboCards(combo) {
     const resolved = [];
     const idMap = new Map();
     const nameMap = new Map();
@@ -74,6 +75,11 @@ export function resolveComboCards(combo) {
         // 4. Handle generic discard/token placeholders
         if (!cardData && /^(any card|any card you draw|discard|random discard)$/i.test(cleanedName)) {
             cardData = getCardByCode(DUMMY_DISCARD_CODE);
+        }
+
+        // 5. Query Supabase database for modern / recently released cards
+        if (!cardData) {
+            cardData = await resolveCardAsync(cleanedName) || await resolveCardAsync(rawName);
         }
 
         if (cardData) {
@@ -169,7 +175,7 @@ export function getAvailablePlaces(fieldMask, player = 0) {
  * Replays and verifies a combo against ocgcore.
  */
 export async function runComboReplay(combo, options = {}) {
-    const { resolved, idMap, nameMap, missing } = resolveComboCards(combo);
+    const { resolved, idMap, nameMap, missing } = await resolveComboCards(combo);
 
     if (missing.length > 0) {
         return {
@@ -268,8 +274,8 @@ export async function runComboReplay(combo, options = {}) {
                         continue;
                     }
                 }
-                // Skip UI visual spell graveyard sending steps
-                if (/^(move to (graveyard|gy)|send .* to (graveyard|gy)|resolve )/i.test(t)) {
+                // Skip UI visual spell graveyard sending steps, commentary, and phase transitions
+                if (/^(move to (graveyard|gy)|send .* to (graveyard|gy)|.*goes to the (gy|graveyard)|resolve |battle phase:)/i.test(t)) {
                     stepIdx++;
                     continue;
                 }

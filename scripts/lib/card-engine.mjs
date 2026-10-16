@@ -28,6 +28,12 @@ const db = new DatabaseSync(CDB_PATH);
 const stmtByCode = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE datas.id = ?');
 const stmtByName = db.prepare('SELECT datas.*, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE LOWER(texts.name) = LOWER(?) LIMIT 1');
 
+const stmtInsertData = db.prepare('INSERT OR REPLACE INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+const stmtInsertText = db.prepare('INSERT OR REPLACE INTO texts (id, name, desc) VALUES (?, ?, ?)');
+
+const SUPABASE_URL = 'https://pdvrdrmmykbznmojacwp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ia1JW1tEjKQgUFe2ni5WQA_qgBU45JZ';
+
 export function parseSetcodes(rawSetcode) {
     const setcodes = [];
     if (!rawSetcode) return setcodes;
@@ -70,6 +76,160 @@ export function getCardByCode(code) {
 export function getCardByName(name) {
     const row = stmtByName.get(name.trim());
     return formatCardData(row);
+}
+
+const ATTRIBUTE_MAP = {
+    EARTH: 1,
+    WATER: 2,
+    FIRE: 4,
+    WIND: 8,
+    LIGHT: 16,
+    DARK: 32,
+    DIVINE: 64
+};
+
+const RACE_MAP = {
+    WARRIOR: 0x1n,
+    SPELLCASTER: 0x2n,
+    FAIRY: 0x4n,
+    FIEND: 0x8n,
+    ZOMBIE: 0x10n,
+    MACHINE: 0x20n,
+    AQUA: 0x40n,
+    PYRO: 0x80n,
+    ROCK: 0x100n,
+    WINGEDBEAST: 0x200n,
+    'WINGED BEAST': 0x200n,
+    PLANT: 0x400n,
+    INSECT: 0x800n,
+    THUNDER: 0x1000n,
+    DRAGON: 0x2000n,
+    BEAST: 0x4000n,
+    BEASTWARRIOR: 0x8000n,
+    'BEAST-WARRIOR': 0x8000n,
+    DINOSAUR: 0x10000n,
+    FISH: 0x20000n,
+    SEASERPENT: 0x40000n,
+    'SEA SERPENT': 0x40000n,
+    REPTILE: 0x80000n,
+    PSYCHIC: 0x100000n,
+    DIVINEBEAST: 0x200000n,
+    'DIVINE-BEAST': 0x200000n,
+    CREATORGOD: 0x400000n,
+    WYRM: 0x800000n,
+    CYBERSE: 0x1000000n,
+    ILLUSION: 0x2000000n
+};
+
+export function parseSupabaseRow(row) {
+    if (!row || !row.passcode) return null;
+    const passcode = Number(row.passcode);
+    const cardtype = (row.cardtype || '');
+    const desc = (row.description || '');
+
+    let type = 0;
+    if (/monster/i.test(cardtype)) {
+        type |= 0x1; // TYPE_MONSTER
+        if (/effect/i.test(cardtype)) type |= 0x20;
+        if (/fusion/i.test(cardtype)) type |= 0x40;
+        if (/ritual/i.test(cardtype)) type |= 0x80;
+        if (/synchro/i.test(cardtype)) type |= 0x2000;
+        if (/xyz/i.test(cardtype)) type |= 0x800000;
+        if (/pendulum/i.test(cardtype)) type |= 0x1000000;
+        if (/link/i.test(cardtype)) type |= 0x4000000;
+        if (/toon/i.test(cardtype) || /"toon"/i.test(row.cardname)) type |= 0x400000;
+        if (/(cannot be normal summoned|must be special summoned)/i.test(desc)) type |= 0x2000000; // TYPE_SPECIAL
+    } else if (/spell/i.test(cardtype)) {
+        type |= 0x2; // TYPE_SPELL
+        const prop = (row.property || '');
+        if (/quick/i.test(prop)) type |= 0x10000;
+        if (/continuous/i.test(prop)) type |= 0x20000;
+        if (/equip/i.test(prop)) type |= 0x40000;
+        if (/field/i.test(prop)) type |= 0x80000;
+        if (/ritual/i.test(prop)) type |= 0x80;
+    } else if (/trap/i.test(cardtype)) {
+        type |= 0x4; // TYPE_TRAP
+        const prop = (row.property || '');
+        if (/continuous/i.test(prop)) type |= 0x20000;
+        if (/counter/i.test(prop)) type |= 0x100000;
+    }
+
+    const attrKey = (row.attribute || '').toUpperCase().trim();
+    const attribute = ATTRIBUTE_MAP[attrKey] || 0;
+
+    const raceKey = (row.types || '').toUpperCase().trim();
+    const race = RACE_MAP[raceKey] || 0n;
+
+    const atk = row.atk != null ? Number(row.atk) : 0;
+    const def = row.def != null ? Number(row.def) : 0;
+    const level = row.level != null ? Number(row.level) : 0;
+    const setcode = (/toon/i.test(row.cardname) || /toon/i.test(cardtype)) ? 0x62 : 0;
+
+    // Persist in local SQLite cards.cdb so all subsequent lookups are synchronous and native
+    try {
+        stmtInsertData.run(passcode, 3, 0, setcode, type, atk, def, level, Number(race), attribute, 0);
+        stmtInsertText.run(passcode, row.cardname, desc);
+    } catch (e) {
+        // Ignore write conflicts
+    }
+
+    return {
+        code: passcode,
+        alias: 0,
+        setcodes: setcode ? [setcode] : [],
+        type,
+        level,
+        attribute,
+        race,
+        attack: atk,
+        defense: def,
+        lscale: 0,
+        rscale: 0,
+        link_marker: 0,
+        name: row.cardname
+    };
+}
+
+export async function resolveCardAsync(nameOrCode) {
+    if (!nameOrCode) return null;
+
+    // 1. Try local SQLite cards.cdb
+    if (typeof nameOrCode === 'number' || /^\d{5,8}$/.test(String(nameOrCode).trim())) {
+        const found = getCardByCode(nameOrCode);
+        if (found) return found;
+    } else {
+        const found = getCardByName(String(nameOrCode));
+        if (found) return found;
+    }
+
+    // 2. Query Supabase
+    try {
+        let url;
+        if (typeof nameOrCode === 'number' || /^\d{5,8}$/.test(String(nameOrCode).trim())) {
+            url = `${SUPABASE_URL}/rest/v1/cards?passcode=eq.${Number(nameOrCode)}&select=*`;
+        } else {
+            const clean = String(nameOrCode).replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"').trim();
+            url = `${SUPABASE_URL}/rest/v1/cards?cardname=ilike.${encodeURIComponent(clean)}&select=*`;
+        }
+
+        const res = await fetch(url, {
+            headers: {
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        });
+
+        if (res.ok) {
+            const rows = await res.json();
+            if (rows && rows.length > 0) {
+                return parseSupabaseRow(rows[0]);
+            }
+        }
+    } catch (err) {
+        // Fall through on network failure
+    }
+
+    return null;
 }
 
 export async function getScript(scriptName) {
@@ -189,6 +349,10 @@ export async function createDuelInstance(options = {}) {
         team1: options.team1 || { startingLP: 8000, startingDrawCount: 0, drawCountPerTurn: 1 },
         team2: options.team2 || { startingLP: 8000, startingDrawCount: 0, drawCountPerTurn: 1 },
         cardReader: (code) => {
+            if (options.cardReader) {
+                const custom = options.cardReader(code);
+                if (custom) return custom;
+            }
             return getCardByCode(code);
         },
         scriptReader: (scriptName) => {
