@@ -6,9 +6,11 @@ console.log('ArcheType Nexus - Comprehensive Decklist & Gameplay Verification Su
 console.log('======================================================================\n');
 
 const scripts = [
-    { name: 'Searcher PSCT Verification', file: 'verify-searchers.js' },
-    { name: 'Boss Capability Verification', file: 'verify-boss-claims.js' },
-    { name: 'Combo Opening Summon Lock Verification', file: 'verify-combo-locks.js' }
+    { name: 'Tier 1: Searcher PSCT Verification', file: 'verify-searchers.js' },
+    { name: 'Tier 2: Boss Capability Verification', file: 'verify-boss-claims.js' },
+    { name: 'Tier 3: Combo Opening Summon Lock Verification', file: 'verify-combo-locks.js' },
+    { name: 'Tier 4: Extra Deck Materials & Level Math Verification', file: 'verify-materials.js' },
+    { name: 'Tier 5: Summary Quality, Structure & Database Validity', file: 'verify-summary-quality.js' }
 ];
 
 let allPassed = true;
@@ -21,13 +23,14 @@ for (const s of scripts) {
         console.log('----------------------------------------------------------------------\n');
     } catch (err) {
         console.error(`ERROR running ${s.file}:`, err.message);
+        if (err.stdout) console.log(err.stdout.toString().trim());
         allPassed = false;
     }
 }
 
 if (allPassed) {
     console.log('======================================================================');
-    console.log('ALL VERIFICATIONS PASSED: 100% Legal PSCT, Boss Capabilities & Locks!');
+    console.log('ALL VERIFICATIONS PASSED: 100% Legal PSCT, Boss Capabilities, Locks & Math!');
     console.log('Zero illegal moves or unplayable interactions across all 501 decklists.');
     console.log('======================================================================');
 } else {
