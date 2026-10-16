@@ -10,7 +10,8 @@ const scripts = [
     { name: 'Tier 2: Boss Capability Verification', file: 'verify-boss-claims.js' },
     { name: 'Tier 3: Combo Opening Summon Lock Verification', file: 'verify-combo-locks.js' },
     { name: 'Tier 4: Extra Deck Materials & Level Math Verification', file: 'verify-materials.js' },
-    { name: 'Tier 5: Summary Quality, Structure & Database Validity', file: 'verify-summary-quality.js' }
+    { name: 'Tier 5: Summary Quality, Structure & Database Validity', file: 'verify-summary-quality.js' },
+    { name: 'Tier 6: Website HTML Combo Section Verification', file: 'verify-html-combos.js' }
 ];
 
 let allPassed = true;
@@ -31,7 +32,7 @@ for (const s of scripts) {
 if (allPassed) {
     console.log('======================================================================');
     console.log('ALL VERIFICATIONS PASSED: 100% Legal PSCT, Boss Capabilities, Locks & Math!');
-    console.log('Zero illegal moves or unplayable interactions across all 501 decklists.');
+    console.log('Zero illegal moves or unplayable interactions across all 501 decklists and 462 website combo guides.');
     console.log('======================================================================');
 } else {
     console.error('FAILED: Verification detected rule or gameplay violations.');
