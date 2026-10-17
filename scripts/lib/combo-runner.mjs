@@ -151,13 +151,13 @@ export function getAvailablePlaces(fieldMask, player = 0) {
     const places = [];
     const mask = Number(BigInt.asUintN(32, BigInt(fieldMask)));
 
-    // Player 0 Monster Zones (bits 0-4)
-    for (let seq = 0; seq < 5; seq++) {
+    // Player 0 Monster Zones (bits 0-4), ordered [1, 0, 2, 3, 4] so zones pointed to by Left EMZ (seq 5: ⬇=1, ↙=0, ↘=2) are preferred first
+    for (const seq of [1, 0, 2, 3, 4]) {
         if ((mask & (1 << seq)) === 0) {
             places.push({ player: 0, location: OcgLocation.MZONE, sequence: seq });
         }
     }
-    // Extra Monster Zones (bits 5-6)
+    // Player 0 Extra Monster Zones (bits 5-6)
     if ((mask & (1 << 5)) === 0) {
         places.push({ player: 0, location: OcgLocation.MZONE, sequence: 5 });
     }
@@ -173,6 +173,30 @@ export function getAvailablePlaces(fieldMask, player = 0) {
     // Player 0 Field Zone (bit 13)
     if ((mask & (1 << 13)) === 0) {
         places.push({ player: 0, location: OcgLocation.FZONE, sequence: 5 });
+    }
+
+    // Player 1 Monster Zones (bits 16-20) for tokens/monsters placed on opponent's field (Lost World, Girsu, Mimighoul, etc.)
+    for (let seq = 0; seq < 5; seq++) {
+        if ((mask & (1 << (16 + seq))) === 0) {
+            places.push({ player: 1, location: OcgLocation.MZONE, sequence: seq });
+        }
+    }
+    // Player 1 Extra Monster Zones (bits 21-22)
+    if ((mask & (1 << 21)) === 0) {
+        places.push({ player: 1, location: OcgLocation.MZONE, sequence: 5 });
+    }
+    if ((mask & (1 << 22)) === 0) {
+        places.push({ player: 1, location: OcgLocation.MZONE, sequence: 6 });
+    }
+    // Player 1 Spell/Trap Zones (bits 24-28)
+    for (let seq = 0; seq < 5; seq++) {
+        if ((mask & (1 << (24 + seq))) === 0) {
+            places.push({ player: 1, location: OcgLocation.SZONE, sequence: seq });
+        }
+    }
+    // Player 1 Field Zone (bit 29)
+    if ((mask & (1 << 29)) === 0) {
+        places.push({ player: 1, location: OcgLocation.FZONE, sequence: 5 });
     }
 
     return places;
@@ -255,32 +279,16 @@ export async function runComboReplay(combo, options = {}) {
 
         let lastActorCode = null;
         let lastSelectedCardCode = null;
+        let lastOfferedActions = null;
 
-        function matchFragmentCodes(frag) {
-            if (!frag) return [];
-            let clean = cleanCardName(frag)
-                .replace(/^(?:(?:activate|activating|use|using|trigger|triggering|tribute|tributing|normal summon(?:ing)?|special summon(?:ing)?|link summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|fusion summon(?:ing)?|ritual summon(?:ing)?|pendulum summon(?:ing)?|summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?|banish(?:ing)?|send(?:ing)?|target(?:ing)?|chain(?:ing)?|link(?:ing)?|overlay(?:ing)?|tune|tuning|equip(?:ping)?|set(?:ting)?|place|placing|finish(?:ing)?)\s+)+/i, '')
-                .replace(/^(?:the\s+(?:original\s+|2nd\s+|second\s+|other\s+)?|a\s+|an\s+|another\s+|one\s+|1\s+|any\s+|2nd\s+|second\s+)/i, '')
-                .replace(/\s*'s(?:\s+(?:monster|gy|graveyard|hand|field|scale|on-summon|summon|quick|second|first|other))?(?:\s+effect)?$/i, '')
-                .replace(/(?:'s|s')$/i, '')
-                .replace(/\s+effect$/i, '')
-                .trim()
-                .toLowerCase();
+        function lookupCleanInNameMap(clean) {
             if (!clean || clean.length < 3) return [];
             if (/^(?:effect|effects|card|cards|monster|monsters|spell|spells|trap|traps|deck|hand|field|graveyard|turn|phase|level|rank|link|scale|scales|pendulum|normal|special|summon|summoning|activate|activating|tribute|tributing|discard|discarding|banish|banishing|search|searching|add|adding|set|setting|this|that|it|its|her|his|their|your|itself|herself|himself|both|two|three|one|any|other|another|target|material|materials|starter|extender)$/i.test(clean)) {
                 return [];
             }
-
-            // Special case: "the Servant" -> monster with "servant" in name
-            if (/^the\s+servant$/i.test(frag.trim())) {
-                const monsterServant = [...nameMap.values()].find(c => c.officialName.toLowerCase().includes('servant') && (c.data.type & 1));
-                if (monsterServant) return [monsterServant.code];
-            }
-
             if (nameMap.has(clean)) {
                 return [nameMap.get(clean).code];
             }
-
             const sorted = [...nameMap.entries()].sort((a, b) => b[0].length - a[0].length);
             const matched = [];
             for (const [name, c] of sorted) {
@@ -300,6 +308,41 @@ export async function runComboReplay(combo, options = {}) {
             return matched;
         }
 
+        function matchFragmentCodes(frag) {
+            if (!frag) return [];
+            // Special case: "the Servant" -> monster with "servant" in name
+            if (/^the\s+servant$/i.test(frag.trim())) {
+                const monsterServant = [...nameMap.values()].find(c => c.officialName.toLowerCase().includes('servant') && (c.data.type & 1));
+                if (monsterServant) return [monsterServant.code];
+            }
+
+            const baseClean = cleanCardName(frag)
+                .replace(/\s*\((?:currently\s+|now\s+)?(?:limited|semi-limited|banned|forbidden|level\s*\d+|rank\s*\d+|link-\d+|\d+|optional|cost)[^)]*\)/gi, '')
+                .replace(/^(?:the\s+(?:original\s+|2nd\s+|second\s+|other\s+)?|a\s+|an\s+|another\s+|one\s+|1\s+|any\s+|2nd\s+|second\s+)/i, '')
+                .replace(/\s*'s(?:\s+(?:monster|gy|graveyard|hand|field|scale|on-summon|summon|on-activation|quick|second|first|other|ignition))?(?:\s+effect)?$/i, '')
+                .replace(/(?:'s|s')$/i, '')
+                .replace(/\s+effect$/i, '')
+                .trim();
+
+            if (!baseClean || baseClean.length < 3) return [];
+
+            // If baseClean starts with a word that can be part of a card name ("Tribute Lanius", "Link Spider", "Set Rotation"), check unstripped first
+            if (/^(?:tribute|link|set|fusion|synchro|xyz|ritual|pendulum|place|target)\s+[A-Z]/i.test(baseClean)) {
+                const directMatch = lookupCleanInNameMap(baseClean.toLowerCase());
+                if (directMatch.length > 0) return directMatch;
+            }
+
+            const verbStripped = baseClean
+                .replace(/^(?:(?:activate|activating|use|using|trigger|triggering|normal summon(?:ing)?|special summon(?:ing)?|link summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|fusion summon(?:ing)?|ritual summon(?:ing)?|pendulum summon(?:ing)?|tribute summon(?:ing)?|summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?|banish(?:ing)?|send(?:ing)?|target(?:ing)?|chain(?:ing)?|overlay(?:ing)?|tune|tuning|equip(?:ping)?|place|placing|finish(?:ing)?|tribute|tributing|link|linking|set|setting)\s+)/i, '')
+                .replace(/^(?:the\s+(?:original\s+|2nd\s+|second\s+|other\s+)?|a\s+|an\s+|another\s+|one\s+|1\s+|any\s+|2nd\s+|second\s+)/i, '')
+                .trim()
+                .toLowerCase();
+
+            const strippedRes = lookupCleanInNameMap(verbStripped);
+            if (strippedRes.length > 0) return strippedRes;
+            return lookupCleanInNameMap(baseClean.toLowerCase());
+        }
+
         function findStepCardCodes(step, prevActorCode = null) {
             if (!step) return [];
             const codes = [];
@@ -307,12 +350,15 @@ export async function runComboReplay(combo, options = {}) {
                 if (c && !codes.includes(c)) codes.push(c);
             };
 
-            const rawText = cleanCardName(step.text || '');
+            const rawText = cleanCardName(step.text || '').replace(/^(?:action:\s*|step\s+\d+:\s*)+/i, '').trim();
             const textLower = rawText.toLowerCase();
 
-            // 1. Pronoun reference to previous card ("Tribute it", "Discard it", "Use it", "Use its effect", "Activate it", "Set it", "Link it", "Overlay it")
-            if (/^(?:tribute(?:d|ing)? it|discard(?:ing)? it|us(?:e|ing) (?:it|its|her|his)|activat(?:e|ing) (?:it|its|her|his)|(?:its|her|his) (?:[a-z-]+\s+)?effect|set(?:ting)? it|banish(?:ing)? it|link(?:ing)? it|overlay(?:ing)? it|special summon(?:ing)? it|normal summon(?:ing)? it|summon(?:ing)? it|place|placing it)/i.test(rawText.trim())) {
-                if (/^(?:us(?:e|ing)|activat(?:e|ing)|set(?:ting)?|special summon(?:ing)?|normal summon(?:ing)?|summon(?:ing)?|place|placing) it\b/i.test(rawText.trim()) && lastSelectedCardCode) {
+            // 1. Pronoun or bare "Activate effect" / "the searched <X>" reference to previous card
+            if (
+                /^(?:tribute(?:d|ing)? it|discard(?:ing)? it|us(?:e|ing) (?:it|its|her|his)|activat(?:e|ing) (?:it|its|her|his)|(?:its|her|his) (?:[a-z-]+\s+)?effect|(?:activat(?:e|ing)|us(?:e|ing))\s+(?:the\s+)?(?:on-summon\s+|summon\s+|on-activation\s+|monster\s+|ignition\s+|gy\s+|graveyard\s+|hand\s+|field\s+|scale\s+|quick\s+|first\s+|second\s+)?effect\b|set(?:ting)? it|banish(?:ing)? it|link(?:ing)? it|overlay(?:ing)? it|special summon(?:ing)? (?:it|himself|herself|itself)|normal summon(?:ing)? it|summon(?:ing)? (?:it|himself|herself|itself)|place|placing it)/i.test(rawText) ||
+                /\bthe\s+(?:searched|added|recovered|drawn)\s+[a-z0-9"'\s-]+\b/i.test(rawText)
+            ) {
+                if ((/^(?:us(?:e|ing)|activat(?:e|ing)|set(?:ting)?|special summon(?:ing)?|normal summon(?:ing)?|summon(?:ing)?|place|placing) it\b/i.test(rawText) || /\bthe\s+(?:searched|added|recovered|drawn)\b/i.test(rawText)) && lastSelectedCardCode) {
                     addCode(lastSelectedCardCode);
                 }
                 if (prevActorCode) addCode(prevActorCode);
@@ -328,7 +374,7 @@ export async function runComboReplay(combo, options = {}) {
 
             // 3. Explicit effect owner: "Activate/Use/Trigger/Chain <Card>'s [monster/gy/hand] effect" or "<Card>'s effect"
             const ownerMatches = [
-                ...rawText.matchAll(/(?:activat(?:e|ing)|us(?:e|ing)|trigger(?:ing)?|chain(?:ing)?|finish(?:ing)?)\s+([A-Za-z0-9',\s-]+?)(?:\s*'s|\s+monster|\s+gy|\s+graveyard|\s+hand|\s+field|\s+scale)?\s+(?:[a-z-]+\s+)?effect/gi),
+                ...rawText.matchAll(/(?:activat(?:e|ing)|us(?:e|ing)|trigger(?:ing)?|chain(?:ing)?|finish(?:ing)?)\s+([A-Za-z0-9',\s-]+?)(?:\s*'s|\s+monster|\s+gy|\s+graveyard|\s+hand|\s+field|\s+scale|\s+ignition)?\s+(?:[a-z-]+\s+)?effect/gi),
                 ...rawText.matchAll(/\b([A-Z][A-Za-z0-9',\s-]+?)\s*'s\s+(?:[a-z-]+\s+)?effect/g)
             ];
             for (const om of ownerMatches) {
@@ -340,10 +386,14 @@ export async function runComboReplay(combo, options = {}) {
                 for (const c of matchFragmentCodes(ownerClean)) addCode(c);
             }
 
-            // 4. Primary verb target: "Normal Summon <X>", "Activate <X>", "Link Summon <X>", etc.
-            const verbMatches = [...rawText.matchAll(/(?:normal summon(?:ing)?|tribute summon(?:ing)?|^summon(?:ing)?|activat(?:e|ing)|reveal(?:ing)?|special summon(?:ing)?|link summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|fusion summon(?:ing)?|ritual summon(?:ing)?|pendulum summon(?:ing)?|rank-up into|climb(?:ing)?\s+into|overlay(?:ing)?(?:\s+.*?\s+(?:into|to)|\s+into|\s+to)?|tune\s+.*?\s+into|contact fusion|contact fuse(?: into)?|link\s+.*?\s+(?:into|for)|set(?:ting)?|place|placing)\s+(?:-\s*)?([A-Za-z0-9',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+using\b|\s+with\b|\s+by\b|\s+into\b|\s+as\b|\s+in\b|\s+on\b|,(?!\s*the\b)|\s+and\b|$)/gi)];
+            // 4. Primary verb target: "Normal Summon <X>", "Activate <X>", "Link Summon <X>", + concrete examples "(e.g., <X>)" / "like <X>"
+            const verbMatches = [...rawText.matchAll(/(?:normal summon(?:ing)?|tribute summon(?:ing)?|^summon(?:ing)?|activat(?:e|ing)|reveal(?:ing)?|special summon(?:ing)?|link summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|fusion summon(?:ing)?|ritual summon(?:ing)?|pendulum summon(?:ing)?|rank-up into|climb(?:ing)?\s+into|overlay(?:ing)?(?:\s+.*?\s+(?:into|to)|\s+into|\s+to)?|tune\s+.*?\s+into|contact fusion|contact fuse(?: into)?|link\s+.*?\s+(?:into|for|->|→)|set(?:ting)?|place|placing)\s+(?:-\s*)?([A-Za-z0-9',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+using\b|\s+with\b|\s+by\b|\s+into\b|\s+as\b|\s+in\b|\s+on\b|,(?!\s*the\b)|\s+and\b|$)/gi)];
             for (const vm of verbMatches) {
                 for (const c of matchFragmentCodes(vm[1])) addCode(c);
+            }
+            const exampleMatches = [...rawText.matchAll(/(?:\(\s*(?:e\.g\.?,?|i\.e\.?,?|like|such as|optimally|ideally|into)\s+|\b(?:e\.g\.?,?|like|such as)\s+)([A-Z][A-Za-z0-9"',\s-:]+?)(?=\)|,|\.|\s+to\b|\s+from\b|\s+in\b|\s+and\b|\s+or\b|$)/gi)];
+            for (const em of exampleMatches) {
+                for (const c of matchFragmentCodes(em[1])) addCode(c);
             }
 
             // 5. All cards mentioned in text (longest full card name match first)
@@ -399,12 +449,12 @@ export async function runComboReplay(combo, options = {}) {
                         continue;
                     }
                 }
-                // Skip UI visual spell graveyard sending steps, commentary, banlist notes, and phase transitions
+                // Skip UI visual spell graveyard sending steps, commentary, banlist notes, board state setups, and phase transitions
                 if (
-                    /^(?:move to (?:graveyard|gy)|send .* to (?:graveyard|gy)|.*goes to the (?:gy|graveyard)|resolve |battle phase:|attack\b|end your turn|pass (?:the )?turn|legal because|this (?!card\b)|that is two layers|going second|you (?:now have|can now|are now|have now|can easily)|from (?:here|this point), (?:a series|the combo)|the goal is to|result:|note:|due to spiral fusion|nothing else is required|preparation of rites cannot help|start with .* in hand|begin with a starter|with (?:three|3|two|2) (?:level|spellbooks|monsters|"[^"]+").*, (?:you (?:have|can)|the condition is met)|it (?:stops at|comes back face-up))/i.test(trimmed) ||
-                    /(?:is currently banned|is now forbidden|also banned|remains in hand for another reveal)/i.test(trimmed)
+                    /^(?:move to (?:graveyard|gy)|send .* to (?:graveyard|gy)|.*goes to the (?:gy|graveyard)|resolve(?:\s|:)|battle phase:|enter (?:the )?battle phase|attack\b|after \d+ attacks|end (?:your )?turn|pass (?:the )?turn|legal because|this (?!card\b)|that is two layers|going second|you (?:now have|can now|are now|have now|can easily|now control)|you'll draw|now that you control|from (?:here|this point), (?:a series|the combo|you can|use)|the goal is to|result:|note:|required hand:|starting hand:|opening hand:|due to spiral fusion|nothing else is required|.*preparation of rites cannot|the earth-based p\.u\.n\.k\. monsters cannot|start with .* (?:in hand|on (?:your |the )?field|in your banished)|begin with a starter|.+?\s+sit(?:s)? on (?:your |the )?field|.+?\s+sits in your hand with\b|.+?\s+in hand,\s+a\s+level\s+\d+.*in the graveyard|with (?:four|4|three|3|two|2) (?:level|spellbooks|monsters|"[^"]+").*, (?:you (?:have|can)|the condition is met)|with .* on the field, your .* effects no longer|treat the level \d+ .* as level \d+|it (?:stops at|comes back face-up)|modern (?:.* )?builds (?:use|focus)|historically, players would|in the new format,|repeat the process until|enables a cascade of|a typical result includes|next turn it is|summoned during your turn|your scales are negated|cannot be destroyed by battle|its activation and effect cannot be negated|the (?:"[^"]+"|[a-z0-9-]+) (?:lock is now active|combo ends with)|the primary combo line involves|the loop begins|the standard path is to|either half moves|through standard fusion steps|by integrating .* into the)/i.test(trimmed) ||
+                    /(?:is currently banned|is now forbidden|\(now forbidden\)|also banned|remains in hand for another reveal|shields other .* cards from battle|is always treated as a)/i.test(trimmed)
                 ) {
-                    if (!lastActorCode && /^(?:start with|begin with|open)\b/i.test(trimmed)) {
+                    if (!lastActorCode && /^(?:start with|begin with|open|required hand:)\b/i.test(trimmed)) {
                         const setupCodes = findStepCardCodes(s, null);
                         if (setupCodes.length > 0) lastActorCode = setupCodes[0];
                     }
@@ -418,6 +468,7 @@ export async function runComboReplay(combo, options = {}) {
         let triggersFiredSinceLastIdle = 0;
         const cardsSelectedSinceLastIdle = new Set();
         let inOpponentTurn = false;
+        let autoFiredPrevStepIgnition = false;
 
         // Score an ocgcore effect description (from cards.cdb str1..str16) against the current step text
         function scoreEffectDescAgainstStep(descText, stepText, isPendulumScaleStep, rawDescBigInt) {
@@ -465,6 +516,56 @@ export async function runComboReplay(combo, options = {}) {
                         continue;
                     }
 
+                    // Auto-fire pending on-field ignition effect if the previous step summoned/placed a card with a "to <do X>" clause that hasn't resolved yet
+                    if (
+                        stepIdx > 0 &&
+                        !autoFiredPrevStepIgnition &&
+                        triggersFiredSinceLastIdle === 0 &&
+                        cardsSelectedSinceLastIdle.size === 0 &&
+                        lastActorCode &&
+                        m.activates &&
+                        m.activates.length > 0
+                    ) {
+                        const prevStepObj = steps[stepIdx - 1];
+                        const prevText = cleanCardName(prevStepObj?.text || '');
+                        const nextStepObj = steps[stepIdx];
+                        const nextText = cleanCardName(nextStepObj?.text || '');
+                        const prevHasPurposeClause = /(?:\bto\s+(?:search|add|special summon|summon|send|dump|foolish|set|place|equip|destroy|banish|draw|revive|tribute|copy|gain|increase|reduce)\b|,\s*(?:discard(?:ing)?|tribut(?:e|ing)|searching|adding|special summoning|summoning|sending|dumping|setting|placing|equipping|destroying|banishing|drawing)\b)/i.test(prevText);
+                        const nextCodes = nextStepObj ? findStepCardCodes(nextStepObj, lastActorCode) : [];
+                        const nextExplicitlyActivatesPrev = /^(?:activat(?:e|ing)|us(?:e|ing))\b/i.test(nextText.trim()) && nextCodes[0] === lastActorCode;
+                        const fieldActIndices = [];
+                        for (let i = 0; i < m.activates.length; i++) {
+                            const a = m.activates[i];
+                            if (
+                                a.code === lastActorCode &&
+                                (a.location === OcgLocation.MZONE || a.location === OcgLocation.SZONE || a.location === OcgLocation.FZONE) &&
+                                !(a.description != null && BigInt(a.description) === 1160n)
+                            ) {
+                                fieldActIndices.push(i);
+                            }
+                        }
+                        if (prevHasPurposeClause && !nextExplicitlyActivatesPrev && fieldActIndices.length > 0) {
+                            let bestIdx = fieldActIndices[0];
+                            let bestSc = -Infinity;
+                            for (const idx of fieldActIndices) {
+                                const sc = scoreEffectDescAgainstStep(getEffectDescription(m.activates[idx].description), prevText, false, m.activates[idx].description);
+                                if (sc > bestSc) {
+                                    bestSc = sc;
+                                    bestIdx = idx;
+                                }
+                            }
+                            autoFiredPrevStepIgnition = true;
+                            lib.duelSetResponse(duel, {
+                                type: OcgResponseType.SELECT_IDLECMD,
+                                action: SelectIdleCMDAction.SELECT_ACTIVATE,
+                                index: bestIdx
+                            });
+                            const actorName = getCardByCode(lastActorCode)?.name || lastActorCode;
+                            log.push(`Auto-activating on-field effect of ${actorName} (${lastActorCode}) to complete Step ${stepIdx}`);
+                            continue;
+                        }
+                    }
+
                     while (stepIdx < steps.length) {
                         skipRedundantVisualSteps();
 
@@ -473,15 +574,18 @@ export async function runComboReplay(combo, options = {}) {
                         }
 
                         const currentStep = steps[stepIdx];
-                        const rawStepText = cleanCardName(currentStep.text || '').trim();
+                        const rawStepText = cleanCardName(currentStep.text || '').replace(/^(?:action:\s*|step\s+\d+:\s*)+/i, '').trim();
                         const text = rawStepText.toLowerCase();
 
-                        // Handle transition to opponent's turn ("On your opponent's turn...")
-                        if (/^(?:on|during|in) (?:your |the )?opponent's turn\b/i.test(rawStepText)) {
+                        // Handle transition to opponent's turn ("On your opponent's turn..." / "During your opponent's Main Phase...")
+                        if (/^(?:on|during|in) (?:your |the )?opponent's (?:turn|main phase|standby phase|draw phase|battle phase|end phase)\b/i.test(rawStepText)) {
                             inOpponentTurn = true;
-                            if (/^(?:on|during|in) (?:your |the )?opponent's turn\.?$/i.test(rawStepText)) {
+                            const strippedOppPrefix = rawStepText.replace(/^(?:on|during|in) (?:your |the )?opponent's (?:turn|main phase|standby phase|draw phase|battle phase|end phase)\s*(?:,\s*|\.\s*|$)/i, '').trim();
+                            if (!strippedOppPrefix) {
                                 stepIdx++;
                                 skipRedundantVisualSteps();
+                            } else {
+                                currentStep.text = strippedOppPrefix;
                             }
                             lib.duelSetResponse(duel, {
                                 type: OcgResponseType.SELECT_IDLECMD,
@@ -497,44 +601,68 @@ export async function runComboReplay(combo, options = {}) {
                         const stepActorHasIdleEffect = Boolean(stepCodes[0] && m.activates && m.activates.some(a => a.code === stepCodes[0]));
 
                         // If this step describes a Chain Link or a trigger/search/on-activation effect that already resolved since the last IDLECMD, advance immediately
-                        const isPossessiveTriggerDesc = /^(?:(?:its|her|his|their|[a-z0-9'\s-]+?\s*'s)\s+(?:on-summon\s+|summon\s+|gy\s+|graveyard\s+|hand\s+)?effect\s+(?:then\s+|immediately\s+|also\s+)?(?:activates|triggers|searches|adds|places|sets|sends|dumps|grants|allows|lets|special summons|summons|revives|continues|destroys|banishes|draws|equips|returns|recovers)\b)/i.test(rawStepText);
-                        const isPureChainOrTriggerStep = /^(?:chain link \d|cl1\b|a chain forms|build the chain|both trigger their effects|action:\s*activate .* \(on .* summon\)|on summon\b|when summoned\b|if summoned\b|its own on-activation effect\b|[^\s]+(?:'s)? summon trigger\b|her arrival turns on\b|his arrival turns on\b|its arrival turns on\b|as [a-z0-9"'\s-]+? (?:is sent to (?:the )?(?:gy|graveyard)|leaves the field))/i.test(rawStepText) ||
-                            (isPossessiveTriggerDesc && (triggersFiredSinceLastIdle > 0 || cardsSelectedSinceLastIdle.size > 0 || !stepActorHasIdleEffect));
+                        const isPossessiveTriggerDesc = /^(?:(?:(?:its|her|his|their|[a-z0-9'\s-]+?\s*'s)\s+(?:on-summon\s+|summon\s+|on-activation\s+|gy\s+|graveyard\s+|hand\s+)?effect|(?:the\s+)?effect\s+of\s+[a-z0-9"',\s-]+?)\s+(?:then\s+|immediately\s+|also\s+|upon\s+its\s+summon\s+)?(?:activates|triggers|resolves|searches|adds|places|sets|sends|dumps|grants|allows|lets|special summons|summons|revives|continues|destroys|banishes|draws|equips|returns|recovers)\b)/i.test(rawStepText);
+                        const isDeclarativeTriggerDesc = /^[A-Z][A-Za-z0-9"',\s-]+?\s+(?:then\s+|successfully\s+|immediately\s+|also\s+|automatically\s+)?(?:searches|adds|sends|dumps|places|sets|triggers|resolves|equips|attaches|draws|recovers|returns|recycles|grants|allows|lets|fuses|fusion\s+summons|special\s+summons|summons|revives|becomes\s+level|is\s+always\s+treated)\b/i.test(rawStepText) && !/\s*->\s*gy\b/i.test(rawStepText) && !(m.special_summons && m.special_summons.some(s => stepCodes.includes(s.code)));
+                        const isPureChainOrTriggerStep = /^(?:chain link \d|cl\d+\b|a (?:new )?chain forms|the chain resolves|build the chain|both (?:monsters )?trigger|this triggers|action:\s*activate .* \(on .* summon\)|on summon\b|when summoned\b|if summoned\b|its own on-activation effect\b|[^\s]+(?:'s)? summon trigger\b|her arrival turns on\b|his arrival turns on\b|its arrival turns on\b|(?:when|if|as)\s+[a-z0-9"',\s-]+?\s+(?:is|are)\s+(?:sent|cast|destroyed|tributed|banished|used|detached|summoned|discarded)\b|as [a-z0-9"'\s-]+? leaves the field)/i.test(rawStepText) ||
+                            ((isPossessiveTriggerDesc || isDeclarativeTriggerDesc) && (triggersFiredSinceLastIdle > 0 || cardsSelectedSinceLastIdle.size > 0 || !stepActorHasIdleEffect));
 
-                        const isAlreadyResolvedSearchOrSet = (triggersFiredSinceLastIdle > 0 || cardsSelectedSinceLastIdle.size > 0) && (
-                            /^(?:(?:activat(?:e|ing)|us(?:e|ing)|finish(?:ing)?) (?:its|her|his|the|[a-z0-9'\s-]+?'s) (?:on-summon |summon )?effect (?:to|by) (?:search|add|set|send|dump|discard)\b|search\b|add\b.*to (?:your )?hand|add\b.*off the rider|put\b.*back on top|place\b.*on (?:top|bottom)|(?:then,?\s+)?set\b.*from (?:the |your )?(?:deck|gy|graveyard))/i.test(rawStepText) ||
-                            (!prevActorHasIdleEffect && /^(?:activat(?:e|ing)|us(?:e|ing)) (?:its|her|his|the) (?:on-summon |summon )?effect to (?:place|special summon|summon|revive|gain|equip|target|increase|return|recover)\b/i.test(rawStepText)) ||
-                            (/(?:special summons?|summons) itself\b/i.test(rawStepText) && stepCodes.some(c => cardsSelectedSinceLastIdle.has(c)) && !stepActorHasIdleEffect) ||
-                            (/^(?:use the (?:extra|additional) summon to )?normal summon\b/i.test(rawStepText) && stepCodes.length > 0 && cardsSelectedSinceLastIdle.has(stepCodes[0]) && !(m.summons && m.summons.some(s => s.code === stepCodes[0])))
+                        const mzoneCardsNow = (stepCodes.length > 0 && /^(?:then\s+)?(?:special\s+)?summon(?:s)?\b/i.test(rawStepText))
+                            ? (lib.duelQueryLocation(duel, { flags: 17, controller: 0, location: OcgLocation.MZONE }) || [])
+                            : [];
+                        const alreadySummonedSelfToField = Boolean(
+                            stepCodes[0] &&
+                            stepCodes[0] === lastActorCode &&
+                            /^(?:then\s+)?special summon\b/i.test(rawStepText) &&
+                            !stepActorHasIdleEffect &&
+                            !(m.special_summons && m.special_summons.some(s => s.code === stepCodes[0])) &&
+                            mzoneCardsNow.some(mc => mc && mc.code === stepCodes[0])
                         );
+
+                        const isAlreadyResolvedSearchOrSet = alreadySummonedSelfToField ||
+                            (!stepActorHasIdleEffect && /effect\s+to\s+use\s+(?:it|itself)\s+as\s+(?:synchro\s+|link\s+)?material\s+from\s+(?:your\s+)?hand/i.test(rawStepText)) ||
+                            (!stepActorHasIdleEffect && !prevActorHasIdleEffect && /^(?:activat(?:e|ing)|us(?:e|ing)) (?:its|her|his|the) effect to gain an (?:additional|extra) normal summon/i.test(rawStepText)) ||
+                            ((triggersFiredSinceLastIdle > 0 || cardsSelectedSinceLastIdle.size > 0) && (
+                                /^(?:(?:activat(?:e|ing)|us(?:e|ing)|finish(?:ing)?) (?:its|her|his|the|[a-z0-9'\s-]+?'s) (?:on-summon |summon |on-activation )?effect (?:to|by) (?:search|add|set|send|dump|discard)\b|as part of the effect,\s*send\b|discard\b|shuffle\b.*back|search\b|add\b.*to (?:your )?hand|add\b.*off the rider|put\b.*back on top|place\b.*on (?:top|bottom)|(?:then,?\s+)?set\b.*from (?:the |your )?(?:deck|gy|graveyard)|target\b.*to become level \d+|attaches your\b)/i.test(rawStepText) ||
+                                (!prevActorHasIdleEffect && /^(?:activat(?:e|ing)|us(?:e|ing)) (?:its|her|his|the) (?:on-summon |summon |on-activation )?effect to (?:place|special summon|summon|revive|gain|equip|target|increase|return|recover)\b/i.test(rawStepText)) ||
+                                (/(?:special summons?|summons) (?:itself|himself|herself)\b/i.test(rawStepText) && !stepActorHasIdleEffect && !(m.special_summons && m.special_summons.some(s => stepCodes.includes(s.code)))) ||
+                                (/^special summon\b.*from (?:the |your )?deck\b.*whose levels equal/i.test(rawStepText) && !stepActorHasIdleEffect) ||
+                                (/^(?:use the (?:extra|additional) summon to )?normal summon\b/i.test(rawStepText) && stepCodes.length > 0 && cardsSelectedSinceLastIdle.has(stepCodes[0]) && !(m.summons && m.summons.some(s => s.code === stepCodes[0])))
+                            ));
                         if (isPureChainOrTriggerStep || isAlreadyResolvedSearchOrSet) {
                             stepIdx++;
+                            autoFiredPrevStepIgnition = false;
                             skipRedundantVisualSteps();
                             continue;
                         }
 
-                        // Strip search/add/set/discard/tribute target clauses when identifying the actor card to summon/activate in IDLECMD
-                        const actorText = rawStepText
-                            .replace(/(?:,\s*|\s+by\s+|\s+and\s+)?discard(?:ing)?\s+[A-Za-z0-9'\s-]+?(?=\s+to\b|,|\.|$)/gi, '')
-                            .replace(/,\s*tributing\s+[A-Za-z0-9'\s-]+?(?=\s+to\b|,|\.|$)/gi, '')
+                        // Strip search/add/set/discard/tribute/summon target clauses when identifying the actor card to summon/activate in IDLECMD
+                        let actorText = rawStepText
+                            .replace(/(?:,\s*|\s+by\s+|\s+and\s+)?discard(?:ing)?\s+[A-Za-z0-9"'\s()-]+?(?=\s+to\b|,|\.|$)/gi, '')
+                            .replace(/,\s*tributing\s+[A-Za-z0-9"'\s()-]+?(?=\s+to\b|,|\.|$)/gi, '')
                             .replace(/,\s*(?:adding|searching|sending|dumping|setting|placing|special summoning|summoning|reviving|drawing|banishing|destroying)\b.*$/i, '')
-                            .replace(/\bsends?\s+[A-Za-z0-9'\s-]+?\s+from\s+(?:the\s+|your\s+)?deck\b.*$/i, '')
+                            .replace(/\bsends?\s+[A-Za-z0-9"'\s-]+?\s+from\s+(?:the\s+|your\s+)?deck\b.*$/i, '')
                             .replace(/\bto\s+(?:search|add|send|dump|foolish|bury|set|place|put|draw|destroy)\b.*$/i, '');
+                        if (/^(?:activat(?:e|ing)|normal summon(?:ing)?|tribute summon(?:ing)?|discard(?:ing)?|banish(?:ing)?|tribut(?:e|ing))\b/i.test(actorText) || (/^us(?:e|ing)\b/i.test(actorText) && !/\bto\s+(?:link|synchro|xyz|pendulum|contact|make\s+a)\b/i.test(actorText))) {
+                            actorText = actorText.replace(/\bto\s+(?:special summon|fusion summon|ritual summon|summon|revive|equip|banish|target|gain|boost|create|make|lock)\b.*$/i, '');
+                        }
                         const actorOnlyCodes = findStepCardCodes({ ...currentStep, text: actorText, featuredCard: null }, lastActorCode);
                         const idleCodes = actorOnlyCodes.length > 0 ? actorOnlyCodes : stepCodes;
 
                         const isPendulumScaleStep = /\b(?:pendulum zones?|scales?)\b/i.test(text) && !/\b(?:destroy|target|bounce|return)\b.*\b(?:pendulum zones?|scales?)\b/i.test(text);
+                        const startsWithExplicitActivate = /^activat(?:e|ing)\b/i.test(rawStepText) || (/^us(?:e|ing)\b/i.test(rawStepText) && !/\b(?:to|and)\s+(?:link|synchro|xyz|pendulum|overlay|tune|contact|make|summon\s+(?:number|a\s+link|a\s+rank|a\s+synchro|an\s+xyz))\b/i.test(rawStepText) && !/^use\s+(?:both|the\s+two|two|2|your\s+remaining|these|them)\b/i.test(rawStepText));
                         const hasExtraDeckSummonTarget = Boolean(
+                            !startsWithExplicitActivate &&
                             idleCodes.length > 0 &&
                             m.special_summons &&
                             m.special_summons.some(s => s.code === idleCodes[0] && s.location === OcgLocation.EXTRA) &&
                             !/\b(?:reveal|send|dump|banish)\b.*\bextra deck\b/i.test(text)
                         );
-                        const isExtraOrProcSummon = hasExtraDeckSummonTarget || /(?:link summon|synchro summon|xyz summon|fusion summon|pendulum summon|rank-up into|\boverlay\b|\btune\b.*\binto\b|contact fuse|contact fusion|\blink\b.*\b(?:into|for|away|climb|summon|make))/i.test(text);
-                        const isNormalSummon = /(?:normal summon|tribute summon|tribute .* for\b|^summon\b)/i.test(text) && !isExtraOrProcSummon && !/special summon/i.test(text);
+                        const isExtraOrProcSummon = !startsWithExplicitActivate && (hasExtraDeckSummonTarget || /(?:link summon|synchro summon|xyz summon|fusion summon|pendulum summon|rank-up into|\boverlay\b|\btune\b.*\b(?:into|for)\b|contact fuse|contact fusion|\blink\b.*\b(?:into|for|away|climb|summon|make|->|→)|^link\s+(?:both|the|your|two|2|them|these)\b)/i.test(text));
+                        const hasNormalSummonVerb = /\b(?:normal summon|tribute summon|tribute .* for)\b/i.test(text) && !/\b(?:cannot|can't|do not|don't|without|instead of)\s+(?:normal|tribute) summon/i.test(text) && !/^(?:after|when|once|if)\s+(?:you\s+)?(?:normal|tribute) summon/i.test(text);
+                        const isNormalSummon = (hasNormalSummonVerb || (/^summon\b/i.test(text) && !/special summon/i.test(text))) && !isExtraOrProcSummon;
                         const isSpSummon = isExtraOrProcSummon || /(?:special summon|\bsummons?\b|\brevives?\b|\bmake\b|\bclimb\b)/i.test(text);
-                        const isExplicitEffectActivation = (/(?:^activat(?:e|ing)\b|^us(?:e|ing)\b|^tribut(?:e|ing)\b|^reveal(?:ing)?\b|^discard(?:ing)?\b|^banish(?:ing)?\b|\beffect\b)/i.test(rawStepText) && !isExtraOrProcSummon) || isPendulumScaleStep;
-                        const isActivate = isExplicitEffectActivation || /(?:activat(?:e|ing)|us(?:e|ing)|search|add .* to hand|look at the top|sends? .* from (?:the |your )?deck|\bdumps?\b|\bstacks?\b|\brevives?\b|\britual summon)/i.test(text);
+                        const isExplicitEffectActivation = startsWithExplicitActivate || ((/(?:^tribut(?:e|ing)\b|^reveal(?:ing)?\b|^discard(?:ing)?\b|^banish(?:ing)?\b|\beffect\b)/i.test(rawStepText) && !isExtraOrProcSummon)) || isPendulumScaleStep;
+                        const isActivate = isExplicitEffectActivation || /(?:activat(?:e|ing)|us(?:e|ing)|search|add .* to hand|look at the top|sends? .* from (?:the |your )?deck|\s->\s*gy\b|\bdumps?\b|\bstacks?\b|\brevives?\b|\britual summon|\bcycle\b.*back to hand|\breturn\b.*to hand)/i.test(text);
                         const isSet = /\bset(?:ting)?\b/i.test(text) && !/from (?:the |your )?(?:deck|gy|graveyard)/i.test(text) && !isPendulumScaleStep;
 
                         let acted = false;
@@ -557,20 +685,23 @@ export async function runComboReplay(combo, options = {}) {
                                     if (sIdx !== -1) break;
                                 }
                             }
-                            if (sIdx === -1 && isExtraOrProcSummon && !stepCodes.some(c => ((getCardByCode(c)?.type || 0) & 0x4802040) !== 0)) {
+                            if (sIdx === -1 && isExtraOrProcSummon && (!stepCodes.some(c => ((getCardByCode(c)?.type || 0) & 0x4802040) !== 0) || /\b(?:any|a|an|1)\s+[a-z0-9"'\s-]+\s+(?:monster|link|synchro|xyz|fusion)/i.test(text))) {
                                 sIdx = m.special_summons.findIndex(c => c.location === OcgLocation.EXTRA);
                             }
-                            if (sIdx === -1 && stepCodes.length === 0) sIdx = 0;
+                            if (sIdx === -1 && (stepCodes.length === 0 || /\bsummon\s+(?:any|a|an|1)\b/i.test(text))) sIdx = 0;
                             if (sIdx !== -1) {
                                 lastActorCode = m.special_summons[sIdx].code;
                                 triggersFiredSinceLastIdle = 0;
                                 cardsSelectedSinceLastIdle.clear();
+                                autoFiredPrevStepIgnition = false;
                                 lib.duelSetResponse(duel, {
                                     type: OcgResponseType.SELECT_IDLECMD,
                                     action: SelectIdleCMDAction.SELECT_SPECIAL_SUMMON,
                                     index: sIdx
                                 });
-                                log.push(`Step ${stepIdx + 1}: Legal Special Summon of code ${m.special_summons[sIdx].code}`);
+                                const spCode = m.special_summons[sIdx].code;
+                                const spName = getCardByCode(spCode)?.name || spCode;
+                                log.push(`Step ${stepIdx + 1}: Legal Special Summon of ${spName} (${spCode})`);
                                 stepIdx++;
                                 skipRedundantVisualSteps();
                                 return true;
@@ -607,23 +738,35 @@ export async function runComboReplay(combo, options = {}) {
                                 aIdx = selectBestActivateIndexForCode(code);
                                 if (aIdx !== -1) break;
                             }
+                            if (aIdx === -1) {
+                                for (const code of stepCodes) {
+                                    aIdx = selectBestActivateIndexForCode(code);
+                                    if (aIdx !== -1) break;
+                                }
+                            }
                             if (aIdx === -1 && /\bfield spell\b/i.test(text)) {
-                                aIdx = m.activates.findIndex(c => c.location === OcgLocation.FZONE || (c.location === OcgLocation.SZONE && c.sequence === 5));
+                                aIdx = m.activates.findIndex(c => c.location === OcgLocation.FZONE || (c.location === OcgLocation.SZONE && c.sequence === 5) || ((getCardByCode(c.code)?.type || 0) & 0x80000) !== 0);
+                            }
+                            if (aIdx === -1 && /\britual spell\b/i.test(text)) {
+                                aIdx = m.activates.findIndex(c => ((getCardByCode(c.code)?.type || 0) & 0x82) === 0x82);
                             }
                             if (aIdx === -1 && isPendulumScaleStep) {
                                 aIdx = m.activates.findIndex(c => c.description != null && BigInt(c.description) === 1160n);
                             }
-                            if (aIdx === -1 && stepCodes.length === 0) aIdx = 0;
+                            if (aIdx === -1 && (stepCodes.length === 0 || /\b(?:any|a|an)\s+[a-z0-9"'\s-]+\s+(?:card|monster|spell|trap|effect)\b/i.test(text))) aIdx = 0;
                             if (aIdx !== -1) {
                                 lastActorCode = m.activates[aIdx].code;
                                 triggersFiredSinceLastIdle = 0;
                                 cardsSelectedSinceLastIdle.clear();
+                                autoFiredPrevStepIgnition = false;
                                 lib.duelSetResponse(duel, {
                                     type: OcgResponseType.SELECT_IDLECMD,
                                     action: SelectIdleCMDAction.SELECT_ACTIVATE,
                                     index: aIdx
                                 });
-                                log.push(`Step ${stepIdx + 1}: Legal Activation of code ${m.activates[aIdx].code}`);
+                                const actCode = m.activates[aIdx].code;
+                                const actName = getCardByCode(actCode)?.name || actCode;
+                                log.push(`Step ${stepIdx + 1}: Legal Activation of ${actName} (${actCode})`);
                                 stepIdx++;
                                 skipRedundantVisualSteps();
                                 return true;
@@ -638,17 +781,32 @@ export async function runComboReplay(combo, options = {}) {
                                 sIdx = m.summons.findIndex(c => c.code === code);
                                 if (sIdx !== -1) break;
                             }
-                            if (sIdx === -1 && stepCodes.length === 0) sIdx = 0;
+                            if (sIdx === -1) {
+                                for (const code of stepCodes) {
+                                    sIdx = m.summons.findIndex(c => c.code === code);
+                                    if (sIdx !== -1) break;
+                                }
+                            }
+                            const hasMainDeckMonsterCode = idleCodes.some(c => {
+                                const card = getCardByCode(c);
+                                return card && (card.type & 0x1) && !(card.type & 0x4802040);
+                            });
+                            if (sIdx === -1 && (stepCodes.length === 0 || !hasMainDeckMonsterCode || /\bnormal summon\s+(?:any|a|an|1|your)\b/i.test(text))) {
+                                sIdx = 0;
+                            }
                             if (sIdx !== -1) {
                                 lastActorCode = m.summons[sIdx].code;
                                 triggersFiredSinceLastIdle = 0;
                                 cardsSelectedSinceLastIdle.clear();
+                                autoFiredPrevStepIgnition = false;
                                 lib.duelSetResponse(duel, {
                                     type: OcgResponseType.SELECT_IDLECMD,
                                     action: SelectIdleCMDAction.SELECT_SUMMON,
                                     index: sIdx
                                 });
-                                log.push(`Step ${stepIdx + 1}: Legal Normal Summon of code ${m.summons[sIdx].code}`);
+                                const nsCode = m.summons[sIdx].code;
+                                const nsName = getCardByCode(nsCode)?.name || nsCode;
+                                log.push(`Step ${stepIdx + 1}: Legal Normal Summon of ${nsName} (${nsCode})`);
                                 stepIdx++;
                                 skipRedundantVisualSteps();
                                 acted = true;
@@ -672,17 +830,20 @@ export async function runComboReplay(combo, options = {}) {
                                     setIdx = m.spell_sets.findIndex(c => c.code === code);
                                     if (setIdx !== -1) break;
                                 }
-                                if (setIdx === -1 && stepCodes.length === 0) setIdx = 0;
+                                if (setIdx === -1 && (stepCodes.length === 0 || /\bset(?:ting)?\s+(?:any|a|an|1)\b/i.test(text))) setIdx = 0;
                                 if (setIdx !== -1) {
                                     lastActorCode = m.spell_sets[setIdx].code;
                                     triggersFiredSinceLastIdle = 0;
                                     cardsSelectedSinceLastIdle.clear();
+                                    autoFiredPrevStepIgnition = false;
                                     lib.duelSetResponse(duel, {
                                         type: OcgResponseType.SELECT_IDLECMD,
                                         action: SelectIdleCMDAction.SELECT_SPELL_SET,
                                         index: setIdx
                                     });
-                                    log.push(`Step ${stepIdx + 1}: Legal Spell/Trap Set of code ${m.spell_sets[setIdx].code}`);
+                                    const setCode = m.spell_sets[setIdx].code;
+                                    const setName = getCardByCode(setCode)?.name || setCode;
+                                    log.push(`Step ${stepIdx + 1}: Legal Spell/Trap Set of ${setName} (${setCode})`);
                                     stepIdx++;
                                     skipRedundantVisualSteps();
                                     acted = true;
@@ -695,18 +856,51 @@ export async function runComboReplay(combo, options = {}) {
                         }
 
                         // If unhandled, check if it was a trigger effect, chain resolution, opponent-board interaction, or passive text
-                        const isTriggerOrResolution = /(?:chain link \d|a chain forms|trigger|on summon|if summoned|when summoned|activate (?:its|the) effect to (?:search|add|send|dump|draw|destroy|set)|its own on-activation effect|set .* from (?:the |your )?(?:deck|gy|graveyard)|search |add .* to hand|put .* back on top|place .* on (?:top|bottom) of (?:the|your) deck|is now in the gy|is now a .* monster|sets up your|securing a|that is two layers|going second|keeping the extra monster zone|legal because|end your turn|(?:card|monster|spell|trap)s?\s+(?:your\s+)?opponent\s+controls|^continue the combo\b)/i.test(text);
+                        const isTriggerOrResolution = /(?:chain link \d|a chain forms|trigger|on summon|if summoned|when summoned|activate (?:its|the) effect to (?:search|add|send|dump|draw|destroy|set)|its own on-activation effect|set .* from (?:the |your )?(?:deck|gy|graveyard)|search |add .* to hand|\bcycle\b.*back to hand|put .* back on top|place .* on (?:top|bottom) of (?:the|your) deck|is now in the gy|is now a .* monster|sets up your|securing a|that is two layers|going second|keeping the extra monster zone|legal because|end (?:your )?turn|(?:card|monster|spell|trap)s?\s+(?:your\s+)?opponent\s+controls|opponent's\s+(?:card|monster|spell|trap|field|board)|negate the first|while returning the|locking your opponent|^continue the combo\b)/i.test(text);
                         if (isTriggerOrResolution) {
                             stepIdx++;
+                            autoFiredPrevStepIgnition = false;
                             skipRedundantVisualSteps();
                             continue;
                         }
                         const isMainAction = isNormalSummon || isSpSummon || isActivate || isSet;
                         if (!isMainAction && /(add |send |move to|draw|detach|tribute|discard|put |place )/i.test(text)) {
                             stepIdx++;
+                            autoFiredPrevStepIgnition = false;
                             skipRedundantVisualSteps();
                             continue;
                         }
+
+                        lastOfferedActions = {
+                            summons: (m.summons || []).map(s => ({
+                                code: s.code,
+                                name: getCardByCode(s.code)?.name || String(s.code)
+                            })),
+                            specialSummons: (m.special_summons || []).map(s => ({
+                                code: s.code,
+                                name: getCardByCode(s.code)?.name || String(s.code),
+                                location: s.location
+                            })),
+                            activates: (m.activates || []).map(a => ({
+                                code: a.code,
+                                name: getCardByCode(a.code)?.name || String(a.code),
+                                desc: getEffectDescription(a.description),
+                                location: a.location,
+                                sequence: a.sequence
+                            })),
+                            spellSets: (m.spell_sets || []).map(s => ({
+                                code: s.code,
+                                name: getCardByCode(s.code)?.name || String(s.code)
+                            })),
+                            monsterSets: (m.monster_sets || []).map(s => ({
+                                code: s.code,
+                                name: getCardByCode(s.code)?.name || String(s.code)
+                            })),
+                            repos: (m.repos || []).map(r => ({
+                                code: r.code,
+                                name: getCardByCode(r.code)?.name || String(r.code)
+                            }))
+                        };
                         errors.push(`Step ${stepIdx + 1} ("${currentStep.text}") was not offered as a legal action by the duel engine.`);
                         break;
                     }
@@ -730,7 +924,8 @@ export async function runComboReplay(combo, options = {}) {
 
                     if (acceptTrigger) {
                         triggersFiredSinceLastIdle++;
-                        log.push(`Trigger Effect Accepted for Card Code ${m.code}`);
+                        const trigName = getCardByCode(m.code)?.name || m.code;
+                        log.push(`Trigger Effect Accepted for ${trigName} (${m.code})`);
                     }
                     lib.duelSetResponse(duel, {
                         type: OcgResponseType.SELECT_EFFECTYN,
@@ -757,22 +952,26 @@ export async function runComboReplay(combo, options = {}) {
                     };
 
                     // 1. Check the currently resolving step (stepIdx - 1) first, prioritizing non-actor target/cost codes not yet selected in this IDLECMD
+                    const resolvingStepText = (stepIdx > 0 && steps[stepIdx - 1]?.text) ? steps[stepIdx - 1].text : '';
                     if (stepIdx > 0 && steps[stepIdx - 1]) {
                         const activeCodes = findStepCardCodes(steps[stepIdx - 1], lastActorCode);
                         const nonActorCodes = activeCodes.filter(c => c !== lastActorCode && !cardsSelectedSinceLastIdle.has(c));
                         tryMatchCodes(nonActorCodes);
                     }
 
-                    // 2. Check upcoming steps (stepIdx .. stepIdx + 3), prioritizing non-actor codes first
-                    for (let s = stepIdx; s < Math.min(steps.length, stepIdx + 4); s++) {
-                        if (chosen.length >= maxSelect) break;
-                        const futureCodes = findStepCardCodes(steps[s], lastActorCode).filter(c => c !== lastActorCode && !cardsSelectedSinceLastIdle.has(c));
-                        tryMatchCodes(futureCodes);
-                    }
-                    for (let s = stepIdx; s < Math.min(steps.length, stepIdx + 4); s++) {
-                        if (chosen.length >= maxSelect) break;
-                        const futureCodes = findStepCardCodes(steps[s], lastActorCode);
-                        tryMatchCodes(futureCodes);
+                    // 2. Check upcoming steps (stepIdx .. stepIdx + 3), UNLESS selecting a card from HAND after already searching/selecting a card (e.g. "search X then discard a card")
+                    const isHandDiscardOrFollowup = m.selects?.[0]?.location === OcgLocation.HAND && (cardsSelectedSinceLastIdle.size > 0 || /\bdiscard\s+(?:a|an|1|one)\s+card\b/i.test(resolvingStepText));
+                    if (!isHandDiscardOrFollowup) {
+                        for (let s = stepIdx; s < Math.min(steps.length, stepIdx + 4); s++) {
+                            if (chosen.length >= maxSelect) break;
+                            const futureCodes = findStepCardCodes(steps[s], lastActorCode).filter(c => c !== lastActorCode && !cardsSelectedSinceLastIdle.has(c));
+                            tryMatchCodes(futureCodes);
+                        }
+                        for (let s = stepIdx; s < Math.min(steps.length, stepIdx + 4); s++) {
+                            if (chosen.length >= maxSelect) break;
+                            const futureCodes = findStepCardCodes(steps[s], lastActorCode).filter(c => !cardsSelectedSinceLastIdle.has(c));
+                            tryMatchCodes(futureCodes);
+                        }
                     }
 
                     // 3. If still not enough, allow lastActorCode if mentioned in resolving step
@@ -783,11 +982,16 @@ export async function runComboReplay(combo, options = {}) {
                         }
                     }
 
-                    // 4. Fill to minSelect if needed, preferring cards NOT needed as active starters in upcoming steps
+                    // 4. Fill to minSelect if needed, preferring cards NOT needed as active starters in upcoming steps and NOT just searched
                     if (chosen.length < minSelect && m.selects && m.selects.length > 0) {
                         const upcomingNeeded = new Set();
                         for (let s = stepIdx; s < Math.min(steps.length, stepIdx + 4); s++) {
                             for (const c of findStepCardCodes(steps[s], lastActorCode)) upcomingNeeded.add(c);
+                        }
+                        for (let i = 0; i < m.selects.length && chosen.length < minSelect; i++) {
+                            if (!chosen.includes(i) && !upcomingNeeded.has(m.selects[i].code) && !cardsSelectedSinceLastIdle.has(m.selects[i].code)) {
+                                chosen.push(i);
+                            }
                         }
                         for (let i = 0; i < m.selects.length && chosen.length < minSelect; i++) {
                             if (!chosen.includes(i) && !upcomingNeeded.has(m.selects[i].code)) {
@@ -812,7 +1016,12 @@ export async function runComboReplay(combo, options = {}) {
                         indicies: finalIndices
                     });
 
-                    log.push(`Selected Card(s) [${finalIndices.join(', ')}] from location ${m.selects?.[finalIndices[0]]?.location}`);
+                    const selNames = finalIndices.map(idx => {
+                        const c = m.selects?.[idx];
+                        const name = c ? getCardByCode(c.code)?.name : null;
+                        return name ? `${name} (${c.code})` : `code ${c?.code ?? idx}`;
+                    });
+                    log.push(`Selected: ${selNames.join(', ')} from location ${m.selects?.[finalIndices[0]]?.location}`);
 
                 } else if (m.type === 18) { // SELECT_PLACE
                     // Placing a card on the field
@@ -826,6 +1035,32 @@ export async function runComboReplay(combo, options = {}) {
                             const match = avail.find(p => p.location === reqZone.location && p.sequence === reqZone.sequence);
                             if (match) chosenPlace = match;
                         }
+                    } else if (avail.some(p => p.player === 0 && p.location === OcgLocation.MZONE && p.sequence < 5)) {
+                        // Prefer zones pointed to by any Link Monster currently on Player 0's field
+                        const mzoneCards = lib.duelQueryLocation(duel, { flags: 17, controller: 0, location: OcgLocation.MZONE }) || [];
+                        const linkedSeqs = new Set();
+                        for (let seq = 0; seq < mzoneCards.length; seq++) {
+                            const mc = mzoneCards[seq];
+                            if (!mc || !mc.code) continue;
+                            const cData = getCardByCode(mc.code);
+                            if (cData && (cData.type & 0x4000000)) {
+                                const markers = cData.def || 0;
+                                if (seq === 5) {
+                                    if (markers & 0x002) linkedSeqs.add(1);
+                                    if (markers & 0x001) linkedSeqs.add(0);
+                                    if (markers & 0x004) linkedSeqs.add(2);
+                                } else if (seq === 6) {
+                                    if (markers & 0x002) linkedSeqs.add(3);
+                                    if (markers & 0x001) linkedSeqs.add(2);
+                                    if (markers & 0x004) linkedSeqs.add(4);
+                                } else if (seq < 5) {
+                                    if ((markers & 0x008) && seq > 0) linkedSeqs.add(seq - 1);
+                                    if ((markers & 0x020) && seq < 4) linkedSeqs.add(seq + 1);
+                                }
+                            }
+                        }
+                        const linkedPlace = avail.find(p => p.player === 0 && p.location === OcgLocation.MZONE && linkedSeqs.has(p.sequence));
+                        if (linkedPlace) chosenPlace = linkedPlace;
                     }
 
                     lib.duelSetResponse(duel, {
@@ -845,7 +1080,9 @@ export async function runComboReplay(combo, options = {}) {
                             if (foundOpp !== -1) {
                                 chainIdx = foundOpp;
                                 lastActorCode = m.selects[foundOpp].code;
-                                log.push(`Step ${stepIdx + 1}: Legal Opponent-Turn Activation of code ${m.selects[foundOpp].code}`);
+                                const oppCode = m.selects[foundOpp].code;
+                                const oppName = getCardByCode(oppCode)?.name || oppCode;
+                                log.push(`Step ${stepIdx + 1}: Legal Opponent-Turn Activation of ${oppName} (${oppCode})`);
                                 stepIdx++;
                                 skipRedundantVisualSteps();
                             }
@@ -870,7 +1107,9 @@ export async function runComboReplay(combo, options = {}) {
                             }
                             if (chainIdx !== null) {
                                 triggersFiredSinceLastIdle++;
-                                log.push(`Chain Trigger Accepted for Card Code ${m.selects[chainIdx].code}`);
+                                const chainCode = m.selects[chainIdx].code;
+                                const chainName = getCardByCode(chainCode)?.name || chainCode;
+                                log.push(`Chain Trigger Accepted for ${chainName} (${chainCode})`);
                             }
                         }
                     }
@@ -1015,20 +1254,55 @@ export async function runComboReplay(combo, options = {}) {
                     });
 
                 } else if (m.type === OcgMessageType.SELECT_SUM || m.type === 23) { // SELECT_SUM
-                    // Pick materials matching sum requirement
-                    const chosen = [];
-                    let currentSum = 0;
-                    for (const mc of (m.selects_must || [])) {
-                        currentSum += ((mc.amount || 0) & 0xffff);
+                    // Pick materials matching exact or minimum sum requirement
+                    const selects = m.selects || [];
+                    const mustList = m.selects_must || m.must_selects || [];
+                    let mustSum = 0;
+                    for (const mc of mustList) {
+                        mustSum += ((mc.amount || 0) & 0xffff);
                     }
-                    for (let i = 0; i < (m.selects || []).length; i++) {
-                        chosen.push(i);
-                        currentSum += ((m.selects[i].amount || 0) & 0xffff);
-                        if (currentSum >= m.amount) break;
+                    const targetSum = Math.max(0, (m.amount || 0) - mustSum);
+                    const minC = Math.max(1, (m.min || 1) - mustList.length);
+                    const maxC = (m.max && m.max > 0) ? Math.max(minC, m.max - mustList.length) : selects.length;
+
+                    let exactChosen = null;
+                    let overflowChosen = null;
+
+                    const dfsSum = (startIdx, currentIndices, currentSum) => {
+                        if (exactChosen) return;
+                        if (currentIndices.length >= minC && currentIndices.length <= maxC) {
+                            if (currentSum === targetSum) {
+                                exactChosen = [...currentIndices];
+                                return;
+                            }
+                            if (currentSum > targetSum && !overflowChosen) {
+                                overflowChosen = [...currentIndices];
+                            }
+                        }
+                        if (currentIndices.length >= maxC || currentSum >= targetSum) return;
+                        for (let i = startIdx; i < selects.length; i++) {
+                            const v1 = (selects[i].amount || 0) & 0xffff;
+                            const v2 = ((selects[i].amount || 0) >> 16) & 0xffff;
+                            currentIndices.push(i);
+                            dfsSum(i + 1, currentIndices, currentSum + v1);
+                            if (!exactChosen && v2 > 0 && v2 !== v1) {
+                                dfsSum(i + 1, currentIndices, currentSum + v2);
+                            }
+                            currentIndices.pop();
+                            if (exactChosen) return;
+                        }
+                    };
+                    dfsSum(0, [], 0);
+
+                    const chosen = exactChosen || overflowChosen || [0];
+                    for (const idx of chosen) {
+                        if (selects[idx]?.code) {
+                            cardsSelectedSinceLastIdle.add(selects[idx].code);
+                        }
                     }
                     lib.duelSetResponse(duel, {
                         type: OcgResponseType.SELECT_SUM,
-                        indicies: chosen.length > 0 ? chosen : [0]
+                        indicies: chosen
                     });
 
                 } else if (m.type === OcgMessageType.SELECT_COUNTER || m.type === 22) { // SELECT_COUNTER
@@ -1137,6 +1411,8 @@ export async function runComboReplay(combo, options = {}) {
             legal,
             stepsCompleted: Math.min(stepIdx, steps.length),
             totalSteps: steps.length,
+            failedStepIdx: legal ? null : stepIdx,
+            offeredActions: legal ? null : lastOfferedActions,
             errors,
             log,
             board: {

@@ -126,7 +126,10 @@ for (const file of files) {
             durationMs: duration,
             errors: replayResult.errors || [],
             log: replayResult.log || [],
-            missingCards: replayResult.missingCards || []
+            missingCards: replayResult.missingCards || [],
+            failedStepIdx: replayResult.failedStepIdx != null ? replayResult.failedStepIdx : null,
+            offeredActions: replayResult.offeredActions || null,
+            comboData: combo
         };
         results.push(entry);
 

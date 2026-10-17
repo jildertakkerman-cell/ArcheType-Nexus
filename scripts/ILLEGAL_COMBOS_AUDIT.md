@@ -1,13 +1,13 @@
 # Headless Yu-Gi-Oh! OCGCore HTML Combo Audit
 
-Generated: Sat, 17 Oct 2026 11:00:00 GMT
+Generated: Sat, 17 Oct 2026 14:27:28 GMT
 
 ### Summary
 - **Pages Audited**: 409
 - **Total Combos Audited**: 539
 - **Total Steps Audited**: 1796
-- **100% Legal Confirmed**: 82
-- **Rule / Illegal Plays Detected**: 457
+- **100% Legal Confirmed**: 137
+- **Rule / Illegal Plays Detected**: 402
 - **Unofficial / Custom Skipped**: 0
 
 ## Illegal Plays & Action Items
@@ -36,68 +36,44 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Abyss Actor](Abyss Actor Deck Analysis.html) - Core Combo (Line 3)
 - **File**: `Abyss Actor Deck Analysis.html`
-- **Failed at**: Step 1 of 2
-- **Step Title**: "The Swap"
-- **Written Step**: *"Search Comic Relief with Madonna. Scale it. Use its effect to swap a weak monster you control for their biggest boss monster."*
-- **Engine Violation**: `Step 3 ("Use its effect to swap a weak monster you control for their biggest boss monster.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 2
+- **Step Title**: "The Beatdown"
+- **Written Step**: *"Pendulum Summon Evil Heel . Use its effect to shrink an opponent's monster (if any remain), then attack for game with 3000 ATK plus their stolen boss."*
+- **Engine Violation**: `Step 4 ("Pendulum Summon Evil Heel.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 78310590`
   - `Step 2: Legal Activation of code 15308295`
+  - `Step 3: Legal Activation of code 88412339`
 
-### [ ] [Adamancipator Archetype Breakdown.html](Adamancipator Archetype Breakdown.html) - Core Combo: The "Block Dragon Turbo" Strategy (Historical)
+### [ ] [Adamancipator](Adamancipator Archetype Breakdown.html) - Core Combo: The "Block Dragon Turbo" Strategy (Historical)
 - **File**: `Adamancipator Archetype Breakdown.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Initial Excavation"
-- **Written Step**: *"Normal Summon Adamancipator Analyzer . Its effect activates, excavating the top 5 cards. If you hit a Rock monster, Special Summon it to the field."*
-- **Engine Violation**: `Step 3 ("If you hit a Rock monster, Special Summon it to the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Search for Block Dragon"
+- **Written Step**: *"Use the monsters you have to Xyz Summon Gallant Granite . Activate its effect to search for Block Dragon ( currently banned ) from your deck, securing a massive resource boost."*
+- **Engine Violation**: `Step 4 ("Use the monsters you have to Xyz Summon Gallant Granite.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 11302671`
+  - `Step 2: Legal Activation of code 11302671`
+  - `Step 3: Legal Activation of code 85914562`
 
-### [ ] [Adamancipator Archetype Breakdown.html](Adamancipator Archetype Breakdown.html) - Core Combo: The "Block Dragon Turbo" Strategy (Historical) (Line 2)
+### [ ] [Adamancipator](Adamancipator Archetype Breakdown.html) - Core Combo: The "Block Dragon Turbo" Strategy (Historical) (Line 2)
 - **File**: `Adamancipator Archetype Breakdown.html`
-- **Failed at**: Step 1 of 5
-- **Step Title**: "Special Summon Conductor"
-- **Written Step**: *"Activate Conductor 's effect in your hand: place Crystal - Tiamite from your hand on top of the Deck, then Special Summon Conductor."*
-- **Engine Violation**: `Step 2 ("Special Summon Conductor.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 5
+- **Step Title**: "Excavate the Stacked Card"
+- **Written Step**: *"Activate Conductor's Main Phase effect and excavate the top 5 cards. Crystal - Tiamite is guaranteed to be among them: Special Summon it, then place the other 4 on the bottom of the Deck in any order."*
+- **Engine Violation**: `Step 4 ("Crystal - Tiamite is guaranteed to be among them: Special Summon it") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 62782218`
-
-### [ ] [Adventure](Adventure Deck Analysis.html) - Core Combo
-- **File**: `Adventure Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Consult the Map"
-- **Written Step**: *"Activate the effect of Fateful Adventure to add Wandering Gryphon Rider from your Deck to your hand, then discard a card."*
-- **Engine Violation**: `Step 4 ("discard a card.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 3285551`
+  - `Step 1: Legal Activation of code 24925387`
+  - `Selected Card(s) [0] from location 2`
+  - `Step 2: Legal Activation of code 24925387`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Activation of code 39568067`
-  - `Selected Card(s) [5] from location 1`
-  - `Selected Card(s) [1] from location 2`
+  - `Step 3: Legal Activation of code 48519867`
 
-### [ ] [Alien Archetype Breakdown.html](Alien Archetype Breakdown.html) - Key Combo Walkthrough: The "Zer'oll Lock"
+### [ ] [Alien](Alien Archetype Breakdown.html) - Key Combo Walkthrough: The "Zer'oll Lock"
 - **File**: `Alien Archetype Breakdown.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "Use Revival Effects"
-- **Written Step**: *"Utilize the effects of monsters like Nauya or Nunu to Special Summon multiple Reptiles from the GY, creating Link material for your boss monster."*
-- **Engine Violation**: `Step 3 ("Utilize the effects of monsters like Nauya or Nunu to Special Summon multiple Reptiles from the GY, creating Link material for your boss monster.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 17189677`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [13, 14, 2, 3] from location 1`
-
-### [ ] [Allure Queen Archetype Breakdown.html](Allure Queen Archetype Breakdown.html) - Core Combo: The Allure Queen & White Forest Synergy
-- **File**: `Allure Queen Archetype Breakdown.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Combo Extension"
-- **Written Step**: *"Use Allure Palace again to Special Summon Chaos Allure Queen from your Deck, which then enables a cascade of Link and Synchro plays to build a powerful end board."*
-- **Engine Violation**: `Step 6 ("enables a cascade of Link and Synchro plays to build a powerful end board.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 68316358`
-  - `Selected Card(s) [4] from location 1`
-  - `Step 3: Legal Activation of code 31322640`
-  - `Step 5: Legal Activation of code 29925614`
-  - `Selected Card(s) [0] from location 2`
+- **Failed at**: Step 1 of 4
+- **Step Title**: "Activate Snake Rain"
+- **Written Step**: *"Discard 1 card to send 4 Reptile monsters from your Deck to the Graveyard. This instantly sets up your GY with key combo pieces like Alien Ammonite and Ogdoadic monsters."*
+- **Engine Violation**: `Step 1 ("Discard 1 card to send 4 Reptile monsters from your Deck to the Graveyard.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Altergeist](Altergeist Deck Analysis.html) - Core Combo Line: Multi-Layered Lock Setup
 - **File**: `Altergeist Deck Analysis.html`
@@ -116,25 +92,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Step Title**: "Trigger Arlekino"
 - **Written Step**: *"When you activate the Trap card, you can Special Summon Amazement Administrator Arlekino from your hand, putting a powerful body on the board."*
 - **Engine Violation**: `Step 2 ("When you activate the Trap card, you can Special Summon Amazement Administrator Arlekino from your hand, putting a powerful body on the board.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Amazoness](Amazoness Deck Analysis.html) - Core Combo: The Princess Line
-- **File**: `Amazoness Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Fusion Summon"
-- **Written Step**: *"Use Polymerization to fuse Princess and Spiritualist into Amazoness Empress . Empress shields other Amazoness cards from battle and effect destruction, while floating into Amazoness Queen from the deck if removed."*
-- **Engine Violation**: `Step 6 ("Empress shields other Amazoness cards from battle and effect destruction, while floating into Amazoness Queen from the deck if removed.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 84539520`
-  - `Trigger Effect Accepted for Card Code 84539520`
-  - `Selected Card(s) [6] from location 1`
-  - `Step 3: Legal Activation of code 57312333`
-  - `Selected Card(s) [11] from location 1`
-  - `Step 4: Legal Activation of code 97870394`
-  - `Selected Card(s) [0] from location 4`
-  - `Trigger Effect Accepted for Card Code 97870394`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 5: Legal Activation of code 24094653`
-  - `Selected Card(s) [0] from location 64`
+  - `Step 1: Legal Activation of code 22662014`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Ancient Fairy Dragon](Ancient Fairy Dragon Deck Analysis.html) - The One-Card Combo: Regulus to Victory
 - **File**: `Ancient Fairy Dragon Deck Analysis.html`
@@ -149,7 +109,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 2: Legal Activation of code 5414777`
   - `Selected Card(s) [1] from location 1`
   - `Step 3: Legal Activation of code 61480937`
-  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [0] from location 2`
   - `Trigger Effect Accepted for Card Code 98888032`
 
 ### [ ] [Ancient Gear](Ancient Gear Deck Analysis.html) - Core Combo: The Wyvern One-Card OTK Setup
@@ -172,28 +132,16 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 11711438`
 
-### [ ] [Anotherverse](Anotherverse Deck Analysis.html) - Core Combo
-- **File**: `Anotherverse Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Written Step**: *"Activate Ancient Rules to Special Summon Anotherverse Dragon ."*
-- **Engine Violation**: `Step 2 ("Activate Ancient Rules to Special Summon Anotherverse Dragon.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 79816536`
-  - `Selected Card(s) [3] from location 1`
-
 ### [ ] [Appliancer](Appliancer Deck Analysis.html) - Core Combo: The Codebreaker Pivot
 - **File**: `Appliancer Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish the Pivot"
-- **Written Step**: *"Start by using your swarm of Appliancers to summon Appliancer Celtopus and a Link-1 monster in a Co-Linked state. This is the foundation for the entire combo."*
-- **Engine Violation**: `Step 1 ("Start by using your swarm of Appliancers to summon Appliancer Celtopus and a Link-1 monster in a Co-Linked state.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Aquaactress](Aquaactress Deck Analysis.html) - Core Combo
-- **File**: `Aquaactress Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Search and Swarm"
-- **Written Step**: *"Normal Summon Aquaactress Arowana to search for Aquaactress Guppy . Then, use Guppy's effect to Special Summon other Aquaactress monsters from your hand."*
-- **Engine Violation**: `Step 2 ("use Guppy's effect to Special Summon other Aquaactress monsters from your hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Enter the Codebreakers"
+- **Written Step**: *"Use Appliancer Celtopus and another monster to summon Codebreaker Virus Swordsman , which then summons Codebreaker Zero Day from the deck."*
+- **Engine Violation**: `Step 3 ("Use Appliancer Celtopus and another monster to summon Codebreaker Virus Swordsman") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 3875465`
+  - `Trigger Effect Accepted for Card Code 3875465`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Arcana Force](Arcana Force Deck Analysis.html) - Core Combo
 - **File**: `Arcana Force Deck Analysis.html`
@@ -203,45 +151,18 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 4 ("Tribute Summon Arcana Force XXI - The World.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 73206827`
+  - `Step 3: Legal Activation of code 11819473`
+  - `Selected Card(s) [12] from location 1`
 
 ### [ ] [Armed Dragon](Armed Dragon Deck Analysis.html) - Core Combo: The "Drill" Pivot
 - **File**: `Armed Dragon Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Resource Acquisition & Pivot"
 - **Written Step**: *"Pile sends AD Thunder LV5 from Deck to GY to boost ATK. LV5 searches Tempest or Dragunity Arma Gram . Now, use Drill Armed Dragon in hand: Discard Tempest (cost) to activate. Tempest searches another WIND Dragon."*
-- **Engine Violation**: `Step 4 ("Pile sends AD Thunder LV5 from Deck to GY to boost ATK.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("Now, use Drill Armed Dragon in hand: Discard Tempest (Discard Tempest) to activate.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 19153590`
   - `Selected Card(s) [0] from location 2`
-  - `Step 2: Legal Activation of code 19153590`
-  - `Selected Card(s) [14] from location 1`
-  - `Selected Card(s) [0] from location 4`
-  - `Step 3: Legal Activation of code 46221535`
-  - `Selected Card(s) [0] from location 2`
-
-### [ ] [Armed Dragon](Armed Dragon Deck Analysis.html) - Core Combo: The "Drill" Pivot (Line 2)
-- **File**: `Armed Dragon Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The Amorphage Lock"
-- **Written Step**: *"If you destroy a Level 4 Dragon with Fist's effect, you can Special Summon Amorphage Sloth (Level 6) from the Deck, locking your opponent out of the Extra Deck completely."*
-- **Engine Violation**: `Step 5 ("If you destroy a Level 4 Dragon with Fist's effect, you can Special Summon Amorphage Sloth (Level 6) from the Deck, locking your opponent out of the Extra Deck completely.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 7913375`
-  - `Step 2: Legal Activation of code 7913375`
-  - `Selected Card(s) [2] from location 1`
-  - `Step 3: Legal Activation of code 49181828`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 4: Legal Activation of code 49181828`
-  - `Selected Card(s) [0] from location 4`
-
-### [ ] [Armored xyz](Armored xyz Deck Analysis.html) - Core Combo
-- **File**: `Armored xyz Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Draw"
-- **Written Step**: *"Use two Level 3 monsters to Xyz Summon Xyz Armor Torpedo . Activate its effect, detaching both materials to draw 1 card. This also places Torpedo in the Graveyard, which is crucial for later."*
-- **Engine Violation**: `Step 1 ("Use two Level 3 monsters to Xyz Summon Xyz Armor Torpedo.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Aroma](Aroma Deck Analysis.html) - Core Combo: The Sunseed Genius Loci Starter
 - **File**: `Aroma Deck Analysis.html`
@@ -253,40 +174,42 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 27520594`
   - `Step 2: Legal Special Summon of code 93896655`
 
+### [ ] [Artifact](Artifact Deck Analysis.html) - Legacy Combo: The Ignition Setup
+- **File**: `Artifact Deck Analysis.html`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Self-Destruction"
+- **Written Step**: *"Activate a second Spell/Trap destruction effect (like another Ignition or Twin Twisters ) to destroy your newly Set Moralltach ."*
+- **Engine Violation**: `Step 4 ("Activate a second Spell/Trap destruction effect (like another Ignition or Twin Twisters ) to destroy your newly Set Moralltach.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Spell/Trap Set of code 29223325`
+  - `Passing turn to opponent for opponent-turn action`
+  - `Step 2: Legal Opponent-Turn Activation of code 29223325`
+  - `Selected Card(s) [0] from location 8`
+  - `Selected Card(s) [14] from location 1`
+
 ### [ ] [Artifact](Artifact Deck Analysis.html) - Legacy Combo: The Ignition Setup (Line 2)
 - **File**: `Artifact Deck Analysis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Setup and Send"
 - **Written Step**: *"Summon Artifact Dagda . Use its effect to Set Artifact Mjollnir from Deck, then use another card (e.g., Artifact Ignition ) to destroy Mjollnir on your own turn, sending it to the Graveyard."*
-- **Engine Violation**: `Step 1 ("Summon Artifact Dagda.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 3 ("use another card (e.g., Artifact Ignition ) to destroy Mjollnir on your own turn, sending it to the Graveyard.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 85103922`
 
 ### [ ] [Artmage](Artmage Deck Analysis.html) - Core Combo: The Non-Finito Bridge
 - **File**: `Artmage Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Deploy Past Lull"
 - **Written Step**: *"Activate Theorealize Past Lull . Vandalism on field satisfies the activation condition. Special Summon a second Medius the Pure directly from Deck — opponent cannot respond to this summon . This Medius's trigger resolves without interference."*
-- **Engine Violation**: `Step 5 ("Activate Theorealize Past Lull.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("Vandalism on field satisfies the activation condition.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 1122030`
   - `Selected Card(s) [0] from location 1`
   - `Step 3: Legal Normal Summon of code 97556336`
   - `Trigger Effect Accepted for Card Code 97556336`
   - `Selected Card(s) [0] from location 1`
-
-### [ ] [Artmage](Artmage Deck Analysis.html) - Core Combo: The Non-Finito Bridge (Line 2)
-- **File**: `Artmage Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Extender Loop"
-- **Written Step**: *"Medius successfully searches a Power Patron. Nervedo, now in the Extra Deck, triggers to Special Summon Artmage Litera from the deck. Litera recycles resources, establishing your Fairy and Spellcaster type geometry."*
-- **Engine Violation**: `Step 3 ("Medius successfully searches a Power Patron.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 97556336`
-  - `Trigger Effect Accepted for Card Code 97556336`
+  - `Step 5: Legal Activation of code 36709484`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 17473466`
-  - `Selected Card(s) [0] from location 64`
-  - `Trigger Effect Accepted for Card Code 17473466`
-  - `Selected Card(s) [1] from location 1`
 
 ### [ ] [Artmage](Artmage Deck Analysis.html) - Core Combo: The Non-Finito Bridge (Line 3)
 - **File**: `Artmage Deck Analysis.html`
@@ -309,6 +232,18 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Activation of code 30453613`
   - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Activation of code 3055018`
+  - `Step 3: Legal Activation of code 3055018`
+
+### [ ] [Assault Mode](Assault Mode Archetype Breakdown.html) - Core Combo: The Psi-Reflector Loop
+- **File**: `Assault Mode Archetype Breakdown.html`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Discard Beast & Revive"
+- **Written Step**: *"Discard Assault Beast to search Assault Mode Activate . Revive it with Psi-Reflector."*
+- **Engine Violation**: `Step 4 ("Revive it with Psi-Reflector.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 74644400`
+  - `Trigger Effect Accepted for Card Code 74644400`
+  - `Selected Card(s) [16] from location 1`
 
 ### [ ] [Atlantean](Atlantean Deck Analysis.html) - Core Combo: The Deep Sea Diva Hand Loop
 - **File**: `Atlantean Deck Analysis.html`
@@ -323,47 +258,47 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 3: Legal Activation of code 21565445`
   - `Selected Card(s) [0] from location 1`
   - `Selected Card(s) [0] from location 1`
-  - `Selected Card(s) [5] from location 1`
-
-### [ ] [Backup](Backup Deck Analysis.html) - Core Combo
-- **File**: `Backup Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish a Link"
-- **Written Step**: *"Normal Summon any Cyberse monster (e.g., Cyberse Gadget ). Use it to Link Summon a Link-1 monster like Linkuriboh (currently Limited)."*
-- **Engine Violation**: `Step 2 ("Use it to Link Summon a Link-1 monster like Linkuriboh (currently Limited).") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 645087`
+  - `Selected Card(s) [1] from location 1`
 
 ### [ ] [Bamboo Sword](Bamboo Sword Deck Analysis.html) - Core Combo: The Isolde Draw Engine
 - **File**: `Bamboo Sword Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Isolde & Send"
-- **Written Step**: *"Isolde is currently banned. Modern Bamboo Sword builds use alternative methods to send Equip Spells to the GY."*
-- **Engine Violation**: `Step 2 ("Modern Bamboo Sword builds use alternative methods to send Equip Spells to the GY.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Equip, Activate & Draw"
+- **Written Step**: *"Equip any Bamboo Sword, then activate Golden Bamboo Sword to draw two cards, completing the loop and gaining significant advantage."*
+- **Engine Violation**: `Step 4 ("Equip any Bamboo Sword") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Barbaros](Barbaros Deck Analysis.html) - Core Combo: The King's Arrival
 - **File**: `Barbaros Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Summon the Tribute"
-- **Written Step**: *"Special Summon Alpha, the Master of Beasts from your hand, creating a powerful Level 8 monster on the field."*
-- **Engine Violation**: `Step 3 ("Special Summon Alpha, the Master of Beasts from your hand, creating a powerful Level 8 monster on the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Unleash the King"
+- **Written Step**: *"Special Summon King Beast Barbaros by Tributing Alpha. KBB is now on the field with its destruction effect ready to use."*
+- **Engine Violation**: `Step 4 ("Special Summon King Beast Barbaros by Tributing Alpha.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 38120068`
   - `Selected Card(s) [0] from location 2`
+  - `Step 3: Legal Activation of code 57103969`
 
 ### [ ] [Batteryman](Batteryman Deck Analysis.html) - Core Combo: The 2-Card Swarm
 - **File**: `Batteryman Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Charger & Search"
-- **Written Step**: *"Normal Summon Batteryman Charger to Special Summon 9-Volt from the Deck. 9-Volt's effect then searches for a key combo piece."*
-- **Engine Violation**: `Step 1 ("Normal Summon Batteryman Charger to Special Summon 9-Volt from the Deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Swarm the Field"
+- **Written Step**: *"With multiple Batteryman monsters on the field, Special Summon extenders like Batteryman Fuel Cell from the hand to create a board of four or more monsters, ready for an OTK."*
+- **Engine Violation**: `Step 4 ("With multiple Batteryman monsters on the field, Special Summon extenders like Batteryman Fuel Cell from the hand to create a board of four or more monsters, ready for an OTK.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 60549248`
+  - `Trigger Effect Accepted for Card Code 60549248`
+  - `Selected Card(s) [12] from location 1`
 
 ### [ ] [Battleguard](Battleguard Deck Analysis.html) - Core Combo: Isolde to Rank 5
 - **File**: `Battleguard Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Isolde & Cadet"
-- **Written Step**: *"Isolde is currently banned. Modern Battleguard builds use alternative summoning methods for Cadet."*
-- **Engine Violation**: `Step 2 ("Modern Battleguard builds use alternative summoning methods for Cadet.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Xyz into Disruption"
+- **Written Step**: *"Overlay your two Level 5 Warriors to Xyz Summon a powerful Rank 5 monster like Constellar Pleiades , which provides a Quick Effect bounce."*
+- **Engine Violation**: `Step 5 ("Overlay your two Level 5 Warriors to Xyz Summon a powerful Rank 5 monster like Constellar Pleiades, which provides a Quick Effect bounce.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 4: Legal Activation of code 74213995`
+  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Battlin' Boxer](Battlin' Boxer Deck Analysis.html) - The Championship Combo
 - **File**: `Battlin' Boxer Deck Analysis.html`
@@ -390,12 +325,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Summon & Search"
 - **Written Step**: *"Activate Lost World . Normal Summon Souleating Oviraptor . Oviraptor's effect (Chain Link 1) and Lost World's effect (Chain Link 2) activate. Lost World gives your opponent a Token, then Oviraptor searches Babycerasaurus ."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 2.`
+- **Engine Violation**: `Step 4 ("Lost World gives your opponent a Token") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 17228908`
   - `Step 2: Legal Normal Summon of code 44335251`
   - `Chain Trigger Accepted for Card Code 44335251`
   - `Chain Trigger Accepted for Card Code 17228908`
+  - `Selected Card(s) [2] from location 1`
 
 ### [ ] [Black Luster Soldier](Black Luster Soldier Deck Analysis.html) - Core Combo
 - **File**: `Black Luster Soldier Deck Analysis.html`
@@ -415,16 +351,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 4 ("Tribute Simoon to create a Level 2 Tuner Token.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 81470373`
-  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Activation of code 91351370`
 
 ### [ ] [Bounzer](Bounzer Deck Analysis.html) - Core Combo: Hieratic Engine into Bounzer
 - **File**: `Bounzer Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Tribute"
-- **Written Step**: *"Normal Summon a Hieratic monster like Hieratic Dragon of Su . Use its effect to Tribute itself, triggering its effect to Special Summon a Level 6 Normal Dragon from the Deck."*
-- **Engine Violation**: `Step 1 ("Normal Summon a Hieratic monster like Hieratic Dragon of Su.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Xyz Summon"
+- **Written Step**: *"Overlay the two Level 6 monsters to Xyz Summon Photon Strike Bounzer or another powerful Rank 6 monster like Constellar Ptolemy M7 ."*
+- **Engine Violation**: `Step 4 ("Overlay the two Level 6 monsters to Xyz Summon Photon Strike Bounzer or another powerful Rank 6 monster like Constellar Ptolemy M7.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 70194827`
+  - `Step 3: Legal Activation of code 79844764`
 
 ### [ ] [Bujin](Bujin Deck Analysis.html) - Core Combo: Torifune into Utopic Draco Future
 - **File**: `Bujin Deck Analysis.html`
@@ -438,19 +377,20 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 3: Legal Special Summon of code 71095768`
   - `Trigger Effect Accepted for Card Code 71095768`
   - `Selected Card(s) [0] from location 64`
+  - `Trigger Effect Accepted for Card Code 29981935`
 
 ### [ ] [Burning Abyss](Burning Abyss Deck Analysis.html) - Core Combo: The Tour Guide's Descent
 - **File**: `Burning Abyss Deck Analysis.html`
 - **Failed at**: Step 3 of 3
 - **Step Title**: "The Pilgrim's Journey"
 - **Written Step**: *"Use Cherubini's power to send another lost soul to the Graveyard. Then, overlay Cir and another Level 3 to summon Dante, Traveler of the Burning Abyss ."*
-- **Engine Violation**: `Step 5 ("Use Cherubini's power to send another lost soul to the Graveyard.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("overlay Cir and another Level 3 to summon Dante, Traveler of the Burning Abyss.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 10802915`
   - `Trigger Effect Accepted for Card Code 10802915`
   - `Selected Card(s) [14] from location 1`
   - `Step 3: Legal Special Summon of code 58699500`
-  - `Step 4: Legal Activation of code 58699500`
+  - `Step 5: Legal Activation of code 58699500`
   - `Selected Card(s) [0] from location 1`
   - `Selected Card(s) [0] from location 4`
   - `Trigger Effect Accepted for Card Code 47728740`
@@ -458,62 +398,61 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Butterspy](Butterspy Deck Analysis.html) - Core Combo: The Isolde Line
 - **File**: `Butterspy Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Isolde"
-- **Written Step**: *"Isolde is currently banned. Modern Butterspy builds focus on different Link-2 routes or pure Rank 4 strategies."*
-- **Engine Violation**: `Step 2 ("Modern Butterspy builds focus on different Link-2 routes or pure Rank 4 strategies.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Extend the Swarm"
+- **Written Step**: *"Use Isolde's second effect, sending 4 Equip Spells to the GY, to Special Summon Moonlit Papillon from the deck."*
+- **Engine Violation**: `Step 3 ("Use Isolde's second effect, sending 4 Equip Spells to the GY, to Special Summon Moonlit Papillon from the deck.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Bystial](Bystial Deck Analysis.html) - Core Combo: Branded Bystial Fusion Line
 - **File**: `Bystial Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Branded Start"
-- **Written Step**: *"Normal Summon Aluber the Jester of Despia to search Branded Fusion (semi-limited to 2) . Activate it to summon a Fusion monster like Rindbrumm the Striking Dragon , sending materials from the deck."*
-- **Engine Violation**: `Step 2 ("Activate it to summon a Fusion monster like Rindbrumm the Striking Dragon, sending materials from the deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Engine Hub"
+- **Written Step**: *"Tribute a Dragon to summon The Bystial Lubellion . Its effect places Branded Regained on the field, establishing the powerful recursion loop for the rest of the duel."*
+- **Engine Violation**: `Step 5 ("Tribute a Dragon to summon The Bystial Lubellion.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 62962630`
   - `Trigger Effect Accepted for Card Code 62962630`
   - `Selected Card(s) [0] from location 1`
+  - `Step 2: Legal Activation of code 32731036`
+  - `Selected Card(s) [6] from location 1`
+  - `Step 3: Legal Activation of code 33854624`
+  - `Selected Card(s) [0] from location 16`
+  - `Trigger Effect Accepted for Card Code 33854624`
 
 ### [ ] [C Series](C Series Deck Analysis.html) - Core Combo
 - **File**: `C Series Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Counter and Floodgate"
-- **Written Step**: *"When your opponent activates a Spell that Special Summons (e.g., Branded Fusion), chain Retaliating "C" from your hand. It summons itself and activates its floodgate effect: "any card sent to the GY is banished instead"."*
-- **Engine Violation**: `Step 1 ("When your opponent activates a Spell that Special Summons (e.g., Branded Fusion), chain Retaliating "C" from your hand.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Celtic Guard](Celtic Guard Deck Analysis.html) - Core Combo: The Isolde Conversion
-- **File**: `Celtic Guard Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The End Board"
-- **Written Step**: *"Use Isolde's second effect to summon another Level 4 Warrior from the deck. With your new materials, you can Xyz Summon a powerful generic monster like Number 41: Bagooska ."*
-- **Engine Violation**: `Step 5 ("Use Isolde's second effect to summon another Level 4 Warrior from the deck.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 45531624`
-  - `Step 2: Legal Activation of code 45531624`
-  - `Selected Card(s) [0] from location 2`
-  - `Step 4: Legal Special Summon of code 59934749`
-  - `Trigger Effect Accepted for Card Code 59934749`
-  - `Selected Card(s) [0] from location 1`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Use as Material"
+- **Written Step**: *"On your turn, use the Retaliating "C" on your field as material for a Link, Synchro, or Xyz Summon. This sends it from the field to the Graveyard."*
+- **Engine Violation**: `Step 3 ("On your turn, use the Retaliating "C" on your field as material for a Link, Synchro, or Xyz Summon.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Centur-Ion](Centur-Ion Deck Analysis.html) - Core Combo: The Path to Level 12
 - **File**: `Centur-Ion Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "The First Synchro"
 - **Written Step**: *"Use the Field Spell to place Centur-Ion Trudea in your backrow, then summon it as a Level 8. Synchro Summon Centur-Ion Legatia using Primera and Trudea."*
-- **Engine Violation**: `Step 3 ("Use the Field Spell to place Centur-Ion Trudea in your backrow") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Synchro Summon Centur-Ion Legatia using Primera and Trudea.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 15005145`
   - `Trigger Effect Accepted for Card Code 15005145`
   - `Selected Card(s) [6] from location 1`
+  - `Step 3: Legal Activation of code 41371602`
+  - `Auto-activating on-field effect of code 41371602 to complete Step 3`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [5] from location 1`
+  - `Step 4: Legal Activation of code 41371602`
 
 ### [ ] [Chaos](Chaos Deck Analysis.html) - Core Combo: The Path to Synchro Dominance
 - **File**: `Chaos Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Bridge to Archfiend"
-- **Written Step**: *"The EARTH-based P.U.N.K. monsters cannot summon Archfiend directly. Instead, use the materials they found: a Level 6 Bystial (DARK Non-Tuner) and a Level 2 Ringowurm/Token (LIGHT Tuner) to satisfy the strict summoning requirements."*
-- **Engine Violation**: `Step 3 ("The EARTH-based P.U.N.K. monsters cannot summon Archfiend directly.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Final Boss"
+- **Written Step**: *"Finally, use your Level 8 Archfiend and a Tuner to summon Chaos Angel . Unlike Archfiend, the Angel is flexible and accepts any LIGHT or DARK monsters as material."*
+- **Engine Violation**: `Step 5 ("Finally, use your Level 8 Archfiend and a Tuner to summon Chaos Angel.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 19535693`
+  - `Step 4: Legal Activation of code 99266988`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Chaos](Chaos Deck Analysis.html) - Core Combo: The Path to Synchro Dominance (Line 2)
 - **File**: `Chaos Deck Analysis.html`
@@ -526,24 +465,28 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Charmer](Charmer Deck Analysis.html) - Core Combo
 - **File**: `Charmer Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Acquire & Rectify"
-- **Written Step**: *"Activate Spellbook of the Grand Circle . Search 4 Charmers with different Attributes (Fire, Water, Wind, Earth) from your Deck, then shuffle back 2 cards from your hand to the Deck."*
-- **Engine Violation**: `Step 3 ("shuffle back 2 cards from your hand to the Deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "The Protected Summon"
+- **Written Step**: *"Method: Banish from your Graveyard to Fusion Summon. Use the Charmers you just added to your hand as material."*
+- **Engine Violation**: `Step 4 ("Use the Charmers you just added to your hand as material.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 11911336`
-  - `Selected Card(s) [0, 1] from location 2`
+  - `Selected Card(s) [3, 0] from location 2`
+  - `Step 3: Legal Activation of code 11911336`
+  - `Selected Card(s) [1] from location 64`
+  - `Trigger Effect Accepted for Card Code 48016074`
+  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Chemicritter](Chemicritter Deck Analysis.html) - Core Combo: The Synthesis Protocol
 - **File**: `Chemicritter Deck Analysis.html`
 - **Failed at**: Step 3 of 3
 - **Step Title**: "The Final Product"
 - **Written Step**: *"Summon your two Level 8 Gemini monsters and overlay them to Xyz Summon Vola-Chemicritter Methydraco , your powerful boss monster."*
-- **Engine Violation**: `Step 3 ("Summon your two Level 8 Gemini monsters") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("overlay them to Xyz Summon Vola-Chemicritter Methydraco, your powerful boss monster.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 90965652`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Normal Summon of code 81599449`
+  - `Step 1: Legal Normal Summon of code 81599449`
+  - `Step 2: Legal Activation of code 65959844`
+  - `Step 3: Legal Normal Summon of code 55100740`
 
 ### [ ] [Chronomaly](Chronomaly Deck Analysis.html) - Core Combo: The Path to Ascension
 - **File**: `Chronomaly Deck Analysis.html`
@@ -561,12 +504,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "The Wind Loop"
 - **Written Step**: *"Use Wind to search, then Synchro Summon Sachi . Activate Sachi, returning Wind to hand for an extra Normal Summon. Re-activate Wind for a second search."*
-- **Engine Violation**: `Step 3 ("Use Wind to search") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Synchro Summon Sachi.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 56146300`
   - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 67441879`
+  - `Step 3: Legal Activation of code 67441879`
+  - `Auto-activating on-field effect of code 67441879 to complete Step 3`
   - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Clear World](Clear World Deck Analysis.html) - Core Combo
@@ -577,7 +521,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 2 ("Activate Clear World") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 70717628`
-  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [3] from location 2`
   - `Selected Card(s) [0, 1] from location 1`
 
 ### [ ] [Cloudian](Cloudian Deck Analysis.html) - Core Combo: The Perfect Storm
@@ -602,6 +546,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 4 ("In response, activate Biancaviso's Quick Effect from hand, tributing Drish to Tribute Summon itself.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 57847269`
+  - `Step 3: Legal Activation of code 42759961`
+  - `Selected Card(s) [12] from location 1`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Clown Crew](Clown Crew Deck Analysis.html) - Core Combo (Line 2)
 - **File**: `Clown Crew Deck Analysis.html`
@@ -626,10 +573,12 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Code Breaker](Code Breaker Deck Analysis.html) - Core Combo
 - **File**: `Code Breaker Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate Co-Link"
-- **Written Step**: *"Using two Effect Monsters, establish a board where you can summon Codebreaker Virus Swordsman so it is co-linked. This triggers its effect, Special Summoning Codebreaker Zero Day from the Deck."*
-- **Engine Violation**: `Step 1 ("Using two Effect Monsters, establish a board where you can summon Codebreaker Virus Swordsman so it is co-linked.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon Berserker"
+- **Written Step**: *"Use Swordsman and Zero Day to Link Summon Codebreaker Virus Berserker , again ensuring it is co-linked. This is the pivotal step."*
+- **Engine Violation**: `Step 3 ("Use Swordsman and Zero Day to Link Summon Codebreaker Virus Berserker, again ensuring it is co-linked.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 84121193`
 
 ### [ ] [Code Talker](Code Talker Deck Analysis.html) - Standard Combo Protocol
 - **File**: `Code Talker Deck Analysis.html`
@@ -639,7 +588,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 4 ("Use your two monsters to Link Summon the WATER Splash Mage ( currently banned ).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 20455229`
-  - `Step 2: Legal Special Summon of code 45462149`
+  - `Step 2: Legal Special Summon of code 46947713`
 
 ### [ ] [Code Talker](Code Talker Deck Analysis.html) - Standard Combo Protocol (Line 2)
 - **File**: `Code Talker Deck Analysis.html`
@@ -650,29 +599,43 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Constellar](Constellar Deck Analysis.html) - Glorious Gallery Combos
 - **File**: `Constellar Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Modulate Levels"
-- **Written Step**: *"Activate the effect of Kaus twice: target itself to become Level 5, then target Pollux to become Level 5."*
-- **Engine Violation**: `Step 4 ("target Pollux to become Level 5.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Summon the Boss"
+- **Written Step**: *"With two Level 5 monsters on the field, overlay them to Xyz Summon Constellar Pleiades , ending your turn with a powerful disruption."*
+- **Engine Violation**: `Step 5 ("With two Level 5 monsters on the field, overlay them to Xyz Summon Constellar Pleiades, ending your turn with a powerful disruption.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 78364470`
   - `Step 2: Legal Normal Summon of code 70908596`
   - `Step 3: Legal Activation of code 70908596`
-  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [1] from location 4`
 
 ### [ ] [Constellar](Constellar Deck Analysis.html) - Glorious Gallery Combos (Line 2)
 - **File**: `Constellar Deck Analysis.html`
-- **Failed at**: Step 1 of 8
-- **Step Title**: "Normal Summon Castor"
-- **Written Step**: *"Castor's effect Special Summons Tellarknight Cygnian from the Deck. Cygnian is always treated as a Constellar monster."*
-- **Engine Violation**: `Step 2 ("Cygnian is always treated as a Constellar monster.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 8
+- **Step Title**: "Caduceus searches Star Chart"
+- **Written Step**: *"Constellar Caduceus adds Constellar Star Chart from the Deck. Activate it."*
+- **Engine Violation**: `Step 6 ("Activate it.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 4: Legal Activation of code 69678646`
+  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [11] from location 1`
+  - `Trigger Effect Accepted for Card Code 33302589`
+  - `Selected Card(s) [6] from location 1`
+  - `Trigger Effect Accepted for Card Code 60700283`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Constellar](Constellar Deck Analysis.html) - Glorious Gallery Combos (Line 3)
 - **File**: `Constellar Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Normal Summon Castor"
-- **Written Step**: *"Castor Special Summons Tellarknight Cygnian from the Deck."*
-- **Engine Violation**: `Step 1 ("Castor Special Summons Tellarknight Cygnian from the Deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 4
+- **Step Title**: "Cygnian raises two Levels"
+- **Written Step**: *"Cygnian targets Castor: both become Level 5."*
+- **Engine Violation**: `Step 5 ("Cygnian targets Castor: both become Level 5.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 3: Legal Activation of code 69678646`
+  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [8] from location 1`
+  - `Trigger Effect Accepted for Card Code 60700283`
+  - `Selected Card(s) [9] from location 1`
 
 ### [ ] [Cosmic Dragon](Cosmic Dragon Deck Analysis.html) - Core Combo: The Junk Speeder Ascent
 - **File**: `Cosmic Dragon Deck Analysis.html`
@@ -686,64 +649,56 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Assemble the Choir"
 - **Written Step**: *"Activate Ties of the Brethren , paying 2000 LP. Target Artemis to Special Summon two more Level 4 LIGHT Fairy monsters from your deck."*
-- **Engine Violation**: `Step 3 ("Activate Ties of the Brethren, paying 2000 LP.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Target Artemis to Special Summon two more Level 4 LIGHT Fairy monsters from your deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 32296881`
+  - `Step 3: Legal Activation of code 40450317`
+  - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Crashbug](Crashbug Deck Analysis.html) - Core Combo
 - **File**: `Crashbug Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Initiate the Chain"
 - **Written Step**: *"Normal Summon a second Crashbug (e.g., Crashbug Y ). Since Crashbug Z is on the field, its effect activates, summoning Crashbug X from the deck."*
-- **Engine Violation**: `Step 4 ("Normal Summon a second Crashbug (e.g., Crashbug Y ).") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Since Crashbug Z is on the field, its effect activates, summoning Crashbug X from the deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 10802915`
   - `Trigger Effect Accepted for Card Code 10802915`
   - `Selected Card(s) [5] from location 1`
+  - `Step 4: Legal Special Summon of code 95992081`
 
 ### [ ] [Crusadia](Crusadia Deck Analysis.html) - Core Combo: The Path to Equimax
 - **File**: `Crusadia Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Catalyst"
-- **Written Step**: *"Normal Summon any Crusadia monster and Link it away for Crusadia Magius . Special Summon another Crusadia to its zone to trigger its effect, searching for a combo piece like Crusadia Maximus ."*
-- **Engine Violation**: `Step 1 ("Normal Summon any Crusadia monster") was not offered as a legal action by the duel engine.`
-
-### [ ] [Crystal Beast](Crystal Beast Deck Analysis.html) - Core Combo: The Bond of Crystals
-- **File**: `Crystal Beast Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Generate Advantage"
-- **Written Step**: *"Use Rainbow Bridge of the Heart to destroy a Crystal Beast, search for disruption like Crystal Miracle , and then bounce an opponent's card while returning the bridge to your hand for next turn."*
-- **Engine Violation**: `Step 5 ("bounce an opponent's card while returning the bridge to your hand for next turn.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "The Spell Search"
+- **Written Step**: *"Link climb into Crusadia Regulex . Special Summon another Crusadia to its zone to search for the critical Field Spell, Crusadia Revival ."*
+- **Engine Violation**: `Step 4 ("Link climb into Crusadia Regulex.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 9334391`
-  - `Selected Card(s) [7] from location 1`
-  - `Selected Card(s) [7] from location 1`
-  - `Step 2: Legal Normal Summon of code 7093411`
-  - `Trigger Effect Accepted for Card Code 7093411`
-  - `Selected Card(s) [3] from location 1`
+  - `Step 1: Legal Normal Summon of code 81524756`
+  - `Step 2: Legal Special Summon of code 72228247`
 
 ### [ ] [Crystron](Crystron Deck Analysis.html) - Blueprint Combo: Smiger/Inclusion Route (1.5 Card)
 - **File**: `Crystron Deck Analysis.html`
 - **Failed at**: Step 7 of 14
 - **Written Step**: *"Action: Activate Inclusion ( 1)."*
-- **Engine Violation**: `Step 7 ("Action: Activate Inclusion ( 1).") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 7 ("Activate Inclusion ( 1).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 83443619`
   - `Step 2: Legal Special Summon of code 41739381`
   - `Step 3: Legal Activation of code 83443619`
   - `Selected Card(s) [4] from location 1`
   - `Step 4: Legal Activation of code 31552317`
-  - `Selected Card(s) [7] from location 1`
+  - `Selected Card(s) [9] from location 1`
   - `Step 5: Legal Activation of code 25865565`
   - `Selected Card(s) [0] from location 8`
   - `Trigger Effect Accepted for Card Code 25865565`
 
 ### [ ] [Crystron](Crystron Deck Analysis.html) - Blueprint Combo: Smiger/Inclusion Route (1.5 Card) (Line 2)
 - **File**: `Crystron Deck Analysis.html`
-- **Failed at**: Step 1 of 5
-- **Step Title**: "Two Bodies, One Tuner"
-- **Written Step**: *"Crystron Sulfador at Level 5 and the Level 2 Tuner Crystron Tristaros sit on the field. Their original Levels add up to seven, and that number is the only thing Prism cares about."*
-- **Engine Violation**: `Step 1 ("Crystron Sulfador at Level 5 and the Level 2 Tuner Crystron Tristaros sit on the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 5
+- **Step Title**: "Link Into Prism"
+- **Written Step**: *"Both monsters become material for Crystron Halqifibrax Prism . Prism is a Machine, so it is a legal Extra Deck summon even after Sulfador has already locked you into Machines."*
+- **Engine Violation**: `Step 3 ("Both monsters become material for Crystron Halqifibrax Prism.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Cubic](Cubic Deck Analysis.html) - Core Combo: The Crimson Nova Turbo OTK
 - **File**: `Cubic Deck Analysis.html`
@@ -760,37 +715,52 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Cupid](Cupid Deck Analysis.html) - Cupid's Flight Path: Core Combo
 - **File**: `Cupid Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Cupid Pitch"
-- **Written Step**: *"Using a Level 2 Tuner and a Level 2 non-Tuner, Synchro Summon Cupid Pitch ."*
-- **Engine Violation**: `Step 1 ("Using a Level 2 Tuner and a Level 2 non-Tuner, Synchro Summon Cupid Pitch.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Modulate Level"
+- **Written Step**: *"Activate Cupid Pitch's effect. Increase its Level by 2 (the Level of the Tuner used), making it a Level 6 Tuner."*
+- **Engine Violation**: `Step 2 ("Activate Cupid Pitch's effect.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 21915012`
+
+### [ ] [Cyber Angel](Cyber Angel Deck Analysis.html) - Foundational Combo Lines
+- **File**: `Cyber Angel Deck Analysis.html`
+- **Failed at**: Step 3 of 4
+- **Step Title**: "Prima Light GY Search"
+- **Written Step**: *"Banish Prima Light from your GY. Add your main boss monster, Cyber Angel Dakini (or any combo piece like Benten), from your Deck to your hand."*
+- **Engine Violation**: `Step 5 ("Banish Prima Light from your GY.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 95658967`
+  - `Step 2: Legal Activation of code 2507443`
+  - `Selected Card(s) [5] from location 1`
+  - `Step 3: Legal Normal Summon of code 76103404`
+  - `Trigger Effect Accepted for Card Code 76103404`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Activation of code 39996157`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 3629090`
 
 ### [ ] [Cyber Angel](Cyber Angel Deck Analysis.html) - Foundational Combo Lines (Line 2)
 - **File**: `Cyber Angel Deck Analysis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Activate Ritual Spell"
 - **Written Step**: *"Activate Machine Angel Ritual . Tribute Cyber Angel Benten (Level 6) from your hand to Ritual Summon Cyber Angel Idaten (Level 6)."*
-- **Engine Violation**: `Step 1 ("Activate Machine Angel Ritual.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Cyber Angel](Cyber Angel Deck Analysis.html) - Foundational Combo Lines (Line 3)
-- **File**: `Cyber Angel Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Send Arc Light"
-- **Written Step**: *"Send Herald of the Arc Light from your Extra Deck. Diviner becomes Level 6."*
-- **Engine Violation**: `Step 4 ("Diviner becomes Level 6.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Tribute Cyber Angel Benten (Level 6) from your hand to Ritual Summon Cyber Angel Idaten (Level 6).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 92919429`
-  - `Trigger Effect Accepted for Card Code 92919429`
-  - `Selected Card(s) [17] from location 64`
-  - `Trigger Effect Accepted for Card Code 79606837`
-  - `Selected Card(s) [0] from location 1`
+  - `Step 1: Legal Activation of code 39996157`
+  - `Selected Card(s) [1] from location 2`
+  - `Trigger Effect Accepted for Card Code 3629090`
 
 ### [ ] [Cyber Girl](Cyber Girl Deck Analysis.html) - Core Combo: The Benten Resource Loop
 - **File**: `Cyber Girl Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate Ritual Spell"
-- **Written Step**: *"Start with Machine Angel Ritual in hand, along with Cyber Tutu and Cyber Angel Benten . Activate the Ritual Spell to summon a monster like Cyber Angel Dakini ."*
-- **Engine Violation**: `Step 2 ("Activate the Ritual Spell to summon a monster like Cyber Angel Dakini.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Tribute for Advantage"
+- **Written Step**: *"Tribute both Cyber Tutu (Level 3) and Benten (Level 6) from your hand to meet the summoning requirement. Cyber Tutu is spent, but Benten's effect now triggers."*
+- **Engine Violation**: `Step 3 ("Tribute both Cyber Tutu (Level 3) and Benten (Level 6) from your hand to meet the summoning requirement.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Activation of code 39996157`
+  - `Selected Card(s) [1] from location 2`
+  - `Trigger Effect Accepted for Card Code 77235086`
+  - `Selected Card(s) [2] from location 1`
 
 ### [ ] [Cyberdark](Cyberdark Deck Analysis.html) - Core Combo: Cyber Dragon Core Turbo
 - **File**: `Cyberdark Deck Analysis.html`
@@ -802,9 +772,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 23893227`
   - `Selected Card(s) [5] from location 1`
   - `Step 2: Legal Activation of code 64753988`
-  - `Selected Card(s) [4] from location 1`
+  - `Selected Card(s) [7] from location 1`
   - `Step 5: Legal Activation of code 64753988`
-  - `Selected Card(s) [3] from location 2`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Cyberse](Cyberse Deck Analysis.html) - Lower ceiling
 - **File**: `Cyberse Deck Analysis.html`
@@ -817,52 +787,62 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 20455229`
   - `Selected Card(s) [0] from location 1`
 
+### [ ] [Cyberse](Cyberse Deck Analysis.html) - Primary Combo Path: Mathmech Circular
+- **File**: `Cyberse Deck Analysis.html`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Link Climb to the End Board"
+- **Written Step**: *"Normal Summon Diameter to revive a Mathmech. Use the monsters to Link climb through Splash Mage and into Decode Talker Heatsoul , ending with Superfactorial set and Heatsoul on field."*
+- **Engine Violation**: `Step 5 ("Normal Summon Diameter to revive a Mathmech.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 36521307`
+  - `Selected Card(s) [2] from location 1`
+  - `Step 3: Legal Activation of code 27182739`
+
 ### [ ] [D_D](D_D Deck Analysis.html) - Core Combo Walkthroughs (Line 2)
 - **File**: `D_D Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Graveyard Fusion"
-- **Written Step**: *"With Necro Slime and Alfred in your GY (after a board wipe or discard), activate Necro Slime . Banish both to summon a D/D/D Fusion Monster."*
-- **Engine Violation**: `Step 1 ("With Necro Slime and Alfred in your GY (after a board wipe or discard), activate Necro Slime.") was not offered as a legal action by the duel engine.`
-
-### [ ] [D_D](D_D Deck Analysis.html) - Core Combo Walkthroughs (Line 3)
-- **File**: `D_D Deck Analysis.html`
 - **Failed at**: Step 2 of 3
-- **Step Title**: "Mitigate the Cost"
-- **Written Step**: *"Use Swirl Slime 's effect from hand, fusing itself with another D/D monster to summon D/D/D Oracle King d'Arc . This immediately converts all self-damage to LP gain."*
-- **Engine Violation**: `Step 3 ("Use Swirl Slime 's effect from hand, fusing itself with another D/D monster to summon D/D/D Oracle King d'Arc.") was not offered as a legal action by the duel engine.`
+- **Step Title**: "The Divine Trigger"
+- **Written Step**: *"Upon being banished, Alfred 's effect triggers. You target a Dark Contract in your GY or Banishment zone (like Gate or Witch)."*
+- **Engine Violation**: `Step 4 ("You target a Dark Contract in your GY or Banishment zone (like Gate or Witch).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 11609969`
-  - `Trigger Effect Accepted for Card Code 11609969`
-  - `Selected Card(s) [3] from location 1`
-  - `Step 2: Legal Activation of code 46372010`
+  - `Step 1: Legal Activation of code 72291412`
+  - `Selected Card(s) [2] from location 64`
+  - `Step 2: Legal Activation of code 11609969`
+  - `Step 3: Legal Activation of code 11852093`
+  - `Selected Card(s) [0] from location 64`
 
 ### [ ] [Danger](Danger Deck Analysis.html) - Core Combo: The Nessie + Jackalope Starter
 - **File**: `Danger Deck Analysis.html`
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Link Climb & Extend"
 - **Written Step**: *"Repeat the process until you have enough monsters on board. Link Summon a powerful extender like Saryuja Skull Dread to draw 4 cards and fix your hand, leading into your final end board."*
-- **Engine Violation**: `Step 5 ("Repeat the process until you have enough monsters on board.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("Link Summon a powerful extender like Saryuja Skull Dread to draw 4 cards and fix your hand, leading into your final end board.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 70711847`
-  - `Trigger Effect Accepted for Card Code 70711847`
-  - `Selected Card(s) [21] from location 1`
-  - `Step 3: Legal Activation of code 43694650`
+  - `Selected Card(s) [0] from location 2`
   - `Trigger Effect Accepted for Card Code 43694650`
-  - `Selected Card(s) [6] from location 1`
+  - `Selected Card(s) [10] from location 1`
+  - `Step 3: Legal Activation of code 99745551`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 16209941`
+  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Dark Lucius](Dark Lucius Deck Analysis.html) - Core Combo
 - **File**: `Dark Lucius Deck Analysis.html`
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Revive and Ascend"
 - **Written Step**: *"Use a card like Monster Reborn to revive Dark Lucius LV4. Now you can use Level Up! to immediately send it to the GY and Special Summon Dark Lucius LV6, setting up for a properly summoned LV8 on a future turn."*
-- **Engine Violation**: `Step 6 ("Use a card like Monster Reborn to revive Dark Lucius LV4.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 7 ("Now you can use Level Up! to immediately send it to the GY") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 10802915`
   - `Trigger Effect Accepted for Card Code 10802915`
   - `Selected Card(s) [2] from location 1`
   - `Step 3: Legal Special Summon of code 58699500`
   - `Trigger Effect Accepted for Card Code 81035362`
-  - `Selected Card(s) [3] from location 1`
+  - `Selected Card(s) [4] from location 1`
+  - `Step 6: Legal Activation of code 58699500`
+  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Dark Scorpion](Dark Scorpion Deck Analysis.html) - Core Combo: The Isolde to Bardiche Line
 - **File**: `Dark Scorpion Deck Analysis.html`
@@ -870,13 +850,6 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Step Title**: "Summon Two Warriors"
 - **Written Step**: *"Start by getting two Dark Scorpion monsters (or any two warriors) onto the field. This can be done through a combination of Normal Summons and extenders."*
 - **Engine Violation**: `Step 1 ("Start by getting two Dark Scorpion monsters (or any two warriors) onto the field.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Dark World](Dark World Deck Analysis.html) - Core Combo: The Genta Starter Chain
-- **File**: `Dark World Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Discard and Search"
-- **Written Step**: *"Use an effect like Dark World Dealings or a Danger! monster to discard Genta . Its effect triggers, adding The Gates of Dark World from your deck to your hand."*
-- **Engine Violation**: `Step 1 ("Use an effect like Dark World Dealings or a Danger! monster to discard Genta.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Darklord](Darklord Deck Analysis.html) - Core Combo: The Djehuty One-Card Path
 - **File**: `Darklord Deck Analysis.html`
@@ -892,51 +865,16 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Deep Sea](Deep Sea Deck Analysis.html) - Core Combo
 - **File**: `Deep Sea Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate Discard & Search"
-- **Written Step**: *"Normal Summon Neptabyss . Activate its effect, sending Atlantean Dragoons from Deck to GY. Neptabyss adds another Dragoons to hand."*
-- **Engine Violation**: `Step 3 ("Neptabyss adds another Dragoons to hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Hand Disruption & Combo Extension"
+- **Written Step**: *"The sent Dragoons triggers, searching Deep Sea Minstrel . Activate Minstrel's effect, discarding itself and the Dragoons from hand to banish a card from the opponent's hand."*
+- **Engine Violation**: `Step 5 ("Activate Minstrel's effect, discarding itself and the Dragoons from hand to banish a card from the opponent's hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 21565445`
   - `Step 2: Legal Activation of code 21565445`
   - `Selected Card(s) [0] from location 1`
   - `Selected Card(s) [0] from location 1`
   - `Selected Card(s) [3] from location 1`
-
-### [ ] [Deskbot](Deskbot Deck Analysis.html) - Core Combo: The 003 + Machine Duplication Sequence
-- **File**: `Deskbot Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Swarm the Field"
-- **Written Step**: *"Activate Machine Duplication , targeting your Deskbot 002 . This Special Summons two more copies from the Deck, triggering their search effects and Deskbot 001 's revival from the Graveyard, resulting in a massive field presence."*
-- **Engine Violation**: `Step 5 ("Activate Machine Duplication, targeting your Deskbot 002.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 75944053`
-  - `Trigger Effect Accepted for Card Code 75944053`
-  - `Selected Card(s) [13] from location 1`
-  - `Trigger Effect Accepted for Card Code 59368956`
-  - `Selected Card(s) [9] from location 1`
-  - `Step 2: Legal Activation of code 75944053`
-  - `Selected Card(s) [1] from location 4`
-
-### [ ] [Despia](Despia Deck Analysis.html) - Core Combo: The 1-Card Aluber Starter
-- **File**: `Despia Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Climb into the Dragon"
-- **Written Step**: *"Use Albion's effect to Fusion Summon Lubellion the Searing Dragon by recycling materials. Lubellion then fuses itself and another monster into the ultimate boss."*
-- **Engine Violation**: `Step 5 ("Lubellion then fuses itself and another monster into the ultimate boss.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 62962630`
-  - `Trigger Effect Accepted for Card Code 62962630`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 44362883`
-  - `Selected Card(s) [0] from location 64`
-
-### [ ] [Destiny Hero](Destiny Hero Deck Analysis.html) - Core Combo: Vision HERO Faris + 1 HERO
-- **File**: `Destiny Hero Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Ignite with Vision"
-- **Written Step**: *"Special Summon Vision HERO Faris by discarding another HERO. Faris places Vision HERO Increase in the S/T Zone."*
-- **Engine Violation**: `Step 1 ("Special Summon Vision HERO Faris by discarding another HERO.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Diabellstar](Diabellstar Deck Analysis.html) - Core Combo: The Golden Path to Baronne
 - **File**: `Diabellstar Deck Analysis.html`
@@ -963,7 +901,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 3
 - **Step Title**: "The Continuous Bridge"
 - **Written Step**: *"Activate Shateki . You now control a card with a die-roll effect. You target an opponent's Level 4 monster, discarding a card. You roll a 5, destroying it and searching a Level 4 Snipe Hunter ."*
-- **Engine Violation**: `Step 2 ("You now control a card with a die-roll effect.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("You roll a 5, destroying it and searching a Level 4 Snipe Hunter.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 5574510`
 
@@ -972,7 +910,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Normal Summon & Extend"
 - **Written Step**: *"Normal Summon a Level 3 Insect (e.g., Centibit ). Activate Digital Bug Registrider from your hand to Special Summon it."*
-- **Engine Violation**: `Step 1 ("Normal Summon a Level 3 Insect (e.g., Centibit ).") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Activate Digital Bug Registrider from your hand to Special Summon it.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 68950538`
 
 ### [ ] [Dinomist](Dinomist Deck Analysis.html) - Core Combo: The BTP Conversion
 - **File**: `Dinomist Deck Analysis.html`
@@ -983,18 +923,21 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 77116346`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 63251695`
+  - `Step 2: Legal Activation of code 92746535`
 
 ### [ ] [Dinomorphia](Dinomorphia Deck Analysis.html) - Core Combo: The Therizia-to-Rexterm Lockdown
 - **File**: `Dinomorphia Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "First Fusion (4000 LP)"
 - **Written Step**: *"During your opponent's Main Phase, activate Frenzy . Pay half your LP (8000 -> 4000). Fusion Summon Dinomorphia Kentregina using Therizia on field and another Dinomorphia from your Extra Deck."*
-- **Engine Violation**: `Step 4 ("During your opponent's Main Phase, activate Frenzy.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Pay half your LP (8000 -> 4000).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 92133240`
   - `Trigger Effect Accepted for Card Code 92133240`
   - `Selected Card(s) [8] from location 1`
+  - `Passing turn to opponent for opponent-turn action`
+  - `Step 4: Legal Opponent-Turn Activation of code 78420796`
+  - `Selected Card(s) [2] from location 64`
 
 ### [ ] [Dinowrestler](Dinowrestler Deck Analysis.html) - Core Combo: Standard 2-Card Dinosaur Integration
 - **File**: `Dinowrestler Deck Analysis.html`
@@ -1011,65 +954,80 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **File**: `Djinn Deck Analysis.html`
 - **Failed at**: Step 1 of 6
 - **Written Step**: *"Reveal Gagaga Magician - Gagaga Magic and Special Summon it alongside a Level 3 Gagaga such as Gagaga Girl , matching down to Level 3."*
-- **Engine Violation**: `Step 1 ("Reveal Gagaga Magician - Gagaga Magic") was not offered as a legal action by the duel engine.`
-
-### [ ] [Djinn](Djinn Deck Analysis.html) - Going First: Buster and the Cell Phone
-- **File**: `Djinn Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Written Step**: *"Djinn Buster detaches 2 to negate the first monster effect your opponent activates and burns for 500."*
-- **Engine Violation**: `Step 2 ("Djinn Buster detaches 2 to negate the first monster effect your opponent activates and burns for 500.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Special Summon it alongside a Level 3 Gagaga such as Gagaga Girl, matching down to Level 3.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 12908094`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 64`
 
 ### [ ] [Djinn](Djinn Deck Analysis.html) - Historical Combo: The Nekroz Djinn Lock
 - **File**: `Djinn Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Prepare the Graveyard"
-- **Written Step**: *"Xyz Summon Lavalval Chain ( also banned ). Use its effect to detach a material and send Djinn Releaser of Rituals ( banned ) directly from the Deck to the Graveyard."*
-- **Engine Violation**: `Step 4 ("Use its effect to detach a material and send Djinn Releaser of Rituals ( banned ) directly from the Deck to the Graveyard.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Unleash the Lock"
+- **Written Step**: *"Activate a Ritual Spell like Nekroz Cycle . Summon a monster like Nekroz of Clausolas by banishing Djinn Releaser ( banned ) from the Graveyard, activating its lingering effect."*
+- **Engine Violation**: `Step 5 ("Activate a Ritual Spell like Nekroz Cycle.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 95492061`
   - `Trigger Effect Accepted for Card Code 95492061`
-  - `Selected Card(s) [2] from location 1`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 4: Legal Activation of code 97211663`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Djinn of the Rituals](Djinn of the Rituals Deck Analysis.html) - Core Combo
 - **File**: `Djinn of the Rituals Deck Analysis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "The Enabler"
 - **Written Step**: *"Summon Lavalval Chain (now Forbidden). Use its effect to detach a material and send Djinn Releaser of Rituals from the Deck to the Graveyard."*
-- **Engine Violation**: `Step 1 ("Summon Lavalval Chain (now Forbidden).") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Use its effect to detach a material and send Djinn Releaser of Rituals from the Deck to the Graveyard.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Dododo](Dododo Deck Analysis.html) - Core Combo: The 1-Card Warrior-Kage Nexus
 - **File**: `Dododo Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The 1-Card Starter"
-- **Written Step**: *"1. Normal Summon Dodododo Warrior . 2. Activate Warrior's effect, sending Onomatokage (as it's treated as a "Dododo" card) from Deck to GY. Warrior Special Summons itself. 3. Activate Onomatokage's GY effect to Special Summon itself. 4. Result: Two Level 4 monsters. Immediately Xyz Summon Infernal Flame Banshee . This is the crucial step that converts your generic starter into the specialized Ryzeal engine."*
-- **Engine Violation**: `Step 2 ("Activate Warrior's effect, sending Onomatokage (as it's treated as a "Dododo" card) from Deck to GY.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Generate Advantage"
+- **Written Step**: *"Use Banshee and other extenders (like a second Onomatokage from hand) to swarm the field. Xyz Summon into Ryzeal Duo Drive . Its effect provides a massive +2 card advantage, searching for your main disruption pieces."*
+- **Engine Violation**: `Step 8 ("Use Banshee and other extenders (like a second Onomatokage from hand) to swarm the field.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 62880279`
   - `Selected Card(s) [2] from location 1`
+  - `Step 2: Legal Activation of code 55088578`
+  - `Step 4: Legal Activation of code 55088578`
+  - `Selected Card(s) [0] from location 16`
+  - `Step 6: Legal Special Summon of code 29423048`
 
 ### [ ] [Dododo](Dododo Deck Analysis.html) - Core Combo: The 1-Card Warrior-Kage Nexus (Line 2)
 - **File**: `Dododo Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Pay a Cost That Is No Longer a Cost"
-- **Written Step**: *"Activate Dodododraw , sending the Level 6 Dododo Buster from your hand to the graveyard. Draw 2."*
-- **Engine Violation**: `Step 1 ("Activate Dodododraw, sending the Level 6 Dododo Buster from your hand to the graveyard.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Summon Both Halves at Once"
+- **Written Step**: *"Activate Gagaga Magic in the hand. Special Summon itself plus Dododo Buster back out of the graveyard. The Normal Summon is still untouched."*
+- **Engine Violation**: `Step 3 ("Activate Gagaga Magic in the hand.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 73866096`
+  - `Selected Card(s) [2] from location 2`
 
 ### [ ] [Dododo](Dododo Deck Analysis.html) - Core Combo: The 1-Card Warrior-Kage Nexus (Line 3)
 - **File**: `Dododo Deck Analysis.html`
-- **Failed at**: Step 2 of 9
-- **Step Title**: "First Rank 4"
-- **Written Step**: *"Revive Gogogoglove with its own graveyard effect, then overlay both Level 4 bodies into Gagagaga Girl ."*
-- **Engine Violation**: `Step 3 ("Revive Gogogoglove with its own graveyard effect") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 7 of 9
+- **Step Title**: "Gagaga Magic Closes the Line"
+- **Written Step**: *"Now activate Gagaga Magic . Summon itself and Gagagacoat from the hand at Level 4 and Xyz Summon ZS - Utopic Sage , a legal "ZS -" target."*
+- **Engine Violation**: `Step 11 ("Now activate Gagaga Magic.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 62880279`
   - `Selected Card(s) [7] from location 1`
-
-### [ ] [Dogmatika](Dogmatika Deck Analysis.html) - Core Combo
-- **File**: `Dogmatika Deck Analysis.html`
-- **Failed at**: Step 1 of 1
-- **Step Title**: "The Dogmatika-Mitsurugi Annihilation Sequence"
-- **Written Step**: *"By integrating Lawbringer into the Mitsurugi hybrid build, players can mathematically eliminate the opponent's Extra Deck in a single game cycle."*
-- **Engine Violation**: `Step 1 ("By integrating Lawbringer into the Mitsurugi hybrid build, players can mathematically eliminate the opponent's Extra Deck in a single game cycle.") was not offered as a legal action by the duel engine.`
+  - `Step 3: Legal Activation of code 12908094`
+  - `Selected Card(s) [2] from location 16`
+  - `Selected Card(s) [5] from location 64`
+  - `Step 4: Legal Activation of code 88917691`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [4] from location 1`
+  - `Trigger Effect Accepted for Card Code 62880279`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 5: Legal Activation of code 85119159`
+  - `Selected Card(s) [3] from location 1`
+  - `Step 7: Legal Activation of code 6595475`
+  - `Selected Card(s) [1] from location 2`
+  - `Step 9: Legal Activation of code 9491461`
+  - `Selected Card(s) [0] from location 64`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Dogmatika](Dogmatika Deck Analysis.html) - Core Combo (Line 2)
 - **File**: `Dogmatika Deck Analysis.html`
@@ -1087,7 +1045,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Swarm and Summon"
 - **Written Step**: *"Box of Friends summons two Level 4 Normal Monsters from the deck. Use them to Xyz Summon Princess Cologne , which then retrieves Box of Friends from the GY to start the loop again."*
-- **Engine Violation**: `Step 6 ("Use them to Xyz Summon Princess Cologne") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 7 ("retrieves Box of Friends from the GY to start the loop again.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 71595845`
   - `Selected Card(s) [0] from location 1`
@@ -1096,9 +1054,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [3] from location 2`
   - `Selected Card(s) [0] from location 1`
   - `Trigger Effect Accepted for Card Code 81587028`
-  - `Step 5: Legal Special Summon of code 75574498`
-  - `Trigger Effect Accepted for Card Code 75574498`
-  - `Selected Card(s) [0] from location 16`
+  - `Step 6: Legal Special Summon of code 75574498`
 
 ### [ ] [Doodle Beast](Doodle Beast Deck Analysis.html) - The Master Plan! (Core Combo)
 - **File**: `Doodle Beast Deck Analysis.html`
@@ -1110,9 +1066,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Activation of code 31230289`
   - `Trigger Effect Accepted for Card Code 31230289`
   - `Selected Card(s) [0] from location 1`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [2] from location 2`
 
-### [ ] [Doom-Z Archetype Deep Dive.html](Doom-Z Archetype Deep Dive.html) - The Standard: 1-Card Full Combo
+### [ ] [Doom-Z](Doom-Z Archetype Deep Dive.html) - The Standard: 1-Card Full Combo
 - **File**: `Doom-Z Archetype Deep Dive.html`
 - **Failed at**: Step 2 of 5
 - **Step Title**: "Protected Initiation"
@@ -1120,28 +1076,36 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 4 ("Special Summon Medius the Pure directly from the Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 32442017`
-  - `Step 3: Legal Activation of code 32442017`
+  - `Step 3: Legal Activation of code 36709484`
+  - `Selected Card(s) [0] from location 1`
+  - `Trigger Effect Accepted for Card Code 97556336`
+  - `Selected Card(s) [1] from location 1`
 
-### [ ] [Doom-Z Archetype Deep Dive.html](Doom-Z Archetype Deep Dive.html) - The Standard: 1-Card Full Combo (Line 2)
+### [ ] [Doom-Z](Doom-Z Archetype Deep Dive.html) - The Standard: 1-Card Full Combo (Line 2)
 - **File**: `Doom-Z Archetype Deep Dive.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "Pendulum Catalyst"
-- **Written Step**: *"Jupredo banishes the top 3 cards of your Deck face-down and destroys itself to Special Summon Jupiter from the Extra Deck, then attaches your second card to it. Jupredo lands face-up in the Extra Deck and adds A.D.R.A.S.T.E.I.A."*
-- **Engine Violation**: `Step 7 ("attaches your second card to it.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 4
+- **Step Title**: "Summoning Jupiter"
+- **Written Step**: *"Jupiter (3500 ATK) arrives as your third summon, before Nibiru is live. Its effect detaches the attached card to Special Summon Elara back from the GY."*
+- **Engine Violation**: `Step 10 ("Its effect detaches the attached card to Special Summon Elara back from the GY.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 54265980`
   - `Trigger Effect Accepted for Card Code 54265980`
-  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [7] from location 1`
   - `Step 3: Legal Activation of code 32442017`
   - `Step 4: Legal Activation of code 32442017`
   - `Selected Card(s) [3] from location 4`
-  - `Selected Card(s) [2] from location 1`
-  - `Step 5: Legal Activation of code 43871165`
+  - `Selected Card(s) [3] from location 1`
   - `Step 6: Legal Activation of code 43871165`
+  - `Selected Card(s) [0] from location 64`
   - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [0] from location 8`
+  - `Trigger Effect Accepted for Card Code 43871165`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 9: Legal Activation of code 68231287`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [1] from location 16`
+  - `Selected Card(s) [1] from location 4`
 
-### [ ] [Doom-Z Archetype Deep Dive.html](Doom-Z Archetype Deep Dive.html) - The Standard: 1-Card Full Combo (Line 3)
+### [ ] [Doom-Z](Doom-Z Archetype Deep Dive.html) - The Standard: 1-Card Full Combo (Line 3)
 - **File**: `Doom-Z Archetype Deep Dive.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Deck Destruction"
@@ -1149,7 +1113,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 2 ("Target DoomZ V Five - Amalthe inside your Deck and destroy it.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 38007649`
-  - `Selected Card(s) [4] from location 1`
+  - `Selected Card(s) [15] from location 1`
   - `Trigger Effect Accepted for Card Code 28877382`
   - `Selected Card(s) [2] from location 1`
 
@@ -1164,24 +1128,18 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 95492061`
   - `Selected Card(s) [1] from location 1`
 
-### [ ] [Dracoslayer](Dracoslayer Deck Analysis.html) - Core Combo: The Luster Chain
-- **File**: `Dracoslayer Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish the Gateway"
-- **Written Step**: *"Use a 1-card starter (like Superheavy Samurai Wakaushi ) to quickly summon 2 monsters and Link Summon Beyond the Pendulum . Its effect searches your first Dracoslayer scale."*
-- **Engine Violation**: `Step 1 ("Use a 1-card starter (like Superheavy Samurai Wakaushi ) to quickly summon 2 monsters") was not offered as a legal action by the duel engine.`
-
 ### [ ] [Dracoslayer](Dracoslayer Deck Analysis.html) - Core Combo: The Luster Chain (Line 2)
 - **File**: `Dracoslayer Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Draco Face-Off Opens the Board"
-- **Written Step**: *"Reveal Majesty Pegasus, the Dracoslayer and Vector Pendulum, the Dracoverlord . Your opponent picks one for you to scale or summon, and the other goes face-up to the Extra Deck. Either half moves the line forward, which is why the random pick barely matters."*
-- **Engine Violation**: `Step 3 ("Either half moves the line forward, which is why the random pick barely matters.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Majesty Pegasus Fetches the Unicorn"
+- **Written Step**: *"Special Summoned by a Dracoslayer effect, Pegasus adds a Field Spell and discards. Put Ignis Phoenix, the Dracoslayer (Scale 7) opposite a scaled Pegasus and its Pendulum effect adds a differently-named Dracoslayer Pendulum Monster from the Deck. That is Wind Unicorn Parallel ."*
+- **Engine Violation**: `Step 6 ("That is Wind Unicorn Parallel.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 92332424`
-  - `Step 2: Legal Activation of code 39016067`
+  - `Step 2: Legal Activation of code 92746535`
+  - `Step 5: Legal Activation of code 56347375`
 
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo
+### [ ] [Dracotail](Dracotail Archetype Breakdown.html) - Core Combo
 - **File**: `Dracotail Archetype Breakdown.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Activate Quick Effect"
@@ -1190,29 +1148,16 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 75003700`
   - `Trigger Effect Accepted for Card Code 75003700`
-  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [9] from location 1`
 
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo (Line 2)
+### [ ] [Dracotail](Dracotail Archetype Breakdown.html) - Core Combo (Line 3)
 - **File**: `Dracotail Archetype Breakdown.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Resolve Chain (x3)"
-- **Written Step**: *"All three monsters trigger. A new chain forms:"*
-- **Engine Violation**: `Step 7 ("A new chain forms:") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 75003700`
-  - `Trigger Effect Accepted for Card Code 75003700`
-  - `Selected Card(s) [2] from location 1`
-  - `Step 4: Legal Activation of code 1498449`
-  - `Selected Card(s) [0] from location 64`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Activate in Response"
+- **Written Step**: *"In response, activate the Quick Effect of Dracotail Faimena from your hand."*
+- **Engine Violation**: `Step 2 ("In response, activate the Quick Effect of Dracotail Faimena from your hand.") was not offered as a legal action by the duel engine.`
 
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo (Line 3)
-- **File**: `Dracotail Archetype Breakdown.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Opponent Commits"
-- **Written Step**: *"Your opponent Normal Summons their key starter (e.g., Snake-Eye Ash )."*
-- **Engine Violation**: `Step 1 ("Your opponent Normal Summons their key starter (e.g., Snake-Eye Ash ).") was not offered as a legal action by the duel engine.`
-
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo (Line 4)
+### [ ] [Dracotail](Dracotail Archetype Breakdown.html) - Core Combo (Line 4)
 - **File**: `Dracotail Archetype Breakdown.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Fusion Summon Shaulas"
@@ -1221,8 +1166,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 1498449`
   - `Selected Card(s) [0] from location 64`
+  - `Step 3: Legal Activation of code 42125140`
 
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo (Line 5)
+### [ ] [Dracotail](Dracotail Archetype Breakdown.html) - Core Combo (Line 5)
 - **File**: `Dracotail Archetype Breakdown.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Activate & Send"
@@ -1232,41 +1178,27 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Activation of code 44362883`
   - `Selected Card(s) [0] from location 64`
 
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo (Line 6)
+### [ ] [Dracotail](Dracotail Archetype Breakdown.html) - Core Combo (Line 6)
 - **File**: `Dracotail Archetype Breakdown.html`
-- **Failed at**: Step 3 of 4
-- **Step Title**: "Resolve & Summon"
-- **Written Step**: *"CL1: Albion , CL2: Mululu . The chain resolves:"*
-- **Engine Violation**: `Step 5 ("The chain resolves:") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Draw & Activate"
+- **Written Step**: *"Activate Shrouded 's second effect (since Albaz is in Deck): Draw 1 card (the Branded Fusion )."*
+- **Engine Violation**: `Step 3 ("Activate Shrouded 's second effect (since Albaz is in Deck): Draw 1 card (the Branded Fusion ).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 6153210`
-  - `Selected Card(s) [2] from location 1`
-  - `Step 3: Legal Activation of code 25451383`
-  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [12] from location 1`
 
-### [ ] [Dracotail Archetype Breakdown.html](Dracotail Archetype Breakdown.html) - Core Combo (Line 7)
+### [ ] [Dracotail](Dracotail Archetype Breakdown.html) - Core Combo (Line 7)
 - **File**: `Dracotail Archetype Breakdown.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Resolve & Search"
-- **Written Step**: *"CL2: Urgula resolves, sets Dracotail Horn and destroys Rahu ."*
-- **Engine Violation**: `Step 4 ("CL2: Urgula resolves, sets Dracotail Horn and destroys Rahu.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Activate & Resolve"
+- **Written Step**: *"Activate Branded Fusion . Send Albaz + Faimena to summon Albion . CL1: Albion , CL2: Faimena ."*
+- **Engine Violation**: `Step 5 ("Activate Branded Fusion.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 32548318`
-  - `Selected Card(s) [0] from location 64`
-
-### [ ] [Dragon Ruler](Dragon Ruler Deck Analysis.html) - Core Combo: The Spectral Chain
-- **File**: `Dragon Ruler Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Establish Field Presence"
-- **Written Step**: *"Activate Redox's effect, discarding it and an EARTH monster/Dragon to Special Summon the Ruler you just sent to the GY with Tidal, beginning your field swarm."*
-- **Engine Violation**: `Step 3 ("Activate Redox's effect, discarding it and an EARTH monster/Dragon to Special Summon the Ruler you just sent to the GY with Tidal, beginning your field swarm.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 58201062`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [6, 7] from location 1`
-  - `Step 2: Legal Activation of code 26400609`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [3] from location 1`
+  - `Selected Card(s) [1] from location 64`
+  - `Step 2: Legal Activation of code 70871153`
+  - `Selected Card(s) [1] from location 16`
 
 ### [ ] [Dragonmaid](Dragonmaid Deck Analysis.html) - Core Combo: One-Card Starters
 - **File**: `Dragonmaid Deck Analysis.html`
@@ -1281,16 +1213,28 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 3: Legal Activation of code 78231355`
   - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 1`
+  - `Trigger Effect Accepted for Card Code 16960120`
+  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Dragunity](Dragunity Deck Analysis.html) - Core Combo: The 1-Card Remus Line
 - **File**: `Dragunity Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "First Ascent"
-- **Written Step**: *"Special Summon Legatus . Revive Remus from Graveyard. Synchro Summon (Level 4 Legatus + Level 2 Remus) into Dragunity Knight - Gae Dearg . Use its effect to dump Blackwing - Zephyros the Elite ."*
-- **Engine Violation**: `Step 3 ("Special Summon Legatus.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Climbing Higher"
+- **Written Step**: *"Revive Zephyros by bouncing Ravine. Link Summon Dragunity Knight - Romulus . Continue the combo line using Dragunity Arma Mystletainn and Dragunity Couse to Synchro Summon Borreload Savage Dragon , equipping Romulus for 2 negates."*
+- **Engine Violation**: `Step 7 ("Revive Zephyros by bouncing Ravine.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 62265044`
   - `Step 2: Legal Activation of code 62265044`
+  - `Auto-activating on-field effect of code 62265044 to complete Step 2`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [3] from location 1`
+  - `Step 3: Legal Activation of code 89172051`
+  - `Step 4: Legal Activation of code 8039562`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [5] from location 1`
+  - `Step 5: Legal Activation of code 89172051`
+  - `Selected Card(s) [0] from location 8`
 
 ### [ ] [Dragunity](Dragunity Deck Analysis.html) - Core Combo: The 1-Card Remus Line (Line 2)
 - **File**: `Dragunity Deck Analysis.html`
@@ -1308,7 +1252,22 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 26577155`
   - `Step 2: Legal Activation of code 62265044`
-  - `Step 3: Legal Activation of code 62265044`
+  - `Auto-activating on-field effect of code 62265044 to complete Step 2`
+  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 3: Legal Activation of code 89172051`
+
+### [ ] [Drytron](Drytron Deck Analysis.html) - Core Combo: Path to Ultimateness
+- **File**: `Drytron Deck Analysis.html`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Establish the Board"
+- **Written Step**: *"Continue the combo by searching for Meteonis Drytron , summon Mu Beta Fafnir to set up your GY, and then use Meteonis Drytron tributing Fafnir (2000 ATK) to summon Herald of Ultimateness (2000 ATK)."*
+- **Engine Violation**: `Step 6 ("use Meteonis Drytron tributing Fafnir (2000 ATK) to summon Herald of Ultimateness (2000 ATK).") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 97148796`
+  - `Selected Card(s) [2] from location 1`
+  - `Step 5: Legal Activation of code 22398665`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Dual Avatar](Dual Avatar Deck Analysis.html) - Core Combo: The 2-Card Invitation Starter
 - **File**: `Dual Avatar Deck Analysis.html`
@@ -1322,10 +1281,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Duston](Duston Deck Analysis.html) - Core Combo: The Goblin King OTK
 - **File**: `Duston Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Optimal Distribution"
-- **Written Step**: *"Summon the four colored "Nuisance" Dustons to the opponent's field and four "Beneficial" Dustons (like White Duston ) to your own field."*
-- **Engine Violation**: `Step 3 ("Summon the four colored "Nuisance" Dustons to the opponent's field and four "Beneficial" Dustons (like White Duston ) to your own field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Summon the King"
+- **Written Step**: *"Summon Goblin King . With 8 other Fiends on the field, its ATK becomes 8000. Attack a 0 ATK Duston on the opponent's field for game."*
+- **Engine Violation**: `Step 4 ("Summon Goblin King.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 40343749`
 
@@ -1344,18 +1303,20 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 3 ("use its GY effect, sending Cursed Eldland to the GY to summon itself.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 31434645`
+  - `Auto-activating on-field effect of code 31434645 to complete Step 1`
+  - `Selected Card(s) [12] from location 1`
   - `Step 2: Legal Activation of code 95440946`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
   - `Selected Card(s) [0] from location 8`
   - `Trigger Effect Accepted for Card Code 31434645`
-  - `Selected Card(s) [8] from location 1`
+  - `Selected Card(s) [3] from location 1`
 
 ### [ ] [Elemental Hero](Elemental Hero Deck Analysis.html) - Core Combo: The "Faris" Starter (Line 2)
 - **File**: `Elemental Hero Deck Analysis.html`
-- **Failed at**: Step 3 of 4
-- **Step Title**: "Extension & Setup"
-- **Written Step**: *"Stratos triggers, searching Vyon or Masked HERO Furnace. Send Shadow Mist to the GY to search Neos. Through standard fusion steps, load your GY and ensure Favorite Contact is set."*
-- **Engine Violation**: `Step 7 ("Through standard fusion steps, load your GY and ensure Favorite Contact is set.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 4 of 4
+- **Step Title**: "The Lock"
+- **Written Step**: *"During the opponent's Draw Phase, activate Favorite Contact. Return Neos and 3 different Neo-Spacians to the deck to summon Cosmo Neos . The opponent's turn is entirely skipped as they cannot activate cards or effects."*
+- **Engine Violation**: `Step 8 ("activate Favorite Contact.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 30875635`
   - `Selected Card(s) [0] from location 1`
@@ -1366,6 +1327,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [5] from location 1`
   - `Trigger Effect Accepted for Card Code 40044918`
   - `Selected Card(s) [5] from location 1`
+  - `Passing turn to opponent for opponent-turn action`
 
 ### [ ] [Elemental Hero](Elemental Hero Deck Analysis.html) - Core Combo: The "Faris" Starter (Line 3)
 - **File**: `Elemental Hero Deck Analysis.html`
@@ -1373,16 +1335,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Step Title**: "Attack Declaration"
 - **Written Step**: *"Attack into a monster with 2200 or more ATK. Flame Wingman climbs to 3100 ATK and drops a Level 4 or lower monster from your hand in Defense Position."*
 - **Engine Violation**: `Step 4 ("Flame Wingman climbs to 3100 ATK and drops a Level 4 or lower monster from your hand in Defense Position.") was not offered as a legal action by the duel engine.`
-
-### [ ] [End of the World](End of the World Deck Analysis.html) - Getting It Into Your Hand
-- **File**: `End of the World Deck Analysis.html`
-- **Failed at**: Step 4 of 4
-- **Written Step**: *"Preparation of Rites cannot help. It stops at Level 7 and Ruler is Level 10. Pre-Preparation of Rites cannot pick it either."*
-- **Engine Violation**: `Step 6 ("Pre-Preparation of Rites cannot pick it either.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 95492061`
-  - `Trigger Effect Accepted for Card Code 95492061`
-  - `Selected Card(s) [16] from location 1`
+  - `Step 1: Legal Activation of code 24094653`
+  - `Selected Card(s) [0] from location 64`
 
 ### [ ] [End of the World](End of the World Deck Analysis.html) - Core Combo
 - **File**: `End of the World Deck Analysis.html`
@@ -1400,22 +1355,30 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Endymoin](Endymoin Deck Analysis.html) - Core Combo: The Path to Mastery
 - **File**: `Endymoin Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate the Ritual"
-- **Written Step**: *"Activate Spell Power Mastery to search Servant of Endymion . Place Servant in the Pendulum Zone."*
-- **Engine Violation**: `Step 2 ("Place Servant in the Pendulum Zone.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon the Servant"
+- **Written Step**: *"Activate another spell (like Upstart Goblin or another searcher) to place 3 Spell Counters on Servant. Use her effect to summon herself and Magister of Endymion from the deck."*
+- **Engine Violation**: `Step 3 ("Activate another spell (like Upstart Goblin or another searcher) to place 3 Spell Counters on Servant.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 92559258`
+  - `Step 2: Legal Activation of code 39000945`
 
 ### [ ] [Endymoin](Endymoin Deck Analysis.html) - Core Combo: The Path to Mastery (Line 2)
 - **File**: `Endymoin Deck Analysis.html`
-- **Failed at**: Step 2 of 6
-- **Step Title**: "Locate the Prince"
-- **Written Step**: *"Activate Empire of Endymion in your Spell & Trap Zone. Upon activation, trigger its effect to search your Deck for the key combo piece, Regulus, the Prince of Endymion , adding him to your hand."*
-- **Engine Violation**: `Step 3 ("Activate Empire of Endymion in your Spell & Trap Zone.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 6
+- **Step Title**: "Deploy the Prince"
+- **Written Step**: *"Trigger Regulus, the Prince of Endymion in your hand. Reveal any other Spellcaster monster residing in your hand, pay Life Points equal to its Level multiplied by 300, and Special Summon Regulus. On summon, use his effect to search your Deck for Arrow of Regulus ."*
+- **Engine Violation**: `Step 7 ("Special Summon Regulus.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 34041788`
+  - `Step 1: Legal Activation of code 96228804`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 96228804`
   - `Selected Card(s) [2] from location 1`
+  - `Step 3: Legal Activation of code 34041788`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 6: Legal Activation of code 22623509`
+  - `Trigger Effect Accepted for Card Code 22623509`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Entity](Entity Deck Analysis.html) - Core Combo
 - **File**: `Entity Deck Analysis.html`
@@ -1432,19 +1395,20 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Arm the Tower"
 - **Written Step**: *"Activate Selene's GY effect. Pay 1000 LP and banish Unleashed to Set Selene directly to the field. Activate it, equipping to Serziel ."*
-- **Engine Violation**: `Step 9 ("Activate it, equipping to Serziel.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 8 ("Pay 1000 LP and banish Unleashed to Set Selene directly to the field.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 8775395`
   - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Activation of code 28957126`
-  - `Selected Card(s) [1] from location 2`
-  - `Selected Card(s) [12] from location 1`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [6] from location 1`
+  - `Step 4: Legal Activation of code 70122149`
+  - `Selected Card(s) [0] from location 1`
   - `Step 6: Legal Normal Summon of code 82466274`
   - `Trigger Effect Accepted for Card Code 82466274`
-  - `Selected Card(s) [13] from location 1`
+  - `Selected Card(s) [3] from location 1`
   - `Step 7: Legal Activation of code 44133040`
   - `Selected Card(s) [0] from location 4`
-  - `Step 8: Legal Spell/Trap Set of code 8775395`
 
 ### [ ] [Evil Hero](Evil Hero Deck Analysis.html) - Core Combo: The Path to Malicious Bane
 - **File**: `Evil Hero Deck Analysis.html`
@@ -1461,28 +1425,26 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Reactive Disruption"
 - **Written Step**: *"End turn with Lios and the Set Trap. During the opponent's turn, use Singularity targeting an Evoltile and Evolsaur in GY to summon an Evolzar for disruption."*
-- **Engine Violation**: `Step 3 ("End turn with Lios and the Set Trap.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("use Singularity targeting an Evoltile and Evolsaur in GY to summon an Evolzar for disruption.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 15171722`
   - `Trigger Effect Accepted for Card Code 15171722`
   - `Selected Card(s) [1] from location 1`
+  - `Passing turn to opponent for opponent-turn action`
 
-### [ ] [Exosister](Exosister Deck Analysis.html) - Core Combo: The Path of Martha
-- **File**: `Exosister Deck Analysis.html`
+### [ ] [Exodia](Exodia Deck Analysis.html) - Core Combo: The One-Card Path to the Incarnate
+- **File**: `Exodia Deck Analysis.html`
 - **Failed at**: Step 3 of 3
-- **Step Title**: "Extend and Assemble"
-- **Written Step**: *"Using other extenders like Stella or the new Betrayal , Xyz Summon a second Rank 4. In the new format, this leads to Exosister Karmael to protect the board from Nibiru."*
-- **Engine Violation**: `Step 5 ("In the new format, this leads to Exosister Karmael to protect the board from Nibiru.") was not offered as a legal action by the duel engine.`
+- **Step Title**: "Unleash the Forbidden One"
+- **Written Step**: *"Activate Millennium Ankh , revealing the five "Forbidden One" pieces from your Deck to Special Summon The Unstoppable Exodia Incarnate from your Extra Deck."*
+- **Engine Violation**: `Step 4 ("Activate Millennium Ankh, revealing the five "Forbidden One" pieces from your Deck to Special Summon The Unstoppable Exodia Incarnate from your Extra Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 37343995`
+  - `Step 1: Legal Activation of code 1164211`
+  - `Auto-activating on-field effect of code 1164211 to complete Step 1`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Special Summon of code 42741437`
-  - `Step 3: Legal Activation of code 42741437`
-  - `Selected Card(s) [1] from location 4`
-  - `Selected Card(s) [4] from location 1`
-  - `Step 4: Legal Activation of code 52335937`
-  - `Selected Card(s) [0, 5] from location 1`
-  - `Selected Card(s) [0] from location 2`
+  - `Step 2: Legal Activation of code 37613663`
+  - `Selected Card(s) [0, 1, 2, 3, 4] from location 1`
+  - `Selected Card(s) [0] from location 64`
 
 ### [ ] [F.A.](F.A. Deck Analysis.html) - Core Combo: The "Hang On Mach + Dawn Dragster" Endboard
 - **File**: `F.A. Deck Analysis.html`
@@ -1503,42 +1465,6 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Start your combo by Synchro Summoning Fabled Gammajin . Its on-summon effect lets you Special Summon Fabled Kushano directly from your Deck."*
 - **Engine Violation**: `Step 1 ("Start your combo by Synchro Summoning Fabled Gammajin.") was not offered as a legal action by the duel engine.`
 
-### [ ] [Fiendsmith](Fiendsmith Deck Analysis.html) - Core Combo: The Engraver One-Card Starter
-- **File**: `Fiendsmith Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Recur and Climb"
-- **Written Step**: *"Use Lacrima to send a second Engraver to GY. Revive the first Engraver by shuffling Requiem back. Now you can Link climb into Fiendsmith's Sequence ."*
-- **Engine Violation**: `Step 6 ("Use Lacrima to send a second Engraver to GY.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 98567237`
-  - `Selected Card(s) [5] from location 1`
-  - `Selected Card(s) [1] from location 2`
-  - `Step 2: Legal Activation of code 98567237`
-  - `Selected Card(s) [0] from location 64`
-  - `Trigger Effect Accepted for Card Code 46640168`
-  - `Selected Card(s) [0] from location 16`
-  - `Step 3: Legal Special Summon of code 2463794`
-  - `Trigger Effect Accepted for Card Code 46640168`
-  - `Selected Card(s) [0] from location 16`
-  - `Step 4: Legal Activation of code 2463794`
-  - `Selected Card(s) [2] from location 1`
-  - `Step 5: Legal Activation of code 2463794`
-  - `Selected Card(s) [0] from location 4`
-
-### [ ] [Fire Fist](Fire Fist Deck Analysis.html) - Core Combo
-- **File**: `Fire Fist Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Unleash the Engine"
-- **Written Step**: *"With Eagle on the field, your monster effects no longer require sending Formations as cost. This turns your engine into a free-flowing chain of advantage, allowing you to build your final board with ease."*
-- **Engine Violation**: `Step 7 ("With Eagle on the field, your monster effects no longer require sending Formations as cost.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 44860890`
-  - `Step 2: Legal Special Summon of code 60303245`
-  - `Trigger Effect Accepted for Card Code 44860890`
-  - `Selected Card(s) [4] from location 1`
-  - `Step 4: Legal Activation of code 57103969`
-  - `Selected Card(s) [4] from location 1`
-
 ### [ ] [Fire King](Fire King Deck Analysis.html) - Core Combo: The One-Card Inferno
 - **File**: `Fire King Deck Analysis.html`
 - **Failed at**: Step 3 of 3
@@ -1548,19 +1474,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 90681088`
   - `Trigger Effect Accepted for Card Code 90681088`
-  - `Selected Card(s) [5] from location 1`
+  - `Selected Card(s) [4] from location 1`
   - `Step 3: Legal Activation of code 65305978`
   - `Selected Card(s) [0] from location 1`
   - `Step 4: Legal Activation of code 57554544`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [5] from location 1`
+  - `Selected Card(s) [2] from location 4`
+  - `Selected Card(s) [6] from location 1`
 
 ### [ ] [Firewall](Firewall Deck Analysis.html) - Core Combo
 - **File**: `Firewall Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Resource Generation"
-- **Written Step**: *"Link Linguriboh + Guardian into Cyberse Wicckid . Guardian revives itself. Activate Cyberse Wicckid to banish Linguriboh and search Cyberse Sage ."*
-- **Engine Violation**: `Step 5 ("Guardian revives itself.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Summit"
+- **Written Step**: *"Use Sage to fuse into Diplexer Chimera and synchro (if able). Climb through Splash Mage and Transcode Talker. End on Terahertz (sending Desavewurm) and set up Superfactorial ."*
+- **Engine Violation**: `Step 7 ("Use Sage to fuse into Diplexer Chimera and synchro (if able).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 20455229`
   - `Step 2: Legal Special Summon of code 24842059`
@@ -1571,23 +1497,14 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Fishborg](Fishborg Deck Analysis.html) - Core Combo: The Harpooner Extender
 - **File**: `Fishborg Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate from Hand"
-- **Written Step**: *"Activate Fishborg Harpooner's effect in hand, revealing it and another WATER monster (e.g., Nimble Angler ). Special Summon Harpooner and discard the other monster."*
-- **Engine Violation**: `Step 2 ("Special Summon Harpooner and discard the other monster.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Synchro Climb"
+- **Written Step**: *"Use Harpooner and a "Nimble" monster to Synchro Summon a Level 6 WATER monster like Coral Dragon . Then, use Coral Dragon and the remaining material to summon a powerful Level 8 Synchro like Adamancipator Risen - Dragite for a Spell/Trap negate."*
+- **Engine Violation**: `Step 4 ("Use Harpooner and a "Nimble" monster to Synchro Summon a Level 6 WATER monster like Coral Dragon.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 57420265`
   - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 2`
-
-### [ ] [Flamvell](Flamvell Deck Analysis.html) - Primary Combo: The Firedog Offensive
-- **File**: `Flamvell Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The Synchro Summon"
-- **Written Step**: *"In Main Phase 2, use the Level 4 Firedog and Level 4 Magician to Synchro Summon a Level 8 monster like Stardust Dragon ."*
-- **Engine Violation**: `Step 3 ("In Main Phase 2, use the Level 4 Firedog and Level 4 Magician to Synchro Summon a Level 8 monster like Stardust Dragon.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 23297235`
 
 ### [ ] [Floowandereeze](Floowandereeze Deck Analysis.html) - Flight Pattern: The Robina 1-Card Combo
 - **File**: `Floowandereeze Deck Analysis.html`
@@ -1599,38 +1516,31 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 18940725`
   - `Trigger Effect Accepted for Card Code 18940725`
   - `Selected Card(s) [4] from location 1`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Flower Cardian](Flower Cardian Deck Analysis.html) - The Art of the Stack: Core Combo
 - **File**: `Flower Cardian Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Initiate the Cascade"
 - **Written Step**: *"Summon a starter like Cherry Blossom with Curtain . Its effect will draw the first stacked card, guaranteeing success."*
-- **Engine Violation**: `Step 3 ("Summon a starter like Cherry Blossom with Curtain.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Its effect will draw the first stacked card, guaranteeing success.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 30786387`
-
-### [ ] [Fluffal](Fluffal Deck Analysis.html) - Core Combo: The "Wings of Despair" Draw Engine
-- **File**: `Fluffal Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Prepare for Flight"
-- **Written Step**: *"Activate Toy Vendor's effect, discarding Fluffal Wings . You'll draw one card and potentially get a Special Summon."*
-- **Engine Violation**: `Step 4 ("You'll draw one card and potentially get a Special Summon.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 3841833`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Activation of code 70245411`
+  - `Step 3: Legal Activation of code 5489987`
 
 ### [ ] [Fortune Lady](Fortune Lady Deck Analysis.html) - Core Combo: The Path to Advantage
 - **File**: `Fortune Lady Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Trigger the Catalyst"
 - **Written Step**: *"Activate Past's effect, targeting herself. Banish the on-field Fortune Lady Light along with one other Spellcaster (from your hand or GY) as cost. Banishing two Spellcasters raises Past's Level by 2, making her a Level 3 Tuner . Meanwhile, Light leaving the field by card effect triggers her effect to Special Summon from the Deck."*
-- **Engine Violation**: `Step 3 ("Activate Tuner's effect, targeting herself.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Banish the on-field Fortune Lady Light along with one other Spellcaster (from your hand or GY) as cost.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 57869175`
   - `Step 2: Legal Activation of code 27895597`
   - `Selected Card(s) [9] from location 1`
+  - `Step 3: Legal Activation of code 57869175`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [2] from location 4`
 
 ### [ ] [Fossil](Fossil Deck Analysis.html) - Core Combo: The OTK Blueprint
 - **File**: `Fossil Deck Analysis.html`
@@ -1647,34 +1557,38 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "The Effect"
 - **Written Step**: *"Special Summon 1 Level 3 Fiend from your Deck (e.g., Graff , Sangan , Fiendish Rhino Warrior ). Its effects are negated."*
-- **Engine Violation**: `Step 3 ("Special Summon 1 Level 3 Fiend from your Deck (e.g., Graff, Sangan, Fiendish Rhino Warrior ).") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Its effects are negated.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 10802915`
   - `Trigger Effect Accepted for Card Code 10802915`
-  - `Selected Card(s) [9] from location 1`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 2: Legal Activation of code 20758643`
 
-### [ ] [Gadget](Gadget Deck Analysis.html) - Core Combo: Gold Gadget Starter
-- **File**: `Gadget Deck Analysis.html`
+### [ ] [G Golem](G Golem Deck Analysis.html) - Core "Pure" Combo: Pebble Dog + Rock Hammer
+- **File**: `G Golem Deck Analysis.html`
 - **Failed at**: Step 3 of 3
-- **Step Title**: "Link Climb"
-- **Written Step**: *"From this point, use extenders to summon more Machines, Link Summon Platinum Gadget to get another body, and climb into a Link-4 boss monster like Apollousa, Bow of the Goddess ."*
-- **Engine Violation**: `Step 4 ("From this point, use extenders to summon more Machines, Link Summon Platinum Gadget to get another body, and climb into a Link-4 boss monster like Apollousa, Bow of the Goddess.") was not offered as a legal action by the duel engine.`
+- **Step Title**: "Begin the Link Climb"
+- **Written Step**: *"Use the tokens to Link Summon into key pieces like Splash Mage ( currently banned ; use Aromaseraphy Jasmine as a legal alternative) and G Golem Crystal Heart to start the recursive loop, reviving materials from the GY for further plays."*
+- **Engine Violation**: `Step 6 ("use Aromaseraphy Jasmine as a legal alternative) and G Golem Crystal Heart to start the recursive loop, reviving materials from the GY for further plays.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 55010259`
-  - `Trigger Effect Accepted for Card Code 55010259`
+  - `Step 1: Legal Activation of code 98875863`
   - `Selected Card(s) [0] from location 2`
-  - `Step 3: Legal Special Summon of code 28912357`
+  - `Trigger Effect Accepted for Card Code 25273572`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 3: Legal Normal Summon of code 98875863`
+  - `Step 4: Legal Activation of code 98875863`
+  - `Step 5: Legal Special Summon of code 59859086`
 
 ### [ ] [Gagaga](Gagaga Deck Analysis.html) - Core Combo: The 1-Card 'Onomatopaira' Starter
 - **File**: `Gagaga Deck Analysis.html`
 - **Failed at**: Step 2 of 4
 - **Step Title**: "Summon & Extend"
 - **Written Step**: *"Normal Summon one of your searched monsters. Now that you control an "Onomat" monster, activate Onomatokage 's effect in the GY to Special Summon itself."*
-- **Engine Violation**: `Step 5 ("Now that you control an "Onomat" monster") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("activate Onomatokage 's effect in the GY to Special Summon itself.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 6595475`
-  - `Selected Card(s) [1] from location 2`
-  - `Step 4: Legal Normal Summon of code 55088578`
+  - `Selected Card(s) [0] from location 2`
+  - `Step 4: Legal Normal Summon of code 4647954`
 
 ### [ ] [Gagaga](Gagaga Deck Analysis.html) - Core Combo: The 1-Card 'Onomatopaira' Starter (Line 2)
 - **File**: `Gagaga Deck Analysis.html`
@@ -1712,49 +1626,33 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 6 ("Because a Level 5+ monster is on field, Normal Summon Heart of Gaia without Tributing (using the extra summon or special summon condition if optimized).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 2106266`
+  - `Auto-activating on-field effect of code 2106266 to complete Step 1`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Normal Summon of code 7913375`
   - `Step 3: Legal Activation of code 7913375`
-  - `Selected Card(s) [2] from location 1`
+  - `Selected Card(s) [3] from location 1`
   - `Trigger Effect Accepted for Card Code 61525276`
-  - `Selected Card(s) [5] from location 1`
+  - `Selected Card(s) [1] from location 1`
   - `Step 4: Legal Activation of code 38590361`
-  - `Selected Card(s) [4] from location 64`
-
-### [ ] [Galaxy-photon](Galaxy-photon Deck Analysis.html) - Core Combo: Delta Wing Ignition
-- **File**: `Galaxy-photon Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Extend and Ascend"
-- **Written Step**: *"Use Galaxy Soldier's effect to Special Summon itself, triggering another search. From here, you can continue into Rank 5 or 8 plays, leading to your final board."*
-- **Engine Violation**: `Step 6 ("From here, you can continue into Rank 5 or 8 plays, leading to your final board.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 47051709`
-  - `Trigger Effect Accepted for Card Code 47051709`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Special Summon of code 85747929`
-  - `Step 4: Legal Activation of code 85747929`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [6] from location 1`
-  - `Step 5: Legal Activation of code 46659709`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [0] from location 64`
+  - `Trigger Effect Accepted for Card Code 72064891`
+  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Galaxy-photon](Galaxy-photon Deck Analysis.html) - Core Combo: Delta Wing Ignition (Line 2)
 - **File**: `Galaxy-photon Deck Analysis.html`
-- **Failed at**: Step 1 of 5
-- **Step Title**: "Build the Stack"
-- **Written Step**: *"Overlay two Level 8 monsters into Divine Golden Shadow Dragon Dragluxion , which searches a "Galaxy" or "Tachyon" card on the way in."*
-- **Engine Violation**: `Step 1 ("Overlay two Level 8 monsters into Divine Golden Shadow Dragon Dragluxion, which searches a "Galaxy" or "Tachyon" card on the way in.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Gandora](Gandora Deck Analysis.html) - Blueprint for Annihilation: Core Combo
-- **File**: `Gandora Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "3Establish Control"
-- **Written Step**: *"Activate "Ties That Bind" to Special Summon "Silent Magician Zero" and "Silent Swordsman Zero" from the deck, establishing your initial layer of protection and negation."*
-- **Engine Violation**: `Step 4 ("Activate "Ties That Bind" to Special Summon "Silent Magician Zero" and "Silent Swordsman Zero" from the deck, establishing your initial layer of protection and negation.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 5
+- **Step Title**: "Climb to a Loaded Rank 8"
+- **Written Step**: *"Detach two from Dragluxion to summon Galaxy-Eyes Cipher Dragon using Dragluxion as material, then attach a "Galaxy" monster from the Extra Deck. Cipher Dragon now holds three."*
+- **Engine Violation**: `Step 3 ("attach a "Galaxy" monster from the Extra Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 92110878`
-  - `Trigger Effect Accepted for Card Code 92110878`
-  - `Selected Card(s) [5] from location 1`
-  - `Step 3: Legal Activation of code 79791878`
+  - `Step 1: Legal Special Summon of code 44698398`
+  - `Trigger Effect Accepted for Card Code 44698398`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 2: Legal Activation of code 44698398`
+  - `Selected Card(s) [0, 1] from location 4`
+  - `Selected Card(s) [1] from location 64`
+  - `Selected Card(s) [0] from location 64`
 
 ### [ ] [Gate Guardian](Gate Guardian Deck Analysis.html) - Core Combo: The Foundational Play
 - **File**: `Gate Guardian Deck Analysis.html`
@@ -1763,8 +1661,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Banish the two pieces to Special Summon Gate Guardian of Thunder and Wind . Its effect activates, letting you search for a key Spell/Trap to extend your plays or set up interruptions."*
 - **Engine Violation**: `Step 3 ("Banish the two pieces to Special Summon Gate Guardian of Thunder and Wind.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 35026117`
+  - `Step 1: Legal Activation of code 34771947`
   - `Step 2: Legal Activation of code 34771947`
+  - `Selected Card(s) [6] from location 1`
 
 ### [ ] [Geargia](Geargia Deck Analysis.html) - Core Combo: The Armor-to-Gigant X Loop
 - **File**: `Geargia Deck Analysis.html`
@@ -1799,10 +1698,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Genex](Genex Deck Analysis.html) - Core Combo: The One-Card Assembly Line
 - **File**: `Genex Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Start the Loop"
-- **Written Step**: *"Repair Genex Controller adds the first monster back to hand, then its second effect grants an additional Normal Summon. Summon the next starter, search again, and repeat. This loop continues until your field is full."*
-- **Engine Violation**: `Step 3 ("Repair Genex Controller adds the first monster back to hand") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Assemble the Payoffs"
+- **Written Step**: *"Use the swarmed monsters to Synchro Summon T.G. Hyper Librarian to draw cards on subsequent Synchro Summons. From there, climb into a board of powerful, generic negates."*
+- **Engine Violation**: `Step 7 ("Use the swarmed monsters to Synchro Summon T.G. Hyper Librarian to draw cards on subsequent Synchro Summons.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 1533292`
   - `Trigger Effect Accepted for Card Code 1533292`
@@ -1811,52 +1710,50 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 8173184`
   - `Selected Card(s) [0] from location 16`
   - `Trigger Effect Accepted for Card Code 8173184`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Ghostrick](Ghostrick Deck Analysis.html) - Core Combo: The Utopic Draco Future Engine
 - **File**: `Ghostrick Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initial Xyz Summon"
-- **Written Step**: *"Overlay two same-level monsters (e.g., two Level 3s) to Xyz Summon the corresponding "Ghostrick" Xyz monster, like Ghostrick Alucard ."*
-- **Engine Violation**: `Step 1 ("Overlay two same-level monsters (e.g., two Level 3s) to Xyz Summon the corresponding "Ghostrick" Xyz monster, like Ghostrick Alucard.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Ghoti](Ghoti Deck Analysis.html) - Core Combo: The One-Card Lifeless Leaffish
-- **File**: `Ghoti Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Opponent's Turn"
-- **Written Step**: *"During the opponent's Standby Phase, Shif returns. During their Main Phase, use Shif's Quick Effect to Synchro Summon Arionpos, Serpent of the Ghoti using Shif and Leaffish."*
-- **Engine Violation**: `Step 4 ("During the opponent's Standby Phase, Shif returns.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Final Boss"
+- **Written Step**: *"Use Ghostrick Shot to revive your first Xyz monster, make a second Angel, and then overlay both Angels into Number F0: Utopic Future , and finally into Number F0: Utopic Draco Future ."*
+- **Engine Violation**: `Step 5 ("overlay both Angels into Number F0: Utopic Future, and finally into Number F0: Utopic Draco Future.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 89617515`
-  - `Trigger Effect Accepted for Card Code 89617515`
-  - `Selected Card(s) [8] from location 1`
-  - `Step 3: Legal Activation of code 73421698`
+  - `Step 1: Legal Special Summon of code 75367227`
+  - `Step 2: Legal Special Summon of code 53334641`
   - `Selected Card(s) [0] from location 4`
+  - `Step 4: Legal Activation of code 53334641`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [5] from location 1`
 
 ### [ ] [Gishki](Gishki Deck Analysis.html) - Executing the Ritual: 1-Card Combo
 - **File**: `Gishki Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Initiate the Search Chain"
 - **Written Step**: *"The effect of Gishki Abyss activates upon its summon. Use it to add Gishki Shadow from your Deck to your hand. Each part of the engine acts like a marionette on a string , pulling the next piece into place."*
-- **Engine Violation**: `Step 3 ("The effect of Gishki Abyss activates upon its summon.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Each part of the engine acts like a marionette on a string, pulling the next piece into place.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 38356857`
   - `Trigger Effect Accepted for Card Code 38356857`
   - `Selected Card(s) [3] from location 1`
   - `Trigger Effect Accepted for Card Code 67111213`
   - `Selected Card(s) [7] from location 1`
+  - `Step 4: Legal Activation of code 29888389`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Gizmek](Gizmek Deck Analysis.html) - Core Combo
 - **File**: `Gizmek Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Amplify ATK"
 - **Written Step**: *"Normal Summon Gizmek Inaba and summon another Gizmek (e.g., Arakami ). Banish Inaba from the GY to target Orochi . Its ATK becomes the combined original ATK of all Gizmeks on field (e.g., 2450 + 1850 + 50 = 4350 ATK or more)."*
-- **Engine Violation**: `Step 4 ("Banish Inaba from the GY to target Orochi.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Its ATK becomes the combined original ATK of all Gizmeks on field (e.g., 2450 + 1850 + 50 = 4350 ATK or more).") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 2: Legal Activation of code 71197066`
+  - `Step 2: Legal Activation of code 24793135`
+  - `Auto-activating on-field effect of code 24793135 to complete Step 2`
   - `Step 3: Legal Normal Summon of code 50901852`
   - `Trigger Effect Accepted for Card Code 50901852`
   - `Selected Card(s) [0] from location 2`
+  - `Step 4: Legal Activation of code 71197066`
 
 ### [ ] [Gladiator Beast](Gladiator Beast Deck Analysis.html) - Path to Victory: The Core Combo
 - **File**: `Gladiator Beast Deck Analysis.html`
@@ -1866,23 +1763,27 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 5 ("use its second effect to tag-out for Darius.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 26582143`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [2] from location 2`
+  - `Trigger Effect Accepted for Card Code 26582143`
+  - `Selected Card(s) [5] from location 1`
   - `Step 3: Legal Special Summon of code 66863374`
   - `Trigger Effect Accepted for Card Code 66863374`
-  - `Selected Card(s) [20] from location 1`
+  - `Selected Card(s) [12] from location 1`
 
 ### [ ] [Gogogo](Gogogo Deck Analysis.html) - The Third Card: Number 39: Utopia, Emissary of Light
 - **File**: `Gogogo Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Written Step**: *"Cannot be destroyed by battle, except by a Number monster."*
-- **Engine Violation**: `Step 1 ("Cannot be destroyed by battle, except by a Number monster.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Written Step**: *"Quick Effect: detach 1 material to give a monster you control one destruction save for the turn."*
+- **Engine Violation**: `Step 2 ("Quick Effect: detach 1 material to give a monster you control one destruction save for the turn.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Gogogo](Gogogo Deck Analysis.html) - Modern Core Combos
 - **File**: `Gogogo Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "One Card in Hand, Two in the Graveyard"
-- **Written Step**: *"Gagaga Magic sits in your hand with Gogogo Golem and Gogogo Gigas already in the graveyard. Your Normal Summon has not been used."*
-- **Engine Violation**: `Step 1 ("Gagaga Magic sits in your hand with Gogogo Golem and Gogogo Gigas already in the graveyard.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Both Bodies Arrive at Once"
+- **Written Step**: *"Activate the effect in the hand. Special Summon Gagaga Magic itself and revive Gogogo Golem out of the graveyard."*
+- **Engine Violation**: `Step 3 ("Activate the effect in the hand.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Normal Summon of code 12908094`
 
 ### [ ] [Gold Pride](Gold Pride Deck Analysis.html) - Core Combo: The P.U.N.K. Engine Starter
 - **File**: `Gold Pride Deck Analysis.html`
@@ -1904,10 +1805,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Gouki](Gouki Deck Analysis.html) - Core Combo Walkthroughs
 - **File**: `Gouki Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Opening Move"
-- **Written Step**: *"Activate Gouki Machine Suprex in hand, revealing a Level 2 Gouki (like Octostretch) to Special Summon both. The "Gouki-only" lock is now active."*
-- **Engine Violation**: `Step 2 ("The "Gouki-only" lock is now active.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon The Searcher"
+- **Written Step**: *"Synchro Summon Gouki Dragon Ogre using Machine Suprex (Lvl 4 Tuner) and your Level 2 Gouki. Both materials trigger their search effects."*
+- **Engine Violation**: `Step 3 ("Synchro Summon Gouki Dragon Ogre using Machine Suprex (Lvl 4 Tuner) and your Level 2 Gouki.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 29099860`
   - `Selected Card(s) [0] from location 2`
@@ -1925,10 +1826,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Gouki](Gouki Deck Analysis.html) - Core Combo Walkthroughs (Line 3)
 - **File**: `Gouki Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "The "Isolde" Opening"
-- **Written Step**: *"Start with 2 Warriors (e.g., Suprex + Extender) to Link Summon Isolde . Isolde (CL1) and the Gouki (CL2) search cards. Isolde's 2nd effect sends an Equip Spell to summon another Gouki from Deck."*
-- **Engine Violation**: `Step 1 ("Start with 2 Warriors (e.g., Suprex + Extender) to Link Summon Isolde.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "The Loop Enabler"
+- **Written Step**: *"Use Gouki Re-Match (searched earlier) to revive 2 Goukis. Link climb into the Pre-Errata Firewall Dragon . Its non-HOPT Special Summon effect is now live."*
+- **Engine Violation**: `Step 4 ("Use Gouki Re-Match (searched earlier) to revive 2 Goukis.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 29099860`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Gouki](Gouki Deck Analysis.html) - Core Combo Walkthroughs (Line 4)
 - **File**: `Gouki Deck Analysis.html`
@@ -1944,14 +1848,15 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0] from location 64`
   - `Trigger Effect Accepted for Card Code 7782069`
   - `Selected Card(s) [0] from location 4`
-  - `Step 5: Legal Activation of code 62376646`
 
 ### [ ] [Graydle](Graydle Deck Analysis.html) - Core Combo: The Impact-Alligator Steal
 - **File**: `Graydle Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate Graydle Impact"
-- **Written Step**: *"Start with Graydle Impact and Graydle Alligator on your field. This sets up the perfect scenario for a proactive monster steal."*
-- **Engine Violation**: `Step 1 ("Start with Graydle Impact and Graydle Alligator on your field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Target and Destroy"
+- **Written Step**: *"Use Impact's effect, targeting your own Graydle Alligator and one card your opponent controls. Both are destroyed."*
+- **Engine Violation**: `Step 4 ("Both are destroyed.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 3: Legal Activation of code 2759860`
 
 ### [ ] [Grepher](Grepher Deck Analysis.html) - Strategic Execution: Core Combo Lines
 - **File**: `Grepher Deck Analysis.html`
@@ -1962,26 +1867,26 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Grepher](Grepher Deck Analysis.html) - Strategic Execution: Core Combo Lines (Line 2)
 - **File**: `Grepher Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Search & Send"
-- **Written Step**: *"Activate ROTA to add Dark Grepher . Normal Summon Grepher, activate effect, discard 1 DARK to send The Phantom Knights of Ancient Cloak to GY."*
-- **Engine Violation**: `Step 1 ("Activate ROTA to add Dark Grepher.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Grepher](Grepher Deck Analysis.html) - Strategic Execution: Core Combo Lines (Line 3)
-- **File**: `Grepher Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Send Starter"
-- **Written Step**: *"Normal Summon Dark Grepher . Activate effect, discard 1 DARK to send Orcust Harp Horror from Deck to GY."*
-- **Engine Violation**: `Step 2 ("Activate effect, discard 1 DARK to send Orcust Harp Horror from Deck to GY.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Chain Search"
+- **Written Step**: *"Banish Ancient Cloak from GY to add The Phantom Knights of Silent Boots to hand. Special Summon Silent Boots."*
+- **Engine Violation**: `Step 5 ("Special Summon Silent Boots.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 14536035`
+  - `Step 1: Legal Activation of code 32807846`
+  - `Selected Card(s) [12] from location 1`
+  - `Step 2: Legal Normal Summon of code 18859369`
+  - `Step 3: Legal Activation of code 18859369`
+  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [1] from location 1`
 
 ### [ ] [Guardragon](Guardragon Deck Analysis.html) - Peak Power: The Forbidden Combo (Historical)
 - **File**: `Guardragon Deck Analysis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Summon Elpy & Tutor REDMD"
 - **Written Step**: *"Summon Elpy (Forbidden) to a zone pointed to by another Link Monster. Activate Elpy's effect to Special Summon Red-Eyes Darkness Metal Dragon directly from the Deck."*
-- **Engine Violation**: `Step 1 ("Summon Elpy (Forbidden) to a zone pointed to by another Link Monster.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Activate Elpy's effect to Special Summon Red-Eyes Darkness Metal Dragon directly from the Deck.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 86148577`
 
 ### [ ] [Gunkan](Gunkan Deck Analysis.html) - The Chef's Special: "Red Rice" Combo
 - **File**: `Gunkan Deck Analysis.html`
@@ -2011,7 +1916,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 4
 - **Step Title**: "Initiation: Fire Hand Destroyed"
 - **Written Step**: *"The loop begins. The opponent destroys Fire Hand (by battle or effect). Its effect triggers, destroying an opponent's monster."*
-- **Engine Violation**: `Step 1 ("The loop begins.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("The opponent destroys Fire Hand (by battle or effect).") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Harpie](Harpie Deck Analysis.html) - Core Combo: The One-Card Channeler
 - **File**: `Harpie Deck Analysis.html`
@@ -2022,15 +1927,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 90238142`
   - `Step 2: Legal Activation of code 90238142`
-  - `Selected Card(s) [2] from location 2`
-  - `Selected Card(s) [6] from location 1`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [9] from location 1`
+  - `Trigger Effect Accepted for Card Code 39392286`
+  - `Selected Card(s) [3] from location 1`
 
 ### [ ] [Hazy flame](Hazy flame Deck Analysis.html) - Core Combo: The Peryton Offensive
 - **File**: `Hazy flame Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Ignite the Engine"
-- **Written Step**: *"Activate Hazy Flame Peryton's effect, tributing it and sending a FIRE monster from your hand to the Graveyard. This is the crucial chokepoint of the combo."*
-- **Engine Violation**: `Step 1 ("Activate Hazy Flame Peryton's effect, tributing it and sending a FIRE monster from your hand to the Graveyard.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Unleash the Hydras"
+- **Written Step**: *"Special Summon two copies of Hazy Flame Hydra from your deck. Their Dinosaur typing is key to accessing the deck's true boss monster."*
+- **Engine Violation**: `Step 3 ("Special Summon two copies of Hazy Flame Hydra from your deck.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 83108603`
 
 ### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo
 - **File**: `Hecahands Deck Analysis.html`
@@ -2041,18 +1950,39 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 18321034`
   - `Selected Card(s) [0] from location 64`
-  - `Step 2: Legal Activation of code 20415050`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [8] from location 1`
+  - `Step 2: Legal Activation of code 32759190`
   - `Selected Card(s) [0] from location 1`
-  - `Trigger Effect Accepted for Card Code 18321034`
+
+### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 2)
+- **File**: `Hecahands Deck Analysis.html`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Ibtel → Yadel Chain"
+- **Written Step**: *"Shuffle Ibtel → SS Yadel → Search Hecahands Tartaros ."*
+- **Engine Violation**: `Step 3 ("Shuffle Ibtel") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 58143852`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 58143852`
+  - `Selected Card(s) [10] from location 1`
+
+### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 3)
+- **File**: `Hecahands Deck Analysis.html`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Steal New Monster"
+- **Written Step**: *"Target and take control of the newly Normal Summoned monster."*
+- **Engine Violation**: `Step 4 ("Target and take control of the newly Normal Summoned monster.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Activation of code 95365081`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 3: Legal Activation of code 32759190`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 4)
 - **File**: `Hecahands Deck Analysis.html`
 - **Failed at**: Step 1 of 6
 - **Step Title**: "Chimera Engine Start"
 - **Written Step**: *"Normal Summon Swordknight . Tribute → SS Berfomet . Add Chimera Fusion & Gazelle."*
-- **Engine Violation**: `Step 2 ("Tribute → SS Berfomet.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Special Summon Berfomet.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 28954097`
 
@@ -2072,34 +2002,32 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 92919429`
   - `Trigger Effect Accepted for Card Code 92919429`
-  - `Selected Card(s) [15] from location 64`
+  - `Selected Card(s) [13] from location 64`
   - `Trigger Effect Accepted for Card Code 79606837`
-  - `Selected Card(s) [10] from location 1`
+  - `Selected Card(s) [8] from location 1`
 
 ### [ ] [Heraldic Beasts](Heraldic Beasts Deck Analysis.html) - Core Combo: The Gryphon Starter
 - **File**: `Heraldic Beasts Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Xyz for Setup"
 - **Written Step**: *"Use your extenders to summon a second Level 4. Xyz Summon Number 18: Heraldry Patriarch , a key combo piece for filling the Graveyard."*
-- **Engine Violation**: `Step 3 ("Use your extenders to summon a second Level 4.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Xyz Summon Number 18: Heraldry Patriarch, a key combo piece for filling the Graveyard.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 28406301`
-  - `Step 2: Legal Activation of code 87255382`
-  - `Selected Card(s) [0] from location 2`
+  - `Step 1: Legal Activation of code 60268386`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 3: Legal Activation of code 28406301`
 
 ### [ ] [Heroic](Heroic Deck Analysis.html) - Core Combo: The Claivesolish OTK
 - **File**: `Heroic Deck Analysis.html`
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Summon the Champion"
 - **Written Step**: *"Overlay your two Level 4 monsters to Xyz Summon Heroic Champion - Claivesolish . Enter the Battle Phase, use its effect to reduce your LP to 500 and double its ATK to 5000. Then, activate Heroic Chance to double its ATK again to 10,000."*
-- **Engine Violation**: `Step 6 ("Enter the Battle Phase") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 7 ("use its effect to reduce your LP to 500 and double its ATK to 5000.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 1833916`
   - `Step 2: Legal Activation of code 1833916`
-  - `Selected Card(s) [1] from location 2`
-  - `Selected Card(s) [11] from location 1`
-  - `Trigger Effect Accepted for Card Code 18548966`
-  - `Selected Card(s) [6] from location 1`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [9] from location 1`
   - `Step 5: Legal Special Summon of code 97453744`
 
 ### [ ] [Hieratic](Hieratic Deck Analysis.html) - Core Combo: The Foundational Atum OTK
@@ -2111,34 +2039,61 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Ice Barrier](Ice Barrier Deck Analysis.html) - Core Combo: The Main Synchro Line
 - **File**: `Ice Barrier Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Search"
-- **Written Step**: *"Normal Summon Revealer , discard a card (like Mirror Mage ) to Special Summon a Tuner. If you discarded Mirror Mage, its GY effect adds Georgius to your hand."*
-- **Engine Violation**: `Step 1 ("Normal Summon Revealer, discard a card (like Mirror Mage ) to Special Summon a Tuner.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Ignister Archetype Breakdown.html](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist)
-- **File**: `Ignister Archetype Breakdown.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "The New Bridge"
-- **Written Step**: *"Link Infant + Pikari into Cyberse Wicckid . SS Doyon to Wicckid's zone (Search Bururu/Recur Achichi). Link Wicckid + Doyon into Transcode Talker (Replacing Splash Mage)."*
-- **Engine Violation**: `Step 5 ("Link Infant + Pikari into Cyberse Wicckid.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Extend the Board"
+- **Written Step**: *"Special Summon Georgius from your hand. Its effect triggers, Special Summoning the Mirror Mage from your Graveyard."*
+- **Engine Violation**: `Step 3 ("Special Summon Georgius from your hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 3: Legal Activation of code 59054773`
-  - `Step 4: Legal Activation of code 97024987`
+  - `Step 1: Legal Normal Summon of code 18319762`
+  - `Auto-activating on-field effect of code 18319762 to complete Step 1`
+  - `Selected Card(s) [2] from location 1`
 
-### [ ] [Ignister Archetype Breakdown.html](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist) (Line 2)
+### [ ] [Ignister](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist)
+- **File**: `Ignister Archetype Breakdown.html`
+- **Failed at**: Step 1 of 4
+- **Step Title**: "The Setup"
+- **Written Step**: *"NS Achichi -> Search Pikari . Link into Dark Infant to search A.I.Land . Use Land to SS Pikari -> Search A.I. Meet You . Reveal Templar to add Doyon ."*
+- **Engine Violation**: `Step 6 ("Reveal Templar to add Doyon.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 15808381`
+  - `Trigger Effect Accepted for Card Code 15808381`
+  - `Selected Card(s) [2] from location 1`
+  - `Step 3: Legal Special Summon of code 74567889`
+  - `Trigger Effect Accepted for Card Code 74567889`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Activation of code 59054773`
+  - `Auto-activating on-field effect of code 59054773 to complete Step 4`
+  - `Selected Card(s) [2] from location 2`
+  - `Trigger Effect Accepted for Card Code 16020923`
+  - `Selected Card(s) [1] from location 1`
+
+### [ ] [Ignister](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist) (Line 2)
 - **File**: `Ignister Archetype Breakdown.html`
 - **Failed at**: Step 1 of 2
 - **Step Title**: "Maliss Setup"
 - **Written Step**: *"NS Dormouse -> Banish White Rabbit . Rabbit pays LP to SS itself. On Summon, Rabbit sets Maliss MTP-07 (Trap) from Deck."*
-- **Engine Violation**: `Step 1 ("NS Dormouse -> Banish White Rabbit.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Banish White Rabbit.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 32061192`
 
-### [ ] [Ignister Archetype Breakdown.html](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist) (Line 3)
+### [ ] [Ignister](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist) (Line 3)
 - **File**: `Ignister Archetype Breakdown.html`
-- **Failed at**: Step 1 of 2
-- **Step Title**: "Circular Dump"
-- **Written Step**: *"Send Mathmech Sigma to SS Circular. SS Sigma from GY. Overlay for Primathmech Alembertian ."*
-- **Engine Violation**: `Step 2 ("SS Sigma from GY.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 2
+- **Step Title**: "Extension & Rip"
+- **Written Step**: *"Search Superfactorial . Tribute Alembertian to SS a Level 4 from hand/GY. Use these bodies for Templar. Set Superfactorial for opponent's turn (Laplacian hand rip)."*
+- **Engine Violation**: `Step 6 ("Use these bodies for Templar.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 36521307`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 2: Legal Activation of code 27182739`
+  - `Trigger Effect Accepted for Card Code 36521307`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 3: Legal Special Summon of code 85692042`
+  - `Trigger Effect Accepted for Card Code 85692042`
+  - `Selected Card(s) [0, 1] from location 4`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 5: Legal Activation of code 85692042`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Impcantation](Impcantation Deck Analysis.html) - Core Combo
 - **File**: `Impcantation Deck Analysis.html`
@@ -2148,20 +2103,18 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 2 ("Special Summon Impcantation Talismandra from the Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 65877963`
-  - `Selected Card(s) [2] from location 2`
-  - `Selected Card(s) [4] from location 1`
-  - `Trigger Effect Accepted for Card Code 80701178`
+  - `Selected Card(s) [3] from location 2`
   - `Selected Card(s) [2] from location 1`
 
 ### [ ] [Inca](Inca Deck Analysis.html) - Foundational Combo: The One-Card Starter
 - **File**: `Inca Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate Starter"
-- **Written Step**: *"Activate the effect of Ascator, Dawnwalker in your hand. Discard one card as the cost."*
-- **Engine Violation**: `Step 2 ("Discard one card as the cost.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon Materials"
+- **Written Step**: *"Special Summon Dawnwalker (Level 5) from hand and Fire Ant Ascator (Level 3 Tuner) from your Deck."*
+- **Engine Violation**: `Step 3 ("Special Summon Dawnwalker (Level 5) from hand and Fire Ant Ascator (Level 3 Tuner) from your Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 71821687`
-  - `Selected Card(s) [3] from location 2`
+  - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Infernal](Infernal Deck Analysis.html) - Combo Execution: Accessing Pyro Strategies
@@ -2169,14 +2122,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Summon Banshee"
 - **Written Step**: *"Summon any two Level 4 monsters (e.g., from a Superheavy Samurai engine) and Xyz Summon Infernal Flame Banshee ."*
-- **Engine Violation**: `Step 1 ("Summon any two Level 4 monsters (e.g., from a Superheavy Samurai engine)") was not offered as a legal action by the duel engine.`
-
-### [ ] [Infernal](Infernal Deck Analysis.html) - Combo Execution: Accessing Pyro Strategies (Line 2)
-- **File**: `Infernal Deck Analysis.html`
-- **Failed at**: Step 1 of 2
-- **Step Title**: "Summon & Send"
-- **Written Step**: *"Summon Infernal Flame Banshee . Activate its effect, detaching 1 material to send Barrier Statue of the Inferno from Deck to GY."*
-- **Engine Violation**: `Step 1 ("Summon Infernal Flame Banshee.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Xyz Summon Infernal Flame Banshee.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 19847532`
 
 ### [ ] [Infernal](Infernal Deck Analysis.html) - Combo Execution: Accessing Pyro Strategies (Line 3)
 - **File**: `Infernal Deck Analysis.html`
@@ -2199,59 +2147,25 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Spring the Trap"
 - **Written Step**: *"During the opponent's turn, activate Void Feast . Send the face-up Void Vanishment to the Graveyard as cost."*
-- **Engine Violation**: `Step could not be completed legally under duel engine rules.`
+- **Engine Violation**: `Step 3 ("activate Void Feast.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 78748366`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [6] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [1] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [5] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [5] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [6] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [1] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [1] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
+  - `Auto-activating on-field effect of code 78748366 to complete Step 1`
   - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 2: Legal Spell/Trap Set of code 31444249`
   - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [6] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Infernoid](Infernoid Deck Analysis.html) - Core Combo Walkthrough (Line 2)
 - **File**: `Infernoid Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Infernoid Evil"
-- **Written Step**: *"Summon Infernoid Evil , typically to the Extra Monster Zone. This can be done via various combo lines, or protected from targeting with Dark Fusion ."*
-- **Engine Violation**: `Step 1 ("Summon Infernoid Evil, typically to the Extra Monster Zone.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "The Surgical Mill"
+- **Written Step**: *"Activate Evil 's effect: banish an Infernoid from your GY to mill 'Noids with different names equal to its Level. The prime target is Infernoid Attondel ( 8 ) or Seitsemas ( 7 ), which are often sent to the GY beforehand by Decatron or Foolish Burial . This mills 7-8 key names, including Onuncu and Devyaty ."*
+- **Engine Violation**: `Step 3 ("Activate Evil 's effect: banish an Infernoid from your GY to mill 'Noids with different names equal to its Level.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 58446973`
+  - `Trigger Effect Accepted for Card Code 58446973`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Infinittrack](Infinittrack Deck Analysis.html) - Core Combo
 - **File**: `Infinittrack Deck Analysis.html`
@@ -2267,44 +2181,22 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 76830505`
   - `Selected Card(s) [2] from location 1`
 
-### [ ] [Invoked](Invoked Deck Analysis.html) - Strategic Combo Lines
-- **File**: `Invoked Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Written Step**: *"Link into Almiraj , then Secure Gardna (providing LIGHT target)."*
-- **Engine Violation**: `Step 2 ("Link into Almiraj") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 74063034`
-  - `Selected Card(s) [0] from location 64`
-
 ### [ ] [Invoked](Invoked Deck Analysis.html) - Strategic Combo Lines (Line 2)
 - **File**: `Invoked Deck Analysis.html`
-- **Failed at**: Step 4 of 4
-- **Written Step**: *"Standard Normal Summon still available for Aleister the Invoker . Aleister the Reminiscent can also Special Summon itself from hand if any Spellcaster/Fusion is already present — multiple bodies without spending card economy."*
-- **Engine Violation**: `Step 5 ("Aleister the Reminiscent can also Special Summon itself from hand if any Spellcaster/Fusion is already present — multiple bodies without spending card economy.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Written Step**: *"Aiwass Quick Effect: banish itself as cost → search Aleister the Reminiscent from Deck + gain an additional Normal Summon of any Spellcaster."*
+- **Engine Violation**: `Step 3 ("Aiwass Quick Effect: banish itself as cost") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 84288367`
+  - `Step 1: Legal Activation of code 63926180`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Normal Summon of code 57294268`
-  - `Trigger Effect Accepted for Card Code 57294268`
-  - `Selected Card(s) [5] from location 64`
-  - `Selected Card(s) [1] from location 1`
-  - `Step 3: Legal Activation of code 74063034`
-  - `Selected Card(s) [0] from location 64`
-  - `Step 4: Legal Activation of code 86120751`
-  - `Selected Card(s) [0] from location 4`
+  - `Step 2: Legal Activation of code 84288367`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Invoked](Invoked Deck Analysis.html) - Strategic Combo Lines (Line 3)
 - **File**: `Invoked Deck Analysis.html`
 - **Failed at**: Step 1 of 5
 - **Written Step**: *"Link into Salamangreat Almiraj , activate Invocation , fuse Aleister + Almiraj into Invoked Sorath ."*
 - **Engine Violation**: `Step 1 ("Link into Salamangreat Almiraj") was not offered as a legal action by the duel engine.`
-
-### [ ] [Inzektor](Inzektor Deck Analysis.html) - Core Combo: The Dragonfly-Hornet Loop
-- **File**: `Inzektor Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish the Host"
-- **Written Step**: *"Start with Inzektor Dragonfly on the field and Inzektor Hornet in the Graveyard. This can be set up easily with the spell Zektrike Kou-ou ."*
-- **Engine Violation**: `Step 1 ("Start with Inzektor Dragonfly on the field and Inzektor Hornet in the Graveyard.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Iron Chain](Iron Chain Deck Analysis.html) - Core Combo
 - **File**: `Iron Chain Deck Analysis.html`
@@ -2313,24 +2205,12 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Start by swarming two Level 3 monsters to Xyz Summon M-X-Saber Invoker . Its effect is used to summon Iron Chain Repairman directly from the Deck."*
 - **Engine Violation**: `Step 1 ("Start by swarming two Level 3 monsters to Xyz Summon M-X-Saber Invoker.") was not offered as a legal action by the duel engine.`
 
-### [ ] [Junk Deck Analyis.html](Junk Deck Analyis.html) - Core Combo
+### [ ] [Junk Deck Analyis](Junk Deck Analyis.html) - Core Combo
 - **File**: `Junk Deck Analyis.html`
 - **Failed at**: Step 1 of 4
 - **Step Title**: "Summon Meister (Summon 1 of 4)"
 - **Written Step**: *"Reveal "Stardust Dragon" in your Extra Deck → Special Summon Junk Meister from hand. Meister's effect immediately searches Junk Armor from Deck."*
-- **Engine Violation**: `Step 1 ("Reveal "Stardust Dragon" in your Extra Deck → Special Summon Junk Meister from hand.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Jurrac](Jurrac Deck Analysis.html) - Core Combo: The Jurrac Stego Eruption
-- **File**: `Jurrac Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon and Destroy"
-- **Written Step**: *"Normal Summon Jurrac Stego . Activate its effect, targeting itself for destruction."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 2.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 20568404`
-  - `Step 2: Legal Activation of code 20568404`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [0] from location 1`
+- **Engine Violation**: `Step 1 ("Reveal "Stardust Dragon" in your Extra Deck") was not offered as a legal action by the duel engine.`
 
 ### [ ] [K9](K9 Deck Analysis.html) - Interactive Combo Replays
 - **File**: `K9 Deck Analysis.html`
@@ -2348,10 +2228,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Kaiser Glider](Kaiser Glider Deck Analysis.html) - Primary Combo: The "Lair of Darkness" Removal
 - **File**: `Kaiser Glider Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish the Field"
-- **Written Step**: *"Activate Lair of Darkness . Its effect makes all monsters on the field DARK, and allows you to Tribute an opponent's DARK monster for your card effects."*
-- **Engine Violation**: `Step 2 ("Its effect makes all monsters on the field DARK, and allows you to Tribute an opponent's DARK monster for your card effects.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Activate Golden Burst"
+- **Written Step**: *"Chain Golden Burst's (Quick Effect) from your hand. To pay the cost, you Tribute the opponent's Borrelend Dragon . Because Tributing for cost is a game mechanic and *not* an effect that targets or destroys, it bypasses all of Borrelend's protections."*
+- **Engine Violation**: `Step 4 ("Chain Golden Burst's (Quick Effect) from your hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 59160188`
 
@@ -2426,30 +2306,6 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Reveal Winged Kuriboh Sabatiel LV10 and pay half your LP to add a "Polymerization" or "Fusion" Spell. You drop to 4000 and Sabatiel shuffles itself back into the Deck."*
 - **Engine Violation**: `Step 1 ("Reveal Winged Kuriboh Sabatiel LV10 and pay half your LP to add a "Polymerization" or "Fusion" Spell.") was not offered as a legal action by the duel engine.`
 
-### [ ] [Lair of Darkness](Lair of Darkness Deck Analysis.html) - Core Combo
-- **File**: `Lair of Darkness Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Disrupt & Summon"
-- **Written Step**: *"On the opponent's turn, activate Lilith's Quick Effect. Tribute one of their key monsters as cost. This triggers Darkest Diabolos , Special Summoning it from your hand or GY."*
-- **Engine Violation**: `Step 6 ("Tribute one of their key monsters as cost.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 59160188`
-  - `Step 3: Legal Normal Summon of code 23898021`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Step 5: Legal Opponent-Turn Activation of code 23898021`
-  - `Selected Card(s) [0, 1, 2] from location 1`
-  - `Selected Card(s) [0] from location 1`
-
-### [ ] [Laval](Laval Deck Analysis.html) - Core Combo: The Quasar Turbo Path
-- **File**: `Laval Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Rekindling Eruption"
-- **Written Step**: *"Activate Rekindling to Special Summon five FIRE monsters from your GY, typically three Laval Volcano Handmaiden and two non-Tuner Lavals."*
-- **Engine Violation**: `Step 3 ("Activate Rekindling to Special Summon five FIRE monsters from your GY, typically three Laval Volcano Handmaiden and two non-Tuner Lavals.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 72142276`
-  - `Selected Card(s) [13, 14] from location 1`
-
 ### [ ] [Legacy of Greed](Legacy of Greed Deck Analysis.html) - Core Combo
 - **File**: `Legacy of Greed Deck Analysis.html`
 - **Failed at**: Step 1 of 3
@@ -2466,6 +2322,17 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 35726888`
   - `Selected Card(s) [6] from location 1`
+
+### [ ] [Light and Darkness Dragon](Light and Darkness Dragon Deck Analysis.html) - Core Combo: Chaos Space
+- **File**: `Light and Darkness Dragon Deck Analysis.html`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Start the "Flywheel""
+- **Written Step**: *"Special Summon Collapserpent (banish LIGHT). Link Summon Striker Dragon . Collapserpent effect triggers, search White Dragon Wyverburster ."*
+- **Engine Violation**: `Step 3 ("Special Summon Collapserpent (banish LIGHT).") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 99266988`
+  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Lightray](Lightray Deck Analysis.html) - Core Combo
 - **File**: `Lightray Deck Analysis.html`
@@ -2495,15 +2362,17 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Lost World](Lost World Deck Analysis.html) - The Jurraegg Token: Asset & Combo Piece
 - **File**: `Lost World Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Chain Block"
-- **Written Step**: *"Activate Lost World . Normal Summon Souleating Oviraptor . Two effects trigger. Set Oviraptor as Chain Link 1 and Lost World as Chain Link 2. This "chain blocks" Oviraptor, preventing Ash Blossom ."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 2.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Trigger the Combo"
+- **Written Step**: *"Activate Oviraptor's second effect, targeting the Token . Lost World's effect applies: instead of destroying the token, destroy Babycerasaurus from your Deck. Babycerasaurus now triggers, summoning another Dinosaur from your deck to continue the combo."*
+- **Engine Violation**: `Step 8 ("Activate Oviraptor's second effect, targeting the Token.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 17228908`
   - `Step 2: Legal Normal Summon of code 44335251`
   - `Chain Trigger Accepted for Card Code 44335251`
   - `Chain Trigger Accepted for Card Code 17228908`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Spell/Trap Set of code 17228908`
 
 ### [ ] [Lunalight](Lunalight Deck Analysis.html) - Interactive Combo Replays (Line 2)
 - **File**: `Lunalight Deck Analysis.html`
@@ -2515,7 +2384,8 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 8379983`
   - `Trigger Effect Accepted for Card Code 8379983`
   - `Selected Card(s) [11] from location 1`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
+  - `Trigger Effect Accepted for Card Code 8379983`
 
 ### [ ] [Lunalight](Lunalight Deck Analysis.html) - Interactive Combo Replays (Line 3)
 - **File**: `Lunalight Deck Analysis.html`
@@ -2527,7 +2397,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 8379983`
   - `Trigger Effect Accepted for Card Code 8379983`
   - `Selected Card(s) [3] from location 1`
-  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [1] from location 2`
   - `Trigger Effect Accepted for Card Code 8379983`
 
 ### [ ] [Machina](Machina Deck Analysis.html) - Foundational Combo: Gearframe Starter
@@ -2565,20 +2435,14 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Magician Girl](Magician Girl Deck Analysis.html) - Core Combo: The Battle Phase Chain Reaction (Line 2)
 - **File**: `Magician Girl Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Gaze Ignition"
-- **Written Step**: *"Activate The Gaze of Timaeus (searched via Soul Servant or DMoD), targeting the DMG in your GY. Shuffle her back into the deck, completing the resource loop."*
-- **Engine Violation**: `Step 3 ("Activate The Gaze of Timaeus (searched via Soul Servant or DMoD), targeting the DMG in your GY.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Magistus](Magistus Deck Analysis.html) - Core Combo: The "Spenta" Standard Line
-- **File**: `Magistus Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Bridge"
-- **Written Step**: *"Normal Summon Zoroa . Equip Artemis from Extra Deck. Artemis triggers: Search Crowley, the Gifted . Crowley triggers in hand: Special Summon itself."*
-- **Engine Violation**: `Step 4 ("Normal Summon Zoroa.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Vanguard / Link Evasion"
+- **Written Step**: *"Fusion Summon Red-Eyes Dark Dragoon for Turn 1 omni-negates, or Timaeus the United Magical Dragon to break boards Turn 2. On Turn 3, Link them away into S:P Little Knight to dodge the Gaze banishment penalty."*
+- **Engine Violation**: `Step 6 ("On Turn 3, Link them away into S:P Little Knight to dodge the Gaze banishment penalty.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 42544773`
-  - `Selected Card(s) [5] from location 1`
+  - `Step 3: Legal Activation of code 22283204`
+  - `Selected Card(s) [0] from location 16`
+  - `Selected Card(s) [1] from location 64`
 
 ### [ ] [Magnet Warrior](Magnet Warrior Deck Analysis.html) - Core Combos
 - **File**: `Magnet Warrior Deck Analysis.html`
@@ -2589,9 +2453,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Majespecter](Majespecter Deck Analysis.html) - The Updated One-Card Line
 - **File**: `Majespecter Deck Analysis.html`
-- **Failed at**: Step 3 of 9
-- **Written Step**: *"Nue returns Bunbuku and Yamarashi to hand and loads Kyubi and Yata face-up into the Extra Deck. You are now locked to Majespecter and Dracoslayer."*
-- **Engine Violation**: `Step 4 ("Nue returns Bunbuku and Yamarashi to hand and loads Kyubi and Yata face-up into the Extra Deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 6 of 9
+- **Written Step**: *"Overlay both Level 4s into Draco - Ryu ."*
+- **Engine Violation**: `Step 9 ("Overlay both Level 4s into Draco - Ryu.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 31991800`
   - `Trigger Effect Accepted for Card Code 31991800`
@@ -2600,23 +2464,31 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 3: Legal Special Summon of code 66384688`
   - `Trigger Effect Accepted for Card Code 66384688`
   - `Selected Card(s) [0, 1] from location 64`
+  - `Step 6: Legal Activation of code 31991800`
+  - `Step 7: Legal Activation of code 94784213`
 
 ### [ ] [Majespecter](Majespecter Deck Analysis.html) - The Four-Interruption Endboard
 - **File**: `Majespecter Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Written Step**: *"Tempest tributes Ogama to negate a monster effect or a Special Summon."*
-- **Engine Violation**: `Step 1 ("Tempest tributes Ogama to negate a monster effect or a Special Summon.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 4
+- **Written Step**: *"Parallel bounces one of your own scales together with any card they control. Their floodgate leaves, your starter comes back to hand."*
+- **Engine Violation**: `Step 4 ("Their floodgate leaves, your starter comes back to hand.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 31991800`
+  - `Step 3: Legal Activation of code 68395509`
 
 ### [ ] [Majespecter](Majespecter Deck Analysis.html) - One-Card Combo Flowchart
 - **File**: `Majespecter Deck Analysis.html`
-- **Failed at**: Step 2 of 5
-- **Written Step**: *"Special Summon Yamarashi , then Link Summon Nue ."*
-- **Engine Violation**: `Step 3 ("Special Summon Yamarashi") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 5 of 5
+- **Written Step**: *"Xyz Summon Draco - Ryu . Set Tempest and pass."*
+- **Engine Violation**: `Step 8 ("Xyz Summon Draco - Ryu.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 31991800`
   - `Trigger Effect Accepted for Card Code 31991800`
   - `Selected Card(s) [3] from location 1`
   - `Step 2: Legal Activation of code 51073802`
+  - `Step 4: Legal Special Summon of code 66384688`
+  - `Step 5: Legal Activation of code 94784213`
+  - `Step 6: Legal Activation of code 68395509`
 
 ### [ ] [Majestic](Majestic Deck Analysis.html) - Core Combo: The Synchron Ascent
 - **File**: `Majestic Deck Analysis.html`
@@ -2625,15 +2497,6 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Special Summon Stardust Synchron by tributing a monster. Its effect searches Arrive in Light . Normal Summon another Tuner and Synchro Summon Junk Speeder ."*
 - **Engine Violation**: `Step 1 ("Special Summon Stardust Synchron by tributing a monster.") was not offered as a legal action by the duel engine.`
 
-### [ ] [Malefic](Malefic Deck Analysis.html) - The 2026 Combo Lines
-- **File**: `Malefic Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Summon Material"
-- **Written Step**: *"Special Summon a Level 8 Malefic monster like Malefic Stardust Dragon from the hand by banishing its counterpart from the Extra Deck."*
-- **Engine Violation**: `Step 3 ("Special Summon a Level 8 Malefic monster like Malefic Stardust Dragon from the hand by banishing its counterpart from the Extra Deck.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 48829461`
-
 ### [ ] [Malefic](Malefic Deck Analysis.html) - The 2026 Combo Lines (Line 2)
 - **File**: `Malefic Deck Analysis.html`
 - **Failed at**: Step 1 of 3
@@ -2641,7 +2504,8 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"During your opponent's End Phase, activate Malefic Paradigm Shift straight from your hand by paying half your LP. Nothing needs to be on your board first."*
 - **Engine Violation**: `Step 2 ("Nothing needs to be on your board first.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 5125629`
+  - `Passing turn to opponent for opponent-turn action`
+  - `Step 1: Legal Opponent-Turn Activation of code 5125629`
   - `Selected Card(s) [0] from location 1`
   - `Selected Card(s) [1] from location 1`
 
@@ -2663,10 +2527,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Malicevorous](Malicevorous Deck Analysis.html) - Core Combo: Fork into Full Board
 - **File**: `Malicevorous Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Ignition"
-- **Written Step**: *"Activate Malicevorous Fork by sending another Level 2 Fiend (e.g., Malicevorous Knife ) to the GY. Special Summon Fork."*
-- **Engine Violation**: `Step 2 ("Special Summon Fork.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Pivot"
+- **Written Step**: *"Overlay Blue and Jet to Xyz Summon Gigantic Spright . Use its effect to detach a material and Special Summon Spright Red from the Deck."*
+- **Engine Violation**: `Step 5 ("Overlay Blue and Jet to Xyz Summon Gigantic Spright.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 61791132`
   - `Selected Card(s) [0] from location 2`
@@ -2683,15 +2547,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [13] from location 1`
   - `Step 3: Legal Special Summon of code 44760562`
   - `Step 4: Legal Special Summon of code 21368273`
-  - `Trigger Effect Accepted for Card Code 21368273`
-  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Masked hero](Masked hero Deck Analysis.html) - Core Combo: The Vision HERO Engine
 - **File**: `Masked hero Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Chain"
-- **Written Step**: *"Tribute Faris to summon Increase , which in turn summons Vision HERO Vyon . Vyon dumps a HERO like Malicious ."*
-- **Engine Violation**: `Step 3 ("Tribute Faris to summon Increase, which in turn summons Vision HERO Vyon.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Payoff"
+- **Written Step**: *"Link Summon Xtra HERO Cross Crusader . Use its effects to revive, search, and continue building your board."*
+- **Engine Violation**: `Step 5 ("Link Summon Xtra HERO Cross Crusader.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 18094166`
   - `Selected Card(s) [1] from location 2`
@@ -2700,10 +2562,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Masked hero](Masked hero Deck Analysis.html) - Core Combo: The Vision HERO Engine (Line 2)
 - **File**: `Masked hero Deck Analysis.html`
-- **Failed at**: Step 2 of 5
-- **Step Title**: "The EN Shuffle"
-- **Written Step**: *"Activate EN Shuffle — return Ejector to Deck, Special Summon Elemental HERO Stratos from Deck. Stratos searches Vision HERO Vyon . Normal Summon still available."*
-- **Engine Violation**: `Step 4 ("Stratos searches Vision HERO Vyon.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 5
+- **Step Title**: "The Vision Bridge"
+- **Written Step**: *"Normal Summon Vision HERO Vyon — send Elemental HERO Shadow Mist to the GY, which searches Masked HERO Dusk Crow . Vision HERO Vyon banishes Shadow Mist to search Polymerization . Link Stratos and Vyon into Xtra HERO Cross Crusader ; Crusader searches Destiny HERO - Malicious."*
+- **Engine Violation**: `Step 8 ("Link Stratos and Vyon into Xtra HERO Cross Crusader") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 30875635`
   - `Selected Card(s) [0] from location 1`
@@ -2711,28 +2573,20 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0] from location 1`
   - `Step 3: Legal Activation of code 10186633`
   - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [3] from location 1`
+  - `Selected Card(s) [1] from location 1`
   - `Trigger Effect Accepted for Card Code 40044918`
-  - `Selected Card(s) [3] from location 1`
-
-### [ ] [Materiactor](Materiactor Deck Analysis.html) - Core Combo: The One-Card Exareptor
-- **File**: `Materiactor Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "First Xyz Summon"
-- **Written Step**: *"Normal Summon Prima Materiactor . Overlay both monsters to Xyz Summon Materiactor Exagard ."*
-- **Engine Violation**: `Step 3 ("Normal Summon Prima Materiactor.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 37426272`
-  - `Selected Card(s) [3] from location 2`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 57448410`
+  - `Step 5: Legal Normal Summon of code 10808715`
+  - `Trigger Effect Accepted for Card Code 10808715`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 6: Legal Special Summon of code 58004362`
 
-### [ ] [Mathmech Deck Analyis.html](Mathmech Deck Analyis.html) - Core Combo: One-Card Circular
+### [ ] [Mathmech Deck Analyis](Mathmech Deck Analyis.html) - Core Combo: One-Card Circular
 - **File**: `Mathmech Deck Analyis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Circular Ignition"
-- **Written Step**: *"Activate Circular in hand, sending Sigma from Deck to GY as cost. Special Summon Circular."*
-- **Engine Violation**: `Step 2 ("Special Summon Circular.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "The Alembertian Nexus"
+- **Written Step**: *"Sigma revives itself. Circular searches Superfactorial . Xyz Summon Alembertian and use its effect to search Diameter ."*
+- **Engine Violation**: `Step 5 ("Xyz Summon Alembertian") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 36521307`
   - `Selected Card(s) [0] from location 1`
@@ -2755,18 +2609,20 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Megalith](Megalith Deck Analysis.html) - Core Combo: The "Anastasis" 1-Card Starter
 - **File**: `Megalith Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Activate the Engine"
-- **Written Step**: *"Activate Megalith Anastasis . Discard 1 card (e.g., a Bethor or other Ritual Monster) to add Megalith Notrah Plura (Level 12) and Megalith Phul (Level 2) from your Deck to your hand."*
-- **Engine Violation**: `Step 2 ("Discard 1 card (e.g., a Bethor or other Ritual Monster) to add Megalith Notrah Plura (Level 12) and Megalith Phul (Level 2) from your Deck to your hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Protect Your Plays"
+- **Written Step**: *"Reveal Notrah Plura from your hand. Its effect makes your opponent unable to respond to your Megalith monster effect activations this turn. This makes your Phul "Ash-proof" and your entire combo "Nibiru-proof"."*
+- **Engine Violation**: `Step 3 ("Reveal Notrah Plura from your hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 29876299`
+  - `Step 2: Legal Activation of code 29876299`
+  - `Selected Card(s) [2] from location 2`
 
 ### [ ] [Mekk-knight](Mekk-knight Deck Analysis.html) - Core Combo: The Girsu Lockdown
 - **File**: `Mekk-knight Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Written Step**: *"Link Summon Lib the World Key Blademaster using Girsu and your token. Lib's effect activates, setting World Legacy's Secret directly from your Deck."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 3.`
+- **Failed at**: Step 3 of 3
+- **Written Step**: *"Special Summon Mekk-Knight Purple Nightfall to the column with the opponent's token, then activate Mekk-Knight Purple Nightfall 's effect to search for Mekk-Knight Indigo Eclipse ."*
+- **Engine Violation**: `Step 5 ("Special Summon Mekk-Knight Purple Nightfall to the column with the opponent's token") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 69811710`
   - `Trigger Effect Accepted for Card Code 69811710`
@@ -2787,101 +2643,55 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 52918032`
   - `Selected Card(s) [2] from location 16`
 
-### [ ] [Metalfoes](Metalfoes Deck Analysis.html) - Core Combo: The Fundamental Loop
-- **File**: `Metalfoes Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Pendulum & Fusion Summon"
-- **Written Step**: *"Replace your scale, Pendulum Summon your monsters (including the one from your Extra Deck), then activate your Set Fusion Spell to summon a boss monster like Metalfoes Mithrilium ."*
-- **Engine Violation**: `Step 4 ("Replace your scale, Pendulum Summon your monsters (including the one from your Extra Deck)") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 60473572`
-  - `Step 2: Legal Activation of code 10024317`
-
-### [ ] [Metalmorph](Metalmorph Deck Analysis.html) - Core Combo
-- **File**: `Metalmorph Deck Analysis.html`
-- **Failed at**: Step 2 of 2
-- **Step Title**: "Establish the Threat"
-- **Written Step**: *"End your turn with a monster on field and the primary interruption ready. On the opponent's turn, Tribute Illusionist to summon a protected boss like Red-Eyes Black Fullmetal Dragon ."*
-- **Engine Violation**: `Step could not be completed legally under duel engine rules.`
-- **Prior Legal Plays**:
-  - `Passing turn to opponent for opponent-turn action`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [2] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [2] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [2] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [6] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [6] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [6] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Selected Card(s) [0] from location 2`
-
 ### [ ] [Mikanko](Mikanko Deck Analysis.html) - Primary Combo Sequence
 - **File**: `Mikanko Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate the Dance"
-- **Written Step**: *"Activate Mikanko Water Arabesque , targeting an opponent's monster. This removes it from the field and summons Ha-Re the Sword Mikanko from your Deck."*
-- **Engine Violation**: `Step 1 ("Activate Mikanko Water Arabesque, targeting an opponent's monster.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Prepare the Target"
+- **Written Step**: *"Tribute an opponent's monster to summon a Kaiju to their field. Equip it with Double-Edged Sword ."*
+- **Engine Violation**: `Step 6 ("Equip it with Double-Edged Sword.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 84550369`
+  - `Selected Card(s) [17] from location 1`
+  - `Selected Card(s) [12] from location 1`
 
 ### [ ] [Mikanko](Mikanko Deck Analysis.html) - Primary Combo Sequence (Line 2)
 - **File**: `Mikanko Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Engine Expansion"
-- **Written Step**: *"Activate Fire Dance to revive Ha-Re . Ha-Re searches Arabesque . Use Arabesque to summon Sanaki from deck (bouncing Ha-Re). Use Sanaki to summon Hu-Li from deck."*
-- **Engine Violation**: `Step 3 ("Activate Fire Dance to revive Ha-Re.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Xyz & Lethal Search"
+- **Written Step**: *"Overlay Level 3s for Uzuhime . Effect: Search Double-Edged Sword . Equip it to Uzuhime."*
+- **Engine Violation**: `Step 7 ("Overlay Level 3s for Uzuhime.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 84550369`
   - `Selected Card(s) [8] from location 1`
   - `Selected Card(s) [11] from location 1`
+  - `Step 3: Legal Activation of code 80044027`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 11161666`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 5: Legal Activation of code 43527730`
+  - `Selected Card(s) [1] from location 4`
+  - `Step 6: Legal Activation of code 11161666`
+  - `Selected Card(s) [1] from location 4`
 
 ### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories
 - **File**: `Mimighoul Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate Maker"
-- **Written Step**: *"Reveal Slime and Archfiend from Deck. (Assuming opponent picks Slime)."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 1.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Slime -> Dragon -> Dungeon"
+- **Written Step**: *"Slime summons Dragon from deck. Dragon searches Dungeon. Dungeon searches Fairy. Fairy summons itself. Xyz into Giant & Throne for final board."*
+- **Engine Violation**: `Step 8 ("Xyz into Giant & Throne for final board.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 80551022`
+  - `Step 3: Legal Activation of code 50415441`
+  - `Step 5: Legal Activation of code 81522098`
+  - `Step 6: Legal Activation of code 86809440`
+  - `Step 7: Legal Activation of code 43066927`
 
 ### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories (Line 2)
 - **File**: `Mimighoul Deck Analysis.html`
-- **Failed at**: Step 1 of 2
-- **Step Title**: "Summon & Search"
-- **Written Step**: *"Normal Summon Dragon to add Dungeon. Dungeon adds Fairy. Fairy summons itself."*
-- **Engine Violation**: `Step 2 ("Dungeon adds Fairy.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 2
+- **Step Title**: "Xyz for Maker"
+- **Written Step**: *"Overlay for Giant Mimighoul. Giant searches Mimighoul Maker. Proceed with Maker combo."*
+- **Engine Violation**: `Step 4 ("Overlay for Giant Mimighoul.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 81522098`
   - `Trigger Effect Accepted for Card Code 81522098`
@@ -2889,12 +2699,15 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories (Line 3)
 - **File**: `Mimighoul Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Deploy Flower"
-- **Written Step**: *"Activate Mimighoul Maker , revealing Flower. Opponent randomized outcome places Flower on their field face-down."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 1.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Xyz Ripple Bird"
+- **Written Step**: *"Use remaining Level 1 assets to Xyz Summon Ripple Bird . Detach 1 material to target the face-down Flower and force it to face-up Attack/Defense position."*
+- **Engine Violation**: `Step 3 ("Use remaining Level 1 assets to Xyz Summon Ripple Bird.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 13204145`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 81522098`
+  - `Selected Card(s) [2] from location 1`
 
 ### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories (Line 4)
 - **File**: `Mimighoul Deck Analysis.html`
@@ -2915,14 +2728,18 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 2
 - **Step Title**: "Verify Ownership"
 - **Written Step**: *"Deploy Flower to opponent's field. Activate Spell Bot Herder targeting the Set Flower. Temporarily reveal it to verify you are the original owner."*
-- **Engine Violation**: `Step 1 ("Deploy Flower to opponent's field.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 3 ("Temporarily reveal it to verify you are the original owner.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Spell/Trap Set of code 45951104`
 
 ### [ ] [Mokey Mokey](Mokey Mokey Deck Analysis.html) - Core Combo: The King's Gambit OTK
 - **File**: `Mokey Mokey Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Establish the Scene"
-- **Written Step**: *"Start with Mokey Mokey Smackdown and at least one Mokey Mokey on the field. You'll need two other "Mokey Mokey" monsters (or "Adrift") in hand or GY for the Fusion Summon."*
-- **Engine Violation**: `Step 1 ("Start with Mokey Mokey Smackdown and at least one Mokey Mokey on the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Summon the King"
+- **Written Step**: *"Activate Polymerization or another Fusion card to summon Mokey Mokey King , using three "Mokey Mokey" monsters as material. This loads your Graveyard."*
+- **Engine Violation**: `Step 3 ("Activate Polymerization or another Fusion card to summon Mokey Mokey King, using three "Mokey Mokey" monsters as material.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Special Summon of code 98978921`
 
 ### [ ] [Morphtronic](Morphtronic Deck Analysis.html) - Core Combo Pathway
 - **File**: `Morphtronic Deck Analysis.html`
@@ -2936,7 +2753,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0] from location 1`
   - `Step 3: Legal Activation of code 90659259`
   - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [11] from location 1`
+  - `Selected Card(s) [7] from location 1`
 
 ### [ ] [Mystic Swordsman](Mystic Swordsman Deck Analysis.html) - Core Combo
 - **File**: `Mystic Swordsman Deck Analysis.html`
@@ -2968,14 +2785,15 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Mystical Elf](Mystical Elf Deck Analysis.html) - Strategic Execution: Combo Lines
 - **File**: `Mystical Elf Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Synchro & Search"
-- **Written Step**: *"Normal Summon The White Stone of Legend . Tune with Mystical Elf for a Level 5 Synchro. White Stone's effect activates, adding Blue-Eyes White Dragon from Deck to hand."*
-- **Engine Violation**: `Step 3 ("Tune with Mystical Elf for a Level 5 Synchro.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Establish Enabler"
+- **Written Step**: *"Activate Ancient Rules to Special Summon Blue-Eyes White Dragon from hand. White Lightning is now live."*
+- **Engine Violation**: `Step 5 ("Activate Ancient Rules to Special Summon Blue-Eyes White Dragon from hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 911883`
   - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Normal Summon of code 79814787`
+  - `Step 3: Legal Special Summon of code 34755994`
 
 ### [ ] [Mystical Elf](Mystical Elf Deck Analysis.html) - Strategic Execution: Combo Lines (Line 2)
 - **File**: `Mystical Elf Deck Analysis.html`
@@ -2987,10 +2805,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 85138716`
   - `Step 2: Legal Activation of code 85138716`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Special Summon of code 68300121`
-  - `Trigger Effect Accepted for Card Code 68300121`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [1] from location 1`
+  - `Step 3: Legal Special Summon of code 34755994`
+  - `Step 4: Legal Activation of code 79816536`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Myutant](Myutant Deck Analysis.html) - Core Combo
 - **File**: `Myutant Deck Analysis.html`
@@ -3006,23 +2823,6 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [4] from location 2`
   - `Selected Card(s) [0] from location 1`
 
-### [ ] [Naturia](Naturia Deck Analysis.html) - Core Combo: The One-Card Lock
-- **File**: `Naturia Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Synchro & Recur"
-- **Written Step**: *"Synchro Summon Naturia Beast using Camellia and Mole Cricket. Because an Extra Deck monster was summoned, Mole Cricket revives itself again from the GY."*
-- **Engine Violation**: `Step 6 ("Because an Extra Deck monster was summoned, Mole Cricket revives itself again from the GY.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 93454062`
-  - `Step 2: Legal Activation of code 93454062`
-  - `Selected Card(s) [14] from location 1`
-  - `Trigger Effect Accepted for Card Code 29942771`
-  - `Selected Card(s) [10] from location 1`
-  - `Selected Card(s) [6] from location 1`
-  - `Step 4: Legal Activation of code 34813545`
-  - `Selected Card(s) [0] from location 2`
-  - `Step 5: Legal Special Summon of code 33198837`
-
 ### [ ] [Nekroz](Nekroz Deck Analysis.html) - Core Combo: The Kaleidoscope-Herald Engine
 - **File**: `Nekroz Deck Analysis.html`
 - **Failed at**: Step 1 of 3
@@ -3032,10 +2832,10 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Nemesis](Nemesis Deck analysis.html) - Core Combo: The Flag Starter
 - **File**: `Nemesis Deck analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Requirement"
-- **Written Step**: *"Start with any monster in your banished zone. This can be achieved through cards like Pot of Desires , Allure of Darkness , or another archetype's mechanics."*
-- **Engine Violation**: `Step 1 ("Start with any monster in your banished zone.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon and Recycle"
+- **Written Step**: *"Activate Nemeses Flag in hand. Target the banished monster, Special Summon Flag, and shuffle the target back into the Deck."*
+- **Engine Violation**: `Step 3 ("Activate Nemeses Flag in hand.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Nemleria](Nemleria Deck Analysis.html) - The Flow of Dreams: Core Combo
 - **File**: `Nemleria Deck Analysis.html`
@@ -3051,38 +2851,12 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0, 1] from location 64`
   - `Step 5: Legal Special Summon of code 43944080`
 
-### [ ] [Neo Spacian](Neo Spacian Deck Analysis.html) - Classic Core Combo
-- **File**: `Neo Spacian Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Opening Gambit"
-- **Written Step**: *"Activate Miracle Ejector in hand. Send Neo-Spacian Aqua Dolphin from Deck to GY for cost. Ejector Special Summons itself."*
-- **Engine Violation**: `Step 3 ("Ejector Special Summons itself.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 30875635`
-  - `Selected Card(s) [7] from location 1`
-  - `Trigger Effect Accepted for Card Code 30875635`
-  - `Selected Card(s) [2] from location 1`
-
 ### [ ] [Neo Spacian](Neo Spacian Deck Analysis.html) - Classic Core Combo (Line 2)
 - **File**: `Neo Spacian Deck Analysis.html`
 - **Failed at**: Step 1 of 4
 - **Step Title**: "Engage the Engine"
 - **Written Step**: *"Activate EN - Engage Neo Space . Send Elemental HERO Shadow Mist (from hand) and a "Neo-Spacian" to the GY. This summons Elemental HERO Spirit of Neos from your Deck."*
 - **Engine Violation**: `Step 1 ("Activate EN - Engage Neo Space.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Nimble](Nimble Deck Analysis.html) - Core Combo: The 1-Card Beaver Starter
-- **File**: `Nimble Deck Analysis.html`
-- **Failed at**: Step 4 of 4
-- **Step Title**: "Extend & Protect"
-- **Written Step**: *"Use Sprind and a Beaver to Xyz Summon Gigantic Spright , which summons a Level 2 from Deck (like Spright Blue ) and locks both players into Level/Rank/Link 2 monsters, protecting you from Nibiru ."*
-- **Engine Violation**: `Step 6 ("Use Sprind and a Beaver to Xyz Summon Gigantic Spright, which summons a Level 2 from Deck (like Spright Blue ) and locks both players into Level/Rank/Link 2 monsters, protecting you from Nibiru.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 68353324`
-  - `Trigger Effect Accepted for Card Code 68353324`
-  - `Selected Card(s) [9] from location 1`
-  - `Step 3: Legal Special Summon of code 72329844`
-  - `Trigger Effect Accepted for Card Code 72329844`
-  - `Selected Card(s) [9] from location 1`
 
 ### [ ] [Nordic](Nordic Deck Analysis.html) - Core Combo: The Path to Valhalla
 - **File**: `Nordic Deck Analysis.html`
@@ -3096,7 +2870,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Special Summon of code 90207654`
   - `Trigger Effect Accepted for Card Code 90207654`
-  - `Selected Card(s) [7] from location 1`
+  - `Selected Card(s) [0] from location 1`
+  - `Trigger Effect Accepted for Card Code 27024795`
+  - `Selected Card(s) [2] from location 64`
 
 ### [ ] [Number](Number Deck Analysis.html) - The Tournament Proof: Dwayne Howell's Onomat Utopia
 - **File**: `Number Deck Analysis.html`
@@ -3116,7 +2892,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Initiate Attack Sequence"
 - **Written Step**: *"Attack an opponent's monster with the Gates sequentially. After 3 attacks, all Gates will have 8000 ATK. The fourth attack secures the OTK."*
-- **Engine Violation**: `Step 4 ("After 3 attacks, all Gates will have 8000 ATK.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("The fourth attack secures the OTK.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 41418852`
   - `Step 2: Legal Activation of code 41418852`
@@ -3135,25 +2911,33 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Obelisk the Tormentor](Obelisk the Tormentor Deck Analysis.html) - Core Combos & Synergistic Engines (Line 2)
 - **File**: `Obelisk the Tormentor Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Activate Un-Negatable Spell"
-- **Written Step**: *"With Obelisk in hand or GY, activate the Quick-Play Spell The Breaking Ruin God . Its activation and effect cannot be negated."*
-- **Engine Violation**: `Step 2 ("Its activation and effect cannot be negated.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Special Summon Obelisk"
+- **Written Step**: *"Special Summon Obelisk the Tormentor . For the rest of this turn, it is unaffected by all opponent's card effects , patching its key weakness."*
+- **Engine Violation**: `Step 3 ("Special Summon Obelisk the Tormentor.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 85182315`
   - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Obelisk the Tormentor](Obelisk the Tormentor Deck Analysis.html) - Core Combos & Synergistic Engines (Line 3)
 - **File**: `Obelisk the Tormentor Deck Analysis.html`
-- **Failed at**: Step 3 of 5
-- **Step Title**: "Swarm the Field"
-- **Written Step**: *"Imsety Special Summons itself. Use Sarcophagus to send/summon 2 more Horus monsters (like Qebehsenuef and Hapi ). You now have 3 monsters on field for Tributes."*
-- **Engine Violation**: `Step 6 ("Imsety Special Summons itself.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 4 of 5
+- **Step Title**: "Activate GY Effect"
+- **Written Step**: *"Activate the Soul Energy MAX!!! you discarded in Step 1. Banish it from the GY."*
+- **Engine Violation**: `Step 10 ("Banish it from the GY.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 84941194`
   - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 1`
   - `Step 4: Legal Activation of code 16528181`
+  - `Auto-activating on-field effect of code 16528181 to complete Step 5`
+  - `Selected Card(s) [3] from location 2`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 7: Legal Activation of code 16528181`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 9: Legal Activation of code 79339613`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Obelisk the Tormentor](Obelisk the Tormentor Deck Analysis.html) - Core Combos & Synergistic Engines (Line 4)
 - **File**: `Obelisk the Tormentor Deck Analysis.html`
@@ -3176,11 +2960,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Activate Snake Rain"
 - **Written Step**: *"Activate Snake Rain by discarding one card. Send four Reptile monsters from your Deck to the GY. Optimal targets are Nunu , Nauya , Keurse , and Zohah ."*
-- **Engine Violation**: `Step 2 ("Send four Reptile monsters from your Deck to the GY.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 3 ("Optimal targets are Nunu, Nauya, Keurse, and Zohah.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 17189677`
   - `Selected Card(s) [1] from location 2`
-  - `Selected Card(s) [13, 14, 15, 5] from location 1`
+  - `Selected Card(s) [16, 17, 18, 5] from location 1`
+  - `Step 2: Legal Activation of code 62405028`
+  - `Selected Card(s) [3] from location 1`
 
 ### [ ] [Onomat](Onomat Deck Analysis.html) - Core Combo: The Utopia Line
 - **File**: `Onomat Deck Analysis.html`
@@ -3190,26 +2976,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 7 ("Use it to summon Number 99: Utopia Dragonar.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 6595475`
-  - `Selected Card(s) [3] from location 2`
+  - `Selected Card(s) [2] from location 2`
   - `Step 3: Legal Normal Summon of code 8512558`
   - `Step 4: Legal Activation of code 55088578`
   - `Step 5: Legal Special Summon of code 31123642`
   - `Step 6: Legal Activation of code 31123642`
-  - `Selected Card(s) [1, 0] from location 4`
+  - `Selected Card(s) [0, 1] from location 4`
   - `Selected Card(s) [0] from location 1`
-
-### [ ] [Orcust](Orcust Deck Analysis.html) - Core Combo: The Girsu Starter (Line 2)
-- **File**: `Orcust Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "The Revival"
-- **Written Step**: *"With Babel active, use Cymbal Skeleton's GY effect as a Quick Effect to Special Summon Dingirsu from your GY."*
-- **Engine Violation**: `Step 1 ("With Babel active, use Cymbal Skeleton's GY effect as a Quick Effect to Special Summon Dingirsu from your GY.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [P series](P series Deck Analysis.html) - Rulings Worth Knowing
 - **File**: `P series Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Written Step**: *"The End Phase return is not a Special Summon. It comes back face-up, but it does not re-arm the negate. Next turn it is a plain 2400 beater."*
-- **Engine Violation**: `Step 3 ("Next turn it is a plain 2400 beater.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Written Step**: *"Stealing a monster is optional. With no legal Link-2 or lower target on their side, the Quick-Link still works using only your own monsters."*
+- **Engine Violation**: `Step 4 ("Stealing a monster is optional.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 57160136`
   - `Selected Card(s) [0] from location 2`
@@ -3227,66 +3006,58 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 1
 - **Step Title**: "Making It on Your Own Turn"
 - **Written Step**: *"Summoned during your turn it has no negate once the turn passes, and no protection while it waits. The opponent gets a free turn to run it over."*
-- **Engine Violation**: `Step 1 ("Summoned during your turn it has no negate once the turn passes, and no protection while it waits.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("The opponent gets a free turn to run it over.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [P.U.N.K.](P.U.N.K. Deck Analysis.html) - Core Combo
 - **File**: `P.U.N.K. Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Extend & Fusion Summon"
 - **Written Step**: *"Use Foxy Tune's effect to summon Sharakusai from the deck. Use Sharakusai to fuse itself and Ze Amin into Rising Carp ."*
-- **Engine Violation**: `Step 4 ("Use Sharakusai to fuse itself and Ze Amin into Rising Carp.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 3 ("Use Foxy Tune's effect to summon Sharakusai from the deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 19535693`
-  - `Step 2: Legal Activation of code 19535693`
-  - `Selected Card(s) [3] from location 1`
-  - `Step 3: Legal Activation of code 55920742`
-  - `Trigger Effect Accepted for Card Code 19535693`
-  - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Paladin of Dragon](Paladin of Dragon Deck Analysis.html) - Core Combo
 - **File**: `Paladin of Dragon Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Ritual Summon"
-- **Written Step**: *"Activate the Ritual Spell, Tributing a monster from your hand (or field) to Ritual Summon the Paladin/Knight to the field."*
-- **Engine Violation**: `Step 3 ("Activate the Ritual Spell, Tributing a monster from your hand (or field) to Ritual Summon the Paladin/Knight to the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Summon from Deck"
+- **Written Step**: *"Activate the Paladin/Knight's ignition effect, Tributing itself as cost. Special Summon its target boss monster directly from the Deck."*
+- **Engine Violation**: `Step 4 ("Activate the Paladin/Knight's ignition effect, Tributing itself as cost.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 13048472`
+  - `Step 3: Legal Activation of code 34834619`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Pendulum Magician](Pendulum Magician Deck Analysis.html) - Core Combo
 - **File**: `Pendulum Magician Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Opening Act"
-- **Written Step**: *"Normal Summon Performapal Skullcrobat Joker to search a key "Magician" like Wisdom-Eye Magician . Utilize available extenders to establish two monsters on the field, preparing the stage for a Link Summon."*
-- **Engine Violation**: `Step 2 ("Utilize available extenders to establish two monsters on the field, preparing the stage for a Link Summon.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Pre-Pendulum Link"
+- **Written Step**: *"Link Summon a key enabler such as Heavymetalfoes Electrumite (where legal) or Beyond the Pendulum . Activate its effect to destroy a scale (like Wisdom-Eye), triggering multiple effects to generate card advantage and set up your hand and Extra Deck for the next phase."*
+- **Engine Violation**: `Step 3 ("Link Summon a key enabler such as Heavymetalfoes Electrumite (where legal) or Beyond the Pendulum.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 40318957`
   - `Trigger Effect Accepted for Card Code 40318957`
   - `Selected Card(s) [6] from location 1`
-
-### [ ] [Pendulum Pile](Pendulum Pile Deck Analysis.html) - Combo Lines
-- **File**: `Pendulum Pile Deck Analysis.html`
-- **Failed at**: Step 1 of 2
-- **Step Title**: "The Summon & Load"
-- **Written Step**: *"Link Summon Heavymetalfoes Electrumite . Its effect sends Astrograph Sorcerer from your Deck to the Extra Deck."*
-- **Engine Violation**: `Step 1 ("Link Summon Heavymetalfoes Electrumite.") was not offered as a legal action by the duel engine.`
+  - `Step 2: Legal Activation of code 72714461`
 
 ### [ ] [Pendulum Pile](Pendulum Pile Deck Analysis.html) - Combo Lines (Line 2)
 - **File**: `Pendulum Pile Deck Analysis.html`
-- **Failed at**: Step 4 of 8
-- **Step Title**: "Pay for the Search"
-- **Written Step**: *"Pay 1200 Life Points for Beyond the Pendulum's on-summon search and take Performapal Gentrude . Your scales are negated and field monster effects are off until you Pendulum Summon."*
-- **Engine Violation**: `Step 7 ("Your scales are negated and field monster effects are off until you Pendulum Summon.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 6 of 8
+- **Step Title**: "Blow Up Your Own Scales"
+- **Written Step**: *"Fire Beyond the Pendulum's field effect: destroy both of your own scaled cards to blow up two cards anywhere on the field."*
+- **Engine Violation**: `Step 9 ("Fire Beyond the Pendulum's field effect: destroy both of your own scaled cards to blow up two cards anywhere on the field.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 82112494`
   - `Step 2: Legal Activation of code 82112494`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Activation of code 19510093`
+  - `Step 3: Legal Activation of code 82112494`
+  - `Selected Card(s) [0] from location 2`
   - `Selected Card(s) [0] from location 1`
   - `Step 4: Legal Activation of code 56727340`
   - `Selected Card(s) [0] from location 4`
-  - `Step 5: Legal Activation of code 82112494`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [2] from location 1`
+  - `Step 5: Legal Activation of code 56727340`
+  - `Step 8: Legal Activation of code 19510093`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Pendulum Pile](Pendulum Pile Deck Analysis.html) - Combo Lines (Line 3)
 - **File**: `Pendulum Pile Deck Analysis.html`
@@ -3303,20 +3074,24 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 3 ("First Penguin flips face-down.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Special Summon of code 12975671`
+  - `Step 2: Legal Activation of code 12975671`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [0] from location 64`
+  - `Selected Card(s) [2] from location 1`
 
 ### [ ] [Performage](Performage Deck Analysis.html) - Core Combo: The Fire Dancer One-Card Starter
 - **File**: `Performage Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Xyz Climb"
-- **Written Step**: *"Place Water Dancer in the Pendulum Zone and use its effect to Special Summon itself. Xyz Summon Tellarknight Constellar Caduceus and use its effect to search for Constellar Tellarknights ."*
-- **Engine Violation**: `Step 5 ("Xyz Summon Tellarknight Constellar Caduceus") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "The Grand Finale"
+- **Written Step**: *"Use the Spell to summon Tellarknight Ptolemaeus , which then summons Performage Shadow Maker during the End Phase, setting up for a massive follow-up play."*
+- **Engine Violation**: `Step 7 ("Use the Spell to summon Tellarknight Ptolemaeus") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 7934362`
   - `Trigger Effect Accepted for Card Code 7934362`
   - `Selected Card(s) [6] from location 1`
-  - `Step 3: Legal Activation of code 7934362`
-  - `Step 4: Legal Activation of code 7934362`
-  - `Selected Card(s) [0] from location 4`
+  - `Step 3: Legal Activation of code 34323367`
+  - `Step 4: Legal Activation of code 34323367`
+  - `Step 5: Legal Special Summon of code 58858807`
 
 ### [ ] [Performapal](Performapal Deck Analysis.html) - The circus gets thinner
 - **File**: `Performapal Deck Analysis.html`
@@ -3339,67 +3114,64 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Phantom knights](Phantom knights Deck Analysis.html) - Core Combo Sequences
 - **File**: `Phantom knights Deck Analysis.html`
-- **Failed at**: Step 1 of 5
-- **Step Title**: "Summon & Destroy"
-- **Written Step**: *"The primary combo line involves summoning The Phantom Knights of Break Sword . You then use its effect to destroy itself (and optionally an opponent's card), triggering its revival effect to Special Summon two "Phantom Knights" monsters from your GY as Level 4 monsters."*
-- **Engine Violation**: `Step 1 ("The primary combo line involves summoning The Phantom Knights of Break Sword.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 5
+- **Step Title**: "The Foundation"
+- **Written Step**: *"Overlay your two new Level 4 monsters to Xyz Summon Dark Rebellion Xyz Dragon . Your Rusty Bardiche (summoned earlier) should set Phantom Knights' Rank-Up-Magic Force ."*
+- **Engine Violation**: `Step 3 ("Overlay your two new Level 4 monsters to Xyz Summon Dark Rebellion Xyz Dragon.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Activation of code 46072770`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 46072770`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Plunder patrol](Plunder patrol deck analysis.html) - Core Combo
 - **File**: `Plunder patrol deck analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Revive and Climb"
-- **Written Step**: *"Activate Goldenhair's GY effect: discard a card (ideally Whitebeard) to Special Summon her. Then, Link both monsters..."*
-- **Engine Violation**: `Step 4 ("Link both monsters...") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "X Marks the Spot: Summon the Captain"
+- **Written Step**: *"...into Blackbeard, the Plunder Patroll Captain . You now have your main engine on field, ready to plunder your opponent's resources."*
+- **Engine Violation**: `Step 5 ("...into Blackbeard, the Plunder Patroll Captain.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 81344070`
   - `Step 2: Legal Special Summon of code 60303245`
   - `Step 3: Legal Activation of code 81344070`
   - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 31374201`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Special Summon of code 67647362`
 
 ### [ ] [Potan](Potan Deck Analysis.html) - Foundational Combo: 3-Card Synchro Loop
 - **File**: `Potan Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Create a Tuner & Synchro Summon"
-- **Written Step**: *"Activate Red Potan's effect to make White Potan a Tuner. Synchro Summon a Level 2 monster (like Puralis ) using White Potan and the other Level 1 monster."*
-- **Engine Violation**: `Step 3 ("Synchro Summon a Level 2 monster (like Puralis ) using White Potan and the other Level 1 monster.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Trigger the Loop"
+- **Written Step**: *"Since a Synchro Summon occurred while Red Potan was on the field, its effect triggers. Special Summon Black Potan from your Deck. Your field now has a Synchro monster and two Level 1 bodies, ready for the next play."*
+- **Engine Violation**: `Step 5 ("Special Summon Black Potan from your Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 16001119`
   - `Step 2: Legal Activation of code 16001119`
   - `Selected Card(s) [0] from location 4`
+  - `Step 3: Legal Activation of code 51405049`
+  - `Selected Card(s) [5] from location 1`
 
 ### [ ] [Power Tool](Power Tool Deck Analysis.html) - Core Combo: The Revolution Synchron Engine
 - **File**: `Power Tool Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Synchro Summon from Hand"
 - **Written Step**: *"Activate Revolution Synchron's effect to use it as material from your hand. Synchro Summon the Level 9 Power Tool Braver Dragon ."*
-- **Engine Violation**: `Step 2 ("Activate Revolution Synchron's effect to use it as material from your hand.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 3 ("Synchro Summon the Level 9 Power Tool Braver Dragon.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Prank_kids](Prank_kids Deck Analysis.html) - Core Combo: The Historical "One-Kid Wonder"
 - **File**: `Prank_kids Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Link into Meow-Meow-Mu"
-- **Written Step**: *"Normal Summon any Prank-Kid and immediately Link Summon Prank-Kids Meow-Meow-Mu . This triggers the first Prank-Kid's effect to Special Summon another from the deck."*
-- **Engine Violation**: `Step 1 ("Normal Summon any Prank-Kid") was not offered as a legal action by the duel engine.`
-
-### [ ] [Predaplant](Predaplant Deck Analysis.html) - Core Combo: The Scorpio Starter
-- **File**: `Predaplant Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Chain & Search"
-- **Written Step**: *"Both Byblisp and Cobra trigger. Chain Byblisp as Chain Link 1 and Cobra as Chain Link 2. Cobra searches a Fusion spell, and Byblisp searches a Predaplant monster, protected from Ash Blossom."*
-- **Engine Violation**: `Step 5 ("Cobra searches a Fusion spell, and Byblisp searches a Predaplant monster, protected from Ash Blossom.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Establish the End Board"
+- **Written Step**: *"After a few more steps of recycling and summoning, the turn ends with Prank-Kids Bow-Wow-Bark on field, Pandemonium set, and resources back in hand, ready for the opponent's turn."*
+- **Engine Violation**: `Step 6 ("After a few more steps of recycling and summoning, the turn ends with Prank-Kids Bow-Wow-Bark on field, Pandemonium set, and resources back in hand, ready for the opponent's turn.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 35272499`
-  - `Trigger Effect Accepted for Card Code 35272499`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [6] from location 1`
-  - `Chain Trigger Accepted for Card Code 61677004`
-  - `Chain Trigger Accepted for Card Code 44932065`
-  - `Selected Card(s) [1] from location 1`
+  - `Step 1: Legal Normal Summon of code 18236002`
+  - `Step 2: Legal Special Summon of code 25725326`
+  - `Trigger Effect Accepted for Card Code 18236002`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 1845204`
-  - `Selected Card(s) [0] from location 64`
-  - `Trigger Effect Accepted for Card Code 66309175`
-  - `Selected Card(s) [10] from location 1`
+  - `Step 4: Legal Special Summon of code 17382973`
+  - `Step 5: Legal Activation of code 17382973`
 
 ### [ ] [Predaplant](Predaplant Deck Analysis.html) - Core Combo: The Scorpio Starter (Line 2)
 - **File**: `Predaplant Deck Analysis.html`
@@ -3410,10 +3182,8 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 35272499`
   - `Trigger Effect Accepted for Card Code 35272499`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [6] from location 1`
-  - `Trigger Effect Accepted for Card Code 61677004`
-  - `Selected Card(s) [1] from location 1`
+  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [5] from location 1`
 
 ### [ ] [Predicition Princess](Predicition Princess Deck Analysis.html) - The Lockdown Combo
 - **File**: `Predicition Princess Deck Analysis.html`
@@ -3431,10 +3201,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Qliphort](Qliphort Deck Analysis.html) - Core Combo
 - **File**: `Qliphort Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish Tribute Fodder"
-- **Written Step**: *"Start with Qliphort Carrier and/or Qliphort Helix on the field. This can be done via a Pendulum Summon. These monsters have powerful effects when tributed."*
-- **Engine Violation**: `Step 1 ("Start with Qliphort Carrier and/or Qliphort Helix on the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Build the Chain"
+- **Written Step**: *"As the turn player, you choose the chain link order. Build the chain so Qliphort Stealth is the highest chain link (e.g., CL1: Carrier, CL2: Helix, CL3: Stealth). Because Stealth's effect states the opponent cannot respond, they are locked out of responding to the entire chain, guaranteeing your removal effects resolve."*
+- **Engine Violation**: `Step 6 ("As the turn player, you choose the chain link order.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 4: Legal Normal Summon of code 13073850`
+  - `Step 5: Legal Activation of code 91907707`
 
 ### [ ] [Radiant Typhoon](Radiant Typhoon Deck Analysis.html) - Core Combo: The 1.5 Card Opening
 - **File**: `Radiant Typhoon Deck Analysis.html`
@@ -3458,21 +3231,25 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Special Summon of code 99153051`
   - `Trigger Effect Accepted for Card Code 99153051`
-  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Raidraptor](Raidraptor Deck Analysis.html) - One-Card Full Combo
 - **File**: `Raidraptor Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate & Search"
-- **Written Step**: *"Normal Summon Tribute Lanius , use its effect to send Mimicry Lanius to GY. Banish Mimicry to search Strangle Lanius ."*
-- **Engine Violation**: `Step 1 ("Normal Summon Tribute Lanius") was not offered as a legal action by the duel engine.`
-
-### [ ] [Reactor](Reactor Deck Analysis.html) - Core Combo: The Heavy Metal Raiders Engine
-- **File**: `Reactor Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Trigger"
-- **Written Step**: *"Start with Heavy Metal Raiders on the field and Spell Reactor '? RE . When your opponent activates any Spell Card, Spell Reactor's effect triggers to destroy it."*
-- **Engine Violation**: `Step 1 ("Start with Heavy Metal Raiders on the field and Spell Reactor '? RE.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Engine Online"
+- **Written Step**: *"Link Summon Wise Strix . Its effects will summon another monster from Deck. Activating Brave Strix's effect then lets Wise Strix set Rise Rank-Up-Magic Raidraptor's Force , preparing your main interruption."*
+- **Engine Violation**: `Step 7 ("Link Summon Wise Strix.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 83236601`
+  - `Step 2: Legal Activation of code 83236601`
+  - `Selected Card(s) [15] from location 1`
+  - `Step 3: Legal Activation of code 96345188`
+  - `Selected Card(s) [9] from location 1`
+  - `Step 4: Legal Activation of code 87321742`
+  - `Step 5: Legal Special Summon of code 28781003`
+  - `Step 6: Legal Activation of code 28781003`
+  - `Selected Card(s) [1] from location 4`
+  - `Selected Card(s) [2] from location 64`
 
 ### [ ] [Rebel Bots](Rebel Bots Deck Analysis.html) - Primary Combos & End Boards
 - **File**: `Rebel Bots Deck Analysis.html`
@@ -3496,54 +3273,50 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Rebel Bots](Rebel Bots Deck Analysis.html) - Primary Combos & End Boards (Line 3)
 - **File**: `Rebel Bots Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Summon Link-1"
-- **Written Step**: *"Use any generic extender or unneeded Machine monster to Link Summon Clockwork Knight (Link-1). This is your starting point when you don't have `Gearframe`."*
-- **Engine Violation**: `Step 1 ("Use any generic extender or unneeded Machine monster to Link Summon Clockwork Knight (Link Summon Clockwork Knight).") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 4
+- **Step Title**: "Get Spell to GY"
+- **Written Step**: *"Use Clockwork Knight 's effect (which can add Clockwork Night from Deck) or other means to get the Clockwork Night Spell from your Deck/hand to the GY."*
+- **Engine Violation**: `Step 3 ("Use Clockwork Knight 's effect (which can add Clockwork Night from Deck) or other means to get the Clockwork Night Spell from your Deck/hand to the GY.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 41739381`
 
 ### [ ] [Red Dragon Archfiend](Red Dragon Archfiend Deck Analysis.html) - Core Operational Combo Sequences
 - **File**: `Red Dragon Archfiend Deck Analysis.html`
-- **Failed at**: Step 3 of 5
-- **Step Title**: "The Gaia Chain"
-- **Written Step**: *"Tune Red Rising Dragon and Vision Resonator into Scarred Dragon Archfiend , searching Crimson Gaia via Vision Resonator's GY effect. Activate Crimson Gaia to search Red Zone ."*
-- **Engine Violation**: `Step 6 ("Tune Red Rising Dragon and Vision Resonator into Scarred Dragon Archfiend, searching Crimson Gaia via Vision Resonator's GY effect.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 4 of 5
+- **Step Title**: "Double Revival"
+- **Written Step**: *"Tune into Hot Red Dragon Archfiend Abyss : Synkron Resonator returns Vision Resonator to hand, and Scarred Dragon Archfiend revives the original Red Dragon Archfiend . With a Level 5+ DARK monster on the field, Special Summon Vision Resonator from hand."*
+- **Engine Violation**: `Step 8 ("Tune into Hot Red Dragon Archfiend Abyss : Synkron Resonator returns Vision Resonator to hand, and Scarred Dragon Archfiend revives the original Red Dragon Archfiend.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 62991792`
   - `Trigger Effect Accepted for Card Code 62991792`
   - `Selected Card(s) [3] from location 1`
-  - `Step 2: Legal Activation of code 25784595`
-  - `Selected Card(s) [4] from location 4`
   - `Step 4: Legal Activation of code 25784595`
-  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [1] from location 2`
+  - `Step 6: Legal Activation of code 98173209`
+  - `Step 7: Legal Activation of code 98173209`
   - `Selected Card(s) [3] from location 1`
-  - `Step 5: Legal Special Summon of code 98396890`
-
-### [ ] [Red Dragon Archfiend](Red Dragon Archfiend Deck Analysis.html) - Core Operational Combo Sequences (Line 2)
-- **File**: `Red Dragon Archfiend Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "Crimson Call Chain"
-- **Written Step**: *"Tune Power Vice Dragon and Darkness Resonator into The Crimson King , searching Crimson Call . Since a monster mentioning "Red Dragon Archfiend" is controlled, Crimson Call searches Crimson Resonator instead of hitting the Graveyard."*
-- **Engine Violation**: `Step 4 ("Since a monster mentioning "Red Dragon Archfiend" is controlled, Crimson Call searches Crimson Resonator instead of hitting the Graveyard.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 19434243`
-  - `Trigger Effect Accepted for Card Code 19434243`
-  - `Selected Card(s) [8] from location 1`
-  - `Step 2: Legal Activation of code 83445539`
-  - `Selected Card(s) [0] from location 64`
-  - `Trigger Effect Accepted for Card Code 83445539`
-  - `Step 3: Legal Special Summon of code 67809530`
-  - `Trigger Effect Accepted for Card Code 67809530`
-  - `Selected Card(s) [4] from location 1`
 
 ### [ ] [Red Dragon Archfiend](Red Dragon Archfiend Deck Analysis.html) - Core Operational Combo Sequences (Line 3)
 - **File**: `Red Dragon Archfiend Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "The Burn Tuner"
-- **Written Step**: *"Normal Summon Soul Resonator to search Red Lotus King, Flame Crime . Because a Fiend Tuner is controlled, Flame Crime Special Summons itself from hand, burning the opponent for 800."*
-- **Engine Violation**: `Step 4 ("Because a Fiend Tuner is controlled, Flame Crime Special Summons itself from hand, burning the opponent for 800.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 4 of 4
+- **Step Title**: "Red Reign Recovery"
+- **Written Step**: *"Tune Red Rising Dragon and Soul Resonator into Hot Red Dragon Archfiend Abyss (Level 9). Because a Level 8+ DARK Dragon Synchro was summoned, Red Reign returns itself from the Graveyard to hand. Set it face-down and pass, ready to banish the opponent's entire field except Abyss."*
+- **Engine Violation**: `Step 8 ("Because a Level 8+ DARK Dragon Synchro was summoned, Red Reign returns itself from the Graveyard to hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 25784595`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
+  - `Step 3: Legal Normal Summon of code 62991792`
+  - `Trigger Effect Accepted for Card Code 62991792`
+  - `Selected Card(s) [0] from location 1`
+  - `Chain Trigger Accepted for Card Code 19299793`
+  - `Trigger Effect Accepted for Card Code 19299793`
+  - `Step 5: Legal Special Summon of code 66141736`
+  - `Chain Trigger Accepted for Card Code 66141736`
+  - `Selected Card(s) [0] from location 16`
+  - `Chain Trigger Accepted for Card Code 19299793`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 7: Legal Special Summon of code 9753964`
+  - `Trigger Effect Accepted for Card Code 5376159`
 
 ### [ ] [Red-Eyes](Red-Eyes Deck Analysis.html) - Core Combo: The Black Metal Dragon Line
 - **File**: `Red-Eyes Deck Analysis.html`
@@ -3559,10 +3332,15 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Relinquished](Relinquished Deck Analysis.html) - Core Combo: The "Kaiju Slingshot"
 - **File**: `Relinquished Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Tribute & Summon"
-- **Written Step**: *"Tribute your opponent's most threatening monster to Special Summon a Kaiju to their field in a zone your Extra Monster Zone will point to."*
-- **Engine Violation**: `Step 1 ("Tribute your opponent's most threatening monster to Special Summon a Kaiju to their field in a zone your Extra Monster Zone will point to.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Absorb & Attack"
+- **Written Step**: *"Activate Anima's effect to equip the Kaiju to itself. Anima now has the high ATK of the Kaiju, and you have removed a threat while building your own."*
+- **Engine Violation**: `Step 4 ("Activate Anima's effect to equip the Kaiju to itself.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 78063197`
+  - `Selected Card(s) [0] from location 64`
+  - `Step 2: Legal Normal Summon of code 89785779`
+  - `Step 3: Legal Special Summon of code 94259633`
 
 ### [ ] [Rescue ACE](Rescue ACE Deck Analysis.html) - Core Combo
 - **File**: `Rescue ACE Deck Analysis.html`
@@ -3576,20 +3354,32 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [2] from location 1`
   - `Step 3: Legal Activation of code 61292243`
   - `Selected Card(s) [5] from location 1`
-  - `Selected Card(s) [3] from location 4`
+  - `Selected Card(s) [4] from location 4`
 
 ### [ ] [Rescue ACE](Rescue ACE Deck Analysis.html) - Core Combo (Line 2)
 - **File**: `Rescue ACE Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Arbitrator Setup"
-- **Written Step**: *"After Turbulence Sets 4 cards, use it + another body (like Promethean Princess) to Link Summon Rescue-ACE Arbitrator . Arbitrator recycles Hydrant/HQ for next turn."*
-- **Engine Violation**: `Step 5 ("After Turbulence Sets 4 cards, use it + another body (like Promethean Princess) to Link Summon Rescue-ACE Arbitrator.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Deploy the Hydrant"
+- **Written Step**: *"Use your Normal Summon on Air Lifter or tribute Quick Attacker to find EMERGENCY! . Activate it to summon Hydrant from the Deck."*
+- **Engine Violation**: `Step 4 ("Activate it to summon Hydrant from the Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 47425162`
-  - `Selected Card(s) [3] from location 2`
-  - `Step 3: Legal Normal Summon of code 47425162`
-  - `Step 4: Legal Activation of code 47425162`
+  - `Selected Card(s) [0] from location 2`
+  - `Step 3: Legal Activation of code 47425162`
   - `Selected Card(s) [2] from location 1`
+
+### [ ] [Resonator](Resonator Deck Analysis.html) - Classic Core Combo: The 1-Card Soul Resonator Line
+- **File**: `Resonator Deck Analysis.html`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "GY Setup & Synchro Bridge"
+- **Written Step**: *"Use Bone Archfiend to send Crimson Resonator to the GY. Synchro Summon Red Rising Dragon to revive Crimson Resonator."*
+- **Engine Violation**: `Step 4 ("Synchro Summon Red Rising Dragon to revive Crimson Resonator.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Normal Summon of code 62991792`
+  - `Trigger Effect Accepted for Card Code 62991792`
+  - `Selected Card(s) [1] from location 1`
+  - `Step 3: Legal Activation of code 25784595`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Resonator](Resonator Deck Analysis.html) - Classic Core Combo: The 1-Card Soul Resonator Line (Line 2)
 - **File**: `Resonator Deck Analysis.html`
@@ -3601,17 +3391,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 62991792`
   - `Trigger Effect Accepted for Card Code 62991792`
   - `Selected Card(s) [8] from location 1`
-  - `Step 2: Legal Activation of code 25784595`
-  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Resonator](Resonator Deck Analysis.html) - Classic Core Combo: The 1-Card Soul Resonator Line (Line 3)
 - **File**: `Resonator Deck Analysis.html`
-- **Failed at**: Step 2 of 5
-- **Step Title**: "Power Vice Chain"
-- **Written Step**: *"Synchro Summon The Crimson King and search Power Vice Dragon . Power Vice Dragon Special Summons itself from hand and searches Chain Resonator ."*
-- **Engine Violation**: `Step 4 ("Power Vice Dragon Special Summons itself from hand and searches Chain Resonator.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 4 of 5
+- **Step Title**: "Metalmorph Trap"
+- **Written Step**: *"Reveal Fullmetal Dragon in hand to set Max Metalmorph directly from your deck to the field — no searching required. Fullmetal Dragon shuffles back in, ready to be called on the opponent's turn."*
+- **Engine Violation**: `Step 8 ("Fullmetal Dragon shuffles back in, ready to be called on the opponent's turn.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 2: Legal Activation of code 98173209`
+  - `Step 3: Legal Activation of code 19434243`
+  - `Trigger Effect Accepted for Card Code 19434243`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Special Summon of code 98396890`
+  - `Step 5: Legal Special Summon of code 3294539`
 
 ### [ ] [Rikka](Rikka Deck Analysis.html) - Core Combo: The "Petal" Starter
 - **File**: `Rikka Deck Analysis.html`
@@ -3629,10 +3421,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Risebell](Risebell Deck Analysis.html) - Historical Combo: Rank 7 Access
 - **File**: `Risebell Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Enabler"
-- **Written Step**: *"Start with a Level 4 monster on the field. Activate the powerful (and Limited) Quick-Play Spell Emergency Teleport ."*
-- **Engine Violation**: `Step 1 ("Start with a Level 4 monster on the field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Generic Boss Summon"
+- **Written Step**: *"Choose to increase the Level 4 monster by 3, making it Level 7. Now, overlay your Level 7 "Star Adjuster" (who is also Psychic) and your new Level 7 monster to Xyz Summon a generic Rank 7, such as Number 11: Big Eye ."*
+- **Engine Violation**: `Step 5 ("Choose to increase the Level 4 monster by 3, making it Level 7.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Activation of code 67723438`
+  - `Selected Card(s) [9] from location 1`
+  - `Trigger Effect Accepted for Card Code 25788011`
+  - `Selected Card(s) [0] from location 4`
+  - `Step 3: Legal Activation of code 67723438`
+  - `Selected Card(s) [6] from location 1`
+  - `Trigger Effect Accepted for Card Code 25788011`
+  - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Ritual Beast](Ritual Beast Deck Analysis.html) - Core Combo: The "El Clasico" Loop
 - **File**: `Ritual Beast Deck Analysis.html`
@@ -3643,28 +3444,30 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 14513016`
   - `Step 2: Legal Normal Summon of code 49885567`
-  - `Step 3: Legal Special Summon of code 48063985`
-  - `Chain Trigger Accepted for Card Code 48063985`
-  - `Selected Card(s) [0] from location 32`
-  - `Selected Card(s) [0] from location 32`
+  - `Step 3: Legal Activation of code 49885567`
+  - `Selected Card(s) [13] from location 1`
   - `Step 4: Legal Special Summon of code 48063985`
-  - `Step 5: Legal Activation of code 48063985`
-  - `Selected Card(s) [1, 0] from location 32`
-  - `Selected Card(s) [1] from location 1`
+  - `Chain Trigger Accepted for Card Code 48063985`
+  - `Selected Card(s) [1] from location 32`
+  - `Selected Card(s) [0] from location 32`
+  - `Step 5: Legal Activation of code 49885567`
+  - `Selected Card(s) [4] from location 1`
 
 ### [ ] [Ritual Beast](Ritual Beast Deck Analysis.html) - Core Combo: The "El Clasico" Loop (Line 2)
 - **File**: `Ritual Beast Deck Analysis.html`
 - **Failed at**: Step 4 of 9
 - **Step Title**: "Resource Gen"
 - **Written Step**: *"Cannahawk activates, banishing Spiritual Beast Tamer Winda from the deck. Ulti-Nochiudrago tags out to Extra, summoning back banished Rampengu and Lara ."*
-- **Engine Violation**: `Step 5 ("Cannahawk activates, banishing Spiritual Beast Tamer Winda from the deck.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("Ulti-Nochiudrago tags out to Extra, summoning back banished Rampengu and Lara.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 88123329`
   - `Step 2: Legal Activation of code 23623653`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
   - `Step 3: Legal Special Summon of code 69718652`
   - `Trigger Effect Accepted for Card Code 23623653`
   - `Selected Card(s) [1] from location 1`
+  - `Step 5: Legal Activation of code 49885567`
+  - `Selected Card(s) [4] from location 1`
 
 ### [ ] [Ritual Beast](Ritual Beast Deck Analysis.html) - Core Combo: The "El Clasico" Loop (Line 3)
 - **File**: `Ritual Beast Deck Analysis.html`
@@ -3677,22 +3480,18 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Ritual Beast](Ritual Beast Deck Analysis.html) - Core Combo: The "El Clasico" Loop (Line 4)
 - **File**: `Ritual Beast Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Normal Summon & Dump"
-- **Written Step**: *"Normal Summon Elder , extra Normal Summon Rampengu . Rampengu activates, banishing an Extra Deck monster to dump Spiritual Beast Tamer Lara (SBTL) from the Deck to the GY."*
-- **Engine Violation**: `Step 2 ("Rampengu activates, banishing an Extra Deck monster to dump Spiritual Beast Tamer Ritual Beast Tamer Lara (Spiritual Beast Tamer Ritual Beast Tamer Lara) from the Deck to the GY.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 4
+- **Step Title**: "Link Ascent & Revival"
+- **Written Step**: *"Link summon Ulti-Kimunfalcos . Banish Cannahawk from GY to Extra Summon the searched Lara. Lara's effect triggers on summon to Special Summon SBTL from the GY. Choke Point: This is the 5th summon!"*
+- **Engine Violation**: `Step 5 ("Link summon Ulti-Kimunfalcos.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 14513016`
-
-### [ ] [Roid](Roid deck Analysis.html) - Core Combo: The Fusion Push
-- **File**: `Roid deck Analysis.html`
-- **Failed at**: Step 2 of 2
-- **Step Title**: "Establish the Fortress"
-- **Written Step**: *"Normal Summon any "roid" monster. Activate Vehicroid Connection Zone , using your two monsters to Fusion Summon Super Vehicroid - Mobile Base in Defense Position."*
-- **Engine Violation**: `Step 2 ("Normal Summon any "roid" monster.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 63854005`
-  - `Selected Card(s) [0] from location 64`
+  - `Step 2: Legal Activation of code 23623653`
+  - `Selected Card(s) [0] from location 2`
+  - `Step 3: Legal Special Summon of code 48063985`
+  - `Step 4: Legal Activation of code 48063985`
+  - `Selected Card(s) [1, 0] from location 32`
+  - `Selected Card(s) [12] from location 1`
 
 ### [ ] [Rokket](Rokket Deck Analysis.html) - Core Combo: The Quick Launch Engine
 - **File**: `Rokket Deck Analysis.html`
@@ -3706,35 +3505,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 2: Legal Special Summon of code 73539069`
   - `Trigger Effect Accepted for Card Code 73539069`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Activation of code 36668118`
-
-### [ ] [Rose Dragon](Rose Dragon Deck Analysis.html) - Combo Sequence: The Garden Engine
-- **File**: `Rose Dragon Deck Analysis.html`
-- **Failed at**: Step 3 of 4
-- **Step Title**: "Synchro Summon"
-- **Written Step**: *"You now have a Level 3 Tuner ( Roxrose ) and a Level 3 non-Tuner ( Red Rose ). Using an extender like White Rose Dragon , Synchro Summon Black Rose Dragon ."*
-- **Engine Violation**: `Step 6 ("Using an extender like White Rose Dragon, Synchro Summon Black Rose Dragon.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 93708824`
-  - `Trigger Effect Accepted for Card Code 93708824`
-  - `Selected Card(s) [2] from location 1`
-  - `Step 3: Legal Activation of code 69053263`
-  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Royal](Royal Deck Analysis.html) - Core Combo: The Joker's Straight Opener
 - **File**: `Royal Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate & Discard"
-- **Written Step**: *"Activate Joker's Straight . Discard 1 card. This Special Summons Queen's Knight from Deck and adds King's Knight from Deck to hand."*
-- **Engine Violation**: `Step 2 ("Discard 1 card.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Additional Normal Summon"
+- **Written Step**: *"Joker's Straight allows an additional Normal Summon. Use it to summon the King's Knight you just added to your hand."*
+- **Engine Violation**: `Step 5 ("Use it to summon the King's Knight you just added to your hand.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 92067220`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [2] from location 2`
   - `Selected Card(s) [0] from location 1`
-  - `Selected Card(s) [2] from location 1`
-  - `Selected Card(s) [0] from location 2`
-  - `Trigger Effect Accepted for Card Code 64788463`
   - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Runick](Runick Deck Analysis.html) - Core Combo: Establishing the Fountain
 - **File**: `Runick Deck Analysis.html`
@@ -3757,14 +3540,14 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 6 ("From a single card, your primary boss monster is ready in the Extra Deck and your three main deck extenders are perfectly positioned in the hand, GY, and banished zone, ready to be summoned once their simple conditions are met.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 29882827`
-  - `Selected Card(s) [11] from location 1`
+  - `Selected Card(s) [8] from location 1`
   - `Selected Card(s) [0] from location 2`
   - `Step 2: Legal Activation of code 92487128`
   - `Step 3: Legal Activation of code 92487128`
   - `Selected Card(s) [3] from location 1`
   - `Step 4: Legal Activation of code 55276522`
-  - `Selected Card(s) [1] from location 1`
-  - `Selected Card(s) [1] from location 1`
+  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Ryzeal](Ryzeal Deck Analysis.html) - Core Combo: The Ice Ryzeal Standard
 - **File**: `Ryzeal Deck Analysis.html`
@@ -3781,17 +3564,17 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [S-Force](S-Force Deck Analysis.html) - Core Combo
 - **File**: `S-Force Deck Analysis.html`
-- **Failed at**: Step 4 of 6
-- **Written Step**: *"Nightcatcher Quick Effect: banish itself + Retroactive from GY (Retroactive's own GY effect lets it substitute as the banish cost) → Special Summon S-Force Pla-Tina from Deck. Pla-Tina's trigger revives the banished Retroactive."*
-- **Engine Violation**: `Step 5 ("Nightcatcher Quick Effect: banish itself + Retroactive from GY (Retroactive's own GY effect lets it substitute as the banish cost) → Special Summon S-Force Pla-Tina from Deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 6
+- **Written Step**: *"Activate S-Force Origin → Special Summon Signify back from the GY."*
+- **Engine Violation**: `Step 6 ("Special Summon Signify back from the GY.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 19951423`
   - `Trigger Effect Accepted for Card Code 19951423`
   - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Special Summon of code 67216732`
+  - `Step 3: Legal Special Summon of code 67216732`
   - `Trigger Effect Accepted for Card Code 67216732`
   - `Selected Card(s) [1] from location 1`
-  - `Step 4: Legal Activation of code 99199231`
+  - `Step 5: Legal Activation of code 99199231`
   - `Selected Card(s) [3] from location 16`
 
 ### [ ] [S-Force](S-Force Deck Analysis.html) - Core Combo (Line 2)
@@ -3809,63 +3592,62 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 3 ("Special Summon Super Agent using the intel from Drone.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 54631665`
+  - `Auto-activating on-field effect of code 54631665 to complete Step 1`
+  - `Selected Card(s) [11] from location 1`
   - `Step 2: Legal Normal Summon of code 4474060`
-
-### [ ] [Sacred Beast](Sacred Beast Deck Analysis.html) - Core Combo: The One-Card Starter
-- **File**: `Sacred Beast Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Search"
-- **Written Step**: *"Normal Summon Dark Beckoning Beast . Activate its effect to search Chaos Summoning Beast . Use the additional Normal Summon to summon it."*
-- **Engine Violation**: `Step 3 ("Use the additional Normal Summon to summon it.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 81034083`
-  - `Trigger Effect Accepted for Card Code 81034083`
-  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Salamangreat](Salamangreat Deck Analysis.html) - Core Combo: The One-Card Starter
 - **File**: `Salamangreat Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Toolbox Access"
 - **Written Step**: *"Use Gazelle's effect to send Spinny to GY. Revive Spinny, then Xyz Summon Miragestallio . Detach to summon another extender from the deck."*
-- **Engine Violation**: `Step 4 ("Revive Spinny") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Xyz Summon Miragestallio.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 11962031`
   - `Trigger Effect Accepted for Card Code 11962031`
-  - `Selected Card(s) [9] from location 1`
+  - `Selected Card(s) [8] from location 1`
+  - `Step 2: Legal Special Summon of code 14812471`
+  - `Trigger Effect Accepted for Card Code 14812471`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Activation of code 52277807`
+  - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Scareclaw](Scareclaw Deck Analysis.html) - Core Combo: One-Card to Tri-Heart
 - **File**: `Scareclaw Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Search the Field & Starter"
-- **Written Step**: *"Light-Heart searches Primitive Planet Reichphobia . Activating Reichphobia searches Scareclaw Reichheart ."*
-- **Engine Violation**: `Step 4 ("Activating Reichphobia searches Scareclaw Reichheart.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Swarm and Ascend"
+- **Written Step**: *"Special Summon Scareclaw Reichheart , search Scareclaw Arrival , revive the initial monster, then Link Summon Scareclaw Tri-Heart using all three."*
+- **Engine Violation**: `Step 6 ("Link Summon Scareclaw Tri-Heart using all three.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 46877100`
   - `Step 2: Legal Special Summon of code 53776969`
   - `Trigger Effect Accepted for Card Code 53776969`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Activation of code 56063182`
+  - `Step 4: Legal Activation of code 56063182`
   - `Selected Card(s) [3] from location 1`
+  - `Step 5: Legal Special Summon of code 82361809`
+  - `Trigger Effect Accepted for Card Code 82361809`
+  - `Selected Card(s) [4] from location 1`
 
 ### [ ] [Shaddol](Shaddol Deck Analysis.html) - Signature Glorious Gallery Combos
 - **File**: `Shaddol Deck Analysis.html`
 - **Failed at**: Step 2 of 5
 - **Step Title**: "Apkallone Graveyard: Search + Discard Squamata"
 - **Written Step**: *"Apkallone's Graveyard effect: add Shaddoll Squamata from Deck to hand, then discard it. Squamata is now in the Graveyard with its own Graveyard effect pending."*
-- **Engine Violation**: `Step 5 ("discard it.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Squamata is now in the Graveyard with its own Graveyard effect pending.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 34950192`
   - `Selected Card(s) [1] from location 64`
   - `Trigger Effect Accepted for Card Code 50907446`
-  - `Selected Card(s) [6] from location 1`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [4] from location 1`
+  - `Selected Card(s) [3] from location 2`
 
 ### [ ] [Shaddol](Shaddol Deck Analysis.html) - Signature Glorious Gallery Combos (Line 2)
 - **File**: `Shaddol Deck Analysis.html`
 - **Failed at**: Step 1 of 4
 - **Step Title**: "Normal Summon Mathematician → Mill Squamata"
 - **Written Step**: *"Normal Summon Mathematician . Its mandatory on-summon effect sends Shaddoll Squamata from the Deck to the Graveyard. Squamata's Graveyard effect immediately chains."*
-- **Engine Violation**: `Step 2 ("Its mandatory on-summon effect sends Shaddoll Squamata from the Deck to the Graveyard.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 3 ("Squamata's Graveyard effect immediately chains.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 41386308`
   - `Trigger Effect Accepted for Card Code 41386308`
@@ -3910,7 +3692,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0] from location 1`
   - `Step 3: Legal Activation of code 49959355`
   - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [4] from location 1`
+  - `Selected Card(s) [1] from location 1`
 
 ### [ ] [Signer Dragon](Signer Dragon Deck Analysis.html) - Core Combo
 - **File**: `Signer Dragon Deck Analysis.html`
@@ -3928,27 +3710,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 62991792`
   - `Trigger Effect Accepted for Card Code 62991792`
-  - `Selected Card(s) [2] from location 1`
+  - `Selected Card(s) [1] from location 1`
   - `Step 3: Legal Activation of code 25784595`
-  - `Selected Card(s) [4] from location 4`
-
-### [ ] [Silent Magician](Silent Magician Deck Analysis.html) - Foundational Combo: The "One-Card Silent Magician"
-- **File**: `Silent Magician Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Summon the Sovereign"
-- **Written Step**: *"With Silent Magician in hand and a Spellcaster ( Artemis ) on the field, Tribute Artemis to Special Summon Silent Magician ."*
-- **Engine Violation**: `Step 4 ("With Silent Magician in hand and a Spellcaster ( Artemis ) on the field, Tribute Artemis to Special Summon Silent Magician.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 78010363`
-  - `Step 2: Legal Special Summon of code 34755994`
-  - `Selected Card(s) [0] from location 1`
-
-### [ ] [Six Samurai](Six Samurai Deck Analysis.html) - The Art of War: Gateway Combo
-- **File**: `Six Samurai Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The First Move"
-- **Written Step**: *"Normal Summon Kageki , using its effect to Special Summon Kizan from hand."*
-- **Engine Violation**: `Step 1 ("Normal Summon Kageki, using its effect to Special Summon Kizan from hand.") was not offered as a legal action by the duel engine.`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Skilled Magician](Skilled Magician Deck Analysis.html) - Foundational Combo: Path to the Boss
 - **File**: `Skilled Magician Deck Analysis.html`
@@ -3969,7 +3733,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 19093698`
   - `Trigger Effect Accepted for Card Code 19093698`
-  - `Selected Card(s) [18] from location 1`
+  - `Selected Card(s) [17] from location 1`
 
 ### [ ] [Skull Servant](Skull Servant Deck Analysis.html) - Core Combo: The 'Moissa Wight' Starter (Line 2)
 - **File**: `Skull Servant Deck Analysis.html`
@@ -3981,12 +3745,12 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 49959355`
   - `Step 2: Legal Activation of code 49959355`
   - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [22] from location 1`
+  - `Selected Card(s) [21] from location 1`
   - `Trigger Effect Accepted for Card Code 6128460`
-  - `Selected Card(s) [5] from location 2`
+  - `Selected Card(s) [2] from location 2`
   - `Step 5: Legal Activation of code 49959355`
   - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Skyscraper](Skyscraper Deck Analysis.html) - Core Combo
 - **File**: `Skyscraper Deck Analysis.html`
@@ -3995,7 +3759,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Elemental HERO Ocean makes the loop resilient. During your Standby Phase, it returns a HERO from your field or GY to the hand, ensuring Stratos can be re-used even if the opponent avoids destroying it."*
 - **Engine Violation**: `Step 4 ("Elemental HERO Ocean makes the loop resilient.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 3: Legal Activation of code 63035430`
+  - `Step 3: Legal Activation of code 47596607`
 
 ### [ ] [Snake-Eyes](Snake-Eyes Deck Analysis.html) - Foundational Combo Lines
 - **File**: `Snake-Eyes Deck Analysis.html`
@@ -4015,63 +3779,36 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Bridge to the Core Engine"
 - **Written Step**: *"Activate Original Sinful Spoils , sending Diabellstar to GY to Special Summon Snake-Eye Ash from your Deck. The combo now converges with the primary line."*
-- **Engine Violation**: `Step 5 ("The combo now converges with the primary line.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Activate Original Sinful Spoils, sending Diabellstar to GY to Special Summon Snake-Eye Ash from your Deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 80845034`
   - `Selected Card(s) [0] from location 1`
   - `Step 2: Legal Special Summon of code 72270339`
   - `Trigger Effect Accepted for Card Code 72270339`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 4: Legal Activation of code 89023486`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [0] from location 1`
-  - `Trigger Effect Accepted for Card Code 9674034`
-  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [1] from location 1`
 
 ### [ ] [Solfachord](Solfachord Deck Analysis.html) - Core Combo
 - **File**: `Solfachord Deck Analysis.html`
-- **Failed at**: Step 3 of 4
-- **Step Title**: "Summon and Search"
-- **Written Step**: *"The second part of Happiness resolves, letting you Special Summon SolSolfachord Gracia from your hand. On summon, use Gracia's effect to search Solfachord Elegance ."*
-- **Engine Violation**: `Step 5 ("The second part of Happiness resolves, letting you Special Summon SolSolfachord Gracia from your hand.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 11688916`
-  - `Trigger Effect Accepted for Card Code 11688916`
-  - `Selected Card(s) [6] from location 1`
-  - `Step 3: Legal Activation of code 93481594`
-  - `Selected Card(s) [3] from location 2`
-  - `Selected Card(s) [0] from location 2`
-  - `Trigger Effect Accepted for Card Code 91598270`
-  - `Selected Card(s) [7] from location 1`
-  - `Step 4: Legal Activation of code 55226153`
-
-### [ ] [Solfachord](Solfachord Deck Analysis.html) - Core Combo (Line 2)
-- **File**: `Solfachord Deck Analysis.html`
 - **Failed at**: Step 4 of 4
-- **Step Title**: "Generate Advantage"
-- **Written Step**: *"Use Electrumite to destroy a scale, add Astrograph to hand, and draw 1. Astrograph Sorcerer then Special Summons itself, starting a cascade of summons to build your end board."*
-- **Engine Violation**: `Step 8 ("Astrograph Sorcerer then Special Summons itself, starting a cascade of summons to build your end board.") was not offered as a legal action by the duel engine.`
+- **Step Title**: "Set the Scales"
+- **Written Step**: *"Activate Solfachord Elegance . Use its effect to place Cutia from your hand to the Extra Deck, then place Coolia (Scale 1) and Cutia (Scale 8) from your hand/Extra Deck into your Pendulum Zones. To Pendulum Summon Cutia (Level 1) from the Extra Deck, use Primoa (Scale 0) as the lower scale instead of Coolia."*
+- **Engine Violation**: `Step 7 ("Activate Solfachord Elegance.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 11688916`
   - `Trigger Effect Accepted for Card Code 11688916`
   - `Selected Card(s) [6] from location 1`
   - `Step 3: Legal Activation of code 93481594`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [0] from location 2`
-  - `Step 4: Legal Activation of code 84693918`
-  - `Step 5: Legal Special Summon of code 24094258`
-  - `Trigger Effect Accepted for Card Code 24094258`
-  - `Selected Card(s) [4] from location 1`
-  - `Step 7: Legal Activation of code 24094258`
-  - `Selected Card(s) [0] from location 4`
-  - `Selected Card(s) [0] from location 64`
+  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Sphinx](Sphinx Deck Analysis.html) - Combo Line: The Theinen OTK
 - **File**: `Sphinx Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon the Pillars"
-- **Written Step**: *"With Pyramid of Light active, pay 1000 LP to Special Summon Andro Sphinx and Sphinx Teleia from your hand."*
-- **Engine Violation**: `Step 1 ("With Pyramid of Light active, pay 1000 LP to Special Summon Andro Sphinx and Sphinx Teleia from your hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Trigger the Destruction"
+- **Written Step**: *"Activate a card that destroys Spells & Traps, like Harpie's Feather Duster . This removes Pyramid of Light from the field, triggering its own effect."*
+- **Engine Violation**: `Step 2 ("Activate a card that destroys Spells & Traps, like Harpie's Feather Duster.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 15013468`
 
 ### [ ] [Spider](Spider Deck Analysis.html) - Core Combo: The Go-Second OTK
 - **File**: `Spider Deck Analysis.html`
@@ -4102,7 +3839,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Advantage Cascade"
 - **Written Step**: *"The chain resolves backwards. Sovereignty is Special Summoned and you draw 1 card. Then, Scepter's effect resolves, adding a second Sovereignty from your Deck to your hand."*
-- **Engine Violation**: `Step 4 ("The chain resolves backwards.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Sovereignty is Special Summoned and you draw 1 card.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 38331564`
   - `Trigger Effect Accepted for Card Code 38331564`
@@ -4119,13 +3856,14 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Stardust](Stardust Deck Analysis.html) - Core Combo
 - **File**: `Stardust Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The Overture"
-- **Written Step**: *"Activate Synchro Fellowship . Discard Junk Converter (or another extender) to add Junk Synchron and Stardust Synchron to your hand."*
-- **Engine Violation**: `Step 2 ("Discard Junk Converter (or another extender) to add Junk Synchron and Stardust Synchron to your hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "The Main Ascent"
+- **Written Step**: *"Normal Summon Junk Synchron to revive Junk Converter . Synchro Summon Junk Speeder . This is the main play: Speeder's effect attempts to summon multiple Tuners from the Deck. This is the critical chokepoint your opponent will try to stop."*
+- **Engine Violation**: `Step 4 ("Synchro Summon Junk Speeder.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 43834302`
   - `Selected Card(s) [1] from location 2`
+  - `Step 3: Legal Normal Summon of code 63977008`
 
 ### [ ] [Stardust](Stardust Deck Analysis.html) - Core Combo (Line 2)
 - **File**: `Stardust Deck Analysis.html`
@@ -4134,29 +3872,19 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Activate Junk Speeder , Special Summoning every "Synchron" Tuner from the Deck. This is the activation the whole turn is built around, so it is the one they have to answer."*
 - **Engine Violation**: `Step 1 ("Activate Junk Speeder, Special Summoning every "Synchron" Tuner from the Deck.") was not offered as a legal action by the duel engine.`
 
-### [ ] [Starry Knight](Starry Knight Deck Analysis.html) - Core Combo
-- **File**: `Starry Knight Deck Analysis.html`
-- **Failed at**: Step 2 of 2
-- **Step Title**: "Assemble the Court"
-- **Written Step**: *"Activate Ties of the Brethren . Pay 2000 LP to Special Summon Barrier Statue of the Heavens and Honest from your deck."*
-- **Engine Violation**: `Step 3 ("Activate Ties of the Brethren.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 23220533`
-  - `Trigger Effect Accepted for Card Code 23220533`
-  - `Selected Card(s) [0] from location 1`
-
 ### [ ] [Stygian](Stygian Deck Analysis.html) - Core Combo
 - **File**: `Stygian Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "First Search & Link"
-- **Written Step**: *"Since hand is empty, Archfiend searches Infernity Launcher . Link the two monsters into a Link-2 (e.g., Knightmare Phoenix ), sending Archfiend to the GY."*
-- **Engine Violation**: `Step 3 ("Since hand is empty, Archfiend searches Infernity Launcher.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Engine Recursion"
+- **Written Step**: *"Continue the Infernity combo (using Launcher , etc.) until you can Xyz Summon Leviair the Sea Dragon . Leviair brings the banished Stygian Street Patrol back to the field, making its non-OPT effect available again for subsequent loops!"*
+- **Engine Violation**: `Step 5 ("Continue the Infernity combo (using Launcher, etc.) until you can Xyz Summon Leviair the Sea Dragon.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 28985331`
   - `Trigger Effect Accepted for Card Code 28985331`
-  - `Selected Card(s) [13] from location 1`
+  - `Selected Card(s) [11] from location 1`
   - `Step 2: Legal Activation of code 13521194`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [1] from location 2`
+  - `Step 4: Legal Special Summon of code 2857636`
 
 ### [ ] [Subterror](Subterror Deck Analysis.html) - Core Combo
 - **File**: `Subterror Deck Analysis.html`
@@ -4168,43 +3896,30 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Activation of code 5697558`
   - `Selected Card(s) [19] from location 1`
 
-### [ ] [Summoned Skull](Summoned Skull Deck Analysis.html) - Core Combo: "Tour Guide" Starter
-- **File**: `Summoned Skull Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The "Double Dump""
-- **Written Step**: *"Chain Resolves: Cherubini's cost sends Archfiend Heiress to GY. Then, Rhino's effect sends another Fiend (e.g., Archfiend Emperor ) to GY. New Chain: Heiress triggers, searching any "Archfiend" card (like Ghastly Glitch or Roar )."*
-- **Engine Violation**: `Step 5 ("Chain Resolves: Cherubini's cost sends Archfiend Heiress to GY.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 10802915`
-  - `Trigger Effect Accepted for Card Code 10802915`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Special Summon of code 58699500`
-  - `Trigger Effect Accepted for Card Code 81035362`
-  - `Selected Card(s) [4] from location 1`
-  - `Trigger Effect Accepted for Card Code 66540884`
-  - `Selected Card(s) [1] from location 1`
-
-### [ ] [Sunavalon](Sunavalon Deck Analysis.html) - Core Combo
-- **File**: `Sunavalon Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Cultivate the End Board"
-- **Written Step**: *"Jasmine searches for the rest of your combo pieces ("Rikka" and "Therion" monsters). From here, you can easily Link climb through Sunavalon Melias into the Link-4 Sunavalon Dryatrentiay , which searches your main disruption, Sunavalon Bloom ."*
-- **Engine Violation**: `Step 6 ("Jasmine searches for the rest of your combo pieces ("Rikka" and "Therion" monsters).") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 27520594`
-  - `Step 2: Legal Special Summon of code 93896655`
-  - `Trigger Effect Accepted for Card Code 93896655`
-  - `Selected Card(s) [4] from location 1`
-  - `Step 3: Legal Activation of code 53286626`
-  - `Selected Card(s) [1] from location 1`
-  - `Step 4: Legal Special Summon of code 21200905`
-
 ### [ ] [Super Defence Robot](Super Defence Robot Deck Analysis.html) - Core Combo
 - **File**: `Super Defence Robot Deck Analysis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "Summon the Enabler"
 - **Written Step**: *"Tribute 2 monsters to Normal Summon Elephan . Use its effect to Special Summon an SDR or Orbital 7 from your hand."*
 - **Engine Violation**: `Step 1 ("Tribute 2 monsters to Normal Summon Elephan.") was not offered as a legal action by the duel engine.`
+
+### [ ] [Superheavy Samurai](Superheavy Samurai Deck Analysis.html) - The Art of War: One-Card Combo
+- **File**: `Superheavy Samurai Deck Analysis.html`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Recursion & Link Climbing"
+- **Written Step**: *"Use Scales to revive Soulpiercer. Link into Superheavy Samurai Scarecrow (or other link monsters post-banlist), triggering Soulpiercer again to continue extending into the full end board."*
+- **Engine Violation**: `Step 6 ("Use Scales to revive Soulpiercer.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 83334932`
+  - `Selected Card(s) [18] from location 1`
+  - `Step 2: Legal Activation of code 82112494`
+  - `Auto-activating on-field effect of code 82112494 to complete Step 2`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 3: Legal Activation of code 82112494`
+  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [7] from location 1`
+  - `Step 5: Legal Activation of code 95500396`
+  - `Selected Card(s) [0] from location 4`
 
 ### [ ] [Supreme King](Supreme King Deck Analysis.html) - Historical Combo: The Electrumite Loop
 - **File**: `Supreme King Deck Analysis.html`
@@ -4213,18 +3928,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Start by sending Darkwurm to the GY (e.g., with `Dragon Shrine`). Darkwurm revives itself and searches Gate Magician , which in turn summons itself and searches a trap."*
 - **Engine Violation**: `Step 1 ("Start by sending Darkwurm to the GY (e.g., with `Dragon Shrine`).") was not offered as a legal action by the duel engine.`
 
-### [ ] [Swordsoul](Swordsoul Deck Analysis.html) - The Foundational Combo
-- **File**: `Swordsoul Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Tokenize"
-- **Written Step**: *"Normal Summon Swordsoul of Mo Ye . Reveal a Wyrm or Swordsoul card in hand to Special Summon a Level 4 Tuner Token."*
-- **Engine Violation**: `Step 2 ("Reveal a Wyrm or Swordsoul card in hand to Special Summon a Level 4 Tuner Token.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 20001443`
-  - `Trigger Effect Accepted for Card Code 20001443`
-  - `Selected Card(s) [1] from location 2`
-
-### [ ] [Sylvan Deck Analyis.html](Sylvan Deck Analyis.html) - Cultivating a Combo
+### [ ] [Sylvan Deck Analyis](Sylvan Deck Analyis.html) - Cultivating a Combo
 - **File**: `Sylvan Deck Analyis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "The Setup: Sylvan Charity"
@@ -4232,28 +3936,28 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Engine Violation**: `Step 4 ("Stack Sylvan Princessprout on top.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 82016179`
-  - `Selected Card(s) [1] from location 2`
   - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [2] from location 2`
 
 ### [ ] [Symphonic Warrior](Symphonic Warrior Deck Analysis.html) - Core Combo
 - **File**: `Symphonic Warrior Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Build the Board"
-- **Written Step**: *"Normal Summon the Guitaar returned to hand by Guitariss's effect. Revive DJJ from the GY, whose effect then summons Synthess face-down from the Deck."*
-- **Engine Violation**: `Step 4 ("Revive DJJ from the GY, whose effect then summons Synthess face-down from the Deck.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Modulate and Dominate"
+- **Written Step**: *"Through a series of Link Summons and Pendulum Summons, use the FLIP effect of Synthess to search for Drumss . Banish Drumss from the GY to change another monster to EARTH, then Synchro Summon the devastating Naturia Beast ."*
+- **Engine Violation**: `Step 7 ("Banish Drumss from the GY to change another monster to EARTH") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 12525049`
   - `Step 2: Legal Activation of code 12525049`
   - `Selected Card(s) [2] from location 2`
-  - `Selected Card(s) [6] from location 1`
-  - `Trigger Effect Accepted for Card Code 43210483`
-  - `Selected Card(s) [0] from location 8`
+  - `Selected Card(s) [9] from location 1`
+  - `Step 6: Legal Activation of code 49919798`
+  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Synchron](Synchron Deck Analysis.html) - The Speederless Ladder
 - **File**: `Synchron Deck Analysis.html`
-- **Failed at**: Step 3 of 6
-- **Written Step**: *"Stardust Synchron searches Synchro Fellowship , which adds Junk Synchron and Starjunk Synchron, then discards a filler card."*
-- **Engine Violation**: `Step 5 ("Stardust Synchron searches Synchro Fellowship, which adds Junk Synchron and Starjunk Synchron") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 4 of 6
+- **Written Step**: *"Activate Starjunk Synchron in the hand targeting the tributed Junk Armor. Both land, and Junk Armor comes back as a negated Level 2 body."*
+- **Engine Violation**: `Step 7 ("Activate Starjunk Synchron in the hand targeting the tributed Junk Armor.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 73218792`
   - `Selected Card(s) [0] from location 64`
@@ -4277,15 +3981,20 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 1: Legal Normal Summon of code 73956664`
   - `Trigger Effect Accepted for Card Code 73956664`
   - `Selected Card(s) [1] from location 1`
+  - `Trigger Effect Accepted for Card Code 37961969`
+  - `Selected Card(s) [0] from location 64`
 
 ### [ ] [Tearlaments](Tearlaments Deck Analysis.html) - Combo Evolution (Line 2)
 - **File**: `Tearlaments Deck Analysis.html`
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Rank 6 Climb"
 - **Written Step**: *"Link climb through Requiem and Sequence to summon Fiendsmith's Lacrima . Use the bodies to Xyz Summon Beatrice, Lady of the Eternal ."*
-- **Engine Violation**: `Step 3 ("Link climb through Requiem and Sequence to summon Fiendsmith's Lacrima.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 4 ("Use the bodies to Xyz Summon Beatrice, Lady of the Eternal.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 2: Legal Activation of code 60764609`
+  - `Step 1: Legal Activation of code 98567237`
+  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [2] from location 2`
+  - `Step 3: Legal Activation of code 60764609`
   - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Tearlaments](Tearlaments Deck Analysis.html) - Combo Evolution (Line 3)
@@ -4304,7 +4013,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Mill 8 & Climb"
 - **Written Step**: *"Kitkallos adds Merrli to hand, then swaps herself to summon Merrli. Both trigger (Mill 5 + Mill 3). If you mill a Fusion name, fuse Kitkallos (GY) + Name into Rulkallos ."*
-- **Engine Violation**: `Step 6 ("Kitkallos adds Merrli to hand") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 7 ("swaps herself to summon Merrli.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 73956664`
   - `Trigger Effect Accepted for Card Code 73956664`
@@ -4314,29 +4023,38 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 92731385`
   - `Selected Card(s) [6] from location 1`
   - `Step 4: Legal Activation of code 92731385`
-  - `Selected Card(s) [1] from location 4`
-  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [0] from location 2`
+  - `Trigger Effect Accepted for Card Code 92731385`
 
 ### [ ] [Tenpai Dragon](Tenpai Dragon Deck Analysis.html) - Core Combo
 - **File**: `Tenpai Dragon Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate & Search"
-- **Written Step**: *"Normal Summon Paidra to search Sangen Summoning . Activate the Field Spell and use its effect to search Chundra ."*
-- **Engine Violation**: `Step 2 ("Activate the Field Spell") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Lock & Finish"
+- **Written Step**: *"Use Chundra's effect to summon another Dragon from deck. Continue climbing into Sangenpai Transcendent Dragion to lock your opponent out of the Battle Phase, and finally into Trident Dragion to deal massive damage."*
+- **Engine Violation**: `Step 7 ("Use Chundra's effect to summon another Dragon from deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 39931513`
   - `Trigger Effect Accepted for Card Code 39931513`
   - `Selected Card(s) [5] from location 1`
+  - `Step 2: Legal Activation of code 30336082`
+  - `Step 3: Legal Activation of code 30336082`
+  - `Selected Card(s) [3] from location 1`
+  - `Selected Card(s) [2] from location 2`
+  - `Step 4: Legal Activation of code 91810826`
+  - `Step 6: Legal Special Summon of code 82570174`
 
 ### [ ] [Tenyi](Tenyi Deck Analysis.html) - Core Combo
 - **File**: `Tenyi Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Summon the Enabler"
-- **Written Step**: *"Link Summon Monk of the Tenyi using Ashuna. You now control a non-Effect monster, activating your Tenyi effects."*
-- **Engine Violation**: `Step 3 ("You now control a non-Effect monster, activating your Tenyi effects.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Unleash the Dragon"
+- **Written Step**: *"Use Ashuna's GY effect to summon Adhara (Tuner). Special Summon another Level 7 Tenyi like Vishuda , then Synchro Summon Draco Berserker of the Tenyi ."*
+- **Engine Violation**: `Step 5 ("Special Summon another Level 7 Tenyi like Vishuda") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 87052196`
   - `Step 2: Legal Special Summon of code 32519092`
+  - `Step 4: Legal Activation of code 87052196`
+  - `Selected Card(s) [5] from location 1`
 
 ### [ ] [The Agents](The Agents Deck Analysis.html) - Orchestrating the Cosmos: Core Combos
 - **File**: `The Agents Deck Analysis.html`
@@ -4378,10 +4096,9 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 2: Legal Activation of code 18720257`
   - `Selected Card(s) [0] from location 2`
   - `Trigger Effect Accepted for Card Code 65017789`
-  - `Selected Card(s) [3] from location 1`
-  - `Step 3: Legal Normal Summon of code 65017789`
-  - `Step 4: Legal Activation of code 65017789`
-  - `Selected Card(s) [21] from location 1`
+  - `Selected Card(s) [2] from location 1`
+  - `Step 3: Legal Activation of code 65017789`
+  - `Selected Card(s) [15] from location 1`
 
 ### [ ] [Therion](Therion Deck Analysis.html) - Core Combo
 - **File**: `Therion Deck Analysis.html`
@@ -4389,21 +4106,6 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Step Title**: "Gold Golgonda Start"
 - **Written Step**: *"Discard a card to Special Summon Springans Merrymaker . Merrymaker sends a Springans monster from Deck to GY to setup materials."*
 - **Engine Violation**: `Step 1 ("Discard a card to Special Summon Springans Merrymaker.") was not offered as a legal action by the duel engine.`
-
-### [ ] [Three Musketeers](Three Musketeers Deck Analysis.html) - The Art of the Duel: Core Combo
-- **File**: `Three Musketeers Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Swarm the Field"
-- **Written Step**: *"Use the extra Normal Summon from Joker's Straight to summon King's Knight . Its effect triggers, Special Summoning Jack's Knight from Deck."*
-- **Engine Violation**: `Step 3 ("Use the extra Normal Summon from Joker's Straight to summon King's Knight.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 92067220`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [0] from location 1`
-  - `Selected Card(s) [2] from location 1`
-  - `Selected Card(s) [3] from location 2`
-  - `Trigger Effect Accepted for Card Code 64788463`
-  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Time Thief](Time Thief Deck Analysis.html) - Core Combo
 - **File**: `Time Thief Deck Analysis.html`
@@ -4424,15 +4126,16 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Written Step**: *"Normal Summon the searched Timelord without Tributing. You now have a single, indestructible threat on the field, and Time Maiden is in the GY, ready to be banished on a future turn to summon another Timelord from the deck for an Xyz play."*
 - **Engine Violation**: `Step 3 ("Normal Summon the searched Timelord without Tributing.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
-  - `Step 1: Legal Special Summon of code 27107590`
-  - `Step 2: Legal Normal Summon of code 27107590`
+  - `Step 1: Legal Activation of code 27107590`
+  - `Selected Card(s) [5] from location 1`
+  - `Step 2: Legal Normal Summon of code 91712985`
 
-### [ ] [Tindangle Deck Analyis.html](Tindangle Deck Analyis.html) - Core Combo
+### [ ] [Tindangle Deck Analyis](Tindangle Deck Analyis.html) - Core Combo
 - **File**: `Tindangle Deck Analyis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate & Mill"
-- **Written Step**: *"Activate Tindangle Jhrelth's effect from hand. Discard one card to send Tindangle Dholes from your Deck to the GY, and Special Summon Jhrelth face-down."*
-- **Engine Violation**: `Step 2 ("Discard one card to send Tindangle Dholes from your Deck to the GY,") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Link Summon & Setup"
+- **Written Step**: *"With two monsters, Link Summon Subterror Behemoth Fiendess . This loads the GY with names, setting up the game-winning GY effect of Tindangle Delaunay for the next turn."*
+- **Engine Violation**: `Step 5 ("With two monsters, Link Summon Subterror Behemoth Fiendess.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 24158464`
   - `Selected Card(s) [1] from location 2`
@@ -4452,39 +4155,31 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Toy](Toy Deck Analysis.html) - Primary Combo: White Forest Synergy
 - **File**: `Toy Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Synchro Summon"
-- **Written Step**: *"With three monsters on the field, you can easily climb into a powerful Level 10 Synchro monster. The standard path is to make a Level 6 Synchro Tuner, then use it with the remaining monster to summon a boss like Baronne de Fleur ."*
-- **Engine Violation**: `Step 6 ("The standard path is to make a Level 6 Synchro Tuner") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 24878656`
-  - `Step 2: Legal Normal Summon of code 25592142`
-  - `Step 3: Legal Activation of code 25592142`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [0] from location 1`
+- **Failed at**: Step 1 of 3
+- **Step Title**: "The Setup"
+- **Written Step**: *"Activate Toy Box to Set Toy Soldier from the Deck. Normal Summon Astellar of the White Forest ."*
+- **Engine Violation**: `eof`
 
 ### [ ] [Trains](Trains Deck Analysis.html) - Blueprint for Victory: The Legacy Harvester Combo
 - **File**: `Trains Deck Analysis.html`
-- **Failed at**: Step 1 of 7
-- **Step Title**: "Open With Exceptional Schedule"
-- **Written Step**: *"Activate Exceptional Schedule . Summon a 3000/3000 Token to the opponent's field — they now control more monsters, instantly fulfilling Urgent Schedule 's requirement. Search Urgent Schedule from deck."*
-- **Engine Violation**: `Engine rejected response (RETRY) at step 1.`
+- **Failed at**: Step 2 of 7
+- **Step Title**: "Activate Urgent Schedule"
+- **Written Step**: *"Activate Urgent Schedule directly from deck. Special Summon Noctilucent Train Bleu Traveler and Infinitrack Harvester from deck to your field."*
+- **Engine Violation**: `Step 4 ("Activate Urgent Schedule directly from deck.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 52782439`
   - `Selected Card(s) [1] from location 1`
+  - `Step 2: Legal Normal Summon of code 88875132`
 
 ### [ ] [Trains](Trains Deck Analysis.html) - Blueprint for Victory: The Legacy Harvester Combo (Line 2)
 - **File**: `Trains Deck Analysis.html`
-- **Failed at**: Step 3 of 6
-- **Step Title**: "Link Off Babel Decker"
-- **Written Step**: *"Use Babel Decker as Link material (e.g., into Qliphort Genius ). This frees a monster zone and sets up the co-revival in the next step."*
-- **Engine Violation**: `Step 6 ("Use Babel Decker as Link material (e.g., into Qliphort Genius ).") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 1 of 6
+- **Step Title**: "Discard Bleu Traveler"
+- **Written Step**: *"Discard Noctilucent Train Bleu Traveler to activate its hand effect. Search Revolving Switchyard from deck. Bleu Traveler is now set up in the GY for later."*
+- **Engine Violation**: `Step 3 ("Bleu Traveler is now set up in the GY for later.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 81101309`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Spell/Trap Set of code 76136345`
-  - `Step 4: Legal Activation of code 76136345`
-  - `Step 5: Legal Activation of code 76136345`
 
 ### [ ] [Trains](Trains Deck Analysis.html) - Blueprint for Victory: The Legacy Harvester Combo (Line 3)
 - **File**: `Trains Deck Analysis.html`
@@ -4509,7 +4204,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 67523044`
   - `Selected Card(s) [3] from location 1`
-  - `Selected Card(s) [1] from location 2`
+  - `Selected Card(s) [3] from location 2`
 
 ### [ ] [Traptrix](Traptrix Deck Analysis.html) - Core Combo
 - **File**: `Traptrix Deck Analysis.html`
@@ -4528,7 +4223,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 2
 - **Step Title**: "The Chain Resolution"
 - **Written Step**: *"CL1 Albion: Banishes materials for Fusion Summon. CL2 Springans Kitt: Triggers because it was sent to GY. Resolve: Kitt revives Fallen of Albaz (or any Tri-Brigade) from GY in Defense. Albion banishes Kitt (from GY) and itself (or Albaz) to summon Mirrorjade ."*
-- **Engine Violation**: `Step 5 ("Resolve: Kitt revives Fallen of Albaz (or any Tri-Brigade) from GY in Defense.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 6 ("Albion banishes Kitt (from GY) and itself (or Albaz) to summon Mirrorjade.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 44362883`
   - `Selected Card(s) [0] from location 64`
@@ -4538,21 +4233,24 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 2
 - **Step Title**: "Load the Graveyard"
 - **Written Step**: *"Activate Fraktall from hand -> GY. Send Kitt -> GY. Kitt sends Nervall -> GY. Nervall adds Kerass or Springans Kitt ."*
-- **Engine Violation**: `Step 3 ("Kitt sends Nervall -> GY.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("Send Kitt -> GY.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 87209160`
   - `Selected Card(s) [5] from location 1`
   - `Trigger Effect Accepted for Card Code 56196385`
   - `Selected Card(s) [9] from location 1`
   - `Trigger Effect Accepted for Card Code 19304410`
-  - `Selected Card(s) [0] from location 16`
+  - `Selected Card(s) [1] from location 16`
 
 ### [ ] [Triamid](Triamid Deck Analysis.html) - Core Combo
 - **File**: `Triamid Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish Presence"
-- **Written Step**: *"Start with Triamid Hunter and Triamid Cruiser to summon two Triamid monsters, setting up multiple interactions for the opponent's turn."*
-- **Engine Violation**: `Step 1 ("Start with Triamid Hunter and Triamid Cruiser to summon two Triamid monsters, setting up multiple interactions for the opponent's turn.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "React and Defend"
+- **Written Step**: *"If the opponent attempts to destroy your monster, chain a Triamid monster's effect. Swap your active Field Spell for Triamid Fortress to protect your board from destruction."*
+- **Engine Violation**: `Step 3 ("Swap your active Field Spell for Triamid Fortress to protect your board from destruction.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 45383307`
+  - `Step 2: Legal Activation of code 64576557`
 
 ### [ ] [Trickstar](Trickstar Deck Analysis.html) - Core Combo
 - **File**: `Trickstar Deck Analysis.html`
@@ -4571,48 +4269,37 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [True King True Draco](True King True Draco Deck Analysis.html) - Core Combo
 - **File**: `True King True Draco Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate Awakening"
-- **Written Step**: *"Activate Draco Awakening . Use its on-activation effect to add Dinomight Knight, the True Dracofighter from your Deck to your hand."*
-- **Engine Violation**: `Step 2 ("Use its on-activation effect to add Dinomight Knight, the True Dracofighter from your Deck to your hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Search and Set"
+- **Written Step**: *"Dinomight Knight's effect activates. Add True King's Return from Deck to hand. Set it alongside your other floodgates."*
+- **Engine Violation**: `Step 6 ("Set it alongside your other floodgates.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 66092596`
   - `Selected Card(s) [0] from location 1`
-
-### [ ] [True King True Draco](True King True Draco Deck Analysis.html) - Core Combo (Line 2)
-- **File**: `True King True Draco Deck Analysis.html`
-- **Failed at**: Step 3 of 2
-- **Step Title**: "Summon the Apex Predator (Forbidden)"
-- **Written Step**: *"Historically, players would use the two Level 9 True Kings to Xyz Summon True King of All Calamities , locking the opponent out of monster effects."*
-- **Engine Violation**: `Step 3 ("Historically, players would use the two Level 9 True Kings to Xyz Summon True King of All Calamities, locking the opponent out of monster effects.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of code 13035077`
-  - `Step 2: Legal Activation of code 13035077`
-  - `Selected Card(s) [0] from location 2`
-  - `Selected Card(s) [0] from location 1`
-
-### [ ] [U.A.](U.A. Deck Analysis.html) - Core Combo
-- **File**: `U.A. Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Tag-Out & Power-Up"
-- **Written Step**: *"Return Midfielder to your hand to Special Summon Mighty Slugger . This triggers Stadium again, boosting all your monsters' ATK by 500. Attack safely with your powered-up Slugger."*
-- **Engine Violation**: `Step 3 ("Return Midfielder to your hand to Special Summon Mighty Slugger.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 72491806`
+  - `Step 3: Legal Normal Summon of code 58984738`
 
 ### [ ] [Umi](Umi Deck Analysis.html) - The Fundamental Sequence (2-Card Combo)
 - **File**: `Umi Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Normal Summon & Activate"
-- **Written Step**: *"Required Hand: Electric Jellyfish + Ocean Dragon Lord - Kairyu-Shin. Normal Summon Electric Jellyfish . Activate its effect, sending A Legendary Ocean from Deck to GY as cost."*
-- **Engine Violation**: `Step 1 ("Required Hand: Electric Jellyfish + Ocean Dragon Lord - Kairyu-Shin.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Establish the Lock"
+- **Written Step**: *"Set Sea Stealth Attack . On the opponent's turn, activate it to retrieve A Legendary Ocean from the GY. The lock is now active, protected by Jellyfish's negate and Sea Stealth's effects."*
+- **Engine Violation**: `Step 6 ("Set Sea Stealth Attack.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Normal Summon of code 95824983`
+  - `Step 3: Legal Activation of code 95824983`
+  - `Selected Card(s) [0] from location 1`
+  - `Selected Card(s) [1] from location 2`
 
 ### [ ] [Unchained](Unchained Deck Analysis.html) - Core Combo
 - **File**: `Unchained Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate with Sharvara"
-- **Written Step**: *"Start by setting any "Unchained" Spell/Trap. Use the effect of Unchained Soul of Sharvara from your hand to destroy the Set card and Special Summon itself."*
-- **Engine Violation**: `Step 1 ("Start by setting any "Unchained" Spell/Trap.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon Yama & Extend"
+- **Written Step**: *"The destroyed Spell/Trap triggers, summoning an "Unchained" monster from the Deck. Use this monster and Sharvara to Link Summon Unchained Soul Lord of Yama . Yama and Sharvara's effects activate, letting you search a monster and set a Spell/Trap."*
+- **Engine Violation**: `Step 5 ("Use this monster and Sharvara to Link Summon Unchained Soul Lord of Yama.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Spell/Trap Set of code 27412542`
+  - `Step 2: Legal Activation of code 27412542`
+  - `Selected Card(s) [10] from location 1`
 
 ### [ ] [Ursarctic](Ursarctic Deck Analysis.html) - Core Combo
 - **File**: `Ursarctic Deck Analysis.html`
@@ -4648,14 +4335,16 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 1 of 6
 - **Step Title**: "Set Up the Board"
 - **Written Step**: *"Xyz Summon Number 39: Utopia, Emissary of Light off any two Level 4 monsters the Onomat engine produces. It sits at 2500 ATK and cannot be destroyed by battle outside the "Number" exception."*
-- **Engine Violation**: `Step 1 ("Xyz Summon Number 39: Utopia, Emissary of Light off any two Level 4 monsters the Onomat engine produces.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 2 ("It sits at 2500 ATK and cannot be destroyed by battle outside the "Number" exception.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 76504386`
 
 ### [ ] [Utopia](Utopia Deck Analysis.html) - Core Combo (Line 4)
 - **File**: `Utopia Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Board With Material"
-- **Written Step**: *"Emissary of Light sits on the field with material attached, and Eclipse Twins is either on the field or already in your Graveyard."*
-- **Engine Violation**: `Step 1 ("Emissary of Light sits on the field with material attached, and Eclipse Twins is either on the field or already in your Graveyard.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Shield the Push"
+- **Written Step**: *"Detach a material to shield Emissary, or whichever monster your opponent is actually targeting. Repeat for as long as the materials last, with no once per turn to stop you."*
+- **Engine Violation**: `Step 3 ("Repeat for as long as the materials last, with no once per turn to stop you.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Vaalmonica](Vaalmonica Deck Analysis.html) - Standard Combo: The Path to Zebufera
 - **File**: `Vaalmonica Deck Analysis.html`
@@ -4670,35 +4359,46 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 23093373`
   - `Step 4: Legal Normal Summon of code 23093373`
   - `Trigger Effect Accepted for Card Code 23093373`
-  - `Selected Card(s) [12] from location 1`
+  - `Selected Card(s) [13] from location 1`
   - `Step 5: Legal Activation of code 5605529`
   - `Selected Card(s) [2] from location 1`
   - `Step 6: Legal Activation of code 42193638`
-  - `Selected Card(s) [4] from location 1`
+  - `Selected Card(s) [12] from location 1`
 
 ### [ ] [Vampire](Vampire Deck Analysis.html) - Foundational Combo Line
 - **File**: `Vampire Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Engine Ignition"
-- **Written Step**: *"Activate Retainer in GY, sending Ghost to revive itself. Search Vampire's Domain . Activate Domain, pay 500 LP for an additional Normal Summon."*
-- **Engine Violation**: `Step 3 ("Activate Retainer in GY, sending Ghost to revive itself.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Swarm and Draw"
+- **Written Step**: *"Tribute Retainer for Shadow Vampire . Use its effect to summon Vampire Scarlet Scourge from deck. Use Scourge's effect to revive a Vampire, then Link climb into Vampire Sucker to draw a card and establish field presence."*
+- **Engine Violation**: `Step 6 ("Tribute Retainer for Shadow Vampire.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 90299015`
   - `Trigger Effect Accepted for Card Code 90299015`
-  - `Selected Card(s) [0] from location 2`
+  - `Selected Card(s) [2] from location 2`
   - `Selected Card(s) [1] from location 1`
-  - `Selected Card(s) [0] from location 1`
-  - `Step 2: Legal Activation of code 70645913`
+  - `Selected Card(s) [2] from location 1`
+  - `Step 2: Legal Activation of code 34250214`
   - `Selected Card(s) [3] from location 2`
-  - `Trigger Effect Accepted for Card Code 70645913`
+  - `Trigger Effect Accepted for Card Code 34250214`
   - `Selected Card(s) [0] from location 1`
+  - `Step 3: Legal Activation of code 70645913`
+  - `Selected Card(s) [4] from location 4`
+  - `Trigger Effect Accepted for Card Code 70645913`
+  - `Selected Card(s) [4] from location 1`
+  - `Step 5: Legal Activation of code 5795882`
 
 ### [ ] [Vaylantz](Vaylantz Deck Analysis.html) - Foundational Combo Sequence
 - **File**: `Vaylantz Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Deploy & Search"
-- **Written Step**: *"Place and Special Summon Shinonome . Her effect searches Vaylantz Wakening - Solo Activation . Use it to place Nazuki in the Pendulum Zone."*
-- **Engine Violation**: `Step 1 ("Place") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Establish Scales"
+- **Written Step**: *"Use both monsters to Link Summon Beyond the Pendulum . Its effect searches for a high Pendulum Scale, setting up a larger Pendulum Summon to bring back your resources from the Extra Deck."*
+- **Engine Violation**: `Step 6 ("Use both monsters to Link Summon Beyond the Pendulum.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 49131917`
+  - `Step 2: Legal Activation of code 49131917`
+  - `Step 3: Legal Activation of code 49131917`
+  - `Selected Card(s) [0] from location 1`
+  - `Step 4: Legal Activation of code 41525660`
 
 ### [ ] [Veda](Veda Deck Analysis.html) - Core Combo
 - **File**: `Veda Deck Analysis.html`
@@ -4714,7 +4414,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Selected Card(s) [0] from location 4`
   - `Selected Card(s) [0] from location 1`
   - `Step 4: Legal Activation of code 82460246`
-  - `Selected Card(s) [2] from location 1`
+  - `Selected Card(s) [3] from location 1`
 
 ### [ ] [Vendread](Vendread Deck Analysis.html) - Core Combo
 - **File**: `Vendread Deck Analysis.html`
@@ -4728,7 +4428,7 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Failed at**: Step 2 of 3
 - **Step Title**: "Search & Extend"
 - **Written Step**: *"Scareclaw Light-Heart searches Primitive Planet Reichphobia . Activate Primitive Planet Reichphobia to search Visas Starfrost . Use Visas's effect to destroy Light-Heart and Special Summon himself."*
-- **Engine Violation**: `Step 6 ("Special Summon himself.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 5 ("Use Tuner's effect to destroy Light-Heart") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 82361809`
   - `Trigger Effect Accepted for Card Code 82361809`
@@ -4736,23 +4436,8 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 2: Legal Special Summon of code 53776969`
   - `Trigger Effect Accepted for Card Code 53776969`
   - `Selected Card(s) [0] from location 1`
-  - `Step 3: Legal Activation of code 56063182`
-  - `Selected Card(s) [1] from location 1`
-  - `Step 5: Legal Activation of code 56099748`
-  - `Selected Card(s) [0] from location 4`
-
-### [ ] [Voiceless Voice](Voiceless Voice Deck Analysis.html) - The Sacred Ritual: One-Card Combo
-- **File**: `Voiceless Voice Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Prepare the Offering"
-- **Written Step**: *"Activate Saffira's effect in hand. Discard her to send Prayers of the Voiceless Voice to the GY and add Skull Guardian to your hand."*
-- **Engine Violation**: `Step 4 ("Activate Saffira's effect in hand.") was not offered as a legal action by the duel engine.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of code 25801745`
-  - `Trigger Effect Accepted for Card Code 25801745`
-  - `Selected Card(s) [4] from location 1`
-  - `Step 3: Legal Activation of code 98477480`
-  - `Selected Card(s) [5] from location 1`
+  - `Step 4: Legal Activation of code 56063182`
+  - `Selected Card(s) [0] from location 1`
 
 ### [ ] [Volcanic](Volcanic Deck Analysis.html) - Core Combo
 - **File**: `Volcanic Deck Analysis.html`
@@ -4763,10 +4448,14 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Vylon](Vylon Deck Analysis.html) - Core Combo
 - **File**: `Vylon Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Search"
-- **Written Step**: *"Synchro Summon a LIGHT monster (e.g., Vylon Delta) using Vylon Cube as material. Cube's effect activates, searching Rod of Silence - Kay'est from your deck."*
-- **Engine Violation**: `Step 1 ("Synchro Summon a LIGHT monster (e.g., Vylon Delta) using Vylon Cube as material.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Ignite the Loop"
+- **Written Step**: *"With Vylon Element on the field, equip your Synchro monster with Kay'est. Now, equip a Vylon Equip Spell. Kay'est's effect will destroy it, triggering Element to summon a Tuner and the Equip's effect to search another."*
+- **Engine Violation**: `Step 3 ("With Vylon Element on the field, equip your Synchro monster with Kay'est.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Special Summon of code 45215453`
+  - `Trigger Effect Accepted for Card Code 41431329`
+  - `Selected Card(s) [1] from location 1`
 
 ### [ ] [War Rock](War Rock Deck Analysis.html) - Core Combo
 - **File**: `War Rock Deck Analysis.html`
@@ -4788,10 +4477,13 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Warrior Lady](Warrior Lady Deck Analysis.html) - Core Combo Pathways
 - **File**: `Warrior Lady Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "The "Float""
-- **Written Step**: *"Start with Warrior Lady of the Wasteland face-down (and Rookie Warrior Lady in GY, sent by Foolish Burial or her own effect). When the opponent destroys Wasteland by battle, her effect triggers."*
-- **Engine Violation**: `Step 1 ("Start with Warrior Lady of the Wasteland face-down (and Rookie Warrior Lady in GY, sent by Foolish Burial or her own effect).") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "The Recruit"
+- **Written Step**: *"Special Summon a key EARTH Warrior from Deck, such as another Wasteland , Exiled Force for removal, or an engine starter like U.A. Midfielder . The first Wasteland is now in the GY."*
+- **Engine Violation**: `Step 3 ("Special Summon a key EARTH Warrior from Deck, such as another Wasteland, Exiled Force for removal, or an engine starter like U.A. Midfielder.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 1: Legal Activation of code 86028783`
+  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Water Dragon](Water Dragon Deck Analysis.html) - Core Combo: Duoterion Starter
 - **File**: `Water Dragon Deck Analysis.html`
@@ -4805,10 +4497,15 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Watt](Watt Deck Analysis.html) - Core Combo
 - **File**: `Watt Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate Lockdown"
-- **Written Step**: *"Start with Wattkingdom and Wattcobra on field. Use Wattkingdom to summon Wattgiraffe . Enter Battle Phase and attack directly with Giraffe to lock your opponent out of all effects."*
-- **Engine Violation**: `Step 1 ("Start with Wattkingdom and Wattcobra on field.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Synchro Climb in Battle"
+- **Written Step**: *"Attack directly with Wattuna . Use its effect to Tribute itself and Wattgiraffe to Special Summon Wattkyuki . Attack with Wattkyuki, use its effect to summon Wattchimera , and attack again for game or hand control."*
+- **Engine Violation**: `Step 9 ("use its effect to summon Wattchimera, and attack again for game or hand control.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Activation of code 41790641`
+  - `Selected Card(s) [0] from location 4`
+  - `Selected Card(s) [10] from location 1`
+  - `Step 7: Legal Activation of code 41790641`
 
 ### [ ] [White Aura](White Aura Deck Analysis.html) - Section 4: The Art of the Combo
 - **File**: `White Aura Deck Analysis.html`
@@ -4843,15 +4540,16 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Windwitch](Windwitch Deck analysis.html) - Core Combo
 - **File**: `Windwitch Deck analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Synchro Summon and Search"
-- **Written Step**: *"When Glass Bell is summoned, search for Snow Bell . Synchro Summon Winter Bell using Ice Bell and Glass Bell. Then, Special Summon Snow Bell from your hand."*
-- **Engine Violation**: `Step 5 ("Special Summon Snow Bell from your hand.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Summon the Boss"
+- **Written Step**: *"Synchro Summon Crystal Wing Synchro Dragon using Winter Bell and Snow Bell . Because Snow Bell was used, your Crystal Wing cannot be destroyed by your opponent's card effects."*
+- **Engine Violation**: `Step 6 ("Synchro Summon Crystal Wing Synchro Dragon using Winter Bell and Snow Bell.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 43722862`
   - `Selected Card(s) [6] from location 1`
-  - `Step 3: Legal Activation of code 70117860`
   - `Step 4: Legal Special Summon of code 14577226`
+  - `Step 5: Legal Activation of code 14577226`
+  - `Selected Card(s) [0] from location 16`
 
 ### [ ] [Winged Dragon of Ra](Winged Dragon of Ra Deck Analysis.html) - Part IV: Sacred Combo Lines
 - **File**: `Winged Dragon of Ra Deck Analysis.html`
@@ -4887,34 +4585,28 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 
 ### [ ] [Worm](Worm Deck Analysis.html) - Core Combo
 - **File**: `Worm Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Establish the Board"
-- **Written Step**: *"Summon Worm Xex to send Worm Yagan from Deck to GY. Yagan then revives itself face-down. Set W Nebula Meteorite and pass."*
-- **Engine Violation**: `Step 3 ("Set W Nebula Meteorite and pass.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Activate on Opponent's Turn"
+- **Written Step**: *"During the opponent's End Phase, activate W Nebula Meteorite . This flips all your monsters face-up, triggering their effects like Yagan's bounce."*
+- **Engine Violation**: `Step 4 ("activate W Nebula Meteorite.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of code 11722335`
   - `Trigger Effect Accepted for Card Code 11722335`
   - `Selected Card(s) [12] from location 1`
-  - `Step 2: Legal Activation of code 47111934`
+  - `Step 3: Legal Spell/Trap Set of code 90075978`
+  - `Passing turn to opponent for opponent-turn action`
 
 ### [ ] [Xtra Hero](Xtra Hero Deck Analysis.html) - Core Combo: The "Faris" Full Extension
 - **File**: `Xtra Hero Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Initiate the Vision Engine"
-- **Written Step**: *"Start by using Vision HERO Faris , discarding another HERO. This places Vision HERO Increase in your Spell/Trap Zone, which then summons itself and Vision HERO Vyon ."*
-- **Engine Violation**: `Step 3 ("summons itself and Vision HERO Vyon.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 2 of 3
+- **Step Title**: "Summon the Catalyst"
+- **Written Step**: *"Use Vyon 's effect to send Destiny HERO - Malicious to the GY. Then, Link Summon Xtra HERO Cross Crusader using your two Vision HEROs."*
+- **Engine Violation**: `Step 5 ("Link Summon Xtra HERO Cross Crusader using your two Vision HEROs.") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 18094166`
   - `Selected Card(s) [0] from location 2`
   - `Trigger Effect Accepted for Card Code 18094166`
   - `Selected Card(s) [2] from location 1`
-
-### [ ] [Yang Zing](Yang Zing Deck Analysis.html) - Core Combo
-- **File**: `Yang Zing Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon & Search"
-- **Written Step**: *"Synchro Summon Denglong . Use its effect to search Nine Pillars of Yang Zing . Then, use its second effect to send Chiwen from your deck to the Graveyard."*
-- **Engine Violation**: `Step 1 ("Synchro Summon Denglong.") was not offered as a legal action by the duel engine.`
 
 ### [ ] [Yubel](Yubel Deck Analysis.html) - The One-Card Combo
 - **File**: `Yubel Deck Analysis.html`
@@ -4931,6 +4623,11 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Trigger Effect Accepted for Card Code 90829280`
   - `Selected Card(s) [2] from location 1`
   - `Step 6: Legal Activation of code 65261141`
+  - `Auto-activating on-field effect of code 65261141 to complete Step 7`
+  - `Selected Card(s) [2] from location 2`
+  - `Selected Card(s) [13] from location 1`
+  - `Trigger Effect Accepted for Card Code 78371393`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Zefra](Zefra Deck Analysis.html) - Core Combo
 - **File**: `Zefra Deck Analysis.html`
@@ -4941,15 +4638,15 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 29432356`
   - `Step 2: Legal Activation of code 29432356`
-  - `Step 3: Legal Activation of code 29432356`
   - `Selected Card(s) [10] from location 1`
+  - `Step 3: Legal Activation of code 58990362`
 
 ### [ ] [Zubaba](Zubaba Deck Analysis.html) - Core Combo & Strategy (Line 2)
 - **File**: `Zubaba Deck Analysis.html`
 - **Failed at**: Step 3 of 3
 - **Step Title**: "Assemble the Fortress"
 - **Written Step**: *"Use Gagagacoat and Dodododwarf to make a second Rank 4 Xyz. Overlay your two Rank 4 monsters to make Utopic Future , then rank it up into Utopic Draco Future ."*
-- **Engine Violation**: `Step 6 ("Use Gagagacoat and Dodododwarf to make a second Rank 4 Xyz.") was not offered as a legal action by the duel engine.`
+- **Engine Violation**: `Step 7 ("Overlay your two Rank 4 monsters to make Utopic Future") was not offered as a legal action by the duel engine.`
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of code 62880279`
   - `Selected Card(s) [0] from location 1`
@@ -4959,11 +4656,17 @@ Generated: Sat, 17 Oct 2026 11:00:00 GMT
   - `Step 4: Legal Activation of code 23720856`
   - `Step 5: Legal Activation of code 23720856`
   - `Selected Card(s) [0] from location 16`
+  - `Step 6: Legal Activation of code 59724555`
+  - `Selected Card(s) [0] from location 2`
 
 ### [ ] [Zubaba](Zubaba Deck Analysis.html) - Core Combo & Strategy (Line 3)
 - **File**: `Zubaba Deck Analysis.html`
-- **Failed at**: Step 1 of 5
-- **Step Title**: "Starting Position"
-- **Written Step**: *"Gagaga Magic in hand, a Level 3 Zubababa Knight in the graveyard. That is exactly what an earlier Onomatopaira discard leaves behind, and your Normal Summon is still untouched."*
-- **Engine Violation**: `Step 1 ("Gagaga Magic in hand, a Level 3 Zubababa Knight in the graveyard.") was not offered as a legal action by the duel engine.`
+- **Failed at**: Step 3 of 5
+- **Step Title**: "Still Inside the Same Resolution"
+- **Written Step**: *"Treat the Level 3 Knight as Level 4, then Xyz Summon a Rank 4 from the permitted pool. Zubaba General is legal here, so the archetype reaches its own boss monster off one card in hand."*
+- **Engine Violation**: `Step 6 ("Xyz Summon a Rank 4 from the permitted pool.") was not offered as a legal action by the duel engine.`
+- **Prior Legal Plays**:
+  - `Step 2: Legal Normal Summon of code 12908094`
+  - `Step 4: Legal Activation of code 6595475`
+  - `Selected Card(s) [0] from location 2`
 
