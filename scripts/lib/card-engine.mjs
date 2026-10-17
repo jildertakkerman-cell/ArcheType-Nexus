@@ -66,7 +66,7 @@ export function formatCardData(row) {
         alias: row.alias || 0,
         setcodes: parseSetcodes(row.setcode),
         type: row.type,
-        level: isLink ? 0 : (row.level & 0xff),
+        level: (row.level & 0xff),
         attribute: row.attribute,
         race: BigInt(row.race || 0),
         attack: row.atk,
@@ -363,7 +363,7 @@ export async function createDuelInstance(options = {}) {
         flags: options.flags || OcgDuelMode.MODE_MR5,
         seed: options.seed || [1n, 1n, 1n, 1n],
         team1: options.team1 || { startingLP: 8000, startingDrawCount: 0, drawCountPerTurn: 1 },
-        team2: options.team2 || { startingLP: 8000, startingDrawCount: 0, drawCountPerTurn: 1 },
+        team2: options.team2 || { startingLP: 8000, startingDrawCount: 0, drawCountPerTurn: 0 },
         cardReader: (code) => {
             if (options.cardReader) {
                 const custom = options.cardReader(code);
