@@ -877,11 +877,11 @@
 
     function saveTriageRecord(itemId, status, notes = '') {
         if (!auditReport.triage) auditReport.triage = {};
-        if (status === 'untriaged') {
+        if (status === 'untriaged' && !notes) {
             delete auditReport.triage[itemId];
         } else {
             auditReport.triage[itemId] = {
-                status,
+                status: status || 'untriaged',
                 notes,
                 updatedAt: new Date().toISOString()
             };
@@ -1036,9 +1036,13 @@
                         <button class="tab-btn" onclick="toggleAuditQueue()" id="btn-toggle-audit-queue" title="Collapse or expand the combo list to maximize combo display">
                             <i class="fas fa-expand-arrows-alt"></i> Maximize Display
                         </button>
-                        <button class="tab-btn" onclick="exportAuditTriage()" title="Export triaged items to JSON">
+                        <button class="tab-btn" onclick="exportAuditTriage()" title="Export triaged items and notes to JSON">
                             <i class="fas fa-file-export"></i> Export Triage JSON
                         </button>
+                        <button class="tab-btn" onclick="document.getElementById('audit-triage-file-input').click()" title="Import saved triage JSON file">
+                            <i class="fas fa-file-import"></i> Import Triage JSON
+                        </button>
+                        <input type="file" id="audit-triage-file-input" style="display:none;" accept=".json" onchange="importAuditTriage(event)">
                     </div>
                 </div>
 
@@ -1542,6 +1546,43 @@
             URL.revokeObjectURL(url);
         }, 200);
         toast(`Exported ${keys.length} triaged items!`);
+    };
+
+    window.importAuditTriage = function (e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const data = JSON.parse(evt.target.result);
+                const items = data.items || (Array.isArray(data) ? data : []);
+                if (!items.length) {
+                    toast('No triage items found in JSON file.', true);
+                    return;
+                }
+                if (!auditReport.triage) auditReport.triage = {};
+                let imported = 0;
+                items.forEach(it => {
+                    if (it.id && (it.status || it.notes)) {
+                        auditReport.triage[it.id] = {
+                            status: it.status || 'untriaged',
+                            notes: it.notes || '',
+                            updatedAt: it.updatedAt || new Date().toISOString()
+                        };
+                        imported++;
+                    }
+                });
+                localStorage.setItem(AUDIT_TRIAGE_STORAGE_KEY, JSON.stringify(auditReport.triage));
+                updateAuditCounters();
+                renderAuditList();
+                renderAuditInspector();
+                toast(`Successfully imported ${imported} triaged items!`);
+            } catch (err) {
+                toast(`Failed to parse triage JSON: ${err.message}`, true);
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
     };
 
     // ------------------------------------------------------------------
