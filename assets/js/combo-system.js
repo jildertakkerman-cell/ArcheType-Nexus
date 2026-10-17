@@ -1947,8 +1947,15 @@ class DuelSimulator {
         if (!zoneRect || boardRect.width === 0) return;
 
         const isMobile = window.matchMedia("(max-width: 768px)").matches;
-        const w = isMobile ? 62 : 120;
-        const h = isMobile ? 90 : 175;
+        let w = isMobile ? 62 : 120;
+        let h = isMobile ? 90 : 175;
+        if (this.boardEl) {
+            const cs = getComputedStyle(this.boardEl);
+            const cw = parseFloat(cs.getPropertyValue('--card-w'));
+            const ch = parseFloat(cs.getPropertyValue('--card-h'));
+            if (!isNaN(cw) && cw > 0) w = cw;
+            if (!isNaN(ch) && ch > 0) h = ch;
+        }
 
         token.style.width = `${w}px`;
         token.style.height = `${h}px`;

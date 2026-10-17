@@ -231,8 +231,28 @@
             b.setAttribute('aria-pressed', String(b === active));
         });
         if (location.hash.slice(1) !== mode) history.replaceState(null, '', `#${mode}`);
-        if (mode === 'decks' && !deckReport.requested) loadDeckReport();
-        if (mode === 'audit' && !auditReport.requested) loadAuditReport();
+
+        const bar = document.getElementById('admin-mode-bar');
+        if (mode === 'audit') {
+            if (bar && !bar.classList.contains('is-collapsed')) {
+                bar.classList.add('is-collapsed');
+            }
+            if (!auditReport.requested) loadAuditReport();
+            setTimeout(() => {
+                auditReport.simulatorInstance?.repositionCards();
+                window.dispatchEvent(new Event('resize'));
+            }, 80);
+            setTimeout(() => {
+                auditReport.simulatorInstance?.repositionCards();
+            }, 240);
+        } else {
+            try {
+                if (localStorage.getItem('archetype_admin_sidebar_collapsed') !== '1') {
+                    bar?.classList.remove('is-collapsed');
+                }
+            } catch {}
+            if (mode === 'decks' && !deckReport.requested) loadDeckReport();
+        }
     };
 
     window.addEventListener('hashchange', () => window.switchMode(location.hash.slice(1)));
@@ -1013,6 +1033,9 @@
                     </div>
 
                     <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <button class="tab-btn" onclick="toggleAuditQueue()" id="btn-toggle-audit-queue" title="Collapse or expand the combo list to maximize combo display">
+                            <i class="fas fa-expand-arrows-alt"></i> Maximize Display
+                        </button>
                         <button class="tab-btn" onclick="exportAuditTriage()" title="Export triaged items to JSON">
                             <i class="fas fa-file-export"></i> Export Triage JSON
                         </button>
@@ -1425,13 +1448,41 @@
         }
     }
 
-    window.toggleModeBar = function () {
+    window.toggleModeBar = function (forceState) {
         const bar = document.getElementById('admin-mode-bar');
         if (!bar) return;
-        const collapsed = bar.classList.toggle('is-collapsed');
+        const collapsed = (typeof forceState === 'boolean')
+            ? (forceState ? bar.classList.add('is-collapsed') : bar.classList.remove('is-collapsed'), forceState)
+            : bar.classList.toggle('is-collapsed');
         try {
             localStorage.setItem('archetype_admin_sidebar_collapsed', collapsed ? '1' : '0');
         } catch {}
+        setTimeout(() => {
+            auditReport.simulatorInstance?.repositionCards();
+            window.dispatchEvent(new Event('resize'));
+        }, 60);
+        setTimeout(() => {
+            auditReport.simulatorInstance?.repositionCards();
+        }, 240);
+    };
+
+    window.toggleAuditQueue = function () {
+        const layout = document.querySelector('.audit-layout');
+        const btn = document.getElementById('btn-toggle-audit-queue');
+        if (!layout) return;
+        const isCollapsed = layout.classList.toggle('queue-collapsed');
+        if (btn) {
+            btn.innerHTML = isCollapsed
+                ? '<i class="fas fa-compress-arrows-alt"></i> Restore Queue'
+                : '<i class="fas fa-expand-arrows-alt"></i> Maximize Display';
+        }
+        setTimeout(() => {
+            auditReport.simulatorInstance?.repositionCards();
+            window.dispatchEvent(new Event('resize'));
+        }, 60);
+        setTimeout(() => {
+            auditReport.simulatorInstance?.repositionCards();
+        }, 240);
     };
 
     window.exportAuditTriage = function () {
@@ -1491,7 +1542,7 @@
 
         document.getElementById('admin-content').style.display = '';
         try {
-            if (localStorage.getItem('archetype_admin_sidebar_collapsed') === '1') {
+            if (localStorage.getItem('archetype_admin_sidebar_collapsed') === '1' || location.hash.slice(1) === 'audit') {
                 document.getElementById('admin-mode-bar')?.classList.add('is-collapsed');
             }
         } catch {}
