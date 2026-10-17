@@ -918,6 +918,7 @@
             auditReport.data = await res.json();
             updateAuditCounters();
             renderAuditShell();
+            setupAuditKeyboardShortcuts();
         } catch (error) {
             console.error('Failed to load audit report', error);
             if (body) {
@@ -1035,7 +1036,8 @@
 
             <div class="audit-layout">
                 <div class="audit-sidebar-col" id="audit-list"></div>
-                <div class="audit-inspector" id="audit-inspector"></div>
+                <div class="audit-board-col" id="audit-board-pane"></div>
+                <div class="audit-details-col" id="audit-details-pane"></div>
             </div>
         `;
 
@@ -1096,12 +1098,14 @@
     }
 
     function renderAuditInspector() {
-        const container = document.getElementById('audit-inspector');
-        if (!container) return;
+        const boardPane = document.getElementById('audit-board-pane');
+        const detailsPane = document.getElementById('audit-details-pane');
+        if (!boardPane || !detailsPane) return;
 
         const item = getActiveAuditItem();
         if (!item) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i>Select a combo to inspect</div>';
+            boardPane.innerHTML = '<div class="empty-state"><i class="fas fa-microscope"></i>Select a combo to inspect board</div>';
+            detailsPane.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i>Select a combo to view diagnostics</div>';
             return;
         }
 
@@ -1149,7 +1153,33 @@
             `;
         }).join('');
 
-        container.innerHTML = `
+        // Pane 2: Failure Breakdown Box + Duel Simulator
+        boardPane.innerHTML = `
+            <div class="audit-fail-box">
+                <div class="audit-fail-header">
+                    <span><i class="fas fa-exclamation-triangle"></i> Identified Illegal Play at Step ${item.failedStepNumber ?? '?'} of ${item.totalSteps}</span>
+                    <button class="audit-jump-btn" onclick="jumpAuditSimulatorToFail()" title="Jump board state right before failure (Hotkey: J)">
+                        <i class="fas fa-crosshairs"></i> Jump to Failure <span class="kbd-hint">J</span>
+                    </button>
+                </div>
+                <div class="audit-fail-steptext">
+                    "${window.escapeHtml(item.writtenText || item.comboTitle)}"
+                </div>
+                <div class="audit-fail-err">
+                    <strong>Rejection Cause:</strong> ${window.escapeHtml(item.engineError || 'Step action not permitted under OCGCore game state.')}
+                </div>
+            </div>
+
+            <div class="audit-sim-wrap">
+                <div id="audit-sim-mount"></div>
+            </div>
+            <div class="audit-sim-hint">
+                <i class="fas fa-info-circle"></i> Board shows duel state before failed step. Click any step in the timeline on the right to jump.
+            </div>
+        `;
+
+        // Pane 3: Diagnostics, Timeline, Triage Toolbar & Notes
+        detailsPane.innerHTML = `
             <div class="audit-insp-header">
                 <div>
                     <div class="audit-insp-title">
@@ -1162,14 +1192,14 @@
                 </div>
 
                 <div class="audit-insp-actions">
-                    <button class="btn-triage btn-triage-illegal${trStatus === 'illegal' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'illegal')">
-                        <i class="fas fa-ban"></i> Truly Illegal
+                    <button class="btn-triage btn-triage-illegal${trStatus === 'illegal' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'illegal')" title="Mark Truly Illegal (Hotkey: 1)">
+                        <i class="fas fa-ban"></i> Truly Illegal <span class="kbd-hint">1</span>
                     </button>
-                    <button class="btn-triage btn-triage-fp${trStatus === 'false_positive' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'false_positive')">
-                        <i class="fas fa-bug"></i> False Positive / Parser
+                    <button class="btn-triage btn-triage-fp${trStatus === 'false_positive' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'false_positive')" title="Mark False Positive (Hotkey: 2)">
+                        <i class="fas fa-bug"></i> False Positive <span class="kbd-hint">2</span>
                     </button>
-                    <button class="btn-triage btn-triage-resolved${trStatus === 'resolved' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'resolved')">
-                        <i class="fas fa-check-circle"></i> Resolved
+                    <button class="btn-triage btn-triage-resolved${trStatus === 'resolved' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'resolved')" title="Mark Resolved (Hotkey: 3)">
+                        <i class="fas fa-check-circle"></i> Resolved <span class="kbd-hint">3</span>
                     </button>
                     ${trStatus ? `
                     <button class="btn-triage" style="background:rgba(255,255,255,0.06); color:#a3a3a3; border:1px solid rgba(255,255,255,0.12);" onclick="setAuditTriageStatus('${item.id}', 'untriaged')">
@@ -1178,35 +1208,24 @@
                 </div>
             </div>
 
-            <!-- Failure Breakdown Banner -->
-            <div class="audit-fail-box">
-                <div class="audit-fail-header">
-                    <span><i class="fas fa-exclamation-triangle"></i> Identified Illegal Play at Step ${item.failedStepNumber ?? '?'} of ${item.totalSteps}</span>
-                    <button class="audit-jump-btn" onclick="jumpAuditSimulatorToFail()">
-                        <i class="fas fa-crosshairs"></i> Jump Board to Failure Point
-                    </button>
-                </div>
-                <div class="audit-fail-steptext">
-                    "${window.escapeHtml(item.writtenText || item.comboTitle)}"
-                </div>
-                <div class="audit-fail-err">
-                    <strong>Rejection Cause:</strong> ${window.escapeHtml(item.engineError || 'Step action not permitted under OCGCore game state.')}
-                </div>
-            </div>
-
-            <!-- Duel Simulator Container -->
-            <div class="audit-sim-wrap">
-                <div id="audit-sim-mount"></div>
-            </div>
-
             <!-- Diagnostics: Engine Log & Offered Actions -->
             <div class="audit-diag-grid">
+                <div class="audit-diag-card">
+                    <div class="audit-diag-title">
+                        <i class="fas fa-hand-paper" style="color:#f59e0b;"></i> Legal Actions OCGCore Allowed (${offeredCount})
+                    </div>
+                    ${offeredChips.length ? `
+                    <div class="audit-offered-grid" style="max-height:190px; overflow-y:auto;">
+                        ${offeredChips.join('')}
+                    </div>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No idle actions available (engine awaiting trigger resolution or chain timing).</div>'}
+                </div>
+
                 <div class="audit-diag-card">
                     <div class="audit-diag-title">
                         <i class="fas fa-terminal" style="color:#22c55e;"></i> Engine Execution Log (${(item.log || []).length} events)
                     </div>
                     ${item.log && item.log.length ? `
-                    <ul class="audit-diag-list">
+                    <ul class="audit-diag-list" style="max-height:190px;">
                         ${item.log.map(entry => {
                             let cls = '';
                             if (entry.includes('Legal')) cls = 'is-step-action';
@@ -1215,16 +1234,6 @@
                             return `<li class="${cls}">${window.escapeHtml(entry)}</li>`;
                         }).join('')}
                     </ul>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No engine events logged prior to rejection.</div>'}
-                </div>
-
-                <div class="audit-diag-card">
-                    <div class="audit-diag-title">
-                        <i class="fas fa-hand-paper" style="color:#f59e0b;"></i> Legal Actions OCGCore Allowed (${offeredCount})
-                    </div>
-                    ${offeredChips.length ? `
-                    <div class="audit-offered-grid" style="max-height:220px; overflow-y:auto;">
-                        ${offeredChips.join('')}
-                    </div>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No idle actions were available (engine was awaiting trigger resolution or chain timing).</div>'}
                 </div>
             </div>
 
@@ -1235,19 +1244,19 @@
                     <span>Full Combo Step Timeline (${steps.length} Steps)</span>
                     <span style="font-size:0.72rem; color:#737373;">Click any step to inspect board state</span>
                 </div>
-                <div class="audit-steps-list">
+                <div class="audit-steps-list" style="max-height:220px;">
                     ${stepsHtml}
                 </div>
             </div>` : ''}
 
             <!-- Moderator Notes -->
-            <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.08); border-radius:0.65rem; padding:0.85rem 1rem;">
-                <div style="font-size:0.8rem; font-weight:700; color:#a3a3a3; text-transform:uppercase; margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.08); border-radius:0.65rem; padding:0.75rem 0.9rem;">
+                <div style="font-size:0.78rem; font-weight:700; color:#a3a3a3; text-transform:uppercase; margin-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center;">
                     <span><i class="fas fa-sticky-note" style="margin-right:0.35rem;"></i>Moderator Notes & Resolution Details</span>
-                    ${triageRecord.updatedAt ? `<span style="font-size:0.72rem; color:#737373;">Last updated ${formatDate(triageRecord.updatedAt)}</span>` : ''}
+                    ${triageRecord.updatedAt ? `<span style="font-size:0.7rem; color:#737373;">Last updated ${formatDate(triageRecord.updatedAt)}</span>` : ''}
                 </div>
                 <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="audit-triage-notes-input" class="modnotes-input" style="flex:1;" placeholder="Add details (e.g. 'False positive: Parser missed cost', 'Illegal: Once per turn violated')" value="${window.escapeHtml(triageRecord.notes || '')}">
+                    <input type="text" id="audit-triage-notes-input" class="modnotes-input" style="flex:1;" placeholder="Add details (e.g. 'False positive: Cost missed by parser', 'Illegal: Once per turn violated')" value="${window.escapeHtml(triageRecord.notes || '')}">
                     <button class="tab-btn" onclick="saveAuditCurrentNotes()"><i class="fas fa-save"></i> Save</button>
                 </div>
             </div>
@@ -1352,6 +1361,63 @@
         renderAuditList();
     };
 
+    let _shortcutsInitialized = false;
+    function setupAuditKeyboardShortcuts() {
+        if (_shortcutsInitialized) return;
+        _shortcutsInitialized = true;
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+            if (location.hash.slice(1) !== 'audit') return;
+
+            const item = getActiveAuditItem();
+            if (!item) return;
+
+            if (e.key === '1') {
+                e.preventDefault();
+                window.setAuditTriageStatus(item.id, 'illegal');
+            } else if (e.key === '2') {
+                e.preventDefault();
+                window.setAuditTriageStatus(item.id, 'false_positive');
+            } else if (e.key === '3') {
+                e.preventDefault();
+                window.setAuditTriageStatus(item.id, 'resolved');
+            } else if (e.key === 'j' || e.key === 'J') {
+                e.preventDefault();
+                window.jumpAuditSimulatorToFail();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectNextAuditCombo(1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectNextAuditCombo(-1);
+            }
+        });
+    }
+
+    function selectNextAuditCombo(delta) {
+        const filtered = getFilteredAuditItems();
+        if (!filtered.length) return;
+        const curIdx = filtered.findIndex(it => it.id === auditReport.activeItemId);
+        let nextIdx = curIdx + delta;
+        if (nextIdx < 0) nextIdx = 0;
+        if (nextIdx >= filtered.length) nextIdx = filtered.length - 1;
+        const nextItem = filtered[nextIdx];
+        if (nextItem && nextItem.id !== auditReport.activeItemId) {
+            window.selectAuditCombo(nextItem.id);
+            const card = document.getElementById(`audit-card-${nextItem.id}`);
+            if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }
+
+    window.toggleModeBar = function () {
+        const bar = document.getElementById('admin-mode-bar');
+        if (!bar) return;
+        const collapsed = bar.classList.toggle('is-collapsed');
+        try {
+            localStorage.setItem('archetype_admin_sidebar_collapsed', collapsed ? '1' : '0');
+        } catch {}
+    };
+
     window.exportAuditTriage = function () {
         const records = auditReport.triage || {};
         const keys = Object.keys(records);
@@ -1408,6 +1474,11 @@
         }
 
         document.getElementById('admin-content').style.display = '';
+        try {
+            if (localStorage.getItem('archetype_admin_sidebar_collapsed') === '1') {
+                document.getElementById('admin-mode-bar')?.classList.add('is-collapsed');
+            }
+        } catch {}
         window.CardLoader && window.CardLoader.initAmbientBackdropForCards('admin');
         if (MODES.includes(location.hash.slice(1))) window.switchMode(location.hash.slice(1));
         // report.json is a small static file: load it now so the sidebar badge
