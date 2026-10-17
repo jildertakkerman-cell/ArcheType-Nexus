@@ -15,13 +15,20 @@ let targetArchetype = null;
 let maxCombos = null;
 let runAll = false;
 
+let targetCombo = null;
+let debugMode = false;
+
 for (const arg of args) {
     if (arg === '--all') {
         runAll = true;
+    } else if (arg === '--debug') {
+        debugMode = true;
     } else if (arg.startsWith('--file=')) {
         targetFile = arg.split('=')[1];
     } else if (arg.startsWith('--archetype=')) {
         targetArchetype = arg.split('=')[1].toLowerCase();
+    } else if (arg.startsWith('--combo=')) {
+        targetCombo = arg.split('=')[1];
     } else if (arg.startsWith('--max=')) {
         maxCombos = Number(arg.split('=')[1]);
     } else if (!arg.startsWith('--') && arg.endsWith('.json')) {
@@ -90,6 +97,7 @@ for (const file of files) {
     console.log(`[Archetype] ${archetype} (${file}) - ${comboKeys.length} combo(s)`);
 
     for (const key of comboKeys) {
+        if (targetCombo && key !== targetCombo) continue;
         if (maxCombos && totalCombosTested >= maxCombos) break;
 
         const combo = combos[key];
@@ -101,7 +109,7 @@ for (const file of files) {
         const startTime = Date.now();
         let replayResult;
         try {
-            replayResult = await runComboReplay(combo);
+            replayResult = await runComboReplay(combo, { debug: debugMode });
         } catch (err) {
             replayResult = {
                 status: 'CRASHED',
@@ -168,7 +176,7 @@ fs.writeFileSync(REPORT_FILE, JSON.stringify({
     unofficialSkipped,
     issuesDetected,
     results
-}, null, 2));
+}, (k, v) => typeof v === 'bigint' ? Number(v) : v, 2));
 
 console.log(`Detailed report saved to: ${REPORT_FILE}`);
 

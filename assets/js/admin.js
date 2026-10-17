@@ -862,6 +862,8 @@
         query: '',
         shownCount: 30,
         activeItemId: null,
+        activeSimStep: 1,
+        logMode: 'follow', // 'follow' or 'all'
         simulatorInstance: null,
         counts: { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0 },
     };
@@ -990,9 +992,99 @@
         return (offered.summons?.length || 0) +
                (offered.specialSummons?.length || 0) +
                (offered.activates?.length || 0) +
+               (offered.chains?.length || 0) +
+               (offered.triggers?.length || 0) +
                (offered.spellSets?.length || 0) +
                (offered.monsterSets?.length || 0) +
                (offered.repos?.length || 0);
+    }
+
+    function renderOfferedActionChips(offered) {
+        if (!offered) return [];
+        const chips = [];
+
+        const formatCard = (item) => {
+            if (!item) return 'Card';
+            if (typeof item === 'string') return item;
+            const name = item.name || (item.code ? `Card ${item.code}` : 'Card');
+            const codeStr = item.code ? ` (${item.code})` : '';
+            return `${name}${codeStr}`;
+        };
+
+        (offered.summons || []).forEach(s => {
+            chips.push(`<span class="audit-offered-chip" style="border-color:rgba(245,158,11,0.4);"><i class="fas fa-sun" style="color:#fbbf24;"></i> Normal: ${window.escapeHtml(formatCard(s))}</span>`);
+        });
+        (offered.specialSummons || []).forEach(s => {
+            chips.push(`<span class="audit-offered-chip" style="border-color:rgba(168,85,247,0.4);"><i class="fas fa-meteor" style="color:#c084fc;"></i> Special: ${window.escapeHtml(formatCard(s))}</span>`);
+        });
+        (offered.activates || []).forEach(a => {
+            const name = typeof a === 'string' ? a : (a.name || (a.code ? `Card ${a.code}` : 'Effect'));
+            const desc = (typeof a === 'object' && a?.desc) ? `: ${a.desc}` : '';
+            const codeStr = (typeof a === 'object' && a?.code) ? ` (${a.code})` : '';
+            chips.push(`<span class="audit-offered-chip" style="border-color:rgba(59,130,246,0.4);" title="${window.escapeHtml(name + desc)}"><i class="fas fa-bolt" style="color:#60a5fa;"></i> ${window.escapeHtml(name + codeStr + desc)}</span>`);
+        });
+        (offered.triggers || []).forEach(t => {
+            const name = typeof t === 'string' ? t : (t.name || (t.code ? `Card ${t.code}` : 'Trigger'));
+            const desc = (typeof t === 'object' && t?.desc) ? `: ${t.desc}` : '';
+            chips.push(`<span class="audit-offered-chip" style="border-color:rgba(236,72,153,0.4);" title="${window.escapeHtml(name + desc)}"><i class="fas fa-exclamation" style="color:#f472b6;"></i> Trigger: ${window.escapeHtml(name + desc)}</span>`);
+        });
+        (offered.chains || []).forEach(c => {
+            const name = typeof c === 'string' ? c : (c.name || (c.code ? `Card ${c.code}` : 'Chain'));
+            const desc = (typeof c === 'object' && c?.desc) ? `: ${c.desc}` : '';
+            chips.push(`<span class="audit-offered-chip" style="border-color:rgba(59,130,246,0.4);" title="${window.escapeHtml(name + desc)}"><i class="fas fa-link" style="color:#60a5fa;"></i> Chain: ${window.escapeHtml(name + desc)}</span>`);
+        });
+        (offered.spellSets || []).forEach(s => {
+            chips.push(`<span class="audit-offered-chip" style="border-color:rgba(34,197,94,0.4);"><i class="fas fa-scroll" style="color:#4ade80;"></i> Set: ${window.escapeHtml(formatCard(s))}</span>`);
+        });
+        (offered.monsterSets || []).forEach(m => {
+            chips.push(`<span class="audit-offered-chip"><i class="fas fa-shield-alt"></i> Set: ${window.escapeHtml(formatCard(m))}</span>`);
+        });
+        (offered.repos || []).forEach(r => {
+            chips.push(`<span class="audit-offered-chip"><i class="fas fa-sync-alt"></i> Change Pos: ${window.escapeHtml(formatCard(r))}</span>`);
+        });
+
+        return chips;
+    }
+
+    function parseEngineLogByStep(logArray, totalSteps, failedStepNum, engineError) {
+        const stepMap = {};
+        for (let s = 1; s <= totalSteps; s++) {
+            stepMap[s] = [];
+        }
+
+        let currentStep = 1;
+        (logArray || []).forEach(entry => {
+            const match = entry.match(/^Step\s+(\d+):/i);
+            if (match) {
+                currentStep = parseInt(match[1], 10);
+            }
+            if (!stepMap[currentStep]) stepMap[currentStep] = [];
+
+            let type = 'general';
+            if (/Legal/i.test(entry)) type = 'action';
+            else if (/Trigger|Chain/i.test(entry)) type = 'trigger';
+            else if (/Selected/i.test(entry)) type = 'select';
+
+            stepMap[currentStep].push({
+                stepNum: currentStep,
+                raw: entry,
+                type
+            });
+        });
+
+        // Add engine rejection entry to failed step if applicable
+        if (failedStepNum && engineError && stepMap[failedStepNum]) {
+            const hasRej = stepMap[failedStepNum].some(e => e.type === 'rejection');
+            if (!hasRej) {
+                stepMap[failedStepNum].push({
+                    stepNum: failedStepNum,
+                    raw: `Engine Rejection: ${engineError}`,
+                    type: 'rejection'
+                });
+            }
+        }
+
+        return stepMap;
     }
 
     function getArchetypePageLink(item) {
@@ -1141,36 +1233,18 @@
         const pageLink = getArchetypePageLink(item);
 
         const offeredCount = getOfferedCount(item.offeredActions);
-        const offeredChips = [];
-        if (item.offeredActions) {
-            (item.offeredActions.summons || []).forEach(name => {
-                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(245,158,11,0.4);"><i class="fas fa-sun" style="color:#fbbf24;"></i> Normal: ${window.escapeHtml(name)}</span>`);
-            });
-            (item.offeredActions.specialSummons || []).forEach(name => {
-                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(168,85,247,0.4);"><i class="fas fa-meteor" style="color:#c084fc;"></i> Special: ${window.escapeHtml(name)}</span>`);
-            });
-            (item.offeredActions.activates || []).forEach(desc => {
-                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(59,130,246,0.4);"><i class="fas fa-bolt" style="color:#60a5fa;"></i> ${window.escapeHtml(desc)}</span>`);
-            });
-            (item.offeredActions.spellSets || []).forEach(name => {
-                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(34,197,94,0.4);"><i class="fas fa-scroll" style="color:#4ade80;"></i> Set: ${window.escapeHtml(name)}</span>`);
-            });
-            (item.offeredActions.monsterSets || []).forEach(name => {
-                offeredChips.push(`<span class="audit-offered-chip"><i class="fas fa-shield-alt"></i> Set: ${window.escapeHtml(name)}</span>`);
-            });
-            (item.offeredActions.repos || []).forEach(name => {
-                offeredChips.push(`<span class="audit-offered-chip"><i class="fas fa-sync-alt"></i> Change Pos: ${window.escapeHtml(name)}</span>`);
-            });
-        }
+        const initialStep = item.failedStepNumber || 1;
+        auditReport.activeSimStep = initialStep;
 
         // Steps list
         const steps = item.comboData?.steps || [];
         const stepsHtml = steps.map((s, idx) => {
             const stepNum = idx + 1;
             const isFail = stepNum === item.failedStepNumber;
+            const isInitialActive = stepNum === initialStep;
             const stepText = s.text || s.title || (s.actions ? s.actions.map(a => `${a.card} -> ${a.to}`).join(', ') : `Step ${stepNum}`);
             return `
-                <div class="audit-step-item${isFail ? ' is-failed-step' : ''}" onclick="jumpAuditSimulatorToStep(${stepNum - 1})" title="Click to view board at Step ${stepNum}">
+                <div class="audit-step-item${isFail ? ' is-failed-step' : ''}${isInitialActive ? ' is-active-step' : ''}" id="audit-step-item-${stepNum}" onclick="jumpAuditSimulatorToStep(${stepNum - 1})" title="Click to view board and logs at Step ${stepNum}">
                     <div class="audit-step-item-header">
                         <span class="audit-step-badge${isFail ? ' is-fail' : ''}">${isFail ? '<i class="fas fa-exclamation-triangle"></i> ' : ''}Step ${stepNum}</span>
                         <span style="font-weight:600; color:${isFail ? '#fca5a5' : '#e5e5e5'}; flex:1;">${window.escapeHtml(stepText)}</span>
@@ -1262,28 +1336,16 @@
             <div class="audit-diag-grid">
                 <div class="audit-diag-card">
                     <div class="audit-diag-title">
-                        <i class="fas fa-hand-paper" style="color:#f59e0b;"></i> Legal Actions OCGCore Allowed (${offeredCount})
+                        <i class="fas fa-hand-paper" style="color:#f59e0b;"></i> Legal Actions OCGCore Allowed <span id="audit-diag-offered-count">(${offeredCount})</span>
                     </div>
-                    ${offeredChips.length ? `
-                    <div class="audit-offered-grid" style="max-height:190px; overflow-y:auto;">
-                        ${offeredChips.join('')}
-                    </div>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No idle actions available (engine awaiting trigger resolution or chain timing).</div>'}
+                    <div id="audit-diag-offered-actions"></div>
                 </div>
 
                 <div class="audit-diag-card">
-                    <div class="audit-diag-title">
-                        <i class="fas fa-terminal" style="color:#22c55e;"></i> Engine Execution Log (${(item.log || []).length} events)
+                    <div class="audit-diag-title" id="audit-diag-log-header">
+                        <i class="fas fa-terminal" style="color:#22c55e;"></i> Engine Execution Log
                     </div>
-                    ${item.log && item.log.length ? `
-                    <ul class="audit-diag-list" style="max-height:190px;">
-                        ${item.log.map(entry => {
-                            let cls = '';
-                            if (entry.includes('Legal')) cls = 'is-step-action';
-                            else if (entry.includes('Trigger')) cls = 'is-trigger';
-                            else if (entry.includes('Selected')) cls = 'is-select';
-                            return `<li class="${cls}">${window.escapeHtml(entry)}</li>`;
-                        }).join('')}
-                    </ul>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No engine events logged prior to rejection.</div>'}
+                    <ul class="audit-diag-list" id="audit-diag-engine-log" style="max-height:190px;"></ul>
                 </div>
             </div>
 
@@ -1312,8 +1374,149 @@
             </div>
         `;
 
+        renderAuditOfferedActions(item, initialStep);
+        renderAuditEngineLog(item, initialStep);
         mountAuditSimulator(item);
     }
+
+    function renderAuditEngineLog(item, activeStep = 1) {
+        const container = document.getElementById('audit-diag-engine-log');
+        const headerEl = document.getElementById('audit-diag-log-header');
+        if (!container || !item) return;
+
+        const totalSteps = item.totalSteps || (item.comboData?.steps || []).length || 1;
+        const failedStepNum = item.failedStepNumber || 1;
+        const stepMap = parseEngineLogByStep(item.log, totalSteps, failedStepNum, item.engineError);
+        const mode = auditReport.logMode || 'follow';
+
+        const stepText = item.comboData?.steps?.[activeStep - 1]?.text || `Step ${activeStep}`;
+        if (headerEl) {
+            headerEl.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:0.5rem; flex-wrap:wrap;">
+                    <span><i class="fas fa-terminal" style="color:#22c55e;"></i> Engine Log · Step ${activeStep}/${totalSteps}</span>
+                    <div style="display:flex; gap:0.25rem;">
+                        <button type="button" class="audit-diag-filter-btn${mode === 'follow' ? ' active' : ''}" onclick="setAuditLogMode('follow', ${activeStep})">Follow Step</button>
+                        <button type="button" class="audit-diag-filter-btn${mode === 'all' ? ' active' : ''}" onclick="setAuditLogMode('all', ${activeStep})">All (${(item.log || []).length})</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (mode === 'follow') {
+            const events = stepMap[activeStep] || [];
+            if (events.length > 0) {
+                container.innerHTML = events.map(e => {
+                    let cls = 'is-current-step-log ';
+                    if (e.type === 'action') cls += 'is-step-action';
+                    else if (e.type === 'trigger') cls += 'is-trigger';
+                    else if (e.type === 'select') cls += 'is-select';
+                    else if (e.type === 'rejection') cls += 'is-rejection';
+                    return `<li class="${cls}"><span class="audit-step-tag">Step ${e.stepNum}</span>${window.escapeHtml(e.raw)}</li>`;
+                }).join('');
+            } else if (activeStep === failedStepNum) {
+                container.innerHTML = `<li class="is-rejection"><span class="audit-step-tag">Step ${activeStep}</span><i class="fas fa-times-circle" style="margin-right:0.3rem;"></i><strong>Engine Rejection:</strong> ${window.escapeHtml(item.engineError || 'Step rejected by OCGCore rules.')}</li>`;
+            } else if (activeStep > failedStepNum) {
+                container.innerHTML = `<li class="is-unreached"><span class="audit-step-tag">Step ${activeStep}</span><i class="fas fa-ban" style="margin-right:0.3rem;"></i>Step ${activeStep} was not reached by the engine (halted at Step ${failedStepNum}: "${window.escapeHtml(item.engineError || 'Action rejected')}").</li>`;
+            } else {
+                container.innerHTML = `<li class="is-step-action"><span class="audit-step-tag">Step ${activeStep}</span><i class="fas fa-check-circle" style="margin-right:0.3rem;"></i>Step action "${window.escapeHtml(stepText)}" legally verified / transit resolution.</li>`;
+            }
+        } else {
+            // Mode: 'all'
+            const allHtml = [];
+            for (let s = 1; s <= totalSteps; s++) {
+                const sEvents = stepMap[s] || [];
+                const isCurrent = (s === activeStep);
+                if (sEvents.length > 0) {
+                    sEvents.forEach(e => {
+                        let cls = isCurrent ? 'is-current-step-log ' : '';
+                        if (e.type === 'action') cls += 'is-step-action';
+                        else if (e.type === 'trigger') cls += 'is-trigger';
+                        else if (e.type === 'select') cls += 'is-select';
+                        else if (e.type === 'rejection') cls += 'is-rejection';
+                        allHtml.push(`<li class="${cls}" data-step="${s}"><span class="audit-step-tag">Step ${s}</span>${window.escapeHtml(e.raw)}</li>`);
+                    });
+                } else if (s === failedStepNum) {
+                    allHtml.push(`<li class="${isCurrent ? 'is-current-step-log ' : ''}is-rejection" data-step="${s}"><span class="audit-step-tag">Step ${s}</span><strong>Engine Rejection:</strong> ${window.escapeHtml(item.engineError || 'Step rejected')}</li>`);
+                }
+            }
+            if (allHtml.length > 0) {
+                container.innerHTML = allHtml.join('');
+                setTimeout(() => {
+                    const curEl = container.querySelector('.is-current-step-log');
+                    if (curEl) curEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }, 50);
+            } else {
+                container.innerHTML = '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No engine events logged prior to rejection.</div>';
+            }
+        }
+    }
+
+    function renderAuditOfferedActions(item, activeStep = 1) {
+        const container = document.getElementById('audit-diag-offered-actions');
+        const countEl = document.getElementById('audit-diag-offered-count');
+        if (!container || !item) return;
+
+        const offered = item.offeredActions;
+        const offeredCount = getOfferedCount(offered);
+        if (countEl) countEl.textContent = `(${offeredCount})`;
+
+        const chips = renderOfferedActionChips(offered);
+
+        if (chips.length > 0) {
+            container.innerHTML = `
+                ${activeStep !== item.failedStepNumber ? `<div style="font-size:0.72rem; color:#9ca3af; margin-bottom:0.35rem;"><i class="fas fa-info-circle"></i> Allowed actions at failure point (Step ${item.failedStepNumber ?? '?'}):</div>` : ''}
+                <div class="audit-offered-grid" style="max-height:190px; overflow-y:auto;">
+                    ${chips.join('')}
+                </div>
+            `;
+        } else {
+            const snap = item.fieldSnapshot;
+            let note = '';
+            if (snap) {
+                const monCount = (snap.monsters || []).length;
+                const handCount = (snap.hand || []).length;
+                const gyCount = (snap.gy || []).length;
+                note = ` (Field: ${monCount} monster${monCount !== 1 ? 's' : ''}, ${handCount} in hand, ${gyCount} in GY).`;
+            }
+            container.innerHTML = `<div style="font-size:0.78rem;color:#a3a3a3;padding:0.5rem 0;">No idle actions available${note} (engine awaiting trigger resolution, chain timing, or board locked).</div>`;
+        }
+    }
+
+    function handleAuditSimStepChange(stepIdx, forceStepNum = null) {
+        const item = getActiveAuditItem();
+        if (!item) return;
+
+        const totalSteps = item.totalSteps || (item.comboData?.steps || []).length || 1;
+        const currentStepNum = forceStepNum !== null ? forceStepNum : (stepIdx === 0 ? 1 : Math.min(stepIdx, totalSteps));
+        auditReport.activeSimStep = currentStepNum;
+
+        // 1. Highlight Timeline
+        const stepItems = document.querySelectorAll('.audit-step-item');
+        stepItems.forEach((el, idx) => {
+            const sNum = idx + 1;
+            const isActive = (sNum === currentStepNum);
+            el.classList.toggle('is-active-step', isActive);
+        });
+        const activeEl = document.querySelector('.audit-step-item.is-active-step');
+        if (activeEl) {
+            activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        // 2. Update Engine Execution Log
+        renderAuditEngineLog(item, currentStepNum);
+
+        // 3. Update Offered Actions
+        renderAuditOfferedActions(item, currentStepNum);
+    }
+
+    window.setAuditLogMode = function (mode, stepNum) {
+        auditReport.logMode = mode;
+        const item = getActiveAuditItem();
+        if (item) {
+            const currentStep = stepNum || auditReport.activeSimStep || 1;
+            renderAuditEngineLog(item, currentStep);
+        }
+    };
 
     function mountAuditSimulator(item) {
         const mount = document.getElementById('audit-sim-mount');
@@ -1327,6 +1530,10 @@
         try {
             auditReport.simulatorInstance = new DuelSimulator('audit-sim-mount', {
                 auditCombo: item.comboData
+            }, {
+                onStepChange: (stepIdx) => {
+                    handleAuditSimStepChange(stepIdx);
+                }
             });
 
             // Automatically position the board right before the failure!
@@ -1334,6 +1541,7 @@
             setTimeout(() => {
                 if (auditReport.simulatorInstance) {
                     auditReport.simulatorInstance.jumpToStep(target, item.fieldSnapshot);
+                    handleAuditSimStepChange(target, item.failedStepNumber || 1);
                 }
             }, 120);
         } catch (e) {
@@ -1345,6 +1553,7 @@
     window.jumpAuditSimulatorToStep = function (stepIdx) {
         if (!auditReport.simulatorInstance) return;
         auditReport.simulatorInstance.jumpToStep(stepIdx);
+        handleAuditSimStepChange(stepIdx, stepIdx + 1);
     };
 
     window.jumpAuditSimulatorToFail = function () {
@@ -1352,6 +1561,7 @@
         if (!item || !auditReport.simulatorInstance) return;
         const target = Math.max(0, (item.failedStepNumber || 1) - 1);
         auditReport.simulatorInstance.jumpToStep(target, item.fieldSnapshot);
+        handleAuditSimStepChange(target, item.failedStepNumber || 1);
         toast(`Board positioned at step ${target} (OCGCore state prior to failed step ${item.failedStepNumber})`);
     };
 

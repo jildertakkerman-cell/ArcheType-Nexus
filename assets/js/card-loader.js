@@ -3753,8 +3753,13 @@ window.CardLoader = (function () {
         // Show loading
         contentContainer.innerHTML = '<div class="card p-6"><p class="text-center text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>Loading ' + BANLIST_FORMATS[format].name + ' banlist...</p></div>';
 
-        // Auto-extract related cards from cache and merge with manual ones
-        let relatedCards = options.relatedCards || [];
+        const archetypeCardNames = new Set(cards.map(card => card.toLowerCase()));
+        const legacyRelatedCards = (options.legacyCards || [])
+            .filter(card => !archetypeCardNames.has(card.toLowerCase()));
+        const relatedCards = [...new Map(
+            [...(options.relatedCards || []), ...legacyRelatedCards]
+                .map(card => [card.toLowerCase(), card])
+        ).values()];
 
         // Wait a bit for loadCards to populate the cache
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -4179,15 +4184,12 @@ window.CardLoader = (function () {
         contentContainer.innerHTML = html;
     }
 
-    // Archetype pages ask for the same archetype from the banlist, the deck dock
-    // (often twice) and elsewhere — share one request per archetype instead of
-    // re-downloading the full YGOProDeck payload for each caller.
+    // Archetype pages can ask for the same archetype more than once; share the
+    // Supabase request rather than fetching the card list again.
     const archetypeCardsPromises = {};
 
-    // YGOProDeck's ?archetype= filter answers 400 for any name it doesn't file cards
-    // under, and many pages go by a name it doesn't ("Gem-Knight", "Fallen of Albaz",
-    // "Hazy Flame"). Its archetype list is small, so it's kept for a week and checked
-    // first; the site's own database (get_archetype_cards) knows the other names.
+    // YGOProDeck's ?archetype= filter answers 400 for names it doesn't file cards
+    // under; other card-loading and deck-resource features still need this index.
     const API_ARCHETYPES_KEY = 'cl-api-archetypes:v1';
     let apiArchetypeNamesPromise = null;
 
@@ -4224,7 +4226,7 @@ window.CardLoader = (function () {
     }
 
     /**
-     * Fetch all cards from an archetype using the YGOProDeck API
+     * Fetch all cards from an archetype in the site's Supabase database
      * @param {string} archetypeName - The archetype name (e.g., "Blue-Eyes", "Dark Magician")
      * @returns {Promise<Array<string>>} Array of card names in the archetype
      */
@@ -4242,36 +4244,7 @@ window.CardLoader = (function () {
 
     async function fetchArchetypeCardsUncached(archetypeName) {
         try {
-            if (await isApiArchetype(archetypeName) === false) {
-                return await fetchArchetypeCardNamesFromSupabase(archetypeName);
-            }
-
-            const apiUrl = `https://db.ygoprodeck.com/api/v7/cardinfo.php?archetype=${encodeURIComponent(archetypeName)}`;
-            console.log(`[CardLoader] Fetching archetype cards for: ${archetypeName}`);
-
-            const response = await fetch(apiUrl);
-
-            if (response.status === 400) {
-                // Not a YGOProDeck archetype (its list was unavailable, so this wasn't known up front)
-                console.log(`[CardLoader] Archetype "${archetypeName}" not found in API (400), trying the site database`);
-                return await fetchArchetypeCardNamesFromSupabase(archetypeName);
-            }
-
-            if (!response.ok) {
-                throw new Error(`Archetype API returned status ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (!data.data || !Array.isArray(data.data)) {
-                throw new Error('Invalid archetype API response format');
-            }
-
-            // Extract card names
-            const cardNames = data.data.map(card => card.name);
-            console.log(`[CardLoader] Found ${cardNames.length} cards in ${archetypeName} archetype`);
-
-            return cardNames;
+            return await fetchArchetypeCardNamesFromSupabase(archetypeName);
         } catch (error) {
             console.error(`[CardLoader] Failed to fetch archetype cards for ${archetypeName}:`, error);
             return null;

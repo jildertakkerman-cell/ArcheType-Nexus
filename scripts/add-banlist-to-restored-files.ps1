@@ -54,7 +54,7 @@ foreach ($file in $corruptedFiles) {
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CARD POPUP AND IMAGE FETCHER SCRIPT ---
-            // Load cards first so they're in the cache for banlist auto-extraction
+            // Load cards first so they're in the cache for related-card auto-extraction
             CardLoader.loadCards({
 "@
             
@@ -68,9 +68,7 @@ foreach ($file in $corruptedFiles) {
 
             });
             
-            await CardLoader.renderBanlistSection('banlist-status', [
-                // Core archetype cards will be auto-populated from loadCards cache
-            ], {
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', '$archetypeName', {
                 archetypeName: '$archetypeName',
                 archetypeTraits: {
                     coreMechanic: 'archetype-specific mechanics',

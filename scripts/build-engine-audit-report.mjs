@@ -68,10 +68,20 @@ function sanitizeComboData(cd) {
             if (s.featuredCard) stepObj.featuredCard = s.featuredCard;
             if (s.card) stepObj.card = s.card;
             if (s.to) stepObj.to = s.to;
-            if (s.actions) stepObj.actions = s.actions;
+            if (s.actions && s.actions.length > 0) stepObj.actions = s.actions;
             return stepObj;
         })
     };
+}
+
+const existingAuditMap = new Map();
+if (fs.existsSync(OUTPUT_FILE)) {
+    try {
+        const old = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8'));
+        (old.items || []).forEach(it => {
+            if (it && it.id) existingAuditMap.set(it.id, it);
+        });
+    } catch {}
 }
 
 const auditItems = [];
@@ -140,9 +150,23 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
 
         for (let i = 0; i < violations.length; i++) {
             const v = violations[i];
+            const cleanArch = (v.archetype || v.file.replace(/\.html$/i, ''))
+                .replace(/\s+(?:Deck Analysis|Archetype Breakdown|Archetype Deep Dive|Strategy Guide|Guide|Analysis)$/i, '');
+
+            const slug = cleanArch.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const htmlId = `html_${slug}_${i}_${(v.comboTitle || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+
             let comboData = v.comboData || null;
 
-            // If comboData is not stored in the violation record, build it on-demand
+            if (!comboData && existingAuditMap.has(htmlId)) {
+                const ex = existingAuditMap.get(htmlId);
+                comboData = ex.comboData;
+                if (!v.fieldSnapshot && ex.fieldSnapshot) v.fieldSnapshot = ex.fieldSnapshot;
+                if (!v.offeredActions && ex.offeredActions) v.offeredActions = ex.offeredActions;
+                if ((!v.log || !v.log.length) && ex.log) v.log = ex.log;
+            }
+
+            // If comboData is not stored in cache or violation record, build it on-demand
             if (!comboData && v.file) {
                 const fullPath = path.join(PAGES_DIR, v.file);
                 if (fs.existsSync(fullPath)) {
@@ -159,21 +183,22 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
                 }
             }
 
-            if (comboData && (!comboData.steps?.[0]?.actions || !v.fieldSnapshot)) {
+            if (comboData && !v.fieldSnapshot) {
                 try {
                     const replay = await runComboReplay(comboData);
                     if (!v.fieldSnapshot && replay.fieldSnapshot) {
                         v.fieldSnapshot = replay.fieldSnapshot;
                     }
+                    if (!v.offeredActions && replay.offeredActions) {
+                        v.offeredActions = replay.offeredActions;
+                    }
+                    if ((!v.log || !v.log.length) && replay.log && replay.log.length) {
+                        v.log = replay.log;
+                    }
                 } catch {
                     // ignore replay error
                 }
             }
-
-            const cleanArch = (v.archetype || v.file.replace(/\.html$/i, ''))
-                .replace(/\s+(?:Deck Analysis|Archetype Breakdown|Archetype Deep Dive|Strategy Guide|Guide|Analysis)$/i, '');
-
-            const slug = cleanArch.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
             auditItems.push({
                 id: `html_${slug}_${i}_${(v.comboTitle || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,

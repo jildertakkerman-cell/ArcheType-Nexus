@@ -1625,9 +1625,11 @@ class ComboGuide {
 }
 
 class DuelSimulator {
-    constructor(containerId, comboData) {
+    constructor(containerId, comboData, options = {}) {
         this.containerId = containerId;
         this.combos = comboData;
+        this.options = (typeof options === 'function') ? { onStepChange: options } : (options || {});
+        this.onStepChange = this.options.onStepChange || null;
         this.currentComboId = Object.keys(comboData)[0];
         this.currentStep = 0;
         this.isPlaying = false;
@@ -1639,6 +1641,22 @@ class DuelSimulator {
         this.lastEffectDesc = null;
 
         this.init();
+    }
+
+    notifyStepChange() {
+        if (typeof this.onStepChange === 'function') {
+            try { this.onStepChange(this.currentStep); } catch (e) { console.error('onStepChange error', e); }
+        }
+        const container = document.getElementById(this.containerId);
+        if (container) {
+            container.dispatchEvent(new CustomEvent('duel-step-change', {
+                bubbles: true,
+                detail: {
+                    step: this.currentStep,
+                    totalSteps: (this.combos[this.currentComboId]?.steps || []).length
+                }
+            }));
+        }
     }
 
     init() {
@@ -1859,6 +1877,7 @@ class DuelSimulator {
         }
 
         requestAnimationFrame(() => this.repositionCards());
+        this.notifyStepChange();
     }
 
     createCardToken(data) {
@@ -2231,7 +2250,7 @@ class DuelSimulator {
             // Check for Extra Deck summon types
             const summonType = this.detectSummonType(s.text);
 
-            if (s.actions && Array.isArray(s.actions)) {
+            if (s.actions && Array.isArray(s.actions) && s.actions.length > 0) {
                 // For summons, find the summoned card (usually the last action or the one going to a monster zone)
                 let summonedCardId = null;
                 if (summonType) {
@@ -2257,7 +2276,7 @@ class DuelSimulator {
                     }
                     this.moveCard(action.card, action.to);
                 });
-            } else {
+            } else if (s.card && s.to) {
                 if (isEffectActivation) {
                     this.playEffectAnimation(s.card);
                     this.showLastEffectForCard(s.card, s.text);
@@ -2266,9 +2285,13 @@ class DuelSimulator {
                     this.playSummonAnimation(s.card, summonType);
                 }
                 this.moveCard(s.card, s.to);
+            } else if (isEffectActivation && s.card) {
+                this.playEffectAnimation(s.card);
+                this.showLastEffectForCard(s.card, s.text);
             }
 
             this.currentStep++;
+            this.notifyStepChange();
 
             // Sound effects — fires if combo-sounds.js is loaded on the page
             if (typeof ComboSounds !== 'undefined') {
@@ -2400,7 +2423,7 @@ class DuelSimulator {
         this.loadCombo(this.currentComboId);
         for (let i = 0; i < targetStep; i++) {
             const s = steps[i];
-            if (s.actions && Array.isArray(s.actions)) {
+            if (s.actions && Array.isArray(s.actions) && s.actions.length > 0) {
                 s.actions.forEach(a => this.moveCard(a.card, a.to));
             } else if (s.card && s.to) {
                 this.moveCard(s.card, s.to);
@@ -2412,6 +2435,7 @@ class DuelSimulator {
         this.log = oldLog;
         this.currentStep = targetStep;
         this.log(`< Positioned at Step ${targetStep}`);
+        this.notifyStepChange();
 
         // Restore the Last Effect panel to match the target step
         for (let i = targetStep - 1; i >= 0; i--) {

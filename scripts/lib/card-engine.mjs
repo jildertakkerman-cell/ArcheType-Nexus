@@ -350,6 +350,7 @@ export const {
     OcgType,
     SelectBattleCMDAction,
     SelectIdleCMDAction,
+    cardMatchesOpcode,
     ocgMessageTypeStrings,
     responseTypeStrings,
     selectBattleCMDActionStrings,
