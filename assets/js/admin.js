@@ -1200,12 +1200,19 @@
                     <span style="background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#93c5fd; font-weight:600;">
                         <i class="fas fa-magic" style="margin-right:0.25rem;"></i>Field Spells: ${(item.fieldSnapshot.spells || []).length}
                     </span>
-                    <span style="background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#d8b4fe; font-weight:600;">
+                    <button type="button" class="tab-btn" style="padding:0.2rem 0.55rem; font-size:0.75rem; background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.35); color:#d8b4fe; font-weight:600; cursor:pointer;" onclick="showAuditPile('hand')" title="Click to inspect cards in Hand">
                         <i class="fas fa-hand-holding" style="margin-right:0.25rem;"></i>In Hand: ${(item.fieldSnapshot.hand || []).length}
-                    </span>
-                    <span style="background:rgba(100,116,139,0.25); border:1px solid rgba(148,163,184,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#cbd5e1; font-weight:600;">
+                    </button>
+                    <button type="button" class="tab-btn" style="padding:0.2rem 0.55rem; font-size:0.75rem; background:rgba(100,116,139,0.25); border:1px solid rgba(148,163,184,0.35); color:#cbd5e1; font-weight:600; cursor:pointer;" onclick="showAuditPile('gy')" title="Click to inspect cards in Graveyard">
                         <i class="fas fa-skull" style="margin-right:0.25rem;"></i>In GY: ${(item.fieldSnapshot.gy || []).length}
-                    </span>
+                    </button>
+                    <button type="button" class="tab-btn" style="padding:0.2rem 0.55rem; font-size:0.75rem; background:rgba(192,132,252,0.18); border:1px solid rgba(192,132,252,0.35); color:#e9d5ff; font-weight:600; cursor:pointer;" onclick="showAuditPile('extra')" title="Click to inspect cards in Extra Deck">
+                        <i class="fas fa-layer-group" style="margin-right:0.25rem;"></i>Extra Deck: ${(item.fieldSnapshot.extra || []).length}
+                    </button>
+                    ${(item.fieldSnapshot.banish || []).length > 0 ? `
+                    <button type="button" class="tab-btn" style="padding:0.2rem 0.55rem; font-size:0.75rem; background:rgba(249,115,22,0.18); border:1px solid rgba(249,115,22,0.35); color:#fdba74; font-weight:600; cursor:pointer;" onclick="showAuditPile('banish')" title="Click to inspect Banished cards">
+                        <i class="fas fa-fire" style="margin-right:0.25rem;"></i>Banished: ${(item.fieldSnapshot.banish || []).length}
+                    </button>` : ''}
                 </div>` : ''}
             </div>
 
@@ -1342,6 +1349,19 @@
         const target = Math.max(0, (item.failedStepNumber || 1) - 1);
         auditReport.simulatorInstance.jumpToStep(target, item.fieldSnapshot);
         toast(`Board positioned at step ${target} (OCGCore state prior to failed step ${item.failedStepNumber})`);
+    };
+
+    window.showAuditPile = function (pileKey) {
+        if (!auditReport.simulatorInstance) return;
+        if (pileKey === 'gy') {
+            auditReport.simulatorInstance.showGraveyardContents();
+        } else if (pileKey === 'extra') {
+            auditReport.simulatorInstance.showExtraDeckContents();
+        } else if (pileKey === 'banish') {
+            auditReport.simulatorInstance.showBanishedContents();
+        } else if (pileKey === 'hand') {
+            auditReport.simulatorInstance.showHandContents();
+        }
     };
 
     window.saveAuditCurrentNotes = function () {

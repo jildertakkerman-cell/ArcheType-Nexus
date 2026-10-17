@@ -1758,6 +1758,7 @@ class DuelSimulator {
                 <button class="sim-btn sim-btn-play btn-play"><i class="fas fa-play"></i> Play</button>
                 <button class="sim-btn sim-btn-nav btn-next" title="Next step" aria-label="Next step"><i class="fas fa-step-forward" aria-hidden="true"></i></button>
                 <button class="sim-btn sim-btn-nav btn-gy" title="View Graveyard"><i class="fas fa-skull"></i> GY</button>
+                <button class="sim-btn sim-btn-nav btn-extra" title="View Extra Deck"><i class="fas fa-layer-group"></i> Extra</button>
                 <button class="sim-btn sim-btn-nav btn-banish" title="View Banished Cards"><i class="fas fa-fire"></i> Banish</button>
                 <button class="sim-btn sim-btn-sound btn-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
             </div>
@@ -1786,7 +1787,38 @@ class DuelSimulator {
         container.querySelector('.btn-next').onclick = () => this.nextStep();
         container.querySelector('.btn-play').onclick = () => this.togglePlay();
         container.querySelector('.btn-gy').onclick = () => this.showGraveyardContents();
+        const extraBtn = container.querySelector('.btn-extra');
+        if (extraBtn) extraBtn.onclick = () => this.showExtraDeckContents();
         container.querySelector('.btn-banish').onclick = () => this.showBanishedContents();
+
+        // Make physical board zones interactive
+        const gyZone = container.querySelector('#zone-gy');
+        if (gyZone) {
+            gyZone.style.cursor = 'pointer';
+            gyZone.title = 'Click to inspect Graveyard';
+            gyZone.onclick = (e) => {
+                if (e.target.closest('.card-token')) return;
+                this.showGraveyardContents();
+            };
+        }
+        const extraZone = container.querySelector('#zone-extra');
+        if (extraZone) {
+            extraZone.style.cursor = 'pointer';
+            extraZone.title = 'Click to inspect Extra Deck';
+            extraZone.onclick = (e) => {
+                if (e.target.closest('.card-token')) return;
+                this.showExtraDeckContents();
+            };
+        }
+        const banishZone = container.querySelector('#zone-banish');
+        if (banishZone) {
+            banishZone.style.cursor = 'pointer';
+            banishZone.title = 'Click to inspect Banished cards';
+            banishZone.onclick = (e) => {
+                if (e.target.closest('.card-token')) return;
+                this.showBanishedContents();
+            };
+        }
         container.querySelector('.sim-speed').oninput = (e) => {
             this.speed = 2800 - parseInt(e.target.value); // fuller bar = faster (shorter delay)
             if (this.isPlaying) {
@@ -2397,6 +2429,7 @@ class DuelSimulator {
      */
     applyFieldSnapshot(snapshot) {
         if (!snapshot) return;
+        this.lastSnapshot = snapshot;
         const assignedIds = new Set();
         const cardEntries = Object.values(this.cards);
 
@@ -2516,194 +2549,154 @@ class DuelSimulator {
         this.logEl.appendChild(d);
         this.logEl.scrollTop = this.logEl.scrollHeight;
     }
-    showGraveyardContents() {
-        const gyCards = Object.values(this.cards).filter(c => c.element.getAttribute('data-zone') === 'zone-gy');
+    showPileContents(zoneId, titleText, themeColor = '#38bdf8', iconClass = 'fas fa-clone') {
+        // 1. Gather all cards matching zoneId from this.cards
+        let cardsInZone = Object.values(this.cards).filter(c => c.element.getAttribute('data-zone') === zoneId);
 
-        if (gyCards.length === 0) {
-            this.log('Graveyard is empty');
-            return;
+        // 2. If this.lastSnapshot has cards for this zone, ensure any cards in snapshot are included
+        if (this.lastSnapshot) {
+            const snapList = (zoneId === 'zone-gy') ? this.lastSnapshot.gy
+                : (zoneId === 'zone-extra') ? this.lastSnapshot.extra
+                : (zoneId === 'zone-banish') ? this.lastSnapshot.banish
+                : (zoneId === 'zone-hand') ? this.lastSnapshot.hand
+                : [];
+
+            if (snapList && snapList.length > 0) {
+                const existingCodes = new Set(cardsInZone.map(c => Number(c.data.code)));
+                snapList.forEach((item, idx) => {
+                    if (item && item.code && !existingCodes.has(Number(item.code))) {
+                        existingCodes.add(Number(item.code));
+                        const matchedComboCard = this.combos[this.currentComboId]?.cards?.find(c => Number(c.code) === Number(item.code));
+                        cardsInZone.push({
+                            id: `snap_${item.code}_${idx}`,
+                            data: {
+                                code: item.code,
+                                name: matchedComboCard?.name || `Passcode: ${item.code}`,
+                                isDummy: false
+                            },
+                            element: {
+                                style: {
+                                    backgroundImage: `url('https://images.ygoprodeck.com/images/cards/${item.code}.jpg')`
+                                }
+                            }
+                        });
+                    }
+                });
+            }
         }
 
-        // Close banish panel if open
-        const banishPanel = document.getElementById('banish-side-panel');
-        if (banishPanel) {
-            document.body.removeChild(banishPanel);
-        }
-
-        const existingPanel = document.getElementById('gy-side-panel');
-        if (existingPanel) {
-            document.body.removeChild(existingPanel);
-            return;
-        }
+        // Close any open side panel
+        ['gy-side-panel', 'banish-side-panel', 'extra-side-panel', 'sim-side-panel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
 
         // Create side panel overlay
         const overlay = document.createElement('div');
-        overlay.id = 'gy-side-panel';
-        overlay.style.cssText = 'position:fixed; top:0; right:0; width:' + (window.innerWidth <= 768 ? '100%' : '400px') + '; height:100%; background:rgba(30,41,59,0.98); z-index:9999; box-shadow:-4px 0 20px rgba(0,0,0,0.5); border-left:2px solid #38bdf8; display:flex; flex-direction:column; animation:slideIn 0.3s ease-out;';
+        overlay.id = 'sim-side-panel';
+        overlay.style.cssText = `position:fixed; top:0; right:0; width:${window.innerWidth <= 768 ? '100%' : '420px'}; height:100%; background:rgba(15,23,42,0.98); z-index:9999; box-shadow:-4px 0 24px rgba(0,0,0,0.6); border-left:2px solid ${themeColor}; display:flex; flex-direction:column; animation:slideIn 0.25s ease-out;`;
 
-        // Add slide-in animation
-        const style = document.createElement('style');
-        style.textContent = '@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }';
-        document.head.appendChild(style);
+        if (!document.getElementById('sim-panel-slide-style')) {
+            const style = document.createElement('style');
+            style.id = 'sim-panel-slide-style';
+            style.textContent = '@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }';
+            document.head.appendChild(style);
+        }
 
         // Header
         const header = document.createElement('div');
-        header.style.cssText = 'padding:20px; border-bottom:2px solid #38bdf8; display:flex; justify-content:space-between; align-items:center; background:#0f172a;';
+        header.style.cssText = `padding:18px 20px; border-bottom:2px solid ${themeColor}; display:flex; justify-content:space-between; align-items:center; background:#0b1120;`;
 
         const title = document.createElement('h3');
-        title.textContent = `Graveyard (${gyCards.length} cards)`;
-        title.style.cssText = 'color:#38bdf8; margin:0; font-size:20px; font-weight:bold;';
+        title.innerHTML = `<i class="${iconClass}" style="margin-right:0.6rem;color:${themeColor};"></i>${titleText} (${cardsInZone.length})`;
+        title.style.cssText = `color:${themeColor}; margin:0; font-size:18px; font-weight:bold; display:flex; align-items:center;`;
 
         const closeBtn = document.createElement('button');
         closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        closeBtn.style.cssText = 'background:transparent; border:none; color:#38bdf8; font-size:24px; cursor:pointer; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px; transition:background 0.2s;';
-        closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(56,189,248,0.1)';
-        closeBtn.onmouseleave = () => closeBtn.style.background = 'transparent';
-        closeBtn.onclick = () => document.body.removeChild(overlay);
+        closeBtn.style.cssText = `background:transparent; border:none; color:${themeColor}; font-size:22px; cursor:pointer; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px;`;
+        closeBtn.onclick = () => { if (overlay.parentNode) document.body.removeChild(overlay); };
 
         header.appendChild(title);
         header.appendChild(closeBtn);
 
-        // Scrollable card container
+        // Container
         const cardContainer = document.createElement('div');
         cardContainer.style.cssText = 'flex:1; overflow-y:auto; padding:20px;';
 
-        const cardGrid = document.createElement('div');
-        cardGrid.style.cssText = 'display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;';
+        if (cardsInZone.length === 0) {
+            cardContainer.innerHTML = `
+                <div style="text-align:center; padding:4rem 1rem; color:#64748b;">
+                    <i class="${iconClass}" style="font-size:3rem; margin-bottom:1rem; display:block; opacity:0.35;"></i>
+                    <p style="font-size:1rem; font-weight:600; margin:0;">${titleText} is empty</p>
+                    <p style="font-size:0.8rem; margin-top:0.35rem; color:#475569;">No cards present in this zone at the current step.</p>
+                </div>
+            `;
+        } else {
+            const cardGrid = document.createElement('div');
+            cardGrid.style.cssText = 'display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;';
 
-        gyCards.forEach(c => {
-            const cardWrapper = document.createElement('div');
-            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center;';
-            cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'scale(1.05)';
-            cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'scale(1)';
+            cardsInZone.forEach(c => {
+                const cardWrapper = document.createElement('div');
+                cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.18s ease; position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px;';
+                cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'translateY(-3px)';
+                cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'translateY(0)';
 
-            const cardImg = document.createElement('div');
-            cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #38bdf8; ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
-
-            cardWrapper.onclick = (e) => {
-                if (typeof window.CardLoader !== 'undefined' && !c.data.isDummy) {
-                    window.CardLoader.showPopup(e, c.data.name);
+                const cardImg = document.createElement('div');
+                let bg = c.element?.style?.backgroundImage;
+                if (!bg || bg === 'none') {
+                    if (c.data?.code) bg = `url('https://images.ygoprodeck.com/images/cards/${c.data.code}.jpg')`;
+                    else bg = `url('https://images.ygoprodeck.com/images/cards/back_high.jpg')`;
                 }
-            };
+                cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:6px; box-shadow:0 4px 10px rgba(0,0,0,0.5); border:1px solid ${themeColor}; background-image:${bg};`;
 
-            cardWrapper.appendChild(cardImg);
-            cardGrid.appendChild(cardWrapper);
-        });
+                const label = document.createElement('div');
+                label.textContent = c.data?.name || (c.data?.code ? `Card ${c.data.code}` : 'Card');
+                label.title = label.textContent;
+                label.style.cssText = 'font-size:11px; color:#e2e8f0; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; font-weight:600; margin-top:2px;';
 
-        cardContainer.appendChild(cardGrid);
+                cardWrapper.onclick = (e) => {
+                    if (typeof window.CardLoader !== 'undefined' && !c.data?.isDummy && c.data?.name) {
+                        window.CardLoader.showPopup(e, c.data.name);
+                    }
+                };
 
-        // Footer with info
+                cardWrapper.appendChild(cardImg);
+                cardWrapper.appendChild(label);
+                cardGrid.appendChild(cardWrapper);
+            });
+
+            cardContainer.appendChild(cardGrid);
+        }
+
         const footer = document.createElement('div');
-        footer.style.cssText = 'padding:16px 20px; border-top:2px solid #38bdf8; background:#0f172a; color:#94a3b8; font-size:12px; text-align:center;';
-        footer.textContent = 'Click any card to view details';
+        footer.style.cssText = 'padding:12px 20px; border-top:1px solid rgba(255,255,255,0.08); background:#0b1120; color:#64748b; font-size:11px; text-align:center;';
+        footer.textContent = 'Click any card to inspect full card text & details';
 
         overlay.appendChild(header);
         overlay.appendChild(cardContainer);
         overlay.appendChild(footer);
 
-        // Close on background click
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                document.body.removeChild(overlay);
-            }
+            if (e.target === overlay && overlay.parentNode) document.body.removeChild(overlay);
         });
 
         document.body.appendChild(overlay);
     }
 
+    showGraveyardContents() {
+        this.showPileContents('zone-gy', 'Graveyard', '#38bdf8', 'fas fa-skull');
+    }
+
+    showExtraDeckContents() {
+        this.showPileContents('zone-extra', 'Extra Deck', '#c084fc', 'fas fa-layer-group');
+    }
+
     showBanishedContents() {
-        const banishedCards = Object.values(this.cards).filter(c => c.element.getAttribute('data-zone') === 'zone-banish');
+        this.showPileContents('zone-banish', 'Banished', '#fb923c', 'fas fa-fire');
+    }
 
-        if (banishedCards.length === 0) {
-            this.log('Banished zone is empty');
-            return;
-        }
-
-        // Close GY panel if open
-        const gyPanel = document.getElementById('gy-side-panel');
-        if (gyPanel) {
-            document.body.removeChild(gyPanel);
-        }
-
-        // Check if banish panel already exists - toggle it
-        const existingPanel = document.getElementById('banish-side-panel');
-        if (existingPanel) {
-            document.body.removeChild(existingPanel);
-            return;
-        }
-
-        // Create side panel overlay
-        const overlay = document.createElement('div');
-        overlay.id = 'banish-side-panel';
-        overlay.style.cssText = 'position:fixed; top:0; right:0; width:' + (window.innerWidth <= 768 ? '100%' : '400px') + '; height:100%; background:rgba(30,41,59,0.98); z-index:9999; box-shadow:-4px 0 20px rgba(0,0,0,0.5); border-left:2px solid #f97316; display:flex; flex-direction:column; animation:slideIn 0.3s ease-out;';
-
-        // Header
-        const header = document.createElement('div');
-        header.style.cssText = 'padding:20px; border-bottom:2px solid #f97316; display:flex; justify-content:space-between; align-items:center; background:#0f172a;';
-
-        const title = document.createElement('h3');
-        title.textContent = `Banished (${banishedCards.length} cards)`;
-        title.style.cssText = 'color:#f97316; margin:0; font-size:20px; font-weight:bold;';
-
-        const closeBtn = document.createElement('button');
-        closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-        closeBtn.style.cssText = 'background:transparent; border:none; color:#f97316; font-size:24px; cursor:pointer; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:4px; transition:background 0.2s;';
-        closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(249,115,22,0.1)';
-        closeBtn.onmouseleave = () => closeBtn.style.background = 'transparent';
-        closeBtn.onclick = () => document.body.removeChild(overlay);
-
-        header.appendChild(title);
-        header.appendChild(closeBtn);
-
-        // Scrollable card container
-        const cardContainer = document.createElement('div');
-        cardContainer.style.cssText = 'flex:1; overflow-y:auto; padding:20px;';
-
-        const cardGrid = document.createElement('div');
-        cardGrid.style.cssText = 'display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;';
-
-        banishedCards.forEach(c => {
-            const cardWrapper = document.createElement('div');
-            // Use a square-ish container to accommodate the rotated card
-            cardWrapper.style.cssText = 'cursor:pointer; transition:transform 0.2s; position:relative; display:flex; align-items:center; justify-content:center;';
-            cardWrapper.onmouseenter = () => cardWrapper.style.transform = 'scale(1.05)';
-            cardWrapper.onmouseleave = () => cardWrapper.style.transform = 'scale(1)';
-
-            const cardImg = document.createElement('div');
-            // Rotate the card 90 degrees. Swap width/height aspect ratio considerations.
-            // Original card is ~59x86. Rotated it's ~86x59.
-            // We set width to be smaller to fit in grid, and rotate it.
-            cardImg.style.cssText = `width:100%; aspect-ratio:59/86; background-size:cover; background-position:center; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.4); border:2px solid #f97316; ${c.element.style.backgroundImage ? 'background-image:' + c.element.style.backgroundImage : ''}`;
-
-            cardWrapper.onclick = (e) => {
-                if (typeof window.CardLoader !== 'undefined' && !c.data.isDummy) {
-                    window.CardLoader.showPopup(e, c.data.name);
-                }
-            };
-
-            cardWrapper.appendChild(cardImg);
-            cardGrid.appendChild(cardWrapper);
-        });
-
-        cardContainer.appendChild(cardGrid);
-
-        // Footer with info
-        const footer = document.createElement('div');
-        footer.style.cssText = 'padding:16px 20px; border-top:2px solid #f97316; background:#0f172a; color:#94a3b8; font-size:12px; text-align:center;';
-        footer.textContent = 'Click any card to view details';
-
-        overlay.appendChild(header);
-        overlay.appendChild(cardContainer);
-        overlay.appendChild(footer);
-
-        // Close on background click
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                document.body.removeChild(overlay);
-            }
-        });
-
-        document.body.appendChild(overlay);
+    showHandContents() {
+        this.showPileContents('zone-hand', 'Hand', '#d8b4fe', 'fas fa-hand-holding');
     }
 
 }
