@@ -52,6 +52,18 @@ if (targetFile) {
     htmlFiles = htmlFiles.filter(f => curatedSample.includes(f));
 }
 
+function decodeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;|&#x27;|&apos;/gi, "'")
+        .replace(/&amp;/gi, '&')
+        .replace(/&mdash;|&ndash;/gi, '-')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 /**
  * Parses written combos from an HTML page.
  * Supports both Spotlight (nc-steps) and standard (combo-step-card) layouts.
@@ -76,12 +88,15 @@ export function parseHtmlCombos(filePath) {
             const precedingText = content.slice(Math.max(0, blockIndex - 1000), blockIndex);
             const tagMatch = precedingText.match(/<span class="nc-tag[^"]*">(.*?)<\/span>\s*([^<]+)/i);
             const titleMatch = precedingText.match(/<h[234][^>]*>([\s\S]*?)<\/h[234]>/i);
-            const comboTitle = tagMatch
-                ? `${tagMatch[1].replace(/<[^>]+>/g, '').trim()} - ${tagMatch[2].replace(/<[^>]+>/g, '').trim()}`
-                : (titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : `Spotlight Combo ${b + 1}`);
+            const comboTitle = decodeHtml(
+                tagMatch
+                    ? `${tagMatch[1].replace(/<[^>]+>/g, '').trim()} - ${tagMatch[2].replace(/<[^>]+>/g, '').trim()}`
+                    : (titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : `Spotlight Combo ${b + 1}`)
+            );
 
             const stepMatches = [...blockContent.matchAll(/<div class="nc-step">([\s\S]*?)<\/div>\s*(?=<div class="nc-step"|$)/g)];
-            const steps = [];
+            let steps = [];
+            let subComboIdx = 1;
 
             for (let s = 0; s < stepMatches.length; s++) {
                 const chunk = stepMatches[s][1];
@@ -89,13 +104,22 @@ export function parseHtmlCombos(filePath) {
                 const stepNum = numMatch ? parseInt(numMatch[1], 10) : (s + 1);
 
                 const pMatch = chunk.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-                const text = pMatch ? pMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+                const text = pMatch ? decodeHtml(pMatch[1].replace(/<[^>]+>/g, ' ')) : '';
 
                 const boldCards = [...chunk.matchAll(/<strong[^>]*>([\s\S]*?)<\/strong>/g)]
-                    .map(m => m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim())
+                    .map(m => decodeHtml(m[1].replace(/<[^>]+>/g, '')))
                     .filter(c => c.length > 2 && !/^(cl\d|chain link|turn|main phase|end phase|legal|illegal)$/i.test(c));
 
                 if (text) {
+                    if (stepNum === 1 && steps.length > 0) {
+                        combos.push({
+                            comboTitle: subComboIdx === 1 ? comboTitle : `${comboTitle} (Line ${subComboIdx})`,
+                            comboSystemArch,
+                            steps
+                        });
+                        steps = [];
+                        subComboIdx++;
+                    }
                     steps.push({
                         stepNum,
                         stepTitle: '',
@@ -108,7 +132,7 @@ export function parseHtmlCombos(filePath) {
 
             if (steps.length > 0) {
                 combos.push({
-                    comboTitle,
+                    comboTitle: subComboIdx === 1 ? comboTitle : `${comboTitle} (Line ${subComboIdx})`,
                     comboSystemArch,
                     steps
                 });
@@ -130,27 +154,37 @@ export function parseHtmlCombos(filePath) {
 
     if (numberedStepCards.length > 0) {
         const titleMatch = content.match(/<h2[^>]*class="[^"]*(?:text-center|font-bold)[^"]*"[^>]*>\s*(?:Core Combo:[^<]*|Key Combo[^<]*|The One-Card Combo:[^<]*|.*?Combo[^<]*)\s*<\/h2>/i);
-        const comboTitle = titleMatch ? titleMatch[0].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : 'Core Combo';
+        const comboTitle = decodeHtml(titleMatch ? titleMatch[0].replace(/<[^>]+>/g, '') : 'Core Combo');
 
-        const steps = [];
+        let steps = [];
+        let subComboIdx = 1;
         for (const item of numberedStepCards) {
             const chunk = item.chunk;
             const stepNum = item.stepNum;
 
             const hMatch = chunk.match(/<h[34][^>]*>(.*?)<\/h[34]>/i);
-            const stepTitle = hMatch ? hMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+            const stepTitle = hMatch ? decodeHtml(hMatch[1].replace(/<[^>]+>/g, '')) : '';
 
             const pMatch = chunk.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
-            const stepDesc = pMatch ? pMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+            const stepDesc = pMatch ? decodeHtml(pMatch[1].replace(/<[^>]+>/g, ' ')) : '';
 
             const imgDivMatch = chunk.match(/card-placeholder[^>]*>([\s\S]*?)<\/div>/i);
-            const featuredCard = imgDivMatch ? imgDivMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : '';
+            const featuredCard = imgDivMatch ? decodeHtml(imgDivMatch[1].replace(/<[^>]+>/g, '')) : '';
 
             const boldCards = [...chunk.matchAll(/<strong[^>]*>([\s\S]*?)<\/strong>/g)]
-                .map(m => m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim())
+                .map(m => decodeHtml(m[1].replace(/<[^>]+>/g, '')))
                 .filter(c => c.length > 2 && !/^(cl\d|chain link|step \d)$/i.test(c));
 
             if (stepDesc) {
+                if (stepNum === 1 && steps.length > 0) {
+                    combos.push({
+                        comboTitle: subComboIdx === 1 ? comboTitle : `${comboTitle} (Line ${subComboIdx})`,
+                        comboSystemArch,
+                        steps
+                    });
+                    steps = [];
+                    subComboIdx++;
+                }
                 const cleanFeatured = (featuredCard && !featuredCard.toLowerCase().includes('loading')) ? featuredCard : '';
                 steps.push({
                     stepNum,
@@ -164,7 +198,7 @@ export function parseHtmlCombos(filePath) {
 
         if (steps.length > 0) {
             combos.push({
-                comboTitle,
+                comboTitle: subComboIdx === 1 ? comboTitle : `${comboTitle} (Line ${subComboIdx})`,
                 comboSystemArch,
                 steps
             });
@@ -201,12 +235,12 @@ function findDecklistPath(archetype, comboSystemArch) {
 
 export function splitSubActions(text) {
     if (!text) return [];
-    const normalized = text
+    const normalized = decodeHtml(text)
         .replace(/\s+\./g, '.')
         .replace(/\s+,/g, ',')
         .replace(/\s+;/g, ';');
 
-    const sentenceParts = normalized.split(/(?<!\b(?:e\.g|i\.e|vs|etc|dr|mr|st|lv|no|[A-Z]))(?<=\.)\s+(?=[A-Z0-9"'])|;\s*|,\s*(?:and\s+)?then\s+(?=[a-z0-9"'])|\s+and\s+(?=(?:tribute it|activate its)\b)/i);
+    const sentenceParts = normalized.split(/(?<!\b(?:e\.g|i\.e|vs|etc|dr|mr|st|lv|no|[A-Za-z])\.)(?<=\.)\s+(?=[A-Z0-9"'])|;\s*|,\s*(?:and\s+)?then\s+(?=[a-z0-9"'])|,\s*which\s+then\s+(?=[a-z0-9"'])|\s+and\s+(?:immediately\s+|then\s+)?(?=(?:tribute it|activate|use|link summon|link it|xyz summon|synchro summon|fusion summon|special summon|overlay)\b)/i);
 
     const finalParts = [];
     const subPrefixRe = /^(?:with|using|since|because|after|when|if|once|while|during|in|on|from|by|as|for)\b/i;
@@ -291,21 +325,46 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         }
     }
 
+    // Helper to resolve card names against already-loaded archetype decklist cards FIRST before global DB
+    const resolveInComboOrDb = async (rawName) => {
+        if (!rawName) return null;
+        let clean = cleanCardName(rawName)
+            .replace(/^(?:(?:activate|activating|use|using|trigger|triggering|tribute|tributing|normal summon(?:ing)?|special summon(?:ing)?|link summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|fusion summon(?:ing)?|ritual summon(?:ing)?|pendulum summon(?:ing)?|summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?|banish(?:ing)?|send(?:ing)?|target(?:ing)?|chain(?:ing)?|link(?:ing)?|overlay(?:ing)?|tune|tuning|equip(?:ping)?|set(?:ting)?|place|placing|search(?:ing)?(?:\s+for)?|add(?:ing)?|finish(?:ing)?)\s+)+/i, '')
+            .replace(/\s*\([A-Za-z0-9/-]{2,8}\)$/, '')
+            .replace(/\s*'s(?:\s+(?:monster|gy|graveyard|hand|field|scale|on-summon|summon|quick|second|first|other))?(?:\s+effect)?$/i, '')
+            .replace(/\s+effect$/i, '')
+            .trim();
+        if (acronymMap.has(clean.toLowerCase())) clean = acronymMap.get(clean.toLowerCase());
+        if (!clean || clean.length < 3) return null;
+
+        const lower = clean.toLowerCase();
+        for (const c of cardsMap.values()) {
+            if (c.name.toLowerCase() === lower) return c.data;
+        }
+        const wordRe = new RegExp(`\\b${lower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        for (const c of cardsMap.values()) {
+            if (wordRe.test(c.name)) return c.data;
+        }
+        return await resolveCardAsync(clean);
+    };
+
     // 3. Ensure all cards mentioned across combo steps are registered
     for (const s of parsedCombo.steps) {
         const mentions = [...(s.cardsMentioned || []), s.featuredCard];
-        const verbMatches = [...s.text.matchAll(/(?:normal summon|activate|reveal|special summon|link summon|synchro summon|xyz summon|fusion summon|rank-up into|overlay (?:into|to)|set)\s+([A-Za-z0-9'\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+using\b|\s+with\b|\s+by\b|\s+into\b|\s+as\b|,|\s+and\b|$)/gi)];
+        const verbMatches = [...s.text.matchAll(/(?:normal summon(?:ing)?|activat(?:e|ing)|reveal(?:ing)?|special summon(?:ing)?|link summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|fusion summon(?:ing)?|ritual summon(?:ing)?|rank-up into|climb(?:ing)?\s+into|overlay(?:ing)?(?:\s+into|\s+to)?|set(?:ting)?|place|placing|search(?:ing)?(?:\s+for)?|add(?:ing)?|send(?:ing)?|dump(?:ing)?|equip(?:ping)?|tribut(?:e|ing)|reviv(?:e|ing)|summons|revives)\s+([A-Za-z0-9',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+using\b|\s+with\b|\s+by\b|\s+into\b|\s+as\b|,(?!\s*the\b)|\s+and\b|$)/gi)];
         for (const vm of verbMatches) {
             mentions.push(vm[1].trim());
         }
+        const possMatches = [...s.text.matchAll(/\b([A-Z][A-Za-z0-9'\s-]+?)\s*'s\s+(?:on-summon\s+|summon\s+|monster\s+|gy\s+|graveyard\s+|hand\s+|field\s+|scale\s+|quick\s+)?effect/g)];
+        for (const pm of possMatches) {
+            mentions.push(pm[1].trim());
+        }
 
-        for (let m of mentions) {
+        for (const m of mentions) {
             if (!m || m.toLowerCase().includes('loading')) continue;
-            if (acronymMap.has(m.toLowerCase())) m = acronymMap.get(m.toLowerCase());
-            m = m.replace(/\s*\([A-Za-z0-9/-]{2,8}\)$/, '').trim();
-            const res = await resolveCardAsync(m);
+            const res = await resolveInComboOrDb(m);
             if (res) {
-                const isExtra = (res.type & 0x4000040) !== 0;
+                const isExtra = (res.type & 0x4802040) !== 0;
                 const existing = [...cardsMap.values()].filter(c => c.code === res.code);
                 if (existing.length === 0) {
                     const copies = isExtra ? 1 : 2;
@@ -347,11 +406,11 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
     // Helper to place a card in opening hand without depleting its last copy in Deck
     let handCloneCounter = 0;
     const ensureInHand = (cardData) => {
-        if (!cardData) return;
-        const isExtra = (cardData.type & 0x4000040) !== 0;
-        if (isExtra) return;
+        if (!cardData) return false;
+        const isExtra = (cardData.type & 0x4802040) !== 0;
+        if (isExtra) return false;
         const alreadyInHand = [...cardsMap.values()].some(c => c.code === cardData.code && c.zone === 'zone-hand');
-        if (alreadyInHand) return;
+        if (alreadyInHand) return true;
         const deckCopies = [...cardsMap.values()].filter(c => c.code === cardData.code && c.zone === 'zone-deck');
         if (deckCopies.length >= 2) {
             deckCopies[0].zone = 'zone-hand';
@@ -366,53 +425,71 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
                 data: cardData
             });
         }
+        return true;
     };
 
     // 5. Determine starting Hand cards (Official 5-card opening hand)
     if (parsedCombo.steps[0]) {
         const firstStep = parsedCombo.steps[0];
-        let starterName = null;
+        const candidateNames = [];
 
+        const verbMatch = firstStep.text.match(/(?:normal summon(?:ing)?|activat(?:e|ing)|reveal(?:ing)?|special summon(?:ing)?|start (?:with|by)|open)\s+([A-Za-z0-9',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+in\b|\s+by\b|\s+using\b|\s+with\b|\s+plus\b|,(?!\s*the\b)|\s+and\b|$)/i);
+        if (verbMatch && /^[A-Z0-9"']/.test(verbMatch[1].trim())) candidateNames.push(verbMatch[1].trim());
         if (firstStep.featuredCard && !firstStep.featuredCard.toLowerCase().includes('loading')) {
-            starterName = firstStep.featuredCard;
-        } else {
-            const verbMatch = firstStep.text.match(/(?:normal summon|activate|reveal|special summon)\s+([A-Z][A-Za-z0-9'\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+by\b|\s+using\b|\s+with\b|,|\s+and\b|$)/i);
-            if (verbMatch) {
-                starterName = verbMatch[1].trim();
-            } else if (firstStep.cardsMentioned && firstStep.cardsMentioned[0]) {
-                starterName = firstStep.cardsMentioned[0];
+            candidateNames.push(firstStep.featuredCard);
+        }
+        for (const m of (firstStep.cardsMentioned || [])) {
+            candidateNames.push(m);
+        }
+
+        let placedStarter = false;
+        for (const cand of candidateNames) {
+            const cardData = await resolveInComboOrDb(cand);
+            if (cardData && ensureInHand(cardData)) {
+                placedStarter = true;
+                break;
             }
         }
 
-        if (starterName) {
-            const starterCard = await resolveCardAsync(starterName);
-            ensureInHand(starterCard);
+        // If Step 1 says "Normal Summon any <Archetype> monster" and no specific Main Deck starter was resolved, place a Level <= 4 monster from the decklist into hand
+        if (!placedStarter && /normal summon/i.test(firstStep.text)) {
+            const lv4Monster = [...cardsMap.values()].find(c => c.zone === 'zone-deck' && (c.data.type & 0x1) && c.data.level > 0 && c.data.level <= 4);
+            if (lv4Monster) ensureInHand(lv4Monster.data);
         }
     }
 
-    // Track searched/added cards across steps so we know which "from hand" cards must have been in the opening hand
+    // Track searched/added cards across steps so we know which "from hand" or unsearched Normal Summon / Spell cards must have been in the opening hand
     const searchedCodes = new Set();
     for (const s of parsedCombo.steps) {
-        const discardMatch = s.text.match(/(?:discard(?:ing)?|reveal)\s+([A-Z][A-Za-z0-9'\s-:]+?)(?:\s+to|\s+from|\s+in\s+hand|,|\.|\s+and|$)/i);
-        if (discardMatch) {
-            const dCard = await resolveCardAsync(discardMatch[1].trim());
+        const discardMatch = s.text.match(/(?:discard(?:ing)?|reveal(?:ing)?)\s+([A-Za-z0-9'\s-:]+?)(?:\s+to\b|\s+from\b|\s+in\s+hand|,|\.|\s+and\b|$)/i);
+        if (discardMatch && /^[A-Z0-9"']/.test(discardMatch[1].trim())) {
+            const dCard = await resolveInComboOrDb(discardMatch[1].trim());
             if (dCard && !searchedCodes.has(dCard.code)) {
                 ensureInHand(dCard);
             }
         }
 
-        const fromHandMatch = s.text.match(/(?:special summon|normal summon|discard(?:ing)?|reveal)\s+([A-Z][A-Za-z0-9',\s-]+?)\s+(?:from|in) (?:your )?hand/i);
-        if (fromHandMatch) {
-            const hCard = await resolveCardAsync(fromHandMatch[1].trim());
+        const fromHandMatches = [
+            ...s.text.matchAll(/(?:special summon(?:ing)?|normal summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?|activat(?:e|ing)|us(?:e|ing))\s+([A-Za-z0-9',\s-]+?)(?:'s\s+(?:[a-z-]+\s+)?effect)?\s+(?:from|in) (?:your )?hand/gi),
+            ...s.text.matchAll(/(?:normal summon(?:ing)?|tribute summon(?:ing)?)\s+([A-Za-z0-9"',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+using\b|\s+with\b|\s+by\b|\s+in\b|,(?!\s*the\b)|\s+and\b|$)/gi)
+        ];
+        for (const fhm of fromHandMatches) {
+            const rawCand = fhm[1]
+                .replace(/^.*?\b(?:special summon(?:ing)?|normal summon(?:ing)?|tribute summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?|activat(?:e|ing)|us(?:e|ing))\s+/i, '')
+                .trim();
+            if (!/^[A-Z0-9"']/.test(rawCand)) continue;
+            const curHandCount = [...cardsMap.values()].filter(c => c.zone === 'zone-hand').length;
+            if (curHandCount >= 5) break;
+            const hCard = await resolveInComboOrDb(rawCand);
             if (hCard && !searchedCodes.has(hCard.code)) {
                 ensureInHand(hCard);
             }
         }
 
-        // Record cards searched/added in this step for subsequent steps
+        // Record cards searched/added/set/placed in this step for subsequent steps
         for (const m of (s.cardsMentioned || [])) {
-            const c = await resolveCardAsync(m);
-            if (c && /(?:search|add)/i.test(s.text)) {
+            const c = await resolveInComboOrDb(m);
+            if (c && /(?:search|add|set|place)/i.test(s.text)) {
                 searchedCodes.add(c.code);
             }
         }
