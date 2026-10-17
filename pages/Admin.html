@@ -28,6 +28,9 @@
     <script src="../assets/js/archetypes-data.js"></script>
     <script src="../assets/js/page-sections.js"></script>
     <script src="../assets/js/card-loader.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <script src="../assets/js/combo-sounds.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -383,6 +386,175 @@
         }
         .deckrep-missing summary { cursor: pointer; font-weight: 600; }
         .deckrep-missing[open] summary { margin-bottom: 0.3rem; }
+
+        /* ── Combo Audit (OCGCore Wasm Legality Verifier & Inspector) ── */
+        .mode-icon-audit { color: #ec4899; }
+        .audit-layout {
+            display: grid; grid-template-columns: 350px 1fr; gap: 1.25rem;
+            align-items: start; margin-top: 1rem;
+        }
+        @media (max-width: 980px) {
+            .audit-layout { grid-template-columns: 1fr; }
+        }
+        .audit-sidebar-col {
+            display: flex; flex-direction: column; gap: 0.6rem;
+            max-height: calc(100vh - 200px); overflow-y: auto; padding-right: 0.25rem;
+        }
+        .audit-card {
+            background: #171717; border: 1px solid rgba(255,255,255,0.08); border-radius: 0.65rem;
+            padding: 0.75rem 0.9rem; cursor: pointer; transition: all 0.15s ease;
+            position: relative; display: flex; flex-direction: column; gap: 0.35rem;
+        }
+        .audit-card:hover { border-color: rgba(255,255,255,0.22); background: #1c1c1c; }
+        .audit-card.is-active {
+            border-color: #ec4899; background: rgba(236,72,153,0.06);
+            box-shadow: 0 0 15px rgba(236,72,153,0.15);
+        }
+        .audit-card-title {
+            font-size: 0.88rem; font-weight: 700; color: #f5f5f5;
+            display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem;
+        }
+        .audit-card-sub { font-size: 0.75rem; color: #a3a3a3; }
+        .audit-card-err {
+            font-size: 0.75rem; color: #fca5a5; line-height: 1.35;
+            background: rgba(239,68,68,0.08); padding: 0.25rem 0.5rem; border-radius: 0.35rem;
+            border-left: 3px solid #ef4444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .audit-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-top: 0.2rem; }
+        .tag-pill {
+            font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+            padding: 0.15rem 0.45rem; border-radius: 0.35rem;
+        }
+        .tag-pill-curated { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .tag-pill-html { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+        .tag-pill-illegal { background: rgba(239,68,68,0.18); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+        .tag-pill-fp { background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+        .tag-pill-resolved { background: rgba(34,197,94,0.18); color: #4ade80; border: 1px solid rgba(34,197,94,0.4); }
+        .tag-pill-untriaged { background: rgba(255,255,255,0.06); color: #a3a3a3; border: 1px solid rgba(255,255,255,0.12); }
+
+        /* Inspector Details Pane */
+        .audit-inspector {
+            background: #141414; border: 1px solid rgba(255,255,255,0.1); border-radius: 0.85rem;
+            padding: 1.25rem; display: flex; flex-direction: column; gap: 1.25rem;
+        }
+        .audit-insp-header {
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1rem;
+        }
+        .audit-insp-title { font-size: 1.2rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 0.6rem; }
+        .audit-insp-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+
+        .btn-triage {
+            font: inherit; font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.75rem;
+            border-radius: 0.45rem; cursor: pointer; transition: all 0.15s ease;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .btn-triage-illegal { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
+        .btn-triage-illegal:hover, .btn-triage-illegal.is-selected { background: #ef4444; color: #fff; border-color: #ef4444; }
+        .btn-triage-fp { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
+        .btn-triage-fp:hover, .btn-triage-fp.is-selected { background: #f59e0b; color: #000; border-color: #f59e0b; }
+        .btn-triage-resolved { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.35); }
+        .btn-triage-resolved:hover, .btn-triage-resolved.is-selected { background: #22c55e; color: #000; border-color: #22c55e; }
+
+        .audit-fail-box {
+            background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.35);
+            border-radius: 0.75rem; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;
+        }
+        .audit-fail-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.85rem; font-weight: 700; color: #f87171;
+        }
+        .audit-fail-steptext {
+            font-size: 0.92rem; color: #f5f5f5; font-style: italic; background: rgba(0,0,0,0.3);
+            padding: 0.6rem 0.8rem; border-radius: 0.45rem; border-left: 3px solid #ef4444;
+        }
+        .audit-fail-err { font-size: 0.84rem; color: #fca5a5; font-family: monospace; }
+
+        /* Simulator Container in Admin */
+        .audit-sim-wrap {
+            background: #0a0a0a; border: 1px solid rgba(255,255,255,0.08); border-radius: 0.75rem;
+            padding: 1rem; overflow: hidden; position: relative;
+        }
+        .audit-sim-wrap .duel-board-wrapper { max-width: 100%; margin: 0 auto; }
+        .audit-jump-btn {
+            background: #dc2626; color: white; border: none; font: inherit; font-size: 0.78rem;
+            font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 0.45rem; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 0.35rem; transition: background 0.15s;
+        }
+        .audit-jump-btn:hover { background: #b91c1c; }
+
+        /* Diagnostics Grid */
+        .audit-diag-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+        }
+        @media (max-width: 800px) {
+            .audit-diag-grid { grid-template-columns: 1fr; }
+        }
+        .audit-diag-card {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 0.65rem; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.5rem;
+        }
+        .audit-diag-title {
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+            color: #a3a3a3; display: flex; align-items: center; gap: 0.4rem;
+        }
+        .audit-diag-list {
+            list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem;
+            font-size: 0.8rem; max-height: 220px; overflow-y: auto;
+        }
+        .audit-diag-list li {
+            padding: 0.3rem 0.5rem; background: rgba(255,255,255,0.03); border-radius: 0.3rem;
+            line-height: 1.4; border-left: 2px solid rgba(255,255,255,0.15);
+        }
+        .audit-diag-list li.is-step-action { border-left-color: #22c55e; }
+        .audit-diag-list li.is-trigger { border-left-color: #3b82f6; }
+        .audit-diag-list li.is-select { border-left-color: #f59e0b; }
+        .audit-offered-grid {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+        }
+        .audit-offered-chip {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.4rem; padding: 0.25rem 0.55rem; font-size: 0.76rem;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+        }
+
+        /* Step Timeline in Audit Inspector */
+        .audit-steps-section {
+            display: flex; flex-direction: column; gap: 0.6rem;
+        }
+        .audit-steps-header {
+            font-size: 0.82rem; font-weight: 700; color: #a3a3a3; text-transform: uppercase; letter-spacing: 0.04em;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .audit-steps-list {
+            display: flex; flex-direction: column; gap: 0.4rem; max-height: 280px; overflow-y: auto; padding-right: 0.35rem;
+        }
+        .audit-step-item {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.45rem;
+            padding: 0.5rem 0.75rem; font-size: 0.82rem; cursor: pointer; transition: all 0.15s ease;
+            display: flex; flex-direction: column; gap: 0.25rem;
+        }
+        .audit-step-item:hover {
+            background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2);
+        }
+        .audit-step-item.is-failed-step {
+            background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.5);
+            box-shadow: 0 0 10px rgba(239,68,68,0.15);
+        }
+        .audit-step-item-header {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .audit-step-badge {
+            font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 0.3rem;
+            background: rgba(255,255,255,0.1); color: #d4d4d4; flex-shrink: 0;
+        }
+        .audit-step-badge.is-fail {
+            background: #ef4444; color: #ffffff;
+        }
+        .audit-step-err-detail {
+            font-size: 0.76rem; color: #fca5a5; font-family: monospace; background: rgba(0,0,0,0.3);
+            padding: 0.25rem 0.5rem; border-radius: 0.3rem; margin-top: 0.2rem;
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
     <script src="../assets/js/follow-archetype.js"></script>
@@ -424,6 +596,10 @@
             <button class="mode-btn" data-mode="decks" aria-pressed="false" onclick="switchMode('decks', this)">
                 <span class="mode-icon mode-icon-decks"><i class="fas fa-layer-group"></i><span class="mode-count" id="mode-count-decks" hidden></span></span>
                 <span>Test Decks</span>
+            </button>
+            <button class="mode-btn" data-mode="audit" aria-pressed="false" onclick="switchMode('audit', this)">
+                <span class="mode-icon mode-icon-audit"><i class="fas fa-microscope"></i><span class="mode-count" id="mode-count-audit" hidden></span></span>
+                <span>Combo Audit</span>
             </button>
         </div>
 
@@ -503,6 +679,11 @@
         <!-- Test Decks: read-only view of assets/data/decklists/report.json (scripts/check-decklists.js). -->
         <div id="mode-decks" style="display:none;">
             <div id="decks-body"></div>
+        </div>
+
+        <!-- Combo Audit: OCGCore Wasm diagnostics + interactive DuelSimulator inspector -->
+        <div id="mode-audit" style="display:none;">
+            <div id="audit-body"></div>
         </div>
         </div><!-- /.admin-content-col -->
       </div><!-- /.admin-layout -->

@@ -2349,25 +2349,35 @@ class DuelSimulator {
 
     prevStep() {
         if (this.currentStep > 0) {
-            const target = this.currentStep - 1;
-            const oldLog = this.log;
-            this.log = () => { };
-            this.loadCombo(this.currentComboId);
-            const steps = this.combos[this.currentComboId].steps;
-            for (let i = 0; i < target; i++) this.moveCard(steps[i].card, steps[i].to);
-            this.log = oldLog;
-            this.currentStep = target;
-            this.log(`< Rewound to Step ${target}`);
+            this.jumpToStep(this.currentStep - 1);
+        }
+    }
 
-            // Restore the Last Effect panel to match the rewound-to step
-            // (loadCombo() -> reset() already cleared it above)
-            for (let i = target - 1; i >= 0; i--) {
-                const s = steps[i];
-                if (s.text && s.text.toLowerCase().includes('activate effect')) {
-                    const cardId = s.card || (s.actions && s.actions[0] && s.actions[0].card);
-                    if (cardId) this.showLastEffectForCard(cardId, s.text);
-                    break;
-                }
+    jumpToStep(target) {
+        const steps = this.combos[this.currentComboId]?.steps || [];
+        const targetStep = Math.max(0, Math.min(target, steps.length));
+        const oldLog = this.log;
+        this.log = () => { };
+        this.loadCombo(this.currentComboId);
+        for (let i = 0; i < targetStep; i++) {
+            const s = steps[i];
+            if (s.actions && Array.isArray(s.actions)) {
+                s.actions.forEach(a => this.moveCard(a.card, a.to));
+            } else if (s.card && s.to) {
+                this.moveCard(s.card, s.to);
+            }
+        }
+        this.log = oldLog;
+        this.currentStep = targetStep;
+        this.log(`< Positioned at Step ${targetStep}`);
+
+        // Restore the Last Effect panel to match the target step
+        for (let i = targetStep - 1; i >= 0; i--) {
+            const s = steps[i];
+            if (s.text && s.text.toLowerCase().includes('activate effect')) {
+                const cardId = s.card || (s.actions && s.actions[0] && s.actions[0].card);
+                if (cardId) this.showLastEffectForCard(cardId, s.text);
+                break;
             }
         }
     }

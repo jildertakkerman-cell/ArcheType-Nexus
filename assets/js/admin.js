@@ -215,7 +215,7 @@
         if (activeBtn) activeBtn.classList.add('active');
     };
 
-    const MODES = ['combos', 'links', 'reasons', 'sections', 'decks'];
+    const MODES = ['combos', 'links', 'reasons', 'sections', 'decks', 'audit'];
 
     // The open mode lives in the URL hash (Admin.html#decks), so a reload or a
     // shared link lands on the same section.
@@ -232,6 +232,7 @@
         });
         if (location.hash.slice(1) !== mode) history.replaceState(null, '', `#${mode}`);
         if (mode === 'decks' && !deckReport.requested) loadDeckReport();
+        if (mode === 'audit' && !auditReport.requested) loadAuditReport();
     };
 
     window.addEventListener('hashchange', () => window.switchMode(location.hash.slice(1)));
@@ -824,6 +825,573 @@
     }
 
     // ------------------------------------------------------------------
+    // Combo Audit: OCGCore Wasm Legality Verifier & DuelSimulator Inspector
+    // Loads assets/data/combos/engine-audit-report.json and provides an
+    // interactive board visualizer, failing step breakdown, engine diagnostics,
+    // and triage tagging persisted in localStorage.
+    // ------------------------------------------------------------------
+    const AUDIT_REPORT_URL = '../assets/data/combos/engine-audit-report.json';
+    const AUDIT_TRIAGE_STORAGE_KEY = 'archetype_nexus_combo_audit_triage';
+
+    const auditReport = {
+        requested: false,
+        data: null,
+        triage: {}, // itemId -> { status, notes, updatedAt }
+        filterTriage: 'all', // 'all', 'untriaged', 'illegal', 'fp', 'resolved'
+        filterSource: 'all', // 'all', 'curated', 'html'
+        query: '',
+        shownCount: 30,
+        activeItemId: null,
+        simulatorInstance: null,
+        counts: { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0 },
+    };
+
+    function loadSavedTriage() {
+        try {
+            const raw = localStorage.getItem(AUDIT_TRIAGE_STORAGE_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function saveTriageRecord(itemId, status, notes = '') {
+        if (!auditReport.triage) auditReport.triage = {};
+        if (status === 'untriaged') {
+            delete auditReport.triage[itemId];
+        } else {
+            auditReport.triage[itemId] = {
+                status,
+                notes,
+                updatedAt: new Date().toISOString()
+            };
+        }
+        try {
+            localStorage.setItem(AUDIT_TRIAGE_STORAGE_KEY, JSON.stringify(auditReport.triage));
+        } catch (e) {
+            console.error('Failed to save audit triage to localStorage', e);
+        }
+        updateAuditCounters();
+        renderAuditList();
+        renderAuditInspector();
+    }
+
+    function updateAuditCounters() {
+        if (!auditReport.data) return;
+        const items = auditReport.data.items || [];
+        const triage = auditReport.triage || {};
+        const counts = {
+            all: items.length,
+            untriaged: 0,
+            illegal: 0,
+            fp: 0,
+            resolved: 0,
+            curated: 0,
+            html: 0
+        };
+        items.forEach(it => {
+            const tr = triage[it.id]?.status;
+            if (tr === 'illegal') counts.illegal++;
+            else if (tr === 'false_positive') counts.fp++;
+            else if (tr === 'resolved') counts.resolved++;
+            else counts.untriaged++;
+
+            if (it.source === 'curated') counts.curated++;
+            else if (it.source === 'html') counts.html++;
+        });
+        auditReport.counts = counts;
+
+        // Update sidebar badge
+        setModeCount('audit', counts.untriaged || counts.all, `${counts.all} flagged combos (${counts.untriaged} untriaged)`);
+    }
+
+    async function loadAuditReport() {
+        auditReport.requested = true;
+        const body = document.getElementById('audit-body');
+        if (body && !auditReport.data) {
+            body.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading engine audit report...</div>';
+        }
+        try {
+            auditReport.triage = loadSavedTriage();
+            const res = await fetch(AUDIT_REPORT_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            auditReport.data = await res.json();
+            updateAuditCounters();
+            renderAuditShell();
+        } catch (error) {
+            console.error('Failed to load audit report', error);
+            if (body) {
+                body.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>Couldn't load engine-audit-report.json (${window.escapeHtml(error.message)}). Run <code>node scripts/build-engine-audit-report.mjs</code> to regenerate it.</div>`;
+            }
+        }
+    }
+
+    function getFilteredAuditItems() {
+        if (!auditReport.data || !auditReport.data.items) return [];
+        const items = auditReport.data.items;
+        const triage = auditReport.triage || {};
+        const q = auditReport.query.toLowerCase();
+        const fTriage = auditReport.filterTriage;
+        const fSource = auditReport.filterSource;
+
+        return items.filter(it => {
+            // Source filter
+            if (fSource !== 'all' && it.source !== fSource) return false;
+
+            // Triage status filter
+            const st = triage[it.id]?.status || 'untriaged';
+            if (fTriage === 'untriaged' && st !== 'untriaged') return false;
+            if (fTriage === 'illegal' && st !== 'illegal') return false;
+            if (fTriage === 'fp' && st !== 'false_positive') return false;
+            if (fTriage === 'resolved' && st !== 'resolved') return false;
+
+            // Text search
+            if (q) {
+                const matchArch = (it.archetype || '').toLowerCase().includes(q);
+                const matchTitle = (it.comboTitle || '').toLowerCase().includes(q);
+                const matchErr = (it.engineError || '').toLowerCase().includes(q);
+                const matchText = (it.writtenText || '').toLowerCase().includes(q);
+                if (!matchArch && !matchTitle && !matchErr && !matchText) return false;
+            }
+
+            return true;
+        });
+    }
+
+    function getActiveAuditItem() {
+        if (!auditReport.data || !auditReport.data.items) return null;
+        if (!auditReport.activeItemId) return null;
+        return auditReport.data.items.find(it => it.id === auditReport.activeItemId) || null;
+    }
+
+    function getOfferedCount(offered) {
+        if (!offered) return 0;
+        return (offered.summons?.length || 0) +
+               (offered.specialSummons?.length || 0) +
+               (offered.activates?.length || 0) +
+               (offered.spellSets?.length || 0) +
+               (offered.monsterSets?.length || 0) +
+               (offered.repos?.length || 0);
+    }
+
+    function getArchetypePageLink(item) {
+        if (!item) return null;
+        let url = findArchetypePageUrl(item.archetype);
+        if (!url && typeof archetypes !== 'undefined' && Array.isArray(archetypes)) {
+            const slug = (item.archetypeSlug || item.archetype || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const match = archetypes.find(a => (a.name || '').toLowerCase().replace(/[^a-z0-9]/g, '') === slug);
+            if (match) url = `../${match.filepath}`;
+        }
+        return url;
+    }
+
+    function renderAuditShell() {
+        const body = document.getElementById('audit-body');
+        if (!body) return;
+        const counts = auditReport.counts || { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0 };
+
+        body.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem;">
+                <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:0.75rem;">
+                    <div class="tab-bar" style="margin-bottom:0; flex-wrap:wrap;">
+                        <button class="tab-btn${auditReport.filterTriage === 'all' ? ' active' : ''}" onclick="filterAuditTriage('all', this)">
+                            All Flagged <span style="margin-left:0.35rem;opacity:0.6;">${counts.all}</span>
+                        </button>
+                        <button class="tab-btn${auditReport.filterTriage === 'untriaged' ? ' active' : ''}" onclick="filterAuditTriage('untriaged', this)">
+                            Untriaged <span style="margin-left:0.35rem;opacity:0.6;">${counts.untriaged}</span>
+                        </button>
+                        <button class="tab-btn${auditReport.filterTriage === 'illegal' ? ' active' : ''}" onclick="filterAuditTriage('illegal', this)">
+                            <i class="fas fa-ban" style="color:#f87171;margin-right:0.25rem;"></i> Truly Illegal <span style="margin-left:0.35rem;opacity:0.6;">${counts.illegal}</span>
+                        </button>
+                        <button class="tab-btn${auditReport.filterTriage === 'fp' ? ' active' : ''}" onclick="filterAuditTriage('fp', this)">
+                            <i class="fas fa-bug" style="color:#fbbf24;margin-right:0.25rem;"></i> False Positives <span style="margin-left:0.35rem;opacity:0.6;">${counts.fp}</span>
+                        </button>
+                        <button class="tab-btn${auditReport.filterTriage === 'resolved' ? ' active' : ''}" onclick="filterAuditTriage('resolved', this)">
+                            <i class="fas fa-check-circle" style="color:#4ade80;margin-right:0.25rem;"></i> Resolved <span style="margin-left:0.35rem;opacity:0.6;">${counts.resolved}</span>
+                        </button>
+                    </div>
+
+                    <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <button class="tab-btn" onclick="exportAuditTriage()" title="Export triaged items to JSON">
+                            <i class="fas fa-file-export"></i> Export Triage JSON
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-wrap:wrap; gap:0.75rem; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; gap:0.4rem; align-items:center;">
+                        <span style="font-size:0.78rem; color:#a3a3a3; font-weight:600; text-transform:uppercase;">Source:</span>
+                        <button class="tab-btn${auditReport.filterSource === 'all' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('all', this)">All</button>
+                        <button class="tab-btn${auditReport.filterSource === 'curated' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('curated', this)">Curated JSON (${counts.curated})</button>
+                        <button class="tab-btn${auditReport.filterSource === 'html' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('html', this)">HTML Guides (${counts.html})</button>
+                    </div>
+
+                    <div style="flex:1; max-width:320px; position:relative;">
+                        <input type="search" class="modnotes-input" style="width:100%; padding-left:2rem;" placeholder="Search archetype, combo, error..." value="${window.escapeHtml(auditReport.query)}" oninput="searchAuditReport(this.value)">
+                        <i class="fas fa-search" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); color:#737373; font-size:0.8rem; pointer-events:none;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="audit-layout">
+                <div class="audit-sidebar-col" id="audit-list"></div>
+                <div class="audit-inspector" id="audit-inspector"></div>
+            </div>
+        `;
+
+        renderAuditList();
+        renderAuditInspector();
+    }
+
+    function renderAuditList() {
+        const container = document.getElementById('audit-list');
+        if (!container) return;
+
+        const filtered = getFilteredAuditItems();
+        if (!filtered.length) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i>No matching combos</div>';
+            return;
+        }
+
+        if (!auditReport.activeItemId || !filtered.some(it => it.id === auditReport.activeItemId)) {
+            auditReport.activeItemId = filtered[0].id;
+        }
+
+        const visible = filtered.slice(0, auditReport.shownCount || 30);
+        const left = filtered.length - visible.length;
+
+        container.innerHTML = visible.map(it => {
+            const isActive = it.id === auditReport.activeItemId;
+            const tr = auditReport.triage[it.id]?.status || 'untriaged';
+            let trLabel = 'Untriaged';
+            let trClass = 'tag-pill-untriaged';
+            if (tr === 'illegal') { trLabel = 'Truly Illegal'; trClass = 'tag-pill-illegal'; }
+            else if (tr === 'false_positive') { trLabel = 'False Positive'; trClass = 'tag-pill-fp'; }
+            else if (tr === 'resolved') { trLabel = 'Resolved'; trClass = 'tag-pill-resolved'; }
+
+            const srcClass = it.source === 'curated' ? 'tag-pill-curated' : 'tag-pill-html';
+            const errPreview = it.engineError || it.writtenText || 'Engine rejection';
+
+            return `
+                <div class="audit-card${isActive ? ' is-active' : ''}" onclick="selectAuditCombo('${it.id}')" id="audit-card-${it.id}">
+                    <div class="audit-card-title">
+                        <span>${window.escapeHtml(it.archetype || 'Archetype')}</span>
+                        <span class="tag-pill ${srcClass}">${window.escapeHtml(it.sourceLabel || it.source)}</span>
+                    </div>
+                    <div class="audit-card-sub">${window.escapeHtml(it.comboTitle)} · Step ${it.failedStepNumber ?? '?'}/${it.totalSteps}</div>
+                    <div class="audit-card-err" title="${window.escapeHtml(errPreview)}">
+                        <i class="fas fa-times-circle"></i> ${window.escapeHtml(errPreview)}
+                    </div>
+                    <div class="audit-badges">
+                        <span class="tag-pill ${trClass}">${trLabel}</span>
+                        ${it.offeredActions ? `<span style="font-size:0.68rem;color:#a3a3a3;"><i class="fas fa-list-ul"></i> ${getOfferedCount(it.offeredActions)} actions</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('') + (left > 0 ? `
+            <button class="btn-more" onclick="showMoreAudit()">
+                Show ${Math.min(left, 30)} more <span>(${left} left)</span>
+            </button>
+        ` : '');
+    }
+
+    function renderAuditInspector() {
+        const container = document.getElementById('audit-inspector');
+        if (!container) return;
+
+        const item = getActiveAuditItem();
+        if (!item) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i>Select a combo to inspect</div>';
+            return;
+        }
+
+        const triageRecord = auditReport.triage[item.id] || {};
+        const trStatus = triageRecord.status;
+        const pageLink = getArchetypePageLink(item);
+
+        const offeredCount = getOfferedCount(item.offeredActions);
+        const offeredChips = [];
+        if (item.offeredActions) {
+            (item.offeredActions.summons || []).forEach(name => {
+                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(245,158,11,0.4);"><i class="fas fa-sun" style="color:#fbbf24;"></i> Normal: ${window.escapeHtml(name)}</span>`);
+            });
+            (item.offeredActions.specialSummons || []).forEach(name => {
+                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(168,85,247,0.4);"><i class="fas fa-meteor" style="color:#c084fc;"></i> Special: ${window.escapeHtml(name)}</span>`);
+            });
+            (item.offeredActions.activates || []).forEach(desc => {
+                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(59,130,246,0.4);"><i class="fas fa-bolt" style="color:#60a5fa;"></i> ${window.escapeHtml(desc)}</span>`);
+            });
+            (item.offeredActions.spellSets || []).forEach(name => {
+                offeredChips.push(`<span class="audit-offered-chip" style="border-color:rgba(34,197,94,0.4);"><i class="fas fa-scroll" style="color:#4ade80;"></i> Set: ${window.escapeHtml(name)}</span>`);
+            });
+            (item.offeredActions.monsterSets || []).forEach(name => {
+                offeredChips.push(`<span class="audit-offered-chip"><i class="fas fa-shield-alt"></i> Set: ${window.escapeHtml(name)}</span>`);
+            });
+            (item.offeredActions.repos || []).forEach(name => {
+                offeredChips.push(`<span class="audit-offered-chip"><i class="fas fa-sync-alt"></i> Change Pos: ${window.escapeHtml(name)}</span>`);
+            });
+        }
+
+        // Steps list
+        const steps = item.comboData?.steps || [];
+        const stepsHtml = steps.map((s, idx) => {
+            const stepNum = idx + 1;
+            const isFail = stepNum === item.failedStepNumber;
+            const stepText = s.text || s.title || (s.actions ? s.actions.map(a => `${a.card} -> ${a.to}`).join(', ') : `Step ${stepNum}`);
+            return `
+                <div class="audit-step-item${isFail ? ' is-failed-step' : ''}" onclick="jumpAuditSimulatorToStep(${stepNum - 1})" title="Click to view board at Step ${stepNum}">
+                    <div class="audit-step-item-header">
+                        <span class="audit-step-badge${isFail ? ' is-fail' : ''}">${isFail ? '<i class="fas fa-exclamation-triangle"></i> ' : ''}Step ${stepNum}</span>
+                        <span style="font-weight:600; color:${isFail ? '#fca5a5' : '#e5e5e5'}; flex:1;">${window.escapeHtml(stepText)}</span>
+                    </div>
+                    ${isFail ? `<div class="audit-step-err-detail"><i class="fas fa-microchip"></i> Engine rejection: ${window.escapeHtml(item.engineError || 'Action rejected')}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = `
+            <div class="audit-insp-header">
+                <div>
+                    <div class="audit-insp-title">
+                        <span>${window.escapeHtml(item.archetype)}: ${window.escapeHtml(item.comboTitle)}</span>
+                        ${pageLink ? `<a class="pcs-admin-live-link" href="${window.escapeHtml(pageLink)}#combos" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i>Live guide</a>` : ''}
+                    </div>
+                    <div style="font-size:0.78rem; color:#a3a3a3; margin-top:0.25rem;">
+                        Source: <span style="color:#e5e5e5;">${window.escapeHtml(item.sourceLabel || item.source)}</span> (${window.escapeHtml(item.file)}) · Step ${item.failedStepNumber ?? '?'}/${item.totalSteps}
+                    </div>
+                </div>
+
+                <div class="audit-insp-actions">
+                    <button class="btn-triage btn-triage-illegal${trStatus === 'illegal' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'illegal')">
+                        <i class="fas fa-ban"></i> Truly Illegal
+                    </button>
+                    <button class="btn-triage btn-triage-fp${trStatus === 'false_positive' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'false_positive')">
+                        <i class="fas fa-bug"></i> False Positive / Parser
+                    </button>
+                    <button class="btn-triage btn-triage-resolved${trStatus === 'resolved' ? ' is-selected' : ''}" onclick="setAuditTriageStatus('${item.id}', 'resolved')">
+                        <i class="fas fa-check-circle"></i> Resolved
+                    </button>
+                    ${trStatus ? `
+                    <button class="btn-triage" style="background:rgba(255,255,255,0.06); color:#a3a3a3; border:1px solid rgba(255,255,255,0.12);" onclick="setAuditTriageStatus('${item.id}', 'untriaged')">
+                        <i class="fas fa-undo"></i> Clear
+                    </button>` : ''}
+                </div>
+            </div>
+
+            <!-- Failure Breakdown Banner -->
+            <div class="audit-fail-box">
+                <div class="audit-fail-header">
+                    <span><i class="fas fa-exclamation-triangle"></i> Identified Illegal Play at Step ${item.failedStepNumber ?? '?'} of ${item.totalSteps}</span>
+                    <button class="audit-jump-btn" onclick="jumpAuditSimulatorToFail()">
+                        <i class="fas fa-crosshairs"></i> Jump Board to Failure Point
+                    </button>
+                </div>
+                <div class="audit-fail-steptext">
+                    "${window.escapeHtml(item.writtenText || item.comboTitle)}"
+                </div>
+                <div class="audit-fail-err">
+                    <strong>Rejection Cause:</strong> ${window.escapeHtml(item.engineError || 'Step action not permitted under OCGCore game state.')}
+                </div>
+            </div>
+
+            <!-- Duel Simulator Container -->
+            <div class="audit-sim-wrap">
+                <div id="audit-sim-mount"></div>
+            </div>
+
+            <!-- Diagnostics: Engine Log & Offered Actions -->
+            <div class="audit-diag-grid">
+                <div class="audit-diag-card">
+                    <div class="audit-diag-title">
+                        <i class="fas fa-terminal" style="color:#22c55e;"></i> Engine Execution Log (${(item.log || []).length} events)
+                    </div>
+                    ${item.log && item.log.length ? `
+                    <ul class="audit-diag-list">
+                        ${item.log.map(entry => {
+                            let cls = '';
+                            if (entry.includes('Legal')) cls = 'is-step-action';
+                            else if (entry.includes('Trigger')) cls = 'is-trigger';
+                            else if (entry.includes('Selected')) cls = 'is-select';
+                            return `<li class="${cls}">${window.escapeHtml(entry)}</li>`;
+                        }).join('')}
+                    </ul>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No engine events logged prior to rejection.</div>'}
+                </div>
+
+                <div class="audit-diag-card">
+                    <div class="audit-diag-title">
+                        <i class="fas fa-hand-paper" style="color:#f59e0b;"></i> Legal Actions OCGCore Allowed (${offeredCount})
+                    </div>
+                    ${offeredChips.length ? `
+                    <div class="audit-offered-grid" style="max-height:220px; overflow-y:auto;">
+                        ${offeredChips.join('')}
+                    </div>` : '<div style="font-size:0.78rem;color:#737373;padding:0.5rem 0;">No idle actions were available (engine was awaiting trigger resolution or chain timing).</div>'}
+                </div>
+            </div>
+
+            <!-- Steps Breakdown Timeline -->
+            ${stepsHtml ? `
+            <div class="audit-steps-section">
+                <div class="audit-steps-header">
+                    <span>Full Combo Step Timeline (${steps.length} Steps)</span>
+                    <span style="font-size:0.72rem; color:#737373;">Click any step to inspect board state</span>
+                </div>
+                <div class="audit-steps-list">
+                    ${stepsHtml}
+                </div>
+            </div>` : ''}
+
+            <!-- Moderator Notes -->
+            <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.08); border-radius:0.65rem; padding:0.85rem 1rem;">
+                <div style="font-size:0.8rem; font-weight:700; color:#a3a3a3; text-transform:uppercase; margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fas fa-sticky-note" style="margin-right:0.35rem;"></i>Moderator Notes & Resolution Details</span>
+                    ${triageRecord.updatedAt ? `<span style="font-size:0.72rem; color:#737373;">Last updated ${formatDate(triageRecord.updatedAt)}</span>` : ''}
+                </div>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="audit-triage-notes-input" class="modnotes-input" style="flex:1;" placeholder="Add details (e.g. 'False positive: Parser missed cost', 'Illegal: Once per turn violated')" value="${window.escapeHtml(triageRecord.notes || '')}">
+                    <button class="tab-btn" onclick="saveAuditCurrentNotes()"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </div>
+        `;
+
+        mountAuditSimulator(item);
+    }
+
+    function mountAuditSimulator(item) {
+        const mount = document.getElementById('audit-sim-mount');
+        if (!mount || !item.comboData) return;
+
+        if (auditReport.simulatorInstance) {
+            clearInterval(auditReport.simulatorInstance.interval);
+            auditReport.simulatorInstance = null;
+        }
+
+        try {
+            auditReport.simulatorInstance = new DuelSimulator('audit-sim-mount', {
+                auditCombo: item.comboData
+            });
+
+            // Automatically position the board right before the failure!
+            const target = Math.max(0, (item.failedStepNumber || 1) - 1);
+            setTimeout(() => {
+                if (auditReport.simulatorInstance) {
+                    auditReport.simulatorInstance.jumpToStep(target);
+                }
+            }, 120);
+        } catch (e) {
+            console.error('Failed to initialize DuelSimulator for audit', e);
+            mount.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>Could not load DuelSimulator: ${window.escapeHtml(e.message)}</div>`;
+        }
+    }
+
+    window.jumpAuditSimulatorToStep = function (stepIdx) {
+        if (!auditReport.simulatorInstance) return;
+        auditReport.simulatorInstance.jumpToStep(stepIdx);
+    };
+
+    window.jumpAuditSimulatorToFail = function () {
+        const item = getActiveAuditItem();
+        if (!item || !auditReport.simulatorInstance) return;
+        const target = Math.max(0, (item.failedStepNumber || 1) - 1);
+        auditReport.simulatorInstance.jumpToStep(target);
+        toast(`Board positioned at step ${target} (prior to failed step ${item.failedStepNumber})`);
+    };
+
+    window.saveAuditCurrentNotes = function () {
+        const item = getActiveAuditItem();
+        if (!item) return;
+        const input = document.getElementById('audit-triage-notes-input');
+        const notes = input ? input.value.trim() : '';
+        const current = auditReport.triage[item.id] || { status: 'untriaged' };
+        saveTriageRecord(item.id, current.status || 'untriaged', notes);
+        toast('Notes saved.');
+    };
+
+    window.setAuditTriageStatus = function (itemId, status) {
+        const input = document.getElementById('audit-triage-notes-input');
+        const notes = input ? input.value.trim() : (auditReport.triage[itemId]?.notes || '');
+        saveTriageRecord(itemId, status, notes);
+        let msg = 'Triage cleared.';
+        if (status === 'illegal') msg = 'Marked as Truly Illegal.';
+        else if (status === 'false_positive') msg = 'Marked as False Positive / Parser issue.';
+        else if (status === 'resolved') msg = 'Marked as Resolved.';
+        toast(msg);
+    };
+
+    window.filterAuditTriage = function (filter, btn) {
+        auditReport.filterTriage = filter;
+        auditReport.shownCount = 30;
+        document.querySelectorAll('.tab-btn[onclick*="filterAuditTriage"]').forEach(b => b.classList.toggle('active', b === btn));
+        renderAuditList();
+        renderAuditInspector();
+    };
+
+    window.filterAuditSource = function (source, btn) {
+        auditReport.filterSource = source;
+        auditReport.shownCount = 30;
+        document.querySelectorAll('.tab-btn[onclick*="filterAuditSource"]').forEach(b => b.classList.toggle('active', b === btn));
+        renderAuditList();
+        renderAuditInspector();
+    };
+
+    window.searchAuditReport = function (query) {
+        auditReport.query = query.trim();
+        auditReport.shownCount = 30;
+        renderAuditList();
+        renderAuditInspector();
+    };
+
+    window.selectAuditCombo = function (id) {
+        if (auditReport.activeItemId === id) return;
+        auditReport.activeItemId = id;
+        document.querySelectorAll('.audit-card').forEach(c => c.classList.toggle('is-active', c.id === `audit-card-${id}`));
+        renderAuditInspector();
+    };
+
+    window.showMoreAudit = function () {
+        auditReport.shownCount = (auditReport.shownCount || 30) + 30;
+        renderAuditList();
+    };
+
+    window.exportAuditTriage = function () {
+        const records = auditReport.triage || {};
+        const keys = Object.keys(records);
+        if (!keys.length) {
+            toast('No triaged combos to export yet. Triage some combos first!');
+            return;
+        }
+        const exportData = {
+            exportedAt: new Date().toISOString(),
+            totalTriaged: keys.length,
+            items: keys.map(id => {
+                const item = (auditReport.data?.items || []).find(it => it.id === id);
+                return {
+                    id,
+                    status: records[id].status,
+                    notes: records[id].notes,
+                    updatedAt: records[id].updatedAt,
+                    archetype: item?.archetype,
+                    comboTitle: item?.comboTitle,
+                    source: item?.source,
+                    failedStepNumber: item?.failedStepNumber,
+                    engineError: item?.engineError
+                };
+            })
+        };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `combo-audit-triage-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 200);
+        toast(`Exported ${keys.length} triaged items!`);
+    };
+
+    // ------------------------------------------------------------------
     // Bootstrap
     // ------------------------------------------------------------------
     async function init() {
@@ -845,6 +1413,7 @@
         // report.json is a small static file: load it now so the sidebar badge
         // shows decks needing attention before the mode is opened.
         if (!deckReport.requested) loadDeckReport();
+        if (!auditReport.requested) loadAuditReport();
 
         groups.combos = createModerationTabGroup({
             group: 'combos', table: 'combos', pkColumn: 'comboid',
