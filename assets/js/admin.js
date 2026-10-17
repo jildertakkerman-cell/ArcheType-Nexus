@@ -1168,6 +1168,22 @@
                 <div class="audit-fail-err">
                     <strong>Rejection Cause:</strong> ${window.escapeHtml(item.engineError || 'Step action not permitted under OCGCore game state.')}
                 </div>
+                ${item.fieldSnapshot ? `
+                <div class="audit-fail-snapshot" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; font-size:0.75rem;">
+                    <span style="background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#fca5a5; font-weight:600;">
+                        <i class="fas fa-dragon" style="margin-right:0.25rem;"></i>Field Monsters: ${(item.fieldSnapshot.monsters || []).length}
+                        ${(item.fieldSnapshot.monsters || []).length > 0 ? `(${(item.fieldSnapshot.monsters || []).map(m => m.zone.replace('zone-', '').toUpperCase()).join(', ')})` : ''}
+                    </span>
+                    <span style="background:rgba(59,130,246,0.18); border:1px solid rgba(59,130,246,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#93c5fd; font-weight:600;">
+                        <i class="fas fa-magic" style="margin-right:0.25rem;"></i>Field Spells: ${(item.fieldSnapshot.spells || []).length}
+                    </span>
+                    <span style="background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#d8b4fe; font-weight:600;">
+                        <i class="fas fa-hand-holding" style="margin-right:0.25rem;"></i>In Hand: ${(item.fieldSnapshot.hand || []).length}
+                    </span>
+                    <span style="background:rgba(100,116,139,0.25); border:1px solid rgba(148,163,184,0.35); padding:0.2rem 0.55rem; border-radius:5px; color:#cbd5e1; font-weight:600;">
+                        <i class="fas fa-skull" style="margin-right:0.25rem;"></i>In GY: ${(item.fieldSnapshot.gy || []).length}
+                    </span>
+                </div>` : ''}
             </div>
 
             <div class="audit-sim-wrap">
@@ -1283,7 +1299,7 @@
             const target = Math.max(0, (item.failedStepNumber || 1) - 1);
             setTimeout(() => {
                 if (auditReport.simulatorInstance) {
-                    auditReport.simulatorInstance.jumpToStep(target);
+                    auditReport.simulatorInstance.jumpToStep(target, item.fieldSnapshot);
                 }
             }, 120);
         } catch (e) {
@@ -1301,8 +1317,8 @@
         const item = getActiveAuditItem();
         if (!item || !auditReport.simulatorInstance) return;
         const target = Math.max(0, (item.failedStepNumber || 1) - 1);
-        auditReport.simulatorInstance.jumpToStep(target);
-        toast(`Board positioned at step ${target} (prior to failed step ${item.failedStepNumber})`);
+        auditReport.simulatorInstance.jumpToStep(target, item.fieldSnapshot);
+        toast(`Board positioned at step ${target} (OCGCore state prior to failed step ${item.failedStepNumber})`);
     };
 
     window.saveAuditCurrentNotes = function () {

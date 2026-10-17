@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { parseHtmlCombos, buildComboFromHtml } from './verify-html-combos-engine.mjs';
+import { runComboReplay } from './lib/combo-runner.mjs';
 import { getCardByCode } from './lib/card-engine.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -121,7 +122,8 @@ if (fs.existsSync(CURATED_REPORT_FILE)) {
                 stepsCompletedBeforeFailure: item.stepsCompleted || 0,
                 log: (item.log || []).map(enrichLogString),
                 offeredActions: item.offeredActions || null,
-                comboData: sanitizeComboData(comboData)
+                comboData: sanitizeComboData(comboData),
+                fieldSnapshot: item.fieldSnapshot || null
             });
         }
     } catch (err) {
@@ -157,6 +159,17 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
                 }
             }
 
+            if (comboData && (!comboData.steps?.[0]?.actions || !v.fieldSnapshot)) {
+                try {
+                    const replay = await runComboReplay(comboData);
+                    if (!v.fieldSnapshot && replay.fieldSnapshot) {
+                        v.fieldSnapshot = replay.fieldSnapshot;
+                    }
+                } catch {
+                    // ignore replay error
+                }
+            }
+
             const cleanArch = (v.archetype || v.file.replace(/\.html$/i, ''))
                 .replace(/\s+(?:Deck Analysis|Archetype Breakdown|Archetype Deep Dive|Strategy Guide|Guide|Analysis)$/i, '');
 
@@ -180,7 +193,8 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
                 failedSubStepIdx: v.failedSubStepIdx ?? null,
                 log: (v.log || []).map(enrichLogString),
                 offeredActions: v.offeredActions || null,
-                comboData: sanitizeComboData(comboData)
+                comboData: sanitizeComboData(comboData),
+                fieldSnapshot: v.fieldSnapshot || null
             });
 
             if ((i + 1) % 50 === 0 || i === violations.length - 1) {

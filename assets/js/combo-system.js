@@ -2064,7 +2064,7 @@ class DuelSimulator {
         }
 
         const isToken = c.data.isToken === true || (c.data.type || '').toLowerCase().includes('token') || (c.data.name || '').toLowerCase().includes('token');
-        const isLeaving = ['zone-gy', 'zone-deck', 'zone-hand', 'zone-banish'].includes(targetZoneId);
+        const isLeaving = ['zone-gy', 'zone-deck', 'zone-hand', 'zone-banish', 'zone-extra'].includes(targetZoneId);
         // "zone-vanish" is not a real board zone — it's a signal that a Token ceases to
         // exist (e.g. tributed/used as material) instead of physically going to the GY.
         const isVanishTarget = targetZoneId === 'zone-vanish';
@@ -2353,7 +2353,7 @@ class DuelSimulator {
         }
     }
 
-    jumpToStep(target) {
+    jumpToStep(target, snapshot = null) {
         const steps = this.combos[this.currentComboId]?.steps || [];
         const targetStep = Math.max(0, Math.min(target, steps.length));
         const oldLog = this.log;
@@ -2366,6 +2366,9 @@ class DuelSimulator {
             } else if (s.card && s.to) {
                 this.moveCard(s.card, s.to);
             }
+        }
+        if (snapshot) {
+            this.applyFieldSnapshot(snapshot);
         }
         this.log = oldLog;
         this.currentStep = targetStep;
@@ -2380,6 +2383,63 @@ class DuelSimulator {
                 break;
             }
         }
+    }
+
+    /**
+     * Snaps board cards directly to match an OCGCore field snapshot (ground truth).
+     */
+    applyFieldSnapshot(snapshot) {
+        if (!snapshot) return;
+        const assignedIds = new Set();
+        const cardEntries = Object.values(this.cards);
+
+        const assignCard = (code, targetZone) => {
+            const numCode = Number(code);
+            let matched = cardEntries.find(c =>
+                !assignedIds.has(c.id) &&
+                (c.data.code === numCode || String(c.id).includes(String(numCode)))
+            );
+            if (!matched && code) {
+                matched = cardEntries.find(c => !assignedIds.has(c.id) && c.data.isDummy);
+            }
+            if (matched) {
+                assignedIds.add(matched.id);
+                matched.element.setAttribute('data-zone', targetZone);
+                this.setPosition(matched.element, targetZone);
+            }
+        };
+
+        // 1. Monsters on field
+        (snapshot.monsters || []).forEach(m => {
+            if (m && m.code) assignCard(m.code, m.zone);
+        });
+
+        // 2. Spells/Traps/Field on field
+        (snapshot.spells || []).forEach(s => {
+            if (s && s.code) assignCard(s.code, s.zone);
+        });
+
+        // 3. Hand cards
+        (snapshot.hand || []).forEach(h => {
+            if (h && h.code) assignCard(h.code, 'zone-hand');
+        });
+
+        // 4. Graveyard cards
+        (snapshot.gy || []).forEach(g => {
+            if (g && g.code) assignCard(g.code, 'zone-gy');
+        });
+
+        // 5. Banished cards
+        (snapshot.banish || []).forEach(b => {
+            if (b && b.code) assignCard(b.code, 'zone-banish');
+        });
+
+        // 6. Extra Deck cards
+        (snapshot.extra || []).forEach(e => {
+            if (e && e.code) assignCard(e.code, 'zone-extra');
+        });
+
+        this.repositionCards();
     }
 
     reset() {

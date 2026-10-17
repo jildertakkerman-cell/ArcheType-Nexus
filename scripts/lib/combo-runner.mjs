@@ -145,6 +145,97 @@ export function parseZone(zoneStr) {
 }
 
 /**
+ * Maps an OcgLocPos ({ location, sequence }) to a combo visualizer zone string.
+ */
+export function ocgLocPosToZone(locPos) {
+    if (!locPos) return 'zone-deck';
+    const loc = locPos.location;
+    const seq = locPos.sequence;
+    if (loc === OcgLocation.MZONE || loc === 4) {
+        if (seq === 5) return 'zone-em-left';
+        if (seq === 6) return 'zone-em-right';
+        if (seq >= 0 && seq <= 4) return `zone-m${seq + 1}`;
+        return 'zone-m1';
+    }
+    if (loc === OcgLocation.SZONE || loc === 8) {
+        if (seq === 5) return 'zone-field';
+        if (seq === 6) return 'zone-s1'; // Pendulum left scale
+        if (seq === 7) return 'zone-s5'; // Pendulum right scale
+        if (seq >= 0 && seq <= 4) return `zone-s${seq + 1}`;
+        return 'zone-s1';
+    }
+    if (loc === OcgLocation.FZONE || loc === 256) return 'zone-field';
+    if (loc === OcgLocation.PZONE || loc === 512) {
+        return (seq === 0) ? 'zone-s1' : 'zone-s5';
+    }
+    if (loc === OcgLocation.HAND || loc === 2) return 'zone-hand';
+    if (loc === OcgLocation.GRAVE || loc === 16) return 'zone-gy';
+    if (loc === OcgLocation.REMOVED || loc === 32) return 'zone-banish';
+    if (loc === OcgLocation.EXTRA || loc === 64) return 'zone-extra';
+    if (loc === OcgLocation.DECK || loc === 1) return 'zone-deck';
+    return 'zone-deck';
+}
+
+/**
+ * Captures the exact field state of cards across all locations from OCGCore.
+ */
+export function captureFieldSnapshot(duel, lib) {
+    const snapshot = {
+        monsters: [],
+        spells: [],
+        hand: [],
+        gy: [],
+        banish: [],
+        extra: []
+    };
+    try {
+        const mzone = lib.duelQueryLocation(duel, { flags: 1, controller: 0, location: OcgLocation.MZONE }) || [];
+        mzone.forEach((c, seq) => {
+            if (c && c.code) {
+                let zone = `zone-m${seq + 1}`;
+                if (seq === 5) zone = 'zone-em-left';
+                if (seq === 6) zone = 'zone-em-right';
+                snapshot.monsters.push({ code: c.code, sequence: seq, zone });
+            }
+        });
+
+        const szone = lib.duelQueryLocation(duel, { flags: 1, controller: 0, location: OcgLocation.SZONE }) || [];
+        szone.forEach((c, seq) => {
+            if (c && c.code) {
+                let zone = `zone-s${seq + 1}`;
+                if (seq === 5) zone = 'zone-field';
+                if (seq === 6) zone = 'zone-s1';
+                if (seq === 7) zone = 'zone-s5';
+                snapshot.spells.push({ code: c.code, sequence: seq, zone });
+            }
+        });
+
+        const hand = lib.duelQueryLocation(duel, { flags: 1, controller: 0, location: OcgLocation.HAND }) || [];
+        hand.forEach((c, seq) => {
+            if (c && c.code) snapshot.hand.push({ code: c.code, sequence: seq, zone: 'zone-hand' });
+        });
+
+        const gy = lib.duelQueryLocation(duel, { flags: 1, controller: 0, location: OcgLocation.GRAVE }) || [];
+        gy.forEach((c, seq) => {
+            if (c && c.code) snapshot.gy.push({ code: c.code, sequence: seq, zone: 'zone-gy' });
+        });
+
+        const banish = lib.duelQueryLocation(duel, { flags: 1, controller: 0, location: OcgLocation.REMOVED }) || [];
+        banish.forEach((c, seq) => {
+            if (c && c.code) snapshot.banish.push({ code: c.code, sequence: seq, zone: 'zone-banish' });
+        });
+
+        const extra = lib.duelQueryLocation(duel, { flags: 1, controller: 0, location: OcgLocation.EXTRA }) || [];
+        extra.forEach((c, seq) => {
+            if (c && c.code) snapshot.extra.push({ code: c.code, sequence: seq, zone: 'zone-extra' });
+        });
+    } catch {
+        // Fallback on query failure
+    }
+    return snapshot;
+}
+
+/**
  * Decodes legal zone places from ocgcore field_mask (0 = available, 1 = forbidden).
  */
 export function getAvailablePlaces(fieldMask, player = 0) {
@@ -280,6 +371,20 @@ export async function runComboReplay(combo, options = {}) {
         let lastActorCode = null;
         let lastSelectedCardCode = null;
         let lastOfferedActions = null;
+
+        // OCGCore physical location tracking
+        let currentActiveStepIdx = 0;
+        const stepActions = [];
+        for (let i = 0; i < steps.length; i++) {
+            stepActions.push([]);
+        }
+        const cardZoneMap = new Map();
+        for (const c of (combo.cards || [])) {
+            cardZoneMap.set(c.id, c.zone || 'zone-deck');
+        }
+        for (const c of resolved) {
+            if (c.id && c.zone) cardZoneMap.set(c.id, c.zone);
+        }
 
         function lookupCleanInNameMap(clean) {
             if (!clean || clean.length < 3) return [];
@@ -506,6 +611,65 @@ export async function runComboReplay(combo, options = {}) {
                 const msgName = ocgMessageTypeStrings.get(m.type) || m.type;
                 if (options.debug) console.log('ENGINE MSG:', m.type, msgName);
 
+                if (m.type === 50) { // MOVE
+                    const code = m.card;
+                    if (code && m.from && m.to) {
+                        const fromZone = ocgLocPosToZone(m.from);
+                        const toZone = ocgLocPosToZone(m.to);
+
+                        if (fromZone !== toZone) {
+                            let targetCard = null;
+
+                            // 1. Prefer card with matching code currently recorded in fromZone
+                            for (const c of (combo.cards || [])) {
+                                if (c.code === code && cardZoneMap.get(c.id) === fromZone) {
+                                    targetCard = c;
+                                    break;
+                                }
+                            }
+
+                            // 2. If no card at fromZone, match any card with this code
+                            if (!targetCard) {
+                                for (const c of (combo.cards || [])) {
+                                    if (c.code === code) {
+                                        targetCard = c;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // 3. If card doesn't exist in combo.cards at all, dynamically create it
+                            if (!targetCard) {
+                                const cData = getCardByCode(code);
+                                const isExtra = cData && ((cData.type & 0x4802040) !== 0);
+                                const prefix = isExtra ? 'extra' : 'card';
+                                const newId = `${prefix}_${code}_${(combo.cards || []).length}`;
+                                targetCard = {
+                                    id: newId,
+                                    name: cData?.name || `Card ${code}`,
+                                    code,
+                                    type: isExtra ? 'extra' : (((cData?.type || 0) & 1) ? 'monster' : 'spell'),
+                                    zone: fromZone,
+                                    data: cData
+                                };
+                                combo.cards.push(targetCard);
+                            }
+
+                            // Update tracked zone
+                            cardZoneMap.set(targetCard.id, toZone);
+
+                            // Record action for current active step
+                            const sIdx = Math.min(Math.max(0, currentActiveStepIdx), steps.length - 1);
+                            if (!stepActions[sIdx]) stepActions[sIdx] = [];
+                            stepActions[sIdx].push({
+                                card: targetCard.id,
+                                to: toZone
+                            });
+                        }
+                    }
+                    continue;
+                }
+
                 if (m.type === 11) { // SELECT_IDLECMD
                     if (m.player === 1) {
                         lib.duelSetResponse(duel, {
@@ -555,6 +719,7 @@ export async function runComboReplay(combo, options = {}) {
                                 }
                             }
                             autoFiredPrevStepIgnition = true;
+                            currentActiveStepIdx = Math.max(0, stepIdx - 1);
                             lib.duelSetResponse(duel, {
                                 type: OcgResponseType.SELECT_IDLECMD,
                                 action: SelectIdleCMDAction.SELECT_ACTIVATE,
@@ -587,6 +752,7 @@ export async function runComboReplay(combo, options = {}) {
                             } else {
                                 currentStep.text = strippedOppPrefix;
                             }
+                            currentActiveStepIdx = stepIdx;
                             lib.duelSetResponse(duel, {
                                 type: OcgResponseType.SELECT_IDLECMD,
                                 action: SelectIdleCMDAction.TO_EP,
@@ -694,6 +860,7 @@ export async function runComboReplay(combo, options = {}) {
                                 triggersFiredSinceLastIdle = 0;
                                 cardsSelectedSinceLastIdle.clear();
                                 autoFiredPrevStepIgnition = false;
+                                currentActiveStepIdx = stepIdx;
                                 lib.duelSetResponse(duel, {
                                     type: OcgResponseType.SELECT_IDLECMD,
                                     action: SelectIdleCMDAction.SELECT_SPECIAL_SUMMON,
@@ -759,6 +926,7 @@ export async function runComboReplay(combo, options = {}) {
                                 triggersFiredSinceLastIdle = 0;
                                 cardsSelectedSinceLastIdle.clear();
                                 autoFiredPrevStepIgnition = false;
+                                currentActiveStepIdx = stepIdx;
                                 lib.duelSetResponse(duel, {
                                     type: OcgResponseType.SELECT_IDLECMD,
                                     action: SelectIdleCMDAction.SELECT_ACTIVATE,
@@ -799,6 +967,7 @@ export async function runComboReplay(combo, options = {}) {
                                 triggersFiredSinceLastIdle = 0;
                                 cardsSelectedSinceLastIdle.clear();
                                 autoFiredPrevStepIgnition = false;
+                                currentActiveStepIdx = stepIdx;
                                 lib.duelSetResponse(duel, {
                                     type: OcgResponseType.SELECT_IDLECMD,
                                     action: SelectIdleCMDAction.SELECT_SUMMON,
@@ -836,6 +1005,7 @@ export async function runComboReplay(combo, options = {}) {
                                     triggersFiredSinceLastIdle = 0;
                                     cardsSelectedSinceLastIdle.clear();
                                     autoFiredPrevStepIgnition = false;
+                                    currentActiveStepIdx = stepIdx;
                                     lib.duelSetResponse(duel, {
                                         type: OcgResponseType.SELECT_IDLECMD,
                                         action: SelectIdleCMDAction.SELECT_SPELL_SET,
@@ -924,6 +1094,7 @@ export async function runComboReplay(combo, options = {}) {
 
                     if (acceptTrigger) {
                         triggersFiredSinceLastIdle++;
+                        currentActiveStepIdx = Math.max(0, stepIdx - 1);
                         const trigName = getCardByCode(m.code)?.name || m.code;
                         log.push(`Trigger Effect Accepted for ${trigName} (${m.code})`);
                     }
@@ -1083,6 +1254,7 @@ export async function runComboReplay(combo, options = {}) {
                                 const oppCode = m.selects[foundOpp].code;
                                 const oppName = getCardByCode(oppCode)?.name || oppCode;
                                 log.push(`Step ${stepIdx + 1}: Legal Opponent-Turn Activation of ${oppName} (${oppCode})`);
+                                currentActiveStepIdx = stepIdx;
                                 stepIdx++;
                                 skipRedundantVisualSteps();
                             }
@@ -1098,6 +1270,7 @@ export async function runComboReplay(combo, options = {}) {
                                         chainIdx = found;
                                         if (s === stepIdx && /^(?:chain\b|in response\b)/i.test(stText.trim()) && !/^chain link \d/i.test(stText.trim())) {
                                             lastActorCode = m.selects[found].code;
+                                            currentActiveStepIdx = stepIdx;
                                             stepIdx++;
                                             skipRedundantVisualSteps();
                                         }
@@ -1107,6 +1280,7 @@ export async function runComboReplay(combo, options = {}) {
                             }
                             if (chainIdx !== null) {
                                 triggersFiredSinceLastIdle++;
+                                currentActiveStepIdx = Math.max(0, stepIdx - 1);
                                 const chainCode = m.selects[chainIdx].code;
                                 const chainName = getCardByCode(chainCode)?.name || chainCode;
                                 log.push(`Chain Trigger Accepted for ${chainName} (${chainCode})`);
@@ -1399,10 +1573,25 @@ export async function runComboReplay(combo, options = {}) {
             }
         }
 
-        // Query final board state
+        // Query final board state and snapshot from OCGCore
         const fieldState = lib.duelQueryField(duel);
         const monstersOnField = fieldState.players[0].monsters.filter(m => m && m.position !== 0).length;
         const spellsOnField = fieldState.players[0].spells.filter(s => s && s.position !== 0).length;
+        const fieldSnapshot = captureFieldSnapshot(duel, lib);
+
+        // Enrich combo steps with ground truth OCGCore actions
+        for (let i = 0; i < steps.length; i++) {
+            const acts = stepActions[i] || [];
+            steps[i].actions = acts;
+            if (acts.length > 0) {
+                steps[i].card = acts[0].card;
+                steps[i].to = acts[0].to;
+            } else if (i >= stepIdx) {
+                // Steps that failed or were not offered should not retain phantom movements
+                steps[i].card = undefined;
+                steps[i].to = undefined;
+            }
+        }
 
         const legal = (errors.length === 0 && stepIdx >= steps.length);
 
@@ -1418,7 +1607,9 @@ export async function runComboReplay(combo, options = {}) {
             board: {
                 monsters: monstersOnField,
                 spells: spellsOnField
-            }
+            },
+            stepActions,
+            fieldSnapshot
         };
 
     } finally {

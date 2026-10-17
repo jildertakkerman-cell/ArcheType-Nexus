@@ -896,7 +896,8 @@ for (let i = 0; i < htmlFiles.length; i++) {
                 failedSubStepIdx,
                 log: replayResult.log || [],
                 offeredActions: replayResult.offeredActions || null,
-                comboData: comboObj
+                comboData: comboObj,
+                fieldSnapshot: replayResult.fieldSnapshot || null
             };
             violations.push(violationEntry);
 
