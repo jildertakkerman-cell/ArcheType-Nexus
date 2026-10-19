@@ -1639,6 +1639,8 @@ class DuelSimulator {
         this.resizeObserver = null;
         this.lastEffectCard = null;
         this.lastEffectDesc = null;
+        this.equippedTo = {};
+        this.fieldMonsterOrder = [];
 
         this.init();
     }
@@ -1928,6 +1930,7 @@ class DuelSimulator {
         this.tokenLayer.appendChild(token);
         this.cards[data.id] = { element: token, data: data };
         token.setAttribute('data-zone', data.zone || 'zone-deck');
+        this.trackFieldMonster(data.id, data.zone || 'zone-deck');
 
         token.style.pointerEvents = 'auto';
         token.style.cursor = 'pointer';
@@ -2068,14 +2071,153 @@ class DuelSimulator {
             const z = c.element.getAttribute('data-zone') || c.data.zone;
             this.setPosition(c.element, z, cachedRects);
         });
+        Object.keys(this.equippedTo).forEach(cardId => this.positionEquippedCard(cardId));
+    }
+
+    getEquipTargetId(step, cardId) {
+        const explicitTarget = step.equipTarget || step.equippedTo;
+        if (explicitTarget && this.cards[explicitTarget]) return explicitTarget;
+        if (explicitTarget) {
+            const explicitName = String(explicitTarget).trim().toLowerCase();
+            const namedTarget = Object.entries(this.cards).find(([id, card]) =>
+                id !== cardId &&
+                card.data.name.trim().toLowerCase() === explicitName &&
+                /^zone-(?:m[1-5]|em-(?:left|right))$/.test(card.element.getAttribute('data-zone') || '')
+            );
+            if (namedTarget) return namedTarget[0];
+        }
+
+        const match = /^\s*equip(?:ped|ping)?\s+(.+?)\s+(?:to|onto)\s+(.+?)\s*\.?$/i.exec(step.text || '');
+        if (!match) return null;
+
+        const equippedCard = this.cards[cardId];
+        const clean = value => String(value || '').replace(/[.'"]/g, '').trim().toLowerCase();
+        if (!equippedCard || clean(match[1]) !== clean(equippedCard.data.name)) return null;
+
+        const targetName = clean(match[2]);
+        const candidates = Object.entries(this.cards).filter(([id, card]) =>
+            id !== cardId &&
+            clean(card.data.name) === targetName &&
+            /^zone-(?:m[1-5]|em-(?:left|right))$/.test(card.element.getAttribute('data-zone') || '')
+        );
+        return candidates.length ? candidates[0][0] : null;
+    }
+
+    moveStepCard(step, cardId, targetZoneId) {
+        let equipTargetId = this.getEquipTargetId(step, cardId);
+        const priorSteps = this.combos[this.currentComboId]?.steps?.slice(0, this.currentStep) || [];
+        const unionEffectActive = /union hangar|union driver/i.test(step.text || '') ||
+            priorSteps.some(priorStep => /union hangar|union driver/i.test(priorStep.text || ''));
+        if (
+            !equipTargetId &&
+            /^zone-s[1-5]$/.test(targetZoneId || '') &&
+            unionEffectActive &&
+            ['monster', 'extra'].includes(String(this.cards[cardId]?.data.type || '').toLowerCase())
+        ) {
+            equipTargetId = this.getLastFieldMonsterId(cardId);
+        }
+        this.moveCard(cardId, equipTargetId ? `equip:${equipTargetId}:${targetZoneId || ''}` : targetZoneId);
+    }
+
+    getLastFieldMonsterId(excludeId) {
+        for (let i = this.fieldMonsterOrder.length - 1; i >= 0; i--) {
+            const cardId = this.fieldMonsterOrder[i];
+            const card = this.cards[cardId];
+            if (
+                cardId !== excludeId &&
+                card &&
+                /^zone-(?:m[1-5]|em-(?:left|right))$/.test(card.element.getAttribute('data-zone') || '')
+            ) {
+                return cardId;
+            }
+        }
+        return null;
+    }
+
+    trackFieldMonster(cardId, zoneId) {
+        this.fieldMonsterOrder = this.fieldMonsterOrder.filter(id => id !== cardId);
+        const card = this.cards[cardId];
+        if (
+            card &&
+            ['monster', 'extra'].includes(String(card.data.type || '').toLowerCase()) &&
+            /^zone-(?:m[1-5]|em-(?:left|right))$/.test(zoneId || '')
+        ) {
+            this.fieldMonsterOrder.push(cardId);
+        }
+    }
+
+    attachEquip(cardId, parentId, targetZoneId = null) {
+        const card = this.cards[cardId];
+        const parent = this.cards[parentId];
+        if (!card || !parent || cardId === parentId) return;
+
+        this.detachEquip(cardId);
+        if (this.materials) {
+            Object.values(this.materials).forEach(list => {
+                const index = list.indexOf(cardId);
+                if (index !== -1) list.splice(index, 1);
+            });
+        }
+
+        this.equippedTo[cardId] = parentId;
+        card.element.classList.add('equipped-card');
+        card.element.style.borderColor = '#fbbf24';
+        card.element.style.boxShadow = '0 0 12px rgba(251, 191, 36, 0.75)';
+        card.element.setAttribute('data-equipped-to', parentId);
+        card.element.title = `${card.data.name} equipped to ${parent.data.name}`;
+        card.element.style.display = 'block';
+        card.element.style.opacity = '1';
+        card.element.style.pointerEvents = 'auto';
+        card.element.style.width = '';
+        card.element.style.height = '';
+        card.element.style.zIndex = '';
+        const spellTrapZones = ['zone-s1', 'zone-s2', 'zone-s3', 'zone-s4', 'zone-s5'];
+        const isOccupied = zoneId => Object.entries(this.cards).some(([otherId, other]) =>
+            otherId !== cardId &&
+            other.element.getAttribute('data-zone') === zoneId &&
+            other.element.style.display !== 'none' &&
+            other.element.style.opacity !== '0'
+        );
+        const currentZone = card.element.getAttribute('data-zone');
+        const preferredZone = spellTrapZones.includes(targetZoneId)
+            ? targetZoneId
+            : spellTrapZones.includes(currentZone) ? currentZone : null;
+        const equipZone = preferredZone && !isOccupied(preferredZone)
+            ? preferredZone
+            : spellTrapZones.find(zoneId => !isOccupied(zoneId)) || preferredZone || spellTrapZones[0];
+        card.element.setAttribute('data-zone', equipZone);
+        this.trackFieldMonster(cardId, '');
+        this.setPosition(card.element, equipZone);
+    }
+
+    detachEquip(cardId) {
+        const parentId = this.equippedTo[cardId];
+        if (!parentId) return;
+        delete this.equippedTo[cardId];
+        const card = this.cards[cardId];
+        if (card) {
+            card.element.classList.remove('equipped-card');
+            card.element.removeAttribute('data-equipped-to');
+            card.element.title = '';
+            card.element.style.borderColor = '';
+            card.element.style.boxShadow = '';
+            card.element.style.width = '';
+            card.element.style.height = '';
+            card.element.style.zIndex = '';
+        }
+    }
+
+    positionEquippedCard(cardId) {
+        const card = this.cards[cardId];
+        if (!this.equippedTo[cardId] || !card) return;
+
+        const zoneId = card.element.getAttribute('data-zone');
+        if (/^zone-s[1-5]$/.test(zoneId || '')) this.setPosition(card.element, zoneId);
     }
 
     moveCard(cardId, targetZoneId) {
         const c = this.cards[cardId];
         if (!c) return;
-
-        // If the card is already in the target zone, do nothing
-        if (c.element.getAttribute('data-zone') === targetZoneId) return;
 
         // Handle Material Attachment (Logical)
         if (targetZoneId.startsWith('material:')) {
@@ -2083,6 +2225,17 @@ class DuelSimulator {
             this.attachMaterial(cardId, parentId);
             return;
         }
+
+        if (targetZoneId.startsWith('equip:')) {
+            const [, parentId, equipZone] = targetZoneId.split(':');
+            this.attachEquip(cardId, parentId, equipZone || null);
+            return;
+        }
+
+        // If the card is already in the target zone, do nothing
+        if (c.element.getAttribute('data-zone') === targetZoneId && !this.equippedTo[cardId]) return;
+
+        this.detachEquip(cardId);
 
         // A card that moves on its own (detached as a cost, revived, etc.) is no
         // longer material, so it must not follow its old Xyz Monster around.
@@ -2167,6 +2320,15 @@ class DuelSimulator {
             }
         }
 
+        const equippedCards = Object.keys(this.equippedTo).filter(equippedId => this.equippedTo[equippedId] === cardId);
+        if (equippedCards.length) {
+            if (isLeaving) {
+                equippedCards.forEach(equippedId => this.moveCard(equippedId, 'zone-gy'));
+            } else {
+                setTimeout(() => equippedCards.forEach(equippedId => this.positionEquippedCard(equippedId)), 50);
+            }
+        }
+
         c.element.style.display = 'block';
         c.element.style.opacity = '1';
         c.element.style.removeProperty('--tk-fx');
@@ -2204,8 +2366,10 @@ class DuelSimulator {
         }
 
         c.element.setAttribute('data-zone', targetZoneId);
+        this.trackFieldMonster(cardId, targetZoneId);
 
         this.setPosition(c.element, targetZoneId);
+        equippedCards.forEach(equippedId => this.positionEquippedCard(equippedId));
         if (targetZoneId === 'zone-hand' || c.data.zone === 'zone-hand') this.repositionCards();
 
         c.element.classList.add('active-card');
@@ -2218,6 +2382,7 @@ class DuelSimulator {
     }
 
     attachMaterial(cardId, parentId) {
+        this.detachEquip(cardId);
         if (!this.materials) this.materials = {};
         if (!this.materials[parentId]) this.materials[parentId] = [];
 
@@ -2231,6 +2396,7 @@ class DuelSimulator {
 
         if (parent && child) {
             const parentZone = parent.element.getAttribute('data-zone');
+            this.trackFieldMonster(cardId, '');
 
             // Move child to parent's zone visually
             child.element.setAttribute('data-zone', parentZone);
@@ -2274,7 +2440,7 @@ class DuelSimulator {
                     if (summonType && action.card === summonedCardId) {
                         this.playSummonAnimation(action.card, summonType);
                     }
-                    this.moveCard(action.card, action.to);
+                    this.moveStepCard(s, action.card, action.to);
                 });
             } else if (s.card && s.to) {
                 if (isEffectActivation) {
@@ -2284,7 +2450,7 @@ class DuelSimulator {
                 if (summonType) {
                     this.playSummonAnimation(s.card, summonType);
                 }
-                this.moveCard(s.card, s.to);
+                this.moveStepCard(s, s.card, s.to);
             } else if (isEffectActivation && s.card) {
                 this.playEffectAnimation(s.card);
                 this.showLastEffectForCard(s.card, s.text);
@@ -2423,10 +2589,11 @@ class DuelSimulator {
         this.loadCombo(this.currentComboId);
         for (let i = 0; i < targetStep; i++) {
             const s = steps[i];
+            this.currentStep = i;
             if (s.actions && Array.isArray(s.actions) && s.actions.length > 0) {
-                s.actions.forEach(a => this.moveCard(a.card, a.to));
+                s.actions.forEach(a => this.moveStepCard(s, a.card, a.to));
             } else if (s.card && s.to) {
-                this.moveCard(s.card, s.to);
+                this.moveStepCard(s, s.card, s.to);
             }
         }
         if (snapshot) {
@@ -2515,6 +2682,8 @@ class DuelSimulator {
         this.cards = {};
         // Clear Xyz attachments too, or a replayed combo drags stale materials along
         this.materials = {};
+        this.equippedTo = {};
+        this.fieldMonsterOrder = [];
         this.logEl.innerHTML = '';
         this.clearLastEffect();
         if (typeof window.CardLoader !== 'undefined') window.CardLoader.hideCardPreview();

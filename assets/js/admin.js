@@ -859,13 +859,14 @@
         triage: {}, // itemId -> { status, notes, updatedAt }
         filterTriage: 'all', // 'all', 'untriaged', 'illegal', 'fp', 'resolved'
         filterSource: 'all', // 'all', 'curated', 'html'
+        filterVerdict: 'all', // 'all', 'LIKELY_ILLEGAL', 'NEEDS_REVIEW', 'UNVERIFIABLE' (engine verdicts on HTML items)
         query: '',
         shownCount: 30,
         activeItemId: null,
         activeSimStep: 1,
         logMode: 'follow', // 'follow' or 'all'
         simulatorInstance: null,
-        counts: { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0 },
+        counts: { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0, verdicts: {} },
     };
 
     function loadSavedTriage() {
@@ -909,7 +910,8 @@
             fp: 0,
             resolved: 0,
             curated: 0,
-            html: 0
+            html: 0,
+            verdicts: {}
         };
         items.forEach(it => {
             const tr = triage[it.id]?.status;
@@ -920,6 +922,8 @@
 
             if (it.source === 'curated') counts.curated++;
             else if (it.source === 'html') counts.html++;
+
+            if (it.verdict) counts.verdicts[it.verdict] = (counts.verdicts[it.verdict] || 0) + 1;
         });
         auditReport.counts = counts;
 
@@ -956,10 +960,14 @@
         const q = auditReport.query.toLowerCase();
         const fTriage = auditReport.filterTriage;
         const fSource = auditReport.filterSource;
+        const fVerdict = auditReport.filterVerdict;
 
         return items.filter(it => {
             // Source filter
             if (fSource !== 'all' && it.source !== fSource) return false;
+
+            // Engine verdict filter
+            if (fVerdict !== 'all' && it.verdict !== fVerdict) return false;
 
             // Triage status filter
             const st = triage[it.id]?.status || 'untriaged';
@@ -985,6 +993,19 @@
         if (!auditReport.data || !auditReport.data.items) return null;
         if (!auditReport.activeItemId) return null;
         return auditReport.data.items.find(it => it.id === auditReport.activeItemId) || null;
+    }
+
+    // Engine verdict for HTML walkthrough items (curated JSON items have none and keep the old wording)
+    const AUDIT_VERDICTS = {
+        LIKELY_ILLEGAL: { pill: 'Likely illegal', header: 'Likely Illegal Play', color: '#fca5a5', bg: 'rgba(239,68,68,0.18)', hint: 'The card was in place and the engine refused the action' },
+        NEEDS_REVIEW: { pill: 'Needs review', header: 'Needs Review', color: '#fcd34d', bg: 'rgba(245,158,11,0.18)', hint: 'A card the step uses never reached the hand or field: a skipped step, or the harness picked differently' },
+        UNVERIFIABLE: { pill: 'Not verifiable', header: 'Could Not Verify', color: '#a3a3a3', bg: 'rgba(163,163,163,0.16)', hint: 'Stopped after a step the engine could not simulate from the prose' }
+    };
+
+    function auditVerdictPill(item) {
+        const v = AUDIT_VERDICTS[item.verdict];
+        if (!v) return '';
+        return `<span class="tag-pill" style="background:${v.bg}; color:${v.color};">${v.pill}</span>`;
     }
 
     function getOfferedCount(offered) {
@@ -1146,6 +1167,16 @@
                         <button class="tab-btn${auditReport.filterSource === 'html' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('html', this)">HTML Guides (${counts.html})</button>
                     </div>
 
+                    ${Object.keys(counts.verdicts || {}).length > 0 ? `
+                    <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:0.78rem; color:#a3a3a3; font-weight:600; text-transform:uppercase;">Verdict:</span>
+                        <button class="tab-btn${auditReport.filterVerdict === 'all' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditVerdict('all', this)">All</button>
+                        ${Object.entries(AUDIT_VERDICTS).filter(([key]) => counts.verdicts[key]).map(([key, v]) => `
+                        <button class="tab-btn${auditReport.filterVerdict === key ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditVerdict('${key}', this)" title="${window.escapeHtml(v.hint)}">
+                            <span style="color:${v.color};">${v.pill}</span> (${counts.verdicts[key]})
+                        </button>`).join('')}
+                    </div>` : ''}
+
                     <div style="flex:1; max-width:320px; position:relative;">
                         <input type="search" class="modnotes-input" style="width:100%; padding-left:2rem;" placeholder="Search archetype, combo, error..." value="${window.escapeHtml(auditReport.query)}" oninput="searchAuditReport(this.value)">
                         <i class="fas fa-search" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); color:#737373; font-size:0.8rem; pointer-events:none;"></i>
@@ -1204,6 +1235,7 @@
                         <i class="fas fa-times-circle"></i> ${window.escapeHtml(errPreview)}
                     </div>
                     <div class="audit-badges">
+                        ${auditVerdictPill(it)}
                         <span class="tag-pill ${trClass}">${trLabel}</span>
                         ${it.offeredActions ? `<span style="font-size:0.68rem;color:#a3a3a3;"><i class="fas fa-list-ul"></i> ${getOfferedCount(it.offeredActions)} actions</span>` : ''}
                     </div>
@@ -1258,7 +1290,7 @@
         boardPane.innerHTML = `
             <div class="audit-fail-box">
                 <div class="audit-fail-header">
-                    <span><i class="fas fa-exclamation-triangle"></i> Identified Illegal Play at Step ${item.failedStepNumber ?? '?'} of ${item.totalSteps}</span>
+                    <span><i class="fas fa-exclamation-triangle"></i> ${AUDIT_VERDICTS[item.verdict]?.header || 'Identified Illegal Play'} at Step ${item.failedStepNumber ?? '?'} of ${item.totalSteps}</span>
                     <button class="audit-jump-btn" onclick="jumpAuditSimulatorToFail()" title="Jump board state right before failure (Hotkey: J)">
                         <i class="fas fa-crosshairs"></i> Jump to Failure <span class="kbd-hint">J</span>
                     </button>
@@ -1611,6 +1643,14 @@
         auditReport.filterSource = source;
         auditReport.shownCount = 30;
         document.querySelectorAll('.tab-btn[onclick*="filterAuditSource"]').forEach(b => b.classList.toggle('active', b === btn));
+        renderAuditList();
+        renderAuditInspector();
+    };
+
+    window.filterAuditVerdict = function (verdict, btn) {
+        auditReport.filterVerdict = verdict;
+        auditReport.shownCount = 30;
+        document.querySelectorAll('.tab-btn[onclick*="filterAuditVerdict"]').forEach(b => b.classList.toggle('active', b === btn));
         renderAuditList();
         renderAuditInspector();
     };

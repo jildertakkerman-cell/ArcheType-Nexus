@@ -145,7 +145,8 @@ if (fs.existsSync(CURATED_REPORT_FILE)) {
 if (fs.existsSync(HTML_REPORT_FILE)) {
     try {
         const htmlRaw = JSON.parse(fs.readFileSync(HTML_REPORT_FILE, 'utf8'));
-        const violations = htmlRaw.violations || [];
+        // Likely illegal / needs review first, then combos the engine could not verify (each carries its verdict)
+        const violations = [...(htmlRaw.violations || []), ...(htmlRaw.unverifiableCombos || [])];
         console.log(`Processing ${violations.length} flagged HTML walkthrough combo(s)...`);
 
         for (let i = 0; i < violations.length; i++) {
@@ -209,6 +210,10 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
                 comboKey: `combo_${i + 1}`,
                 comboTitle: v.comboTitle || `Combo ${i + 1}`,
                 file: v.file,
+                verdict: v.verdict || null,
+                failureKind: v.failureKind || null,
+                unverifiedSteps: v.unverifiedSteps || [],
+                alternativeChoices: v.alternativeChoices || [],
                 failedStepNumber: v.failedStepNumber || 1,
                 totalSteps: v.totalSteps || comboData?.steps?.length || 1,
                 writtenTitle: v.writtenTitle || '',
@@ -235,13 +240,19 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
 // Summary Statistics
 const curatedCount = auditItems.filter(i => i.source === 'curated').length;
 const htmlCount = auditItems.filter(i => i.source === 'html').length;
+const byVerdict = {};
+for (const it of auditItems) {
+    const v = it.verdict || 'UNCLASSIFIED';
+    byVerdict[v] = (byVerdict[v] || 0) + 1;
+}
 
 const reportData = {
     timestamp: new Date().toISOString(),
     summary: {
         totalFlagged: auditItems.length,
         curatedCount,
-        htmlCount
+        htmlCount,
+        byVerdict
     },
     items: auditItems
 };

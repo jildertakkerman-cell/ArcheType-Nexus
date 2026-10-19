@@ -105,9 +105,22 @@ export function getCardByCode(code) {
     return formatCardData(row);
 }
 
+// The card's rules text from cards.cdb ('' if unknown)
+const stmtTextByCode = db.prepare('SELECT desc FROM texts WHERE id = ?');
+export function getCardText(code) {
+    return stmtTextByCode.get(Number(code))?.desc || '';
+}
+
 export function getCardByName(name) {
     const row = stmtByName.get(name.trim());
     return formatCardData(row);
+}
+
+// Local cards.cdb only (exact name, then shortest name containing it): no network fallback, for speculative lookups
+export function findLocalCard(name) {
+    const clean = cleanCardName(name).trim();
+    if (clean.length < 3) return null;
+    return getCardByName(clean) || formatCardData(stmtByNameLike.get(`%${clean.toLowerCase()}%`));
 }
 
 const ATTRIBUTE_MAP = {
@@ -222,6 +235,85 @@ export function parseSupabaseRow(row) {
     };
 }
 
+/**
+ * Finds a real TCG/OCG card matching a generic description ({ kind: 'monster'|'spell'|'trap', minLevel, maxLevel,
+ * level, attribute, race (bigint), tuner, nonTuner, normal, nameLike }), for costs a write-up doesn't name ("discarding a
+ * Level 5+ DARK"). Vanilla Normal Monsters and plain Normal Spells/Traps first: a filler card with no effects of
+ * its own can't change the line. Returns a card code, or null.
+ */
+export function findCardMatching(spec, excludeCodes = []) {
+    if (!spec) return null;
+    const where = ['datas.ot IN (1, 2, 3)', 'datas.alias = 0', '(datas.type & 0x4000) = 0'];
+    const params = [];
+    if (spec.kind === 'spell') where.push('(datas.type & 0x2) != 0');
+    else if (spec.kind === 'trap') where.push('(datas.type & 0x4) != 0');
+    else where.push('(datas.type & 0x1) != 0', '(datas.type & 0x4802040) = 0');
+    if (spec.level != null) { where.push('(datas.level & 0xff) = ?'); params.push(spec.level); }
+    if (spec.minLevel != null) { where.push('(datas.level & 0xff) >= ?'); params.push(spec.minLevel); }
+    if (spec.maxLevel != null) { where.push('(datas.level & 0xff) <= ?'); params.push(spec.maxLevel); }
+    if (spec.attribute) { where.push('datas.attribute = ?'); params.push(spec.attribute); }
+    if (spec.race) { where.push('(CAST(datas.race AS INTEGER) & ?) != 0'); params.push(Number(spec.race)); }
+    if (spec.tuner) where.push('(datas.type & 0x1000) != 0');
+    if (spec.nonTuner) where.push('(datas.type & 0x1000) = 0');
+    if (spec.normal) where.push('(datas.type & 0x10) != 0');
+    if (spec.nameLike) { where.push('LOWER(texts.name) LIKE ?'); params.push(`%${spec.nameLike.toLowerCase()}%`); }
+    if (excludeCodes.length > 0) where.push(`datas.id NOT IN (${excludeCodes.map(() => '?').join(', ')})`);
+    params.push(...excludeCodes);
+    const sql = `SELECT datas.id FROM datas JOIN texts ON datas.id = texts.id WHERE ${where.join(' AND ')}
+        ORDER BY (datas.type IN (17, 2, 4)) DESC, ((datas.type & 0x1000000) != 0) ASC, datas.id ASC LIMIT 1`;
+    try {
+        return db.prepare(sql).get(...params)?.id ?? null;
+    } catch {
+        return null;
+    }
+}
+
+// Longest first, so "Winged Beast" and "Beast-Warrior" win over "Beast" and "Warrior"
+const RACE_NAMES = Object.keys(RACE_MAP)
+    .filter(k => !/^(?:WINGEDBEAST|BEASTWARRIOR|SEASERPENT|DIVINEBEAST|CREATORGOD)$/.test(k))
+    .sort((a, b) => b.length - a.length);
+
+/**
+ * Reads a generic card description from a write-up ("Level 5+ DARK", "LIGHT Fairy monster", "Tuner", "Trap",
+ * "\"Infernoid\" monster") into a findCardMatching spec. Returns null when nothing narrows it down ("card",
+ * "monster"): any card in hand will do then.
+ */
+export function parseCardDescription(desc) {
+    const raw = cleanCardName(desc).trim();
+    if (!raw) return null;
+    const spec = { kind: 'monster' };
+    let specific = false;
+    const lv = raw.match(/\blevel\s*(\d+)\s*(\+|or\s+(?:higher|more|above)|or\s+(?:lower|less|below))?/i);
+    if (lv) {
+        const n = Number(lv[1]);
+        if (!lv[2]) spec.level = n;
+        else if (/\+|higher|more|above/i.test(lv[2])) spec.minLevel = n;
+        else spec.maxLevel = n;
+        specific = true;
+    }
+    // Write-ups capitalize Attributes; a lowercase "Dark" is usually part of a card name
+    const attr = raw.match(/\b(LIGHT|DARK|EARTH|WATER|FIRE|WIND|DIVINE)\b/);
+    if (attr) {
+        spec.attribute = ATTRIBUTE_MAP[attr[1]];
+        specific = true;
+    }
+    for (const r of RACE_NAMES) {
+        if (new RegExp(`\\b${r.replace('-', '[- ]')}s?\\b`, 'i').test(raw)) {
+            spec.race = RACE_MAP[r];
+            specific = true;
+            break;
+        }
+    }
+    if (/\bnon-?tuners?\b/i.test(raw)) { spec.nonTuner = true; specific = true; }
+    else if (/\btuners?\b/i.test(raw)) { spec.tuner = true; specific = true; }
+    if (/\bnormal monsters?\b/i.test(raw)) { spec.normal = true; specific = true; }
+    const quoted = raw.match(/"([^"]{3,})"/);
+    if (quoted) { spec.nameLike = quoted[1]; specific = true; }
+    if (/\bspells?\b/i.test(raw) && !/\bspellcasters?\b/i.test(raw)) { spec.kind = 'spell'; specific = true; }
+    else if (/\btraps?\b/i.test(raw)) { spec.kind = 'trap'; specific = true; }
+    return specific ? spec : null;
+}
+
 const GENERIC_NON_CARD_RE = /^(?:this|that|it|its|her|his|their|your|my|our|any|another|other|one|two|three|both|all|some|each|every|either|neither|a\s+|an\s+|the\s+(?:field|deck|gy|graveyard|hand|extra|first|second|third|other|same|combo|turn|effect|monster|spell|trap|ritual|fusion|synchro|xyz|link)|extra deck|main phase|battle phase|end phase|opponent|level\s+\d|rank\s+\d|link-\d|normal monster|effect monster|ritual monster|fusion monster|synchro monster|xyz monster|link monster|pendulum monster|tuner|non-tuner|monster|monsters|spell|spells|trap|traps|card|cards|effect|effects|token|scale|scales|material|materials|starter|extender|target|cost|itself|herself|himself|themselves)\b/i;
 
 export async function resolveCardAsync(nameOrCode) {
@@ -233,10 +325,11 @@ export async function resolveCardAsync(nameOrCode) {
         if (found) return found;
     } else {
         const rawClean = cleanCardName(nameOrCode).replace(/^["']+|["']+$/g, '').trim();
-        if (!rawClean || GENERIC_NON_CARD_RE.test(rawClean)) return null;
-
+        if (!rawClean) return null;
+        // An exact card name wins over the generic-word filter: "My Friend Purrely" is a card, "my field" is not
         const exact = getCardByName(rawClean);
         if (exact) return exact;
+        if (GENERIC_NON_CARD_RE.test(rawClean)) return null;
 
         const strippedPossessive = rawClean
             .replace(/\s*'s(?:\s+(?:monster|gy|graveyard|hand|field|scale|on-summon|summon|quick|second|first|other))?(?:\s+effect)?$/i, '')
@@ -285,23 +378,45 @@ export async function resolveCardAsync(nameOrCode) {
     return null;
 }
 
+// Script names already looked up remotely and not found, so one audit run doesn't re-request them for every combo
+const missingScripts = new Set();
+
+export function isScriptMissing(scriptName) {
+    return missingScripts.has(scriptName);
+}
+
 export async function getScript(scriptName) {
     const localPath = path.join(SCRIPT_DIR, scriptName);
     if (fs.existsSync(localPath)) {
         return fs.readFileSync(localPath, 'utf8');
     }
+    if (missingScripts.has(scriptName)) return '';
 
-    // Determine remote path in ProjectIgnis/CardScripts
-    const url = /^c\d+\.lua$/.test(scriptName)
-        ? `https://raw.githubusercontent.com/ProjectIgnis/CardScripts/master/official/${scriptName}`
-        : `https://raw.githubusercontent.com/ProjectIgnis/CardScripts/master/${scriptName}`;
+    // Vanilla Normal Monsters have no script file (Normal Pendulum Monsters do, for their Pendulum procedure)
+    const codeMatch = scriptName.match(/^c(\d+)\.lua$/);
+    if (codeMatch) {
+        const card = getCardByCode(codeMatch[1]);
+        if (card && (card.type & 0x1) && (card.type & 0x10) && !(card.type & 0x1000000)) {
+            missingScripts.add(scriptName);
+            return '';
+        }
+    }
+
+    // Determine remote path in ProjectIgnis/CardScripts. Card scripts live in official/, but some current cards are
+    // filed elsewhere: Red-Eyes Darkness Metal Dragon's errata'd text is pre-errata/c88264978.lua, new cards sit in pre-release/
+    const base = 'https://raw.githubusercontent.com/ProjectIgnis/CardScripts/master';
+    const urls = /^c\d+\.lua$/.test(scriptName)
+        ? [`${base}/official/${scriptName}`, `${base}/pre-release/${scriptName}`, `${base}/pre-errata/${scriptName}`]
+        : [`${base}/${scriptName}`];
 
     try {
-        const res = await fetch(url);
-        if (res.ok) {
-            const text = await res.text();
-            fs.writeFileSync(localPath, text, 'utf8');
-            return text;
+        for (const url of urls) {
+            const res = await fetch(url);
+            if (res.ok) {
+                const text = await res.text();
+                fs.writeFileSync(localPath, text, 'utf8');
+                return text;
+            }
         }
 
         // If card script not found under primary code, check if it has an alias
@@ -316,6 +431,7 @@ export async function getScript(scriptName) {
                 }
             }
         }
+        missingScripts.add(scriptName);
         return '';
     } catch (err) {
         console.warn(`[getScript] Error fetching ${scriptName}:`, err.message);
