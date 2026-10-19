@@ -530,6 +530,20 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         }
     }
 
+    // "banishing 3 more cards from the Extra Deck": a real Extra Deck holds 15 cards, so each card the write-up spends
+    // without naming it gets a face-down stand-in (vanilla Fusion Monsters, which add nothing of their own)
+    let edFodder = 0;
+    for (const s of parsedCombo.steps) {
+        for (const fm of decodeHtml(s.text || '').matchAll(/\bbanish(?:es|ing)?\s+(\d+|two|three|four|five)\s+(?:more\s+)?(?:face-down\s+)?cards?\s+from\s+(?:your\s+|the\s+)?extra deck/gi)) {
+            edFodder += { two: 2, three: 3, four: 4, five: 5 }[fm[1].toLowerCase()] || Number(fm[1]);
+        }
+    }
+    const ED_FODDER = [45231177, 66889139, 54752875, 41462083]; // Flame Swordsman, Gaia the Dragon Champion, Twin-Headed Thunder Dragon, Thousand Dragon
+    for (let i = 0; i < Math.min(edFodder, 12); i++) {
+        const res = await resolveCardAsync(ED_FODDER[i % ED_FODDER.length]);
+        if (res) cardsMap.set(`extra_fodder_${i}`, { id: `extra_fodder_${i}`, name: res.name, code: res.code, type: 'extra', zone: 'zone-extra', data: res });
+    }
+
     // An Extra Deck card that leaves the Extra Deck in two steps ("Nadir Servant sends Titaniklad ... Maximus sends
     // N'tss and Titaniklad from your Extra Deck") needs a copy for each, up to the 3 a real Extra Deck can hold
     for (const c of [...cardsMap.values()]) {
@@ -851,7 +865,11 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         ];
         for (const dm of discardMatches) {
             const candStr = dm[1].trim();
-            if (/^[A-Z0-9"']/.test(candStr) && !/\b(?:deck|extra deck|gy|graveyard)\b/i.test(dm[0])) {
+            // "send Nunu, the Ogdoadic Remnant, Nauya, ... from your Deck to the GY": the match stops at the first
+            // comma, so read on to the end of the sentence for where the cards come from
+            const restOfSentence = s.text.slice(dm.index + dm[0].length).split(/[.;](?:\s|$)/)[0];
+            const fromElsewhere = /^(?:send|sending)\b/i.test(dm[0]) && /\bfrom (?:the |your )?(?:deck|extra deck|gy|graveyard)\b/i.test(restOfSentence);
+            if (/^[A-Z0-9"']/.test(candStr) && !fromElsewhere && !/\b(?:deck|extra deck|gy|graveyard)\b/i.test(dm[0])) {
                 const dCard = await resolveInComboOrDb(candStr);
                 if (dCard && !searchedCodes.has(dCard.code) && !searchedBefore(dCard, sIdx, dm.index)) {
                     ensureInHand(dCard);
@@ -875,6 +893,8 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
                 .replace(/^.*?\b(?:special summon(?:ing)?|normal summon(?:ing)?|tribute summon(?:ing)?|ritual summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?|activat(?:e|ing)|us(?:e|ing)|plac(?:e|ing)|set(?:ting)?)\s+/i, '')
                 // "Ritual Summon the Level 4 Nekroz of Unicore from your hand"
                 .replace(/^(?:the\s+)?(?:level|rank)\s+\d+\s+/i, '')
+                // "Use the effect of Fluffal Bear in hand"
+                .replace(/^(?:the\s+)?effects?\s+of\s+/i, '')
                 .replace(/^the\s+(?=[A-Z])/, '')
                 .trim();
             if (!/^[A-Z0-9"']/.test(rawCand)) continue;

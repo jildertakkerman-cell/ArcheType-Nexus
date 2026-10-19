@@ -79,14 +79,24 @@ export function parseSetcodes(rawSetcode) {
     return setcodes;
 }
 
+// Rows an earlier run cached from Supabase (texts.str1 is NULL) were stored without archetype setcodes
+let supabaseCachedIds = null;
+function isSupabaseCached(id) {
+    if (!supabaseCachedIds) {
+        supabaseCachedIds = new Set(db.prepare('SELECT id FROM texts WHERE str1 IS NULL').all().map(r => Number(r.id)));
+    }
+    return supabaseCachedIds.has(Number(id));
+}
+
 export function formatCardData(row) {
     if (!row) return null;
     const isLink = (row.type & 0x4000000) !== 0; // TYPE_LINK = 0x4000000
     const isPendulum = (row.type & 0x1000000) !== 0; // TYPE_PENDULUM = 0x1000000
+    const setcodes = parseSetcodes(row.setcode);
     return {
         code: row.id,
         alias: row.alias || 0,
-        setcodes: parseSetcodes(row.setcode),
+        setcodes: setcodes.length === 0 && isSupabaseCached(row.id) ? parseSetcodes(deriveSetcodeFromName(row.name)) : setcodes,
         type: row.type,
         level: (row.level & 0xff),
         attribute: row.attribute,
@@ -166,6 +176,49 @@ const RACE_MAP = {
     ILLUSION: 0x2000000n
 };
 
+// Archetype setcodes for cards that only exist in Supabase (newer than the cards.cdb snapshot). A card belongs to the
+// archetypes its name contains, so the name is matched against the engine's SET_* constants ("SET_HECAHANDS" ->
+// "hecahands"). A constant whose words never appear in the names of the cards.cdb cards that carry it is named
+// differently from its archetype (D/D, U.A. ...) and is not used.
+const normalizeForSetMatch = (name) => ` ${String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()} `;
+let setNameIndex = null;
+function getSetNameIndex() {
+    if (setNameIndex) return setNameIndex;
+    setNameIndex = [];
+    let src = '';
+    try { src = fs.readFileSync(path.join(SCRIPT_DIR, 'archetype_setcode_constants.lua'), 'utf8'); } catch { return setNameIndex; }
+    const byCode = new Map();
+    for (const m of src.matchAll(/^SET_([A-Z0-9_]+)\s*=\s*0x([0-9a-fA-F]+)/gm)) {
+        const words = ` ${m[1].toLowerCase().replace(/_/g, ' ')} `;
+        if (words.trim().length >= 2) byCode.set(parseInt(m[2], 16), words);
+    }
+    const carriers = new Map(); // code -> [cards carrying it, of which named with the words]
+    for (const row of db.prepare('SELECT CAST(datas.setcode AS TEXT) AS setcode, texts.name FROM datas JOIN texts ON datas.id = texts.id WHERE datas.setcode != 0').all()) {
+        const name = normalizeForSetMatch(row.name);
+        for (const code of parseSetcodes(row.setcode)) {
+            const words = byCode.get(code);
+            if (!words) continue;
+            const c = carriers.get(code) || [0, 0];
+            c[0]++;
+            if (name.includes(words)) c[1]++;
+            carriers.set(code, c);
+        }
+    }
+    for (const [code, words] of byCode) {
+        const c = carriers.get(code);
+        if (!c || c[1] > 0) setNameIndex.push({ code, words });
+    }
+    return setNameIndex;
+}
+
+export function deriveSetcodeFromName(name) {
+    const n = normalizeForSetMatch(name);
+    let codes = getSetNameIndex().filter(s => n.includes(s.words)).map(s => s.code);
+    // "Destiny HERO" (0xc008) already counts as "HERO" (0x8): keep the most specific code of a family
+    codes = codes.filter(c => !codes.some(o => o !== c && (o & 0xfff) === (c & 0xfff) && (o & 0xf000) !== 0 && (c & 0xf000) === 0));
+    return codes.slice(0, 4).reduce((acc, c, i) => acc | (BigInt(c) << BigInt(16 * i)), 0n);
+}
+
 export function parseSupabaseRow(row) {
     if (!row || !row.passcode) return null;
     const passcode = Number(row.passcode);
@@ -208,7 +261,8 @@ export function parseSupabaseRow(row) {
     const atk = row.atk != null ? Number(row.atk) : 0;
     const def = row.def != null ? Number(row.def) : 0;
     const level = row.level != null ? Number(row.level) : 0;
-    const setcode = (/toon/i.test(row.cardname) || /toon/i.test(cardtype)) ? 0x62 : 0;
+    const derived = deriveSetcodeFromName(row.cardname);
+    const setcode = derived !== 0n ? derived : (/toon/i.test(row.cardname) || /toon/i.test(cardtype)) ? 0x62 : 0;
 
     // Persist in local SQLite cards.cdb so all subsequent lookups are synchronous and native
     try {
@@ -221,7 +275,7 @@ export function parseSupabaseRow(row) {
     return {
         code: passcode,
         alias: 0,
-        setcodes: setcode ? [setcode] : [],
+        setcodes: parseSetcodes(setcode),
         type,
         level,
         attribute,

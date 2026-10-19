@@ -1183,6 +1183,11 @@ export async function runComboReplay(combo, options = {}) {
             if (/\bfusion summon/i.test(st) && /\bfusion/i.test(d)) score += 8;
             if (/\b(?:increase|raise)\b.*\blevel/i.test(st) && /\bincrease\b/i.test(d)) score += 8;
             if (/\b(?:decrease|reduce|lower)\b.*\blevel/i.test(st) && /\b(?:decrease|reduce)\b/i.test(d)) score += 8;
+            // "Special Summon it face-up on your field" vs "... face-down on your opponent's field" (Mimighoul Fairy)
+            for (const side of ['face-up', 'face-down']) {
+                if (st.includes(side)) score += d.includes(side) ? 6 : (d.includes(side === 'face-up' ? 'face-down' : 'face-up') ? -6 : 0);
+            }
+            if (/opponent'?s field/.test(d) && !/opponent/.test(st)) score -= 6;
             // Same place named on both sides: "summon Sharakusai from the deck" vs "Special Summon ... from the Deck"
             // rather than "Special Summon this card from your hand"
             for (const place of [/\bextra deck\b/i, /\bdeck\b/i, /\b(?:gy|graveyard)\b/i, /\bhand\b/i]) {
@@ -1650,7 +1655,8 @@ export async function runComboReplay(combo, options = {}) {
                         const alreadySetTargetToField = Boolean(
                             setTargetCode &&
                             /\bset\b/i.test(rawStepText) &&
-                            !(m.sets && m.sets.some(s => s.code === setTargetCode))
+                            // A second copy still in hand ("Set the 2nd Fog Blade") can still be Set
+                            ![...(m.spell_sets || []), ...(m.monster_sets || [])].some(s => s.code === setTargetCode)
                         );
 
                         const banishCardsNow = (stepCodes.length > 0 && /\bbanish\b/i.test(rawStepText))
@@ -1791,7 +1797,12 @@ export async function runComboReplay(combo, options = {}) {
                         const actorOnlyCodes = findStepCardCodes({ ...currentStep, text: actorText, featuredCard: null }, lastActorCode);
                         const idleCodes = actorOnlyCodes.length > 0 ? actorOnlyCodes : stepCodes;
 
-                        const isPendulumScaleStep = (/\b(?:pendulum zones?|scales?)\b/i.test(text) ||
+                        // Card names don't count: "The Phantom Knights of Torn Scales" is not a Pendulum Scale
+                        const textWithoutNames = stepCodes.reduce((t, c) => {
+                            const n = getCardByCode(c)?.name;
+                            return n ? t.replace(new RegExp(n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), ' ') : t;
+                        }, text);
+                        const isPendulumScaleStep = (/\b(?:pendulum zones?|scales?)\b/i.test(textWithoutNames) ||
                             ((currentStep?.to === 'zone-s1' || currentStep?.to === 'zone-s5' || currentStep?.actions?.some(a => a.to === 'zone-s1' || a.to === 'zone-s5')) &&
                              idleCodes.some(c => (getCardByCode(c)?.type & 0x1000000) !== 0))) &&
                             !/\b(?:destroy|target|bounce|return)\b.*\b(?:pendulum zones?|scales?)\b/i.test(text);
@@ -1842,9 +1853,12 @@ export async function runComboReplay(combo, options = {}) {
                             const namedTargets = usingAt > 0 ? findStepCardCodes({ text: rawStepText.slice(0, usingAt) }, null) : [];
                             const isMaterialOnly = (code) => namedTargets.length > 0 && !namedTargets.includes(code);
                             let sIdx = -1;
+                            // "Activate Aromaseraphy Jasmine's effect, Tributing ..." uses the Jasmine on the field: when
+                            // that effect isn't on offer, Link Summoning a second Jasmine is not what the step says
+                            const isEffectOfActor = startsWithExplicitActivate && /'s\s+effect\b/i.test(rawStepText);
                             for (const code of idleCodes) {
                                 if (isMaterialOnly(code)) continue;
-                                sIdx = m.special_summons.findIndex(c => c.code === code);
+                                sIdx = m.special_summons.findIndex(c => c.code === code && !(isEffectOfActor && c.location === OcgLocation.EXTRA));
                                 if (sIdx !== -1) break;
                             }
                             // "Activate Jack Jaguar's effect ... to the zone Sunlight Wolf points to" summons Jack Jaguar
@@ -2192,7 +2206,20 @@ export async function runComboReplay(combo, options = {}) {
                         }
 
                         // If unhandled, check if it was a trigger effect, chain resolution, opponent-board interaction, or passive text
-                        const isTriggerOrResolution = /(?:chain link \d|a chain forms|trigger|on summon|if summoned|when summoned|activate (?:its|the) effect to (?:search|add|send|dump|draw|destroy|set)|its own on-activation effect|set .* from (?:the |your )?(?:deck|gy|graveyard)|search |add .* to hand|\bcycle\b.*back to hand|put .* back on top|place .* on (?:top|bottom) of (?:the|your) deck|is now in the gy|is now a .* monster|sets up your|securing a|that is two layers|going second|keeping the extra monster zone|legal because|end (?:your )?turn|(?:card|monster|spell|trap)s?\s+(?:your\s+)?opponent\s+controls|opponent's\s+(?:card|monster|spell|trap|field|board)|negate the first|while returning the|locking your opponent|^continue the combo\b)/i.test(text);
+                        const OPPONENT_CARDS_RE = /(?:card|monster|spell|trap)s?\s+(?:your\s+)?opponent\s+controls|opponent's\s+(?:card|monster|spell|trap|field|board)/i;
+                        const isTriggerOrResolution = /(?:chain link \d|a chain forms|trigger|on summon|if summoned|when summoned|activate (?:its|the) effect to (?:search|add|send|dump|draw|destroy|set)|its own on-activation effect|set .* from (?:the |your )?(?:deck|gy|graveyard)|search |add .* to hand|\bcycle\b.*back to hand|put .* back on top|place .* on (?:top|bottom) of (?:the|your) deck|is now in the gy|is now a .* monster|sets up your|securing a|that is two layers|going second|keeping the extra monster zone|legal because|end (?:your )?turn|negate the first|while returning the|locking your opponent|^continue the combo\b)/i.test(text);
+                        // "Activate Dandalos's effect, targeting your opponent's monster, ..." that the engine can't play
+                        // is not a note about the opponent: without their board it can't be checked, so it isn't a pass
+                        if (!isTriggerOrResolution && OPPONENT_CARDS_RE.test(text) && !namedSearchTargetMissing) {
+                            if (startsWithExplicitActivate && stepCodes.length > 0) {
+                                unverifiedSteps.push({ step: stepIdx + 1, text: currentStep.text, reason: 'opponent-board', taints: true });
+                                log.push(`Step ${stepIdx + 1}: Not simulated - ${UNSIMULATED_REASONS['opponent-board']}`);
+                            }
+                            stepIdx++;
+                            autoFiredPrevStepIgnition = false;
+                            skipRedundantVisualSteps();
+                            continue;
+                        }
                         if (isTriggerOrResolution && !namedSearchTargetMissing) {
                             stepIdx++;
                             autoFiredPrevStepIgnition = false;
@@ -2226,8 +2253,11 @@ export async function runComboReplay(combo, options = {}) {
                                 .replace(/\([^)]*\)/g, ' ')
                                 .replace(/\b(?:by|after|while)\s+(?:discard|tribut|banish|send|reveal|detach|pay)\w*\s+[^,.;]*/gi, ' ')
                                 .replace(isExtraOrProcSummon ? /\s(?:using|with)\s.*$/i : /$^/, ' ');
+                            const isEffectOfActorStep = startsWithExplicitActivate && /'s\s+effect\b/i.test(rawStepText);
                             for (const [key, action, label] of pools) {
                                 (m[key] || []).forEach((entry, idx) => {
+                                    // An "Activate X's effect" step is never a Link/Synchro/Xyz/Fusion Summon from the Extra Deck
+                                    if (key === 'special_summons' && isEffectOfActorStep && entry.location === OcgLocation.EXTRA) return;
                                     const sc = scoreNameAgainstText(codeName(entry.code), nameText, tokenFrequency);
                                     if (sc > (bestByCode.get(entry.code)?.score ?? 0)) bestByCode.set(entry.code, { score: sc, action, idx, label, code: entry.code });
                                 });
@@ -2646,7 +2676,15 @@ export async function runComboReplay(combo, options = {}) {
 
                         const startScan = Math.max(0, (chainStepIdx !== -1 ? Math.min(chainStepIdx, stepIdx - 2) : stepIdx - 2));
                         const endScan = Math.min(steps.length, stepIdx + 6);
-                        for (let s = startScan; s < endScan; s++) {
+                        // The resolving step's own Extra Deck card first: "Activate Tartaros to Fusion Summon Dandalos"
+                        // picks Dandalos even though the step before ("Jauzah's effect adds Tartaros") names Jauzah
+                        const scanOrder = [...Array(Math.max(0, endScan - startScan)).keys()].map(i => startScan + i);
+                        // Only when that step names an offered card outright, not by a near match ("Zoroa, the Magistus
+                        // of Flame" is not "Zoroa, the Magistus Verethragna")
+                        const chainNamesExtraPick = chainStepIdx >= startScan && chainStepIdx < endScan &&
+                            m.selects.some(c => c.code !== actorCode && stepNamedCodes[chainStepIdx]?.has(c.code));
+                        if (chainNamesExtraPick) scanOrder.sort((a, b) => (b === chainStepIdx) - (a === chainStepIdx));
+                        for (const s of scanOrder) {
                             if (chosen.length >= maxSelect) break;
                             if (!isExtraTargetStep(steps[s])) continue;
                             const stepCodes = findStepCardCodes(steps[s], actorCode);
@@ -2696,6 +2734,11 @@ export async function runComboReplay(combo, options = {}) {
                                 : /^(?:itself|this card|it)$/i.test(target[1].trim()) ? [actorCode]
                                 : findStepCardCodes({ text: target[1] }, null);
                             if (targetCodes.length > 0) tryMatchCodes(targetCodes, null, 1, steps[chainStepIdx]);
+                            // "targeting your opponent's monster" names no card: take one the opponent controls
+                            else if (target && /^(?:1\s+|a\s+|an\s+|one\s+)?(?:of\s+)?(?:your\s+)?opponent'?s\b/i.test(target[1].trim())) {
+                                const oppIdx = m.selects.findIndex((c, j) => !chosen.includes(j) && c.controller === 1);
+                                if (oppIdx !== -1) chosen.push(oppIdx);
+                            }
                         }
                         // A step a little later that is about the resolving card ("LV7 triggers ... to search Drill Armed
                         // Dragon") says what its effect picks, even when it chained during another step's activation
@@ -3022,7 +3065,9 @@ export async function runComboReplay(combo, options = {}) {
                     let targetZoneMatched = false;
                     // The write-up's own zone instruction beats a guessed zone
                     const wantsArrowFreeZone = /\b(?:does not|doesn't|do not|don't)\s+point\s+to\b/i.test(activeStep?.text || '');
-                    if (targetZoneStr && !wantsArrowFreeZone) {
+                    // "Special Summon Laurel to a zone Jasmine points to": a linked zone, not the builder's guessed one
+                    const wantsLinkedZone = !wantsArrowFreeZone && /\bzones?\s+(?:that\s+)?[^,.;]{1,60}?\bpoints?\s+to\b/i.test(activeStep?.text || '');
+                    if (targetZoneStr && !wantsArrowFreeZone && !wantsLinkedZone) {
                         const reqZone = parseZone(targetZoneStr);
                         if (reqZone) {
                             const match = avail.find(p => p.location === reqZone.location && p.sequence === reqZone.sequence);

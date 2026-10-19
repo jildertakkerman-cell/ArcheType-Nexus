@@ -1,15 +1,15 @@
 # Headless Yu-Gi-Oh! OCGCore HTML Combo Audit
 
-Generated: Mon, 19 Oct 2026 14:48:26 GMT
+Generated: Mon, 19 Oct 2026 18:52:56 GMT
 
 ### Summary
 - **Pages Audited**: 409
 - **Total Combos Audited**: 539
-- **Total Steps Audited**: 1809
-- **100% Legal Confirmed**: 295
-- **Partially Verified** (no illegal play found; some prose steps could not be simulated): 110
-- **Likely Illegal** (the card was in place and the engine refused the action): 48
-- **Needs Review** (a card the step uses never reached the hand/field, or the harness crashed): 40
+- **Total Steps Audited**: 1808
+- **100% Legal Confirmed**: 310
+- **Partially Verified** (no illegal play found; some prose steps could not be simulated): 111
+- **Likely Illegal** (the card was in place and the engine refused the action): 33
+- **Needs Review** (a card the step uses never reached the hand/field, or the harness crashed): 39
 - **Could Not Verify** (stopped after a step the engine could not simulate): 46
 - **Unofficial / Custom Skipped**: 0
 
@@ -27,17 +27,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
   - `Step 3: Legal Activation of Adamancipator Researcher (85914562)`
   - `Step 4: Legal Activation of Adamancipator Seeker (48519867) (matched by effect wording)`
 
-### [ ] [Alien](Alien Archetype Breakdown.html) - Key Combo Walkthrough: The "Zer'oll Lock"
-- **File**: `Alien Archetype Breakdown.html`
-- **Failed at**: Step 3 of 4
-- **Step Title**: "Link Summon Zer'oll"
-- **Written Step**: *"Use the summoned monsters to Link Summon the key boss monster, Cosmic Slicer Zer'oll . Its effect can then search for an A-Counter placer."*
-- **Engine Violation**: `Step 4 ("Use the summoned monsters to Link Summon the key boss monster, Cosmic Slicer Zer'oll.") was not offered as a legal action by the duel engine. Cosmic Slicer Zer'oll is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Snake Rain (17189677)`
-  - `Selected: Alien Ammonite (652362) from location 2`
-  - `Selected: Nauya, the Ogdoadic Remnant (62405028), Nunu, the Ogdoadic Remnant (36010310), Alien Kid (64160836), Nauya, the Ogdoadic Remnant (62405028) from location 1`
-
 ### [ ] [Altergeist](Altergeist Deck Analysis.html) - Core Combo Line: Multi-Layered Lock Setup
 - **File**: `Altergeist Deck Analysis.html`
 - **Failed at**: Step 2 of 3
@@ -48,6 +37,7 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
   - `Step 1: Legal Normal Summon of Altergeist Marionetter (53143898)`
   - `Trigger Effect Accepted for Altergeist Marionetter (53143898)`
   - `Selected: Altergeist Protocol (27541563) from location 1`
+  - `Step 4: Transitioning to End Phase for remaining actions`
 
 ### [ ] [Aroma](Aroma Deck Analysis.html) - Core Combo: The Sunseed Genius Loci Starter
 - **File**: `Aroma Deck Analysis.html`
@@ -58,13 +48,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of Sunseed Genius Loci (27520594)`
   - `Step 2: Legal Special Summon of Sunavalon Dryas (93896655)`
-
-### [ ] [Butterspy](Butterspy Deck Analysis.html) - Core Combo: The Isolde Line
-- **File**: `Butterspy Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Extend the Swarm"
-- **Written Step**: *"Use Isolde's second effect, sending 4 Equip Spells to the GY, to Special Summon Moonlit Papillon from the deck."*
-- **Engine Violation**: `Step 3 ("Use Isolde's second effect, sending 4 Equip Spells to the GY, to Special Summon Moonlit Papillon from the deck.") was not offered as a legal action by the duel engine. Isolde, Two Tales of the Noble Knights is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
 
 ### [ ] [Code Talker](Code Talker Deck Analysis.html) - Standard Combo Protocol (Line 2)
 - **File**: `Code Talker Deck Analysis.html`
@@ -130,15 +113,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
   - `Selected: Crystron Eleskeletus (47736165) from location 16`
   - `Alternate choice near step 10: Crystron Sulfador (instead of Crystron Tristaros)`
 
-### [ ] [Dark Scorpion](Dark Scorpion Deck Analysis.html) - Core Combo: The Isolde to Bardiche Line
-- **File**: `Dark Scorpion Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Summon Isolde & Extend"
-- **Written Step**: *"Link Summon Isolde, Two Tales of the Noble Knights ( currently banned ). Use her effects to search for a Warrior and Special Summon another from the deck by sending Equip Spells to the GY, often bringing out Dark Scorpion - Cliff the Trap Remover ."*
-- **Engine Violation**: `Step 3 ("Link Summon Isolde, Two Tales of the Noble Knights ( currently banned ).") was not offered as a legal action by the duel engine. Isolde, Two Tales of the Noble Knights is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Not simulated - commentary, not a game action`
-
 ### [ ] [Djinn](Djinn Deck Analysis.html) - The Lines That Matter
 - **File**: `Djinn Deck Analysis.html`
 - **Failed at**: Step 3 of 6
@@ -149,22 +123,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
   - `Selected: Gagaga Girl (3606728) from location 2`
   - `Selected: Melomelody the Brass Djinn (88942504) from location 64`
   - `Step 4: Not simulated - commentary, not a game action`
-
-### [ ] [Dragonmaid](Dragonmaid Deck Analysis.html) - Core Combo: One-Card Starters
-- **File**: `Dragonmaid Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "Set Up Fusion Materials"
-- **Written Step**: *"Activate Dragonmaid Hospitality . Send Chamber to GY, then use Hospitality to summon her back while sending Dragonmaid Laundry (her Dragon form) to the GY. You now have two same-Attribute monsters with different Levels�valid materials for House Dragonmaid."*
-- **Engine Violation**: `Step 5 ("use Hospitality to summon her back while sending Dragonmaid Laundry (her Dragon form) to the GY.") was not offered as a legal action by the duel engine. Dragonmaid Hospitality is in the GY, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Chamber Dragonmaid (32600024)`
-  - `Trigger Effect Accepted for Chamber Dragonmaid (32600024)`
-  - `Selected: Dragonmaid Hospitality (78231355) from location 1`
-  - `Step 3: Legal Activation of Dragonmaid Hospitality (78231355)`
-  - `Selected: Parlor Dragonmaid (88453933) from location 2`
-  - `Selected: Dragonmaid Lorpar (15848542) from location 1`
-  - `Trigger Effect Accepted for Parlor Dragonmaid (88453933)`
-  - `Selected: Chamber Dragonmaid (32600024) from location 1`
 
 ### [ ] [Dragunity](Dragunity Deck Analysis.html) - Core Combo: The 1-Card Remus Line (Line 2)
 - **File**: `Dragunity Deck Analysis.html`
@@ -190,47 +148,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
   - `Selected: Dragon Ravine (62265044) from location 2`
   - `Selected: Dragunity Legatus (89172051) from location 1`
   - `Step 3: Legal Activation of Dragunity Legatus (89172051)`
-
-### [ ] [Evol](Evol Deck Analysis.html) - Core Combo Paths (Line 2)
-- **File**: `Evol Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Reactive Disruption"
-- **Written Step**: *"End turn with Lios and the Set Trap. During the opponent's turn, use Singularity targeting an Evoltile and Evolsaur in GY to summon an Evolzar for disruption."*
-- **Engine Violation**: `Step 4 ("use Singularity targeting an Evoltile and Evolsaur in GY to summon an Evolzar for disruption.") was not offered as a legal action by the duel engine. The only effect matching its wording was Evolsaur Lios's, and it did not move Evo-Singularity. Evo-Singularity is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Evolsaur Lios (15171722)`
-  - `Trigger Effect Accepted for Evolsaur Lios (15171722)`
-  - `Selected: Evo-Singularity (74100225) from location 1`
-  - `Passing turn to opponent for opponent-turn action`
-  - `Step 4: Legal Activation of Evolsaur Lios (15171722) (matched by effect wording)`
-  - `Selected: Evolsaur Lios (15171722) from location 1`
-
-### [ ] [Fabled](Fabled Deck Analysis.html) - Core Combo: The Kushano Loop
-- **File**: `Fabled Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Summon Gammajin"
-- **Written Step**: *"Start your combo by Synchro Summoning Fabled Gammajin . Its on-summon effect lets you Special Summon Fabled Kushano directly from your Deck."*
-- **Engine Violation**: `Step 1 ("Start your combo by Synchro Summoning Fabled Gammajin.") was not offered as a legal action by the duel engine. The only effect matching its wording was The Fabled Behilmoth's, and it did not move Fabled Gammajin. Fabled Gammajin is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of The Fabled Behilmoth (68897338) (matched by effect wording)`
-  - `Selected: Fabled Ragin (47395382) from location 64`
-
-### [ ] [Firewall](Firewall Deck Analysis.html) - Core Combo
-- **File**: `Firewall Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The Summit"
-- **Written Step**: *"Use Sage to fuse into Diplexer Chimera and synchro (if able). Climb through Splash Mage and Transcode Talker. End on Terahertz (sending Desavewurm) and set up Superfactorial ."*
-- **Engine Violation**: `Step 7 ("Use Sage to fuse into Diplexer Chimera and synchro (if able).") was not offered as a legal action by the duel engine. Diplexer Chimera is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Firewall Defenser (20455229)`
-  - `Step 2: Legal Special Summon of Linguriboh (24842059)`
-  - `Trigger Effect Accepted for Firewall Defenser (20455229)`
-  - `Selected: Firewall Guardian (86605184) from location 1`
-  - `Step 4: Legal Special Summon of Cyberse Wicckid (52698008)`
-  - `Trigger Effect Accepted for Firewall Guardian (86605184)`
-  - `Trigger Effect Accepted for Cyberse Wicckid (52698008)`
-  - `Selected: Linguriboh (24842059) from location 16`
-  - `Selected: Cyberse Sage (65037172) from location 1`
 
 ### [ ] [Fossil](Fossil Deck Analysis.html) - Core Combo: The OTK Blueprint
 - **File**: `Fossil Deck Analysis.html`
@@ -397,15 +314,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of Malefic Paradox Gear (48829461)`
 
-### [ ] [Mayakashi](Mayakashi Deck Analysis.html) - Core Combo
-- **File**: `Mayakashi Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Link Culmination"
-- **Written Step**: *"After reaching your final Synchro, use it and the revived Dakki to Link Summon into the powerful Mayakashi Link monsters."*
-- **Engine Violation**: `Step 3 ("After reaching your final Synchro, use it and the revived Dakki to Link Summon into the powerful Mayakashi Link monsters.") was not offered as a legal action by the duel engine. Yuki-Onna, the Icicle Mayakashi is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Not simulated - commentary, not a game action`
-
 ### [ ] [Mega Phantom Beast](Mega Phantom Beast Deck Analysis.html) - Core Combo: Tetherwolf to Rank 10
 - **File**: `Mega Phantom Beast Deck Analysis.html`
 - **Failed at**: Step 2 of 3
@@ -415,17 +323,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Normal Summon of Mecha Phantom Beast Tetherwolf (67922702)`
   - `Step 3: Transitioning to End Phase for remaining actions`
-
-### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories (Line 2)
-- **File**: `Mimighoul Deck Analysis.html`
-- **Failed at**: Step 2 of 2
-- **Step Title**: "Xyz for Maker"
-- **Written Step**: *"Overlay for Giant Mimighoul. Giant searches Mimighoul Maker. Proceed with Maker combo."*
-- **Engine Violation**: `Step 4 ("Overlay for Giant Mimighoul.") was not offered as a legal action by the duel engine. Giant Mimighoul is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Mimighoul Dragon (81522098)`
-  - `Trigger Effect Accepted for Mimighoul Dragon (81522098)`
-  - `Selected: Mimighoul Dungeon (86809440) from location 1`
 
 ### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories (Line 4)
 - **File**: `Mimighoul Deck Analysis.html`
@@ -451,24 +348,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
 - **Written Step**: *"Activate Nemeses Flag in hand. Target the banished monster, Special Summon Flag, and shuffle the target back into the Deck."*
 - **Engine Violation**: `Step 3 ("Activate Nemeses Flag in hand.") was not offered as a legal action by the duel engine. Nemeses Flag is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
 
-### [ ] [Nemleria](Nemleria Deck Analysis.html) - The Flow of Dreams: Core Combo
-- **File**: `Nemleria Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Set the Interruption"
-- **Written Step**: *"Activate Reveil's effect, banishing 3 more cards from the Extra Deck to Special Summon it. Use its on-field effect, send Couette to the GY, and Set Nemleria Repeter from your Deck."*
-- **Engine Violation**: `Step 6 ("Activate Reveil's effect, banishing 3 more cards from the Extra Deck to Special Summon it.") was not offered as a legal action by the duel engine. The only effect matching its wording was Dreaming Reality of Nemleria, Realized's, and it did not move Nemleria Dream Devourer - Reveil. Nemleria Dream Devourer - Reveil is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Dreaming Nemleria (70155677)`
-  - `Step 2: Legal Activation of Dreaming Nemleria (70155677)`
-  - `Selected: Dream Tower of Princess Nemleria (18458255) from location 1`
-  - `Step 4: Legal Activation of Dream Tower of Princess Nemleria (18458255)`
-  - `Selected: Mercurium the Living Quicksilver (22984000), Varudras, the Final Bringer of the End Times (70636044) from location 64`
-  - `Step 5: Legal Special Summon of Nemleria Dream Defender - Couette (43944080)`
-  - `Step 6: Legal Activation of Dreaming Reality of Nemleria, Realized (16893370) (matched by effect wording)`
-  - `Selected: Nemleria Dream Defender - Couette (43944080) from location 4`
-  - `Trigger Effect Accepted for Dreaming Reality of Nemleria, Realized (16893370)`
-  - `Selected: Dreaming Nemleria (70155677) from location 1`
-
 ### [ ] [Number](Number Deck Analysis.html) - The Tournament Proof: Dwayne Howell's Onomat Utopia
 - **File**: `Number Deck Analysis.html`
 - **Failed at**: Step 4 of 8
@@ -477,13 +356,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
 - **Prior Legal Plays**:
   - `Step 1: Not simulated - commentary, not a game action`
   - `Step 2: Legal Normal Summon of Gagaga Ganbara Knight (9491461)`
-
-### [ ] [Number](Number Deck Analysis.html) - Core Combo: The Path to Dragonar
-- **File**: `Number Deck Analysis.html`
-- **Failed at**: Step 3 of 1
-- **Step Title**: "Rank-Up to Dragonar"
-- **Written Step**: *"Activate Utopiforce , using Utopia to Xyz Summon Number 99: Utopia Dragonar . This sets up a powerful interruption for the opponent's turn."*
-- **Engine Violation**: `Step 1 ("Activate Utopiforce, using Utopia to Xyz Summon Number 99: Utopia Dragonar.") was not offered as a legal action by the duel engine. Number 99: Utopia Dragonar is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
 
 ### [ ] [Obelisk the Tormentor](Obelisk the Tormentor Deck Analysis.html) - Core Combos & Synergistic Engines (Line 4)
 - **File**: `Obelisk the Tormentor Deck Analysis.html`
@@ -500,15 +372,6 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
 - **Step Title**: "Pay Half, Summon Z-ARC"
 - **Written Step**: *"Activate Soul of the Supreme King , pay half your Life Points and Special Summon Supreme King Z-ARC from the Extra Deck with its effects negated."*
 - **Engine Violation**: `Step 1 ("Activate Soul of the Supreme King, pay half your Life Points") was not offered as a legal action by the duel engine. Soul of the Supreme King is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-
-### [ ] [Rebel Bots](Rebel Bots Deck Analysis.html) - Primary Combos & End Boards
-- **File**: `Rebel Bots Deck Analysis.html`
-- **Failed at**: Step 1 of 4
-- **Step Title**: "Establish Engine"
-- **Written Step**: *"Start by Special Summoning 2+ "R.B." extenders (e.g., Ga10 Cutter + Ga10 Driller ). Link them into R.B. VALCan Booster ."*
-- **Engine Violation**: `Step 2 ("Link them into R.B. VALCan Booster.") was not offered as a legal action by the duel engine. R.B. VALCan Booster is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Special Summon of R.B. Ga10 Cutter (33438265)`
 
 ### [ ] [Ritual Beast](Ritual Beast Deck Analysis.html) - Core Combo: The "El Clasico" Loop (Line 2)
 - **File**: `Ritual Beast Deck Analysis.html`
@@ -529,59 +392,12 @@ Generated: Mon, 19 Oct 2026 14:48:26 GMT
   - `Step 1: Legal Normal Summon of Ritual Beast Tamer Elder (14513016)`
   - `Step 2: Legal Activation of Ritual Beast Inheritance (22501005)`
 
-### [ ] [Signer Dragon](Signer Dragon Deck Analysis.html) - Core Combo (Line 2)
-- **File**: `Signer Dragon Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The Red Rising Bridge"
-- **Written Step**: *"Synchro Summon the Level 6 Red Rising Dragon . Its effect revives the "Resonator" from your GY, flooding the field and enabling further Synchro Summons into your boss monsters."*
-- **Engine Violation**: `Step 4 ("Synchro Summon the Level 6 Red Rising Dragon.") was not offered as a legal action by the duel engine. The only effect matching its wording was Stardust Synchron's, and it did not move Red Rising Dragon. Red Rising Dragon is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Soul Resonator (62991792)`
-  - `Trigger Effect Accepted for Soul Resonator (62991792)`
-  - `Selected: Bone Archfiend (25784595) from location 1`
-  - `Step 3: Legal Activation of Bone Archfiend (25784595)`
-  - `Selected: Vision Resonator (98396890) from location 2`
-  - `Step 4: Legal Activation of Stardust Synchron (37799519) (matched by effect wording)`
-  - `Trigger Effect Accepted for Stardust Synchron (37799519)`
-  - `Selected: Stardust Illumination (37750912) from location 1`
-
 ### [ ] [Supreme King](Supreme King Deck Analysis.html) - Historical Combo: The Electrumite Loop
 - **File**: `Supreme King Deck Analysis.html`
 - **Failed at**: Step 1 of 3
 - **Step Title**: "The Starter"
 - **Written Step**: *"Start by sending Darkwurm to the GY (e.g., with `Dragon Shrine`). Darkwurm revives itself and searches Gate Magician , which in turn summons itself and searches a trap."*
 - **Engine Violation**: `Step 1 ("Start by sending Darkwurm to the GY (e.g., with `Dragon Shrine`).") was not offered as a legal action by the duel engine. Supreme King Dragon Darkwurm is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-
-### [ ] [Tearlaments](Tearlaments Deck Analysis.html) - Combo Evolution
-- **File**: `Tearlaments Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "The Result"
-- **Written Step**: *"Shuffle Havnis and King of the Swamp into the Deck to Fusion Summon Tearlaments Rulkallos . You now have a Special Summon negate without needing the banned Kitkallos bridge."*
-- **Engine Violation**: `Step 6 ("Shuffle Havnis and King of the Swamp into the Deck to Fusion Summon Tearlaments Rulkallos.") was not offered as a legal action by the duel engine. The only effect matching its wording was Tearlaments Scheiren's, and it did not move Tearlaments Rulkallos. Tearlaments Rulkallos is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Tearlaments Reinoheart (73956664)`
-  - `Trigger Effect Accepted for Tearlaments Reinoheart (73956664)`
-  - `Selected: Tearlaments Havnis (37961969) from location 1`
-  - `Trigger Effect Accepted for Tearlaments Havnis (37961969)`
-  - `Selected: Garura, Wings of Resonant Life (11765832) from location 64`
-  - `Step 4: Not simulated - commentary, not a game action`
-  - `Step 6: Legal Activation of Tearlaments Scheiren (572850) (matched by effect wording)`
-  - `Selected: Tearlaments Kashtira (4928565) from location 2`
-
-### [ ] [Tearlaments](Tearlaments Deck Analysis.html) - Combo Evolution (Line 2)
-- **File**: `Tearlaments Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Rank 6 Climb"
-- **Written Step**: *"Link climb through Requiem and Sequence to summon Fiendsmith's Lacrima . Use the bodies to Xyz Summon Beatrice, Lady of the Eternal ."*
-- **Engine Violation**: `Step 4 ("Use the bodies to Xyz Summon Beatrice, Lady of the Eternal.") was not offered as a legal action by the duel engine. The only effect matching its wording was Fiendsmith Engraver's, and it did not move Beatrice, Lady of the Eternal. Beatrice, Lady of the Eternal is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Fiendsmith's Tract (98567237)`
-  - `Selected: Fiendsmith Engraver (60764609) from location 1`
-  - `Selected: Fiendsmith Engraver (60764609) from location 2`
-  - `Step 3: Legal Activation of Fiendsmith Engraver (60764609)`
-  - `Selected: Fiendsmith's Tract (98567237) from location 1`
-  - `Step 4: Legal Activation of Fiendsmith Engraver (60764609) (matched by effect wording)`
-  - `Selected: Fiendsmith Engraver (60764609) from location 16`
 
 ## Needs Review
 
@@ -787,20 +603,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Selected: Gouki The Tyrant Ogre (7782069) from location 64`
   - `Trigger Effect Accepted for Gouki The Tyrant Ogre (7782069)`
   - `Selected: Gouki The Tyrant Ogre (7782069) from location 4`
-
-### [ ] [Grepher](Grepher Deck Analysis.html) - Strategic Execution: Core Combo Lines (Line 2)
-- **File**: `Grepher Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "Chain Search"
-- **Written Step**: *"Banish Ancient Cloak from GY to add The Phantom Knights of Silent Boots to hand. Special Summon Silent Boots."*
-- **Engine Violation**: `Step 5 ("Special Summon Silent Boots.") was not offered as a legal action by the duel engine. The Phantom Knights of Silent Boots is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Reinforcement of the Army (32807846)`
-  - `Selected: Dark Grepher (14536035) from location 1`
-  - `Step 2: Legal Normal Summon of Chaos Grepher (18859369)`
-  - `Step 3: Legal Activation of Chaos Grepher (18859369)`
-  - `Selected: Dark Grepher (14536035) from location 2`
-  - `Selected: Chaos Grepher (18859369) from location 1`
 
 ### [ ] [Guardragon](Guardragon Deck Analysis.html) - Peak Power: The Forbidden Combo (Historical)
 - **File**: `Guardragon Deck Analysis.html`
@@ -1231,6 +1033,7 @@ Every step the engine could simulate was legal. The steps listed were not simula
 - [Heroic](Heroic Deck Analysis.html) - Core Combo: The Claivesolish OTK: Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Infernal](Infernal Deck Analysis.html) - Combo Execution: Accessing Pyro Strategies (Line 3): Step 2 (step is not specific enough to replay (examples, "any", cross-references))
 - [Infernity](Infernity Deck Analysis.html) - Core Combo: From Zero to Oppression: Step 3 (step is not specific enough to replay (examples, "any", cross-references))
+- [Infernoid](Infernoid Deck Analysis.html) - Core Combo Walkthrough: Step 3 (depends on the opponent's cards, turn or battle)
 - [Invoked](Invoked Deck Analysis.html) - Strategic Combo Lines (Line 2): Step 4 (step is not specific enough to replay (examples, "any", cross-references))
 - [Kaiser Glider](Kaiser Glider Deck Analysis.html) - Primary Combo: The "Lair of Darkness" Removal (Line 2): Step 1 (depends on the opponent's cards, turn or battle)
 - [Knightmare](Knightmare Deck Analysis.html) - Core Combo: Step 1 (step is not specific enough to replay (examples, "any", cross-references)); Step 2 (depends on the opponent's cards, turn or battle)
