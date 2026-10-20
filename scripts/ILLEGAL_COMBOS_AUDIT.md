@@ -1,16 +1,16 @@
 # Headless Yu-Gi-Oh! OCGCore HTML Combo Audit
 
-Generated: Mon, 19 Oct 2026 18:52:56 GMT
+Generated: Tue, 20 Oct 2026 12:46:59 GMT
 
 ### Summary
 - **Pages Audited**: 409
 - **Total Combos Audited**: 539
-- **Total Steps Audited**: 1808
-- **100% Legal Confirmed**: 310
-- **Partially Verified** (no illegal play found; some prose steps could not be simulated): 111
-- **Likely Illegal** (the card was in place and the engine refused the action): 33
-- **Needs Review** (a card the step uses never reached the hand/field, or the harness crashed): 39
-- **Could Not Verify** (stopped after a step the engine could not simulate): 46
+- **Total Steps Audited**: 1816
+- **100% Legal Confirmed**: 332
+- **Partially Verified** (no illegal play found; some prose steps could not be simulated): 110
+- **Likely Illegal** (the card was in place and the engine refused the action): 27
+- **Needs Review** (a card the step uses never reached the hand/field, or the harness crashed): 25
+- **Could Not Verify** (stopped after a step the engine could not simulate): 45
 - **Unofficial / Custom Skipped**: 0
 
 ## Likely Illegal Plays
@@ -26,28 +26,6 @@ Generated: Mon, 19 Oct 2026 18:52:56 GMT
   - `Step 2: Legal Activation of Adamancipator Analyzer (11302671)`
   - `Step 3: Legal Activation of Adamancipator Researcher (85914562)`
   - `Step 4: Legal Activation of Adamancipator Seeker (48519867) (matched by effect wording)`
-
-### [ ] [Altergeist](Altergeist Deck Analysis.html) - Core Combo Line: Multi-Layered Lock Setup
-- **File**: `Altergeist Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Convert to Link-2"
-- **Written Step**: *"Use Marionetter and another Altergeist to Link Summon Altergeist Hexstia . Hexstia's effect searches for Altergeist Multifaker , preparing your key extender."*
-- **Engine Violation**: `Step 4 ("Use Marionetter and another Altergeist to Link Summon Altergeist Hexstia.") was not offered as a legal action by the duel engine. Altergeist Hexstia is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Altergeist Marionetter (53143898)`
-  - `Trigger Effect Accepted for Altergeist Marionetter (53143898)`
-  - `Selected: Altergeist Protocol (27541563) from location 1`
-  - `Step 4: Transitioning to End Phase for remaining actions`
-
-### [ ] [Aroma](Aroma Deck Analysis.html) - Core Combo: The Sunseed Genius Loci Starter
-- **File**: `Aroma Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Trigger LP Gain"
-- **Written Step**: *"Summon Sunvine Healer and use its effect to gain 300 LP. This mandatory LP gain is the most reliable way to trigger your Aroma effects during the combo."*
-- **Engine Violation**: `Step 4 ("Summon Sunvine Healer") was not offered as a legal action by the duel engine. Sunvine Healer is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Sunseed Genius Loci (27520594)`
-  - `Step 2: Legal Special Summon of Sunavalon Dryas (93896655)`
 
 ### [ ] [Code Talker](Code Talker Deck Analysis.html) - Standard Combo Protocol (Line 2)
 - **File**: `Code Talker Deck Analysis.html`
@@ -84,6 +62,23 @@ Generated: Mon, 19 Oct 2026 18:52:56 GMT
   - `Selected: Tellarknight Constellar Delteros (32289031) from location 4`
   - `Alternate choice near step 7: Constellar Tellarknights (instead of Constellar Star Chart)`
   - `Alternate choice near step 10: Tellarknight Altairan (instead of Tellarknight Cygnian)`
+
+### [ ] [Cosmic Dragon](Cosmic Dragon Deck Analysis.html) - Core Combo: The Junk Speeder Ascent
+- **File**: `Cosmic Dragon Deck Analysis.html`
+- **Failed at**: Step 3 of 3
+- **Step Title**: "Ascend the Ladder"
+- **Written Step**: *"Speeder's effect resolves, swarming the field with Tuners. Use these materials to Synchro climb, often making T.G. Hyper Librarian first to draw cards with each subsequent Synchro Summon, building towards your final board."*
+- **Engine Violation**: `Step 8 ("Use these materials to Synchro climb, often making T.G. Hyper Librarian first to draw cards with each subsequent Synchro Summon, building towards your final board.") was not offered as a legal action by the duel engine. T.G. Hyper Librarian is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
+- **Prior Legal Plays**:
+  - `Step 1: Not simulated - commentary, not a game action`
+  - `Step 2: Legal Activation of Junk Converter (11069680)`
+  - `Selected: Jiaotu, Darkness of the Yang Zing (25935625) from location 2`
+  - `Selected: Junk Synchron (63977008) from location 1`
+  - `Step 4: Legal Normal Summon of Junk Synchron (63977008)`
+  - `Trigger Effect Accepted for Junk Synchron (63977008)`
+  - `Selected: Junk Converter (11069680) from location 16`
+  - `Step 5: Legal Special Summon of Junk Speeder (77075360)`
+  - `Chain Trigger Accepted for Junk Speeder (77075360)`
 
 ### [ ] [Crystron](Crystron Deck Analysis.html) - Blueprint Combo: Smiger/Inclusion Route (1.5 Card)
 - **File**: `Crystron Deck Analysis.html`
@@ -161,19 +156,6 @@ Generated: Mon, 19 Oct 2026 18:52:56 GMT
   - `Trigger Effect Accepted for Weathering Soldier (23147658)`
   - `Selected: Fossil Fusion (59419719) from location 1`
 
-### [ ] [Gold Pride](Gold Pride Deck Analysis.html) - Core Combo: The P.U.N.K. Engine Starter
-- **File**: `Gold Pride Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Start the P.U.N.K. Engine"
-- **Written Step**: *"Normal Summon Ze Amin . Pay LP to search and extend into the P.U.N.K. engine, ultimately summoning Ukiyoe-P.U.N.K. Rising Carp ."*
-- **Engine Violation**: `Step 2 ("Pay LP to search and extend into the P.U.N.K. engine, ultimately summoning Ukiyoe-P.U.N.K. Rising Carp.") was not offered as a legal action by the duel engine. The only effect matching its wording was Gold Pride - The Crowd Goes Wild!'s, and it did not move Ukiyoe-P.U.N.K. Rising Carp. Ukiyoe-P.U.N.K. Rising Carp is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Noh-P.U.N.K. Ze Amin (19535693)`
-  - `Step 2: Legal Activation of Gold Pride - The Crowd Goes Wild! (95283172) (matched by effect wording)`
-  - `Selected: Gold Pride - Roller Baller (92003832) from location 2`
-  - `Selected: Gold Pride - Leon (23512906) from location 1`
-  - `Selected: Gold Pride - Roller Baller (92003832) from location 2`
-
 ### [ ] [Gouki](Gouki Deck Analysis.html) - Core Combo Walkthroughs (Line 3)
 - **File**: `Gouki Deck Analysis.html`
 - **Failed at**: Step 2 of 4
@@ -183,36 +165,6 @@ Generated: Mon, 19 Oct 2026 18:52:56 GMT
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of Gouki Machine Suprex (29099860)`
   - `Selected: Gouki Suprex (24073068) from location 2`
-
-### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo
-- **File**: `Hecahands Deck Analysis.html`
-- **Failed at**: Step 2 of 5
-- **Step Title**: "Fusion Summon Dandalos"
-- **Written Step**: *"Fusion Summon Hecahands Dandalos using Makibel and the in-hand card. This fusion is un-targetable by on-field negates (Imperm/Veiler)."*
-- **Engine Violation**: `Step 4 ("Fusion Summon Hecahands Dandalos using Makibel and the in-hand card.") was not offered as a legal action by the duel engine. The only effect matching its wording was The Hidden Hecahands's, and it did not move Hecahands Dandalos. Hecahands Dandalos is in the Extra Deck, but the board at this point can't summon it (materials, Levels or summon conditions).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Hecahands Makibel (18321034)`
-  - `Selected: Hecahands Jauzah (67021206) from location 64`
-  - `Step 2: Legal Activation of Hecahands Ibtel (95365081)`
-  - `Selected: Hecahands Yadel (32759190) from location 1`
-  - `Step 4: Legal Activation of The Hidden Hecahands (20415050) (matched by effect wording)`
-  - `Selected: Hecahands Yadel (32759190) from location 4`
-  - `Selected: Hecahands Ibtel (95365081) from location 1`
-  - `Selected: Yad'al-Hecahands (29792472) from location 1`
-  - `Trigger Effect Accepted for Hecahands Yadel (32759190)`
-  - `Selected: The Hidden Hecahands (20415050) from location 16`
-
-### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 2)
-- **File**: `Hecahands Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "Ibtel → Yadel Chain"
-- **Written Step**: *"Shuffle Ibtel → SS Yadel → Search Hecahands Tartaros ."*
-- **Engine Violation**: `Step 3 ("Shuffle Ibtel") was not offered as a legal action by the duel engine. Hecahands Ibtel is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Special Summon of Nightmare Apprentice (58143852)`
-  - `Selected: Hecahands Yadel (32759190) from location 2`
-  - `Trigger Effect Accepted for Nightmare Apprentice (58143852)`
-  - `Selected: Hecahands Ibtel (95365081) from location 1`
 
 ### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 5)
 - **File**: `Hecahands Deck Analysis.html`
@@ -331,23 +283,6 @@ Generated: Mon, 19 Oct 2026 18:52:56 GMT
 - **Written Step**: *"Deploy and flip Flower. Utilize its effect to bypass archetype targets entirely and search Guard Dog directly to your hand."*
 - **Engine Violation**: `Step 1 ("Deploy and flip Flower.") was not offered as a legal action by the duel engine. Mimighoul Flower is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
 
-### [ ] [Mystical Beast of the Forest](Mystical Beast of the Forest Deck Analysis.html) - Core Combo: The Kalantosa Trigger
-- **File**: `Mystical Beast of the Forest Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Load the Graveyard"
-- **Written Step**: *"Summon Kittytail . Use its effect to send Kalantosa from your Deck to the Graveyard."*
-- **Engine Violation**: `Step 2 ("Use its effect to send Kalantosa from your Deck to the Graveyard.") was not offered as a legal action by the duel engine. Kittytail, Mystical Beast of the Forest is in the Monster Zone, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Kittytail, Mystical Beast of the Forest (64475743)`
-  - `Step 2: Transitioning to End Phase for remaining actions`
-
-### [ ] [Nemesis](Nemesis Deck analysis.html) - Core Combo: The Flag Starter
-- **File**: `Nemesis Deck analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Summon and Recycle"
-- **Written Step**: *"Activate Nemeses Flag in hand. Target the banished monster, Special Summon Flag, and shuffle the target back into the Deck."*
-- **Engine Violation**: `Step 3 ("Activate Nemeses Flag in hand.") was not offered as a legal action by the duel engine. Nemeses Flag is in the hand, but none of its summons or effects can be used at this point (condition, cost, once-per-turn or timing).`
-
 ### [ ] [Number](Number Deck Analysis.html) - The Tournament Proof: Dwayne Howell's Onomat Utopia
 - **File**: `Number Deck Analysis.html`
 - **Failed at**: Step 4 of 8
@@ -402,48 +337,6 @@ Generated: Mon, 19 Oct 2026 18:52:56 GMT
 ## Needs Review
 
 The engine refused a step because a card it uses was never brought to the hand or field by an earlier step. Either the write-up skips a step (a search, a draw) or the harness picked a different card than the writer meant.
-
-### [ ] [Argostars](Argostars Deck Analysis.html) - Core Combo: The Glorious Adra Starter Line
-- **File**: `Argostars Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Summon and Search"
-- **Written Step**: *"Activate Lightning Tydeu by discarding a card. It Special Summons itself as a 2000 ATK monster and searches for the Field Spell, Argostars - Home Stadium ."*
-- **Engine Violation**: `Step 3 ("Activate Lightning Tydeu by discarding a card.") was not offered as a legal action by the duel engine. Argostars - Lightning Tydeu is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Argostars - Glorious Adra (91438674)`
-
-### [ ] [Atlantean](Atlantean Deck Analysis.html) - Core Combo: The Deep Sea Diva Hand Loop
-- **File**: `Atlantean Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Hand Rip & Build Board"
-- **Written Step**: *"Continue the combo to summon Deep Sea Minstrel to banish a card from the opponent's hand, then summon Moulinglacia to discard two more before building your final board."*
-- **Engine Violation**: `Step 6 ("summon Moulinglacia to discard two more before building your final board.") was not offered as a legal action by the duel engine. Moulinglacia the Elemental Lord is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Deep Sea Diva (78868119)`
-  - `Trigger Effect Accepted for Deep Sea Diva (78868119)`
-  - `Selected: Neptabyss, the Atlantean Prince (21565445) from location 1`
-  - `Step 3: Legal Activation of Neptabyss, the Atlantean Prince (21565445)`
-  - `Selected: Atlantean Dragoons (74311226) from location 1`
-  - `Selected: Abyssrhine, the Atlantean Spirit (17080584) from location 1`
-  - `Selected: Neptabyss, the Atlantean Prince (21565445) from location 1`
-
-### [ ] [Code Talker](Code Talker Deck Analysis.html) - Standard Combo Protocol
-- **File**: `Code Talker Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Begin Attribute Chain"
-- **Written Step**: *"Splash Mage ( currently banned ) revives a monster. Use them to summon the EARTH Transcode Talker . Codec triggers, searching an EARTH Cyberse monster. Transcode then revives another monster, continuing the chain."*
-- **Engine Violation**: `Step 9 ("Use them to summon the EARTH Transcode Talker.") was not offered as a legal action by the duel engine. Transcode Talker is not in the Extra Deck any more (it is in the GY).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Firewall Defenser (20455229)`
-  - `Step 2: Legal Special Summon of Transcode Talker (46947713)`
-  - `Chain Trigger Accepted for Firewall Defenser (20455229)`
-  - `Selected: Firewall Phantom (57940938) from location 1`
-  - `Step 4: Legal Special Summon of Splash Mage (59859086)`
-  - `Trigger Effect Accepted for Firewall Phantom (57940938)`
-  - `Selected: Cynet Codec (60018643) from location 1`
-  - `Selected: Cynet Codec (60018643) from location 2`
-  - `Step 8: Legal Activation of Splash Mage (59859086)`
-  - `Selected: Firewall Phantom (57940938) from location 16`
 
 ### [ ] [Crystron](Crystron Deck Analysis.html) - Blueprint Combo: Smiger/Inclusion Route (1.5 Card) (Line 2)
 - **File**: `Crystron Deck Analysis.html`
@@ -510,17 +403,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Selected: Cyberdark Impact! (80033124) from location 2`
   - `Selected: Power Bond (37630732) from location 1`
   - `Alternate choice near step 3: Cyberdark Claw (instead of Cyberdark Chimera)`
-
-### [ ] [Dinowrestler](Dinowrestler Deck Analysis.html) - Core Combo: Standard 2-Card Dinosaur Integration
-- **File**: `Dinowrestler Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "The Destruction Trigger"
-- **Written Step**: *"Special Summon Archosaur by destroying a Babycerasaurus in hand. This triggers Babycerasaurus to Special Summon another Dinosaur from the deck."*
-- **Engine Violation**: `Step 3 ("Special Summon Archosaur by destroying a Babycerasaurus in hand.") was not offered as a legal action by the duel engine. Animadorned Archosaur is in the hand, but Babycerasaurus, which this step uses from the hand/GY, is still in the Deck: no earlier step added it.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Souleating Oviraptor (44335251)`
-  - `Trigger Effect Accepted for Souleating Oviraptor (44335251)`
-  - `Selected: Animadorned Archosaur (98022050) from location 1`
 
 ### [ ] [Dododo](Dododo Deck Analysis.html) - Core Combo: The 1-Card Warrior-Kage Nexus
 - **File**: `Dododo Deck Analysis.html`
@@ -613,15 +495,6 @@ The engine refused a step because a card it uses was never brought to the hand o
 - **Prior Legal Plays**:
   - `Step 1: Legal Special Summon of Guardragon Elpy (86148577)`
 
-### [ ] [Hazy flame](Hazy flame Deck Analysis.html) - Core Combo: The Peryton Offensive
-- **File**: `Hazy flame Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Unleash the Hydras"
-- **Written Step**: *"Special Summon two copies of Hazy Flame Hydra from your deck. Their Dinosaur typing is key to accessing the deck's true boss monster."*
-- **Engine Violation**: `Step 3 ("Special Summon two copies of Hazy Flame Hydra from your deck.") was not offered as a legal action by the duel engine. Hazy Flame Hydra is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Hazy Pillar (83108603)`
-
 ### [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 4)
 - **File**: `Hecahands Deck Analysis.html`
 - **Failed at**: Step 1 of 6
@@ -658,18 +531,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Step 7: Not simulated - commentary, not a game action`
   - `Step 8: Legal Activation of Malefic World (27564031)`
 
-### [ ] [Malicevorous](Malicevorous Deck Analysis.html) - Core Combo: Fork into Full Board
-- **File**: `Malicevorous Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Spright Extension"
-- **Written Step**: *"With Fork on field, Special Summon Spright Blue to search Spright Jet . Special Summon Jet to search Spright Starter ."*
-- **Engine Violation**: `Step 3 ("With Fork on field, Special Summon Spright Blue to search Spright Jet.") was not offered as a legal action by the duel engine. The only effect matching its wording was Opening of the Spirit Gates's, and it did not move Spright Blue or Spright Jet. Spright Blue is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Malicevorous Fork (61791132)`
-  - `Selected: Malicevorous Knife (98780137) from location 2`
-  - `Step 3: Legal Activation of Opening of the Spirit Gates (80312545) (matched by effect wording)`
-  - `Selected: Chaos Summoning Beast (27439792) from location 1`
-
 ### [ ] [Mikanko](Mikanko Deck Analysis.html) - Primary Combo Sequence
 - **File**: `Mikanko Deck Analysis.html`
 - **Failed at**: Step 3 of 3
@@ -681,30 +542,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Selected: Mikanko Water Arabesque (43527730) from location 1`
   - `Selected: Mikanko Spiritwalk (53174748) from location 1`
 
-### [ ] [Mikanko](Mikanko Deck Analysis.html) - Primary Combo Sequence (Line 2)
-- **File**: `Mikanko Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Xyz & Lethal Search"
-- **Written Step**: *"Overlay Level 3s for Uzuhime . Effect: Search Double-Edged Sword . Equip it to Uzuhime."*
-- **Engine Violation**: `Step 9 ("Equip it to Uzuhime.") was not offered as a legal action by the duel engine. Uzuhime the Manifested Mikanko is not in the Extra Deck any more (it is in the Monster Zone).`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Mikanko Shinbu - Noble Twins (84550369)`
-  - `Selected: Mikanko Fire Dance (80044027) from location 1`
-  - `Selected: Mikanko Water Arabesque (43527730) from location 1`
-  - `Step 3: Legal Activation of Mikanko Fire Dance (80044027)`
-  - `Selected: Ha-Re the Sword Mikanko (18377261) from location 2`
-  - `Trigger Effect Accepted for Ha-Re the Sword Mikanko (18377261)`
-  - `Selected: Mikanko Water Arabesque (43527730) from location 1`
-  - `Step 5: Legal Activation of Mikanko Water Arabesque (43527730)`
-  - `Selected: Ha-Re the Sword Mikanko (18377261) from location 4`
-  - `Step 6: Legal Activation of Mikanko Water Arabesque (43527730) (matched by effect wording)`
-  - `Selected: Sanaki the Mikanko Devotee (11161666) from location 1`
-  - `Trigger Effect Accepted for Sanaki the Mikanko Devotee (11161666)`
-  - `Selected: Ha-Re the Sword Mikanko (18377261) from location 1`
-  - `Step 7: Legal Special Summon of Uzuhime the Manifested Mikanko (57566760)`
-  - `Trigger Effect Accepted for Uzuhime the Manifested Mikanko (57566760)`
-  - `Selected: Double-Edged Sword (41927278) from location 1`
-
 ### [ ] [Mimighoul](Mimighoul Deck Analysis.html) - Combo Trajectories
 - **File**: `Mimighoul Deck Analysis.html`
 - **Failed at**: Step 2 of 3
@@ -714,29 +551,6 @@ The engine refused a step because a card it uses was never brought to the hand o
 - **Prior Legal Plays**:
   - `Step 1: Legal Activation of Mimighoul Slime (80551022)`
   - `Step 3: Legal Activation of Mimighoul Armor (11677278) (matched by effect wording)`
-
-### [ ] [Mystical Elf](Mystical Elf Deck Analysis.html) - Strategic Execution: Combo Lines
-- **File**: `Mystical Elf Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Establish Enabler"
-- **Written Step**: *"Activate Ancient Rules to Special Summon Blue-Eyes White Dragon from hand. White Lightning is now live."*
-- **Engine Violation**: `Step 5 ("Activate Ancient Rules to Special Summon Blue-Eyes White Dragon from hand.") was not offered as a legal action by the duel engine. Ancient Rules is in the hand, but Blue-Eyes White Dragon, which this step uses from the hand/GY, is still in the Deck: no earlier step added it.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Unexpected Dai (911883)`
-  - `Selected: Mystical Elf (15025844) from location 1`
-  - `Step 2: Legal Normal Summon of The White Stone of Legend (79814787)`
-  - `Step 3: Legal Special Summon of Artemis, the Magistus Moon Maiden (34755994)`
-
-### [ ] [Obelisk the Tormentor](Obelisk the Tormentor Deck Analysis.html) - Core Combos & Synergistic Engines (Line 3)
-- **File**: `Obelisk the Tormentor Deck Analysis.html`
-- **Failed at**: Step 1 of 5
-- **Step Title**: "Activate Imsety (Cost as Benefit)"
-- **Written Step**: *"Activate Imsety, Glory of Horus from hand. Send itself and Soul Energy MAX!!! to the GY as cost. Imsety's effect searches King's Sarcophagus ."*
-- **Engine Violation**: `Step 2 ("Send itself and Soul Energy MAX!!! to the GY as cost.") was not offered as a legal action by the duel engine. Soul Energy MAX!!! is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Imsety, Glory of Horus (84941194)`
-  - `Selected: Reactor Slime (79387392) from location 2`
-  - `Selected: King's Sarcophagus (16528181) from location 1`
 
 ### [ ] [Performage](Performage Deck Analysis.html) - Core Combo: The Fire Dancer One-Card Starter
 - **File**: `Performage Deck Analysis.html`
@@ -751,32 +565,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Step 3: Legal Activation of Performage Water Dancer (34323367)`
   - `Step 4: Legal Activation of Performage Water Dancer (34323367)`
   - `Step 5: Legal Special Summon of Tellarknight Constellar Caduceus (58858807)`
-
-### [ ] [Raidraptor](Raidraptor Deck Analysis.html) - One-Card Full Combo
-- **File**: `Raidraptor Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Bridge to Power"
-- **Written Step**: *"Special Summon Strangle Lanius . Overlay both monsters into Raider's Knight , then use its effect to rank up into Raidraptor - Brave Strix ."*
-- **Engine Violation**: `Step 4 ("Special Summon Strangle Lanius.") was not offered as a legal action by the duel engine. Raidraptor - Strangle Lanius is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Raidraptor - Tribute Lanius (83236601)`
-  - `Step 2: Legal Activation of Raidraptor - Tribute Lanius (83236601)`
-  - `Selected: Raidraptor - Mimicry Lanius (96345188) from location 1`
-
-### [ ] [Red Dragon Archfiend](Red Dragon Archfiend Deck Analysis.html) - Core Operational Combo Sequences (Line 3)
-- **File**: `Red Dragon Archfiend Deck Analysis.html`
-- **Failed at**: Step 2 of 4
-- **Step Title**: "The Burn Tuner"
-- **Written Step**: *"Normal Summon Soul Resonator to search Red Lotus King, Flame Crime . Because a Fiend Tuner is controlled, Flame Crime Special Summons itself from hand, burning the opponent for 800."*
-- **Engine Violation**: `Step 3 ("Normal Summon Soul Resonator to search Red Lotus King, Flame Crime.") was not offered as a legal action by the duel engine. The only effect matching its wording was Darkness Resonator's, and it did not move Soul Resonator or Red Lotus King, Flame Crime. Soul Resonator is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Bone Archfiend (25784595)`
-  - `Selected: Vision Resonator (98396890) from location 2`
-  - `Trigger Effect Accepted for Vision Resonator (98396890)`
-  - `Selected: Crimson Gaia (98173209) from location 1`
-  - `Step 3: Legal Activation of Darkness Resonator (83445539) (matched by effect wording)`
-  - `Selected: Red Dragon Archfiend (70902743) from location 64`
-  - `Trigger Effect Accepted for Darkness Resonator (83445539)`
 
 ### [ ] [Relinquished](Relinquished Deck Analysis.html) - Core Combo: The "Kaiju Slingshot"
 - **File**: `Relinquished Deck Analysis.html`
@@ -858,16 +646,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Selected: Tearlaments Rulkallos (84330567) from location 64`
   - `Alternate choice near step 4: skip the optional effect of Tearlaments Kitkallos (instead of use the optional effect of Tearlaments Kitkallos)`
 
-### [ ] [Tistina](Tistina Deck Analysis.html) - Core Combo
-- **File**: `Tistina Deck Analysis.html`
-- **Failed at**: Step 1 of 3
-- **Step Title**: "Activate the Divine Domain"
-- **Written Step**: *"Send Fallen of the Tistina from hand to GY to activate Divine Domain Baatistina from deck. Then, use its effect to send Miasma Dragon Tistina from deck to GY."*
-- **Engine Violation**: `Step 2 ("use its effect to send Miasma Dragon Tistina from deck to GY.") was not offered as a legal action by the duel engine. The only effect matching its wording was Play of the Tistina's, and it did not move Miasma Dragon Tistina or Tistina, the Divinity that Defies Darkness. Miasma Dragon Tistina is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 2: Legal Activation of Play of the Tistina (13070280) (matched by effect wording)`
-  - `Selected: Fallen of the Tistina (87498729) from location 2`
-
 ### [ ] [Trains](Trains Deck Analysis.html) - Blueprint for Victory: The Legacy Harvester Combo
 - **File**: `Trains Deck Analysis.html`
 - **Failed at**: Step 3 of 7
@@ -881,33 +659,6 @@ The engine refused a step because a card it uses was never brought to the hand o
   - `Step 4: Legal Activation of Urgent Schedule (25274141)`
   - `Step 6: Legal Special Summon of Qliphort Genius (22423493)`
   - `Alternate choice near step 3: not chaining (instead of chaining an effect)`
-
-### [ ] [True King True Draco](True King True Draco Deck Analysis.html) - Core Combo
-- **File**: `True King True Draco Deck Analysis.html`
-- **Failed at**: Step 3 of 3
-- **Step Title**: "Search and Set"
-- **Written Step**: *"Dinomight Knight's effect activates. Add True King's Return from Deck to hand. Set it alongside your other floodgates."*
-- **Engine Violation**: `Step 5 ("Add True King's Return from Deck to hand.") was not offered as a legal action by the duel engine. True King's Return is still in the Deck: no earlier step added it to the hand or field.`
-- **Prior Legal Plays**:
-  - `Step 1: Legal Activation of Draco Awakening (66092596)`
-  - `Selected: Dinomight Knight, the True Dracofighter (58984738) from location 1`
-  - `Step 3: Legal Normal Summon of Dinomight Knight, the True Dracofighter (58984738)`
-
-### [ ] [Visas](Visas Deck Analysis.html) - Primary Combo: The One-Card Scareclaw Starter
-- **File**: `Visas Deck Analysis.html`
-- **Failed at**: Step 2 of 3
-- **Step Title**: "Search & Extend"
-- **Written Step**: *"Scareclaw Light-Heart searches Primitive Planet Reichphobia . Activate Primitive Planet Reichphobia to search Visas Starfrost . Use Visas's effect to destroy Light-Heart and Special Summon himself."*
-- **Engine Violation**: `Step 5 ("Use Visas's effect to destroy Light-Heart") was not offered as a legal action by the duel engine. Scareclaw Light-Heart is not in the Extra Deck any more (it is in the Monster Zone).`
-- **Alternative choices tried and kept**: skip the optional effect of Scareclaw Reichheart instead of use the optional effect of Scareclaw Reichheart
-- **Prior Legal Plays**:
-  - `Step 1: Legal Normal Summon of Scareclaw Reichheart (82361809)`
-  - `Step 2: Legal Special Summon of Scareclaw Light-Heart (53776969)`
-  - `Trigger Effect Accepted for Scareclaw Light-Heart (53776969)`
-  - `Selected: Primitive Planet Reichphobia (56063182) from location 1`
-  - `Step 4: Legal Activation of Primitive Planet Reichphobia (56063182)`
-  - `Selected: Visas Starfrost (56099748) from location 1`
-  - `Alternate choice near step 2: skip the optional effect of Scareclaw Reichheart (instead of use the optional effect of Scareclaw Reichheart)`
 
 ### [ ] [Volcanic](Volcanic Deck Analysis.html) - Core Combo
 - **File**: `Volcanic Deck Analysis.html`
@@ -929,10 +680,9 @@ The engine refused a step because a card it uses was never brought to the hand o
 
 Not evidence of an illegal play: the replay stopped after a step the engine could not simulate from the prose (examples, opponent-dependent steps, unidentified cards), so later failures may just reflect that step.
 
-- [ ] [Adamancipator](Adamancipator Archetype Breakdown.html) - Core Combo: The "Block Dragon Turbo" Strategy (Historical) (Line 2): stopped at Step 5 of 5. Step 2: describes an effect resolving rather than an action to take; Step 5: step is not specific enough to replay (examples, "any", cross-references)
 - [ ] [Appliancer](Appliancer Deck Analysis.html) - Core Combo: The Codebreaker Pivot: stopped at Step 3 of 3. Step 2: step is not specific enough to replay (examples, "any", cross-references); Step 2: describes an effect resolving rather than an action to take
 - [ ] [Chaos](Chaos Deck Analysis.html) - Core Combo: The Path to Synchro Dominance (Line 2): stopped at Step 3 of 4. Step 1: the engine has no script for a card in this step
-- [ ] [Cocoon of evolution](Cocoon of evolution Deck Analysis.html) - Foundational Combo: The Two-Card Board Break: stopped at Step 2 of 3. Step 1: describes an effect resolving rather than an action to take
+- [ ] [Cocoon of evolution](Cocoon of evolution Deck Analysis.html) - Foundational Combo: The Two-Card Board Break: stopped at Step 2 of 3. Step 1: depends on the opponent's cards, turn or battle; Step 1: describes an effect resolving rather than an action to take
 - [ ] [Crusadia](Crusadia Deck Analysis.html) - Core Combo: The Path to Equimax: stopped at Step 2 of 3. Step 1: step is not specific enough to replay (examples, "any", cross-references)
 - [ ] [Dinomorphia](Dinomorphia Deck Analysis.html) - Core Combo: The Therizia-to-Rexterm Lockdown: stopped at Step 3 of 3. Step 2: no card in the step could be identified
 - [ ] [Dododo](Dododo Deck Analysis.html) - Core Combo: The 1-Card Warrior-Kage Nexus (Line 3): stopped at Step 5 of 9. Step 4: step is not specific enough to replay (examples, "any", cross-references)
@@ -944,7 +694,7 @@ Not evidence of an illegal play: the replay stopped after a step the engine coul
 - [ ] [Geargia](Geargia Deck Analysis.html) - Core Combo: The Armor-to-Gigant X Loop: stopped at Step 1 of 3. Step 1: step is not specific enough to replay (examples, "any", cross-references)
 - [ ] [Gogogo](Gogogo Deck Analysis.html) - Modern Core Combos: stopped at Step 2 of 4. Step 2: no card in the step could be identified
 - [ ] [Gusto](Gusto Deck Analysis.html) - Core Combo: The Sphreez "Stop Hitting Yourself" OTK: stopped at Step 2 of 3. Step 1: step is not specific enough to replay (examples, "any", cross-references)
-- [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 3): stopped at Step 2 of 3. Step 1: depends on the opponent's cards, turn or battle
+- [ ] [Hecahands](Hecahands Deck Analysis.html) - Core Combo (Line 3): stopped at Step 3 of 3. Step 1: depends on the opponent's cards, turn or battle
 - [ ] [Ignister](Ignister Archetype Breakdown.html) - Strategic Combo Lines (Post-Banlist) (Line 2): stopped at Step 2 of 2. Step 1: describes an effect resolving rather than an action to take
 - [ ] [Iron Chain](Iron Chain Deck Analysis.html) - Core Combo: stopped at Step 2 of 3. Step 1: step is not specific enough to replay (examples, "any", cross-references); Step 1: describes an effect resolving rather than an action to take
 - [ ] [Junk Deck Analyis](Junk Deck Analyis.html) - Core Combo: stopped at Step 1 of 4. Step 1: no card in the step could be identified
@@ -981,11 +731,13 @@ Not evidence of an illegal play: the replay stopped after a step the engine coul
 Every step the engine could simulate was legal. The steps listed were not simulated.
 
 - [Abyss Actor](Abyss Actor Deck Analysis.html) - Core Combo (Line 3): Step 1 (depends on the opponent's cards, turn or battle)
+- [Adamancipator](Adamancipator Archetype Breakdown.html) - Core Combo: The "Block Dragon Turbo" Strategy (Historical) (Line 2): Step 2 (describes an effect resolving rather than an action to take); Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Amazement](Amazement Deck Analysis.html) - Core Combo: Step 2 (describes an effect resolving rather than an action to take)
 - [Ancient Warriors](Ancient Warriors Deck Analysis.html) - Core Combo: The "Three Visits" Line: Step 2 (depends on the opponent's cards, turn or battle)
 - [Aquaactress](Aquaactress Deck Analysis.html) - Core Combo: Step 1 (step is not specific enough to replay (examples, "any", cross-references))
 - [Artifact](Artifact Deck Analysis.html) - Legacy Combo: The Ignition Setup (Line 2): Step 1 (step is not specific enough to replay (examples, "any", cross-references)); Step 3 (depends on the opponent's cards, turn or battle)
 - [Artmage](Artmage Deck Analysis.html) - Core Combo: The Non-Finito Bridge (Line 3): Step 3 (describes an effect resolving rather than an action to take)
+- [Ashened](Ashened Deck Analysis.html) - Core Combo: The Awakening Starter: Step 2 (depends on the opponent's cards, turn or battle)
 - [Bamboo Sword](Bamboo Sword Deck Analysis.html) - Core Combo: The Isolde Draw Engine: Step 2 (describes an effect resolving rather than an action to take); Step 3 (no card in the step could be identified); Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Batteryman](Batteryman Deck Analysis.html) - Core Combo: The 2-Card Swarm: Step 3 (depends on the opponent's cards, turn or battle)
 - [Battleguard](Battleguard Deck Analysis.html) - Core Combo: Isolde to Rank 5: Step 3 (step is not specific enough to replay (examples, "any", cross-references))
@@ -1022,8 +774,6 @@ Every step the engine could simulate was legal. The steps listed were not simula
 - [Evil Hero](Evil Hero Deck Analysis.html) - Core Combo: The Path to Malicious Bane: Step 2 (step is not specific enough to replay (examples, "any", cross-references))
 - [Fishborg](Fishborg Deck Analysis.html) - Core Combo: The Harpooner Extender: Step 1 (step is not specific enough to replay (examples, "any", cross-references)); Step 3 (step is not specific enough to replay (examples, "any", cross-references)); Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Flower Cardian](Flower Cardian Deck Analysis.html) - The Art of the Stack: Core Combo: Step 2 (describes an effect resolving rather than an action to take); Step 3 (step is not specific enough to replay (examples, "any", cross-references))
-- [Fortune Lady](Fortune Lady Deck Analysis.html) - Core Combo: The Path to Advantage: Step 2 (step is not specific enough to replay (examples, "any", cross-references)); Step 3 (describes an effect resolving rather than an action to take)
-- [G Golem](G Golem Deck Analysis.html) - Core "Pure" Combo: Pebble Dog + Rock Hammer: Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Gagaga](Gagaga Deck Analysis.html) - Core Combo: The 1-Card 'Onomatopaira' Starter: Step 4 (step is not specific enough to replay (examples, "any", cross-references)); Step 4 (step is not specific enough to replay (examples, "any", cross-references))
 - [Gaia](Gaia Deck Analysis.html) - Core Combo (Line 2): Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Genex](Genex Deck Analysis.html) - Core Combo: The One-Card Assembly Line: Step 3 (step is not specific enough to replay (examples, "any", cross-references)); Step 3 (no card in the step could be identified)
@@ -1032,7 +782,6 @@ Every step the engine could simulate was legal. The steps listed were not simula
 - [Hand](Hand Deck Analysis.html) - Core Combo: Step 1 (depends on the opponent's cards, turn or battle); Step 2 (depends on the opponent's cards, turn or battle); Step 3 (depends on the opponent's cards, turn or battle)
 - [Heroic](Heroic Deck Analysis.html) - Core Combo: The Claivesolish OTK: Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Infernal](Infernal Deck Analysis.html) - Combo Execution: Accessing Pyro Strategies (Line 3): Step 2 (step is not specific enough to replay (examples, "any", cross-references))
-- [Infernity](Infernity Deck Analysis.html) - Core Combo: From Zero to Oppression: Step 3 (step is not specific enough to replay (examples, "any", cross-references))
 - [Infernoid](Infernoid Deck Analysis.html) - Core Combo Walkthrough: Step 3 (depends on the opponent's cards, turn or battle)
 - [Invoked](Invoked Deck Analysis.html) - Strategic Combo Lines (Line 2): Step 4 (step is not specific enough to replay (examples, "any", cross-references))
 - [Kaiser Glider](Kaiser Glider Deck Analysis.html) - Primary Combo: The "Lair of Darkness" Removal (Line 2): Step 1 (depends on the opponent's cards, turn or battle)

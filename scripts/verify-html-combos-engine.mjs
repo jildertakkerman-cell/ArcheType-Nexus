@@ -841,9 +841,10 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
     for (let sIdx = 0; sIdx < parsedCombo.steps.length; sIdx++) {
         const s = parsedCombo.steps[sIdx];
 
-        // A card named only in the step title ("Activate Snake Rain") is used from the hand unless an earlier step fetched it
+        // A card named only in the step title ("Activate Snake Rain") is used from the hand unless an earlier step, or this
+        // step's own text ("Activate the Divine Domain": "... place Divine Domain Baatistina from your Deck"), fetched it
         const titleCard = titleCards[sIdx];
-        if (titleCard && !searchedCodes.has(titleCard.code) && !searchedBefore(titleCard, sIdx, 0) && /^(?:activate|use|normal summon|tribute summon|set|reveal|discard|chain|trigger)\b/i.test(s.stepTitle || '')) {
+        if (titleCard && !searchedCodes.has(titleCard.code) && !searchedBefore(titleCard, sIdx, s.text.length) &&/^(?:activate|use|normal summon|tribute summon|set|reveal|discard|chain|trigger)\b/i.test(s.stepTitle || '')) {
             ensureInHand(titleCard);
         }
 

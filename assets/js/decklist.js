@@ -471,7 +471,140 @@
         return lines.join('\n');
     }
 
-    const core = { SIZE, banMapFromJson, banStatus, copyLimit, ownMatcher, readRow, extraLock, deckProfile, autoSpecs, autoSpellSpecs, assemble, expand, toYdk, toYdke, toText };
+    function hasLinkVal(v) {
+        return v !== null && v !== undefined && v !== '' && Number.isFinite(+v) && +v > 0;
+    }
+
+    function hasScaleVal(v) {
+        return v !== null && v !== undefined && v !== '' && Number.isFinite(+v) && +v >= 0;
+    }
+
+    function isLinkCard(rec, type, pkg) {
+        const t = String(type || (rec && (rec.type || rec.cardtype)) || '');
+        if (/\blink\b/i.test(t)) return true;
+        if (rec && (hasLinkVal(rec.linkval) || hasLinkVal(rec.link))) return true;
+        if (pkg && /^(?:auto-link.*|links)$/i.test(pkg)) return true;
+        return false;
+    }
+
+    function isPendulumCard(rec, type) {
+        const t = String(type || (rec && (rec.type || rec.cardtype)) || '');
+        if (/pendulum/i.test(t)) return true;
+        if (rec && (hasScaleVal(rec.scale) || hasScaleVal(rec.pendulumscale))) return true;
+        return false;
+    }
+
+    /**
+     * Verify whether a decklist is legal in the Genesys format:
+     * - Points budget: Total points must not exceed 100 points.
+     * - Forbidden mechanics: No Link Monsters, no Pendulum Monsters.
+     *
+     * @param {{ main: Entry[], extra: Entry[], issues?: Issue[] }} list
+     * @param {function(string): (Object|null)} [recordFn] Name -> Card data object
+     * @param {Object} [genesysData] { tcg: { [name]: points }, ocg: { [name]: points } }
+     * @param {string} [format='tcg'] 'tcg' or 'ocg'
+     */
+    function verifyGenesys(list, recordFn, genesysData, format = 'tcg') {
+        const region = (format === 'ocg') ? 'ocg' : 'tcg';
+        const pointsMap = (genesysData && genesysData[region]) || {};
+        const lowerPointsMap = {};
+        for (const [name, pts] of Object.entries(pointsMap)) {
+            lowerPointsMap[name.toLowerCase()] = pts;
+        }
+
+        function getPoints(name) {
+            if (!name) return 0;
+            const direct = pointsMap[name];
+            if (typeof direct === 'number') return direct;
+            const lower = lowerPointsMap[name.toLowerCase()];
+            if (typeof lower === 'number') return lower;
+            if (root && root.CardLoader && typeof root.CardLoader.getGenesysPoints === 'function') {
+                return root.CardLoader.getGenesysPoints(name, region) || 0;
+            }
+            return 0;
+        }
+
+        let totalPoints = 0;
+        const pointedCards = [];
+        const linkMonsters = [];
+        const pendulumMonsters = [];
+
+        function inspectCard(entry, zone) {
+            const name = entry.name;
+            const count = entry.count;
+            const pts = getPoints(name);
+            const total = pts * count;
+            totalPoints += total;
+            if (pts > 0) {
+                pointedCards.push({
+                    name,
+                    count,
+                    pointsEach: pts,
+                    pointsTotal: total,
+                    zone
+                });
+            }
+
+            const rec = recordFn ? recordFn(name) : null;
+            const isLink = isLinkCard(rec, null, entry.pkg);
+            const isPendulum = isPendulumCard(rec, null);
+
+            if (isLink) {
+                linkMonsters.push({ name, count, zone });
+            }
+            if (isPendulum) {
+                pendulumMonsters.push({ name, count, zone });
+            }
+        }
+
+        (list.main || []).forEach(e => inspectCard(e, 'main'));
+        (list.extra || []).forEach(e => inspectCard(e, 'extra'));
+
+        const BUDGET = 100;
+        const violations = [];
+
+        if (totalPoints > BUDGET) {
+            const over = totalPoints - BUDGET;
+            violations.push({
+                type: 'budget',
+                message: `Points budget exceeded: ${totalPoints} / ${BUDGET} pts (+${over} pt${over === 1 ? '' : 's'} over limit).`
+            });
+        }
+
+        if (linkMonsters.length > 0) {
+            const totalLinks = linkMonsters.reduce((s, m) => s + m.count, 0);
+            const names = linkMonsters.map(m => m.count > 1 ? `${m.name} (x${m.count})` : m.name).join(', ');
+            violations.push({
+                type: 'link',
+                message: `Contains ${totalLinks} Link Monster${totalLinks > 1 ? 's' : ''} (forbidden in Genesys): ${names}.`
+            });
+        }
+
+        if (pendulumMonsters.length > 0) {
+            const totalPends = pendulumMonsters.reduce((s, m) => s + m.count, 0);
+            const names = pendulumMonsters.map(m => m.count > 1 ? `${m.name} (x${m.count})` : m.name).join(', ');
+            violations.push({
+                type: 'pendulum',
+                message: `Contains ${totalPends} Pendulum Monster${totalPends > 1 ? 's' : ''} (forbidden in Genesys): ${names}.`
+            });
+        }
+
+        pointedCards.sort((a, b) => b.pointsTotal - a.pointsTotal || a.name.localeCompare(b.name));
+
+        return {
+            isLegal: violations.length === 0,
+            totalPoints,
+            budget: BUDGET,
+            remainingPoints: Math.max(0, BUDGET - totalPoints),
+            violations,
+            pointedCards,
+            linkMonsters,
+            pendulumMonsters,
+            getPoints
+        };
+    }
+
+    const core = { SIZE, banMapFromJson, banStatus, copyLimit, ownMatcher, readRow, extraLock, deckProfile, autoSpecs, autoSpellSpecs, assemble, expand, toYdk, toYdke, toText, verifyGenesys };
     if (typeof document === 'undefined') return core;
 
     // ------------------------------------------------------------------
@@ -484,6 +617,7 @@
     }
     const DATA_URL = assetUrl('../data/decklists/', '../assets/data/decklists/');
     const BANLIST_URL = assetUrl('../data/banlist.json', '../assets/data/banlist.json');
+    const GENESYS_URL = assetUrl('../data/genesys_points.json', '../assets/data/genesys_points.json');
     const CSS_URL = assetUrl('../css/decklist.css', '../assets/css/decklist.css');
 
     if (!document.querySelector('link[data-decklist-css]')) {
@@ -510,18 +644,19 @@
         const index = await fetchJson(DATA_URL + 'index.json');
         const file = index[archetype];
         if (!file) throw new Error(`There's no test deck for ${archetype} yet.`);
-        const [deck, staples, generated, profiles, banlist] = await Promise.all([
+        const [deck, staples, generated, profiles, banlist, genesys] = await Promise.all([
             fetchJson(DATA_URL + file),
             fetchJson(DATA_URL + 'packages.json'),
             // Without these, "auto" falls back to the hand-picked Links.
             fetchJson(DATA_URL + 'packages.generated.json').catch(() => ({ packages: {} })),
             fetchJson(DATA_URL + 'profiles.json').catch(() => ({})),
-            fetchJson(BANLIST_URL).catch(() => null)
+            fetchJson(BANLIST_URL).catch(() => null),
+            fetchJson(GENESYS_URL).catch(() => null)
         ]);
         const packages = Object.assign({}, generated.packages, staples.packages);
         const list = assemble(deck, packages, banlist ? banMapFromJson(banlist) : {}, profiles[file]);
         if (!banlist) list.issues.push({ level: 'warn', message: "The banlist didn't load, so the staples below ignore it." });
-        return { deck, list, banlistDate: banlist && banlist.tcg && banlist.tcg.effectiveDate };
+        return { deck, list, banlistDate: banlist && banlist.tcg && banlist.tcg.effectiveDate, genesys };
     }
 
     // "2026-10-12" and banlist.json's "18/05/2026" -> "12 Oct 2026"
@@ -551,22 +686,42 @@
     // One thumbnail per copy, like a real deck. The title lives on the slot and
     // decklist.css turns off pointer events on the card image inside it, so a
     // hover shows the card's role rather than card-loader's image tooltip.
-    function slotsHtml(entries, deck, idMap, prefix) {
+    function slotsHtml(entries, deck, idMap, prefix, genesys, record) {
         const allow = deck.allow || {};
         const own = ownMatcher(deck);
+        const getPts = (genesys && genesys.getPoints) ? genesys.getPoints : () => 0;
         return entries.map(e => {
             const exception = Object.prototype.hasOwnProperty.call(allow, e.name);
             const generic = !exception && !own(e.name);
             const tag = exception ? ` (pure-build exception: ${allow[e.name]})`
                 : e.source === 'staple' ? ' (generic staple, topped up from the shared list)'
                     : generic ? ' (generic)' : '';
-            const cls = exception ? ' dl-card--outside' : generic ? ' dl-card--generic' : '';
-            const title = `${e.name}${tag}${e.note ? ' — ' + e.note : ''}`;
+
+            const pts = getPts(e.name);
+            const rec = record ? record(e.name) : null;
+            const isLink = isLinkCard(rec, null, e.pkg);
+            const isPendulum = isPendulumCard(rec, null);
+
+            let genesysNote = '';
+            if (pts > 0) {
+                genesysNote = ` — Genesys: ${pts} pt${pts === 1 ? '' : 's'}${e.count > 1 ? ` (${pts * e.count} pts total)` : ''}`;
+            }
+            if (isLink) {
+                genesysNote += ' [Genesys Forbidden: Link Monster]';
+            } else if (isPendulum) {
+                genesysNote += ' [Genesys Forbidden: Pendulum Monster]';
+            }
+
+            const cls = (exception ? ' dl-card--outside' : generic ? ' dl-card--generic' : '')
+                + (pts > 0 ? ' dl-card--pointed' : '')
+                + (isLink || isPendulum ? ' dl-card--forbidden' : '');
+            const titleTcg = `${e.name}${tag}${e.note ? ' — ' + e.note : ''}`;
+            const titleGenesys = `${e.name}${tag}${genesysNote}${e.note ? ' — ' + e.note : ''}`;
             let html = '';
             for (let i = 0; i < e.count; i++) {
                 const id = `${prefix}-${idMap.n++}`;
                 idMap.cards[id] = e.name;
-                html += `<div class="card-placeholder dl-card${cls}" id="${id}" title="${escapeHtml(title)}">${escapeHtml(e.name)}</div>`;
+                html += `<div class="card-placeholder dl-card${cls}" id="${id}" data-card-name="${escapeHtml(e.name)}" data-is-link="${isLink ? '1' : '0'}" data-is-pendulum="${isPendulum ? '1' : '0'}" data-title-tcg="${escapeHtml(titleTcg)}" data-title-genesys="${escapeHtml(titleGenesys)}" title="${escapeHtml(titleTcg)}">${escapeHtml(e.name)}</div>`;
             }
             return html;
         }).join('');
@@ -607,6 +762,84 @@
         return html;
     }
 
+    function genesysHtml(genesys, n) {
+        if (!genesys) return '';
+        const { isLegal, totalPoints, budget, remainingPoints, violations, pointedCards } = genesys;
+        const pct = Math.min(100, (totalPoints / budget) * 100);
+        const meterColorCls = totalPoints > budget ? 'dl-genesys-bar--over' : totalPoints > 70 ? 'dl-genesys-bar--mid' : 'dl-genesys-bar--ok';
+
+        let violationsHtml = '';
+        if (violations.length) {
+            violationsHtml = `<ul class="dl-genesys-violations">
+                ${violations.map(v => `<li><i class="fas fa-times-circle" aria-hidden="true"></i> <span>${escapeHtml(v.message)}</span></li>`).join('')}
+            </ul>`;
+        }
+
+        let breakdownHtml = '';
+        if (pointedCards.length) {
+            breakdownHtml = `
+                <details class="dl-genesys-details"${pointedCards.length <= 4 ? ' open' : ''}>
+                    <summary class="dl-genesys-summary">
+                        <span>Point breakdown (${pointedCards.length} pointed card${pointedCards.length > 1 ? 's' : ''}, ${totalPoints} pts total)</span>
+                        <i class="fas fa-chevron-down dl-genesys-chevron" aria-hidden="true"></i>
+                    </summary>
+                    <div class="dl-genesys-grid">
+                        ${pointedCards.map(c => `
+                            <div class="dl-genesys-row">
+                                <span class="dl-genesys-name" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
+                                <span class="dl-genesys-count">×${c.count}</span>
+                                <span class="dl-genesys-cost dl-genesys-cost--${c.pointsEach >= 50 ? 'high' : c.pointsEach >= 20 ? 'mid' : 'low'}">
+                                    ${c.count > 1 ? `${c.pointsEach} × ${c.count} = ${c.pointsTotal} pts` : `${c.pointsTotal} pts`}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </details>
+            `;
+        } else {
+            breakdownHtml = `<p class="dl-genesys-free"><i class="fas fa-check-circle" aria-hidden="true"></i> All cards in this test deck cost 0 points (free).</p>`;
+        }
+
+        const idAttr = n ? ` id="dl-genesys-${n}"` : '';
+
+        return `
+            <div class="dl-genesys ${isLegal ? 'dl-genesys--legal' : 'dl-genesys--illegal'}"${idAttr} hidden>
+                <div class="dl-genesys-header">
+                    <div class="dl-genesys-title-area">
+                        <span class="dl-genesys-icon"><i class="fas fa-cube" aria-hidden="true"></i></span>
+                        <div>
+                            <p class="dl-genesys-title">Genesys Format Verification</p>
+                            <p class="dl-genesys-subtitle">${isLegal
+                                ? `<span class="dl-tag dl-tag--success"><i class="fas fa-check" aria-hidden="true"></i> Genesys Legal</span> · All format criteria met`
+                                : `<span class="dl-tag dl-tag--danger"><i class="fas fa-times" aria-hidden="true"></i> Not Genesys Legal</span> · Format requirements not met`}</p>
+                        </div>
+                    </div>
+                    <div class="dl-genesys-header-right">
+                        <div class="dl-genesys-score">
+                            <span class="dl-genesys-score-num">${totalPoints}</span>
+                            <span class="dl-genesys-score-cap">/ ${budget} pts</span>
+                        </div>
+                        <button type="button" class="dl-genesys-close" data-dl-act="genesys-close" title="Close Genesys verification" aria-label="Close Genesys verification">
+                            <i class="fas fa-times" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dl-genesys-meter" role="progressbar" aria-valuenow="${totalPoints}" aria-valuemin="0" aria-valuemax="${budget}">
+                    <div class="dl-genesys-bar ${meterColorCls}" style="width: ${pct}%"></div>
+                </div>
+                <div class="dl-genesys-meter-labels">
+                    <span>${totalPoints <= budget ? `${remainingPoints} point${remainingPoints === 1 ? '' : 's'} budget remaining` : `${totalPoints - budget} point${totalPoints - budget === 1 ? '' : 's'} over 100-pt budget`}</span>
+                    <span>100 pts deck cap</span>
+                </div>
+                ${violationsHtml}
+                ${breakdownHtml}
+                <div class="dl-genesys-footer">
+                    <span class="dl-genesys-hint"><i class="fas fa-magic" aria-hidden="true"></i> Pure Genesys test decks are planned for all decklists — this toggle will switch to them directly!</span>
+                </div>
+            </div>
+        `;
+    }
+
     async function render(container, archetype, { headingLevel = 3 } = {}) {
         container.classList.add('dl-root');
         container.innerHTML = '<p class="dl-loading"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading the test deck…</p>';
@@ -619,11 +852,30 @@
             container.innerHTML = `<p class="dl-issue dl-issue--error">The test deck couldn't be loaded. ${escapeHtml(error.message || '')}</p>`;
             return;
         }
-        const { deck, list, banlistDate } = data;
+        const { deck, list, banlistDate, genesys: genesysData } = data;
         const loader = root.CardLoader;
         const names = [...new Set([...list.main, ...list.extra].map(e => e.name))];
         if (loader && loader.preloadCards) await loader.preloadCards(names);
-        const record = name => (loader && loader.getCachedCard && loader.getCachedCard(name)) || null;
+        if (loader && loader.fetchGenesysData) await loader.fetchGenesysData().catch(() => {});
+        const record = name => {
+            if (!loader) return null;
+            if (loader.getCachedCard) {
+                const c = loader.getCachedCard(name);
+                if (c) return c;
+            }
+            if (loader.cardDataCache) {
+                if (loader.cardDataCache[name]) return loader.cardDataCache[name];
+                const lower = name.toLowerCase();
+                if (loader.cardDataCache[lower]) return loader.cardDataCache[lower];
+                for (const key of Object.keys(loader.cardDataCache)) {
+                    if (key.toLowerCase() === lower) return loader.cardDataCache[key];
+                }
+            }
+            return null;
+        };
+
+        const currentFormat = (loader && loader.currentBanlistFormat) || 'tcg';
+        const genesys = verifyGenesys(list, record, genesysData, currentFormat);
 
         const groups = [
             { kind: 'monster', label: 'Monsters' },
@@ -637,6 +889,26 @@
         const h = `h${headingLevel}`;
         const reviewed = deck.status === 'reviewed';
 
+        let genesysChipText = '';
+        let genesysChipTitle = '';
+        if (genesys.isLegal) {
+            genesysChipText = `Genesys Legal · ${genesys.totalPoints} pts`;
+            genesysChipTitle = `Genesys Format: Legal (${genesys.totalPoints} / 100 pts used, no Links or Pendulums)`;
+        } else {
+            const shortReasons = [];
+            if (genesys.totalPoints > 100) shortReasons.push(`${genesys.totalPoints}/100 pts`);
+            if (genesys.linkMonsters.length) {
+                const linkCount = genesys.linkMonsters.reduce((s, m) => s + m.count, 0);
+                shortReasons.push(`${linkCount} Link${linkCount > 1 ? 's' : ''}`);
+            }
+            if (genesys.pendulumMonsters.length) {
+                const pendCount = genesys.pendulumMonsters.reduce((s, m) => s + m.count, 0);
+                shortReasons.push(`${pendCount} Pendulum${pendCount > 1 ? 's' : ''}`);
+            }
+            genesysChipText = `Genesys: ${genesys.totalPoints} pts (${shortReasons.join(', ') || 'Not Legal'})`;
+            genesysChipTitle = `Genesys Format: Not Legal. ${genesys.violations.map(v => v.message).join(' ')}`;
+        }
+
         container.innerHTML = `
             <div class="dl-panel">
                 <div class="dl-head">
@@ -648,9 +920,16 @@
                                 title="${reviewed ? 'Checked by hand' : 'Assembled from official card text and the page’s combo lines; not yet play-tested'}">${reviewed ? 'Reviewed' : 'Draft'}</span>
                             <span>${reviewed ? 'Reviewed' : 'Drafted'} ${escapeHtml(formatDate(deck.reviewed))}</span>
                             ${banlistDate ? `<span aria-hidden="true">·</span><span>Banlist of ${escapeHtml(formatDate(banlistDate))}</span>` : ''}
+                            <span aria-hidden="true">·</span>
+                            <button type="button" class="dl-chip dl-chip--button ${genesys.isLegal ? 'dl-chip--genesys-legal' : 'dl-chip--genesys-illegal'}"
+                                data-dl-act="genesys" aria-controls="dl-genesys-${n}" aria-expanded="false"
+                                title="${escapeHtml(genesysChipTitle)} · Click to view verification"><i class="fas fa-cube" aria-hidden="true"></i> ${escapeHtml(genesysChipText)}</button>
                         </p>
                     </div>
                     <div class="dl-actions">
+                        <button type="button" class="dl-btn dl-btn--genesys ${genesys.isLegal ? 'dl-btn--genesys-legal' : 'dl-btn--genesys-illegal'}"
+                            data-dl-act="genesys" aria-controls="dl-genesys-${n}" aria-expanded="false"
+                            title="Genesys verification & points breakdown (Click to toggle)"><i class="fas fa-cube" aria-hidden="true"></i><span>Genesys (${genesys.totalPoints} pts)</span><i class="fas fa-chevron-down dl-btn-chevron" aria-hidden="true"></i></button>
                         <button type="button" class="dl-btn dl-btn--primary" data-dl-act="hand"><i class="fas fa-hand-sparkles" aria-hidden="true"></i><span>Draw a hand</span></button>
                         <button type="button" class="dl-btn" data-dl-act="ydk" title="For EDOPro, YGO Omega or YGOProDeck’s deck builder"><i class="fas fa-download" aria-hidden="true"></i><span>Download .ydk</span></button>
                         <button type="button" class="dl-btn" data-dl-act="ydke" title="Paste into EDOPro’s or YGO Omega’s deck editor"><i class="fas fa-link" aria-hidden="true"></i><span>Copy ydke link</span></button>
@@ -660,6 +939,7 @@
                 <p class="dl-status" role="status" aria-live="polite"></p>
                 ${summaryHtml(deck.summary)}
                 ${issuesHtml(list.issues)}
+                ${genesysHtml(genesys, n)}
                 <div class="dl-hand" hidden>
                     <div class="dl-hand-head">
                         <p class="dl-label">Opening hand</p>
@@ -675,24 +955,67 @@
                     <p class="dl-label">Main Deck <span class="dl-count">${total(list.main)}</span></p>
                     ${groups.filter(g => g.entries.length).map(g => `
                         <p class="dl-sublabel">${g.label} · ${total(g.entries)}</p>
-                        <div class="dl-cards">${slotsHtml(g.entries, deck, idMap, `dl${n}`)}</div>`).join('')}
+                        <div class="dl-cards">${slotsHtml(g.entries, deck, idMap, `dl${n}`, genesys, record)}</div>`).join('')}
                 </div>
                 <div class="dl-zone">
                     <p class="dl-label">Extra Deck <span class="dl-count">${total(list.extra)}</span></p>
-                    <div class="dl-cards">${slotsHtml(list.extra, deck, idMap, `dl${n}`)}</div>
+                    <div class="dl-cards">${slotsHtml(list.extra, deck, idMap, `dl${n}`, genesys, record)}</div>
                 </div>
                 <div class="dl-foot" data-suggest-anchor>
                     <p class="dl-legend">
                         <span><span class="dl-swatch dl-swatch--generic" aria-hidden="true"></span>Generic cards any deck can run</span>
                         <span><span class="dl-swatch dl-swatch--outside" aria-hidden="true"></span>Outside cards this build makes an exception for</span>
+                        <span class="dl-legend-pts"><span class="dl-swatch dl-swatch--pts" aria-hidden="true"></span>Genesys points cost</span>
                     </p>
-                    <p class="dl-hint">Staples are topped up from the site’s shared list, so the deck stays legal when the banlist changes. Hover a card for its role; click it for the full text.</p>
+                    <p class="dl-hint">Staples are topped up from the site’s shared list, so the deck stays legal when the banlist changes. Hover a card for its role (and Genesys cost when enabled); click it for the full text.</p>
                     <button type="button" class="dl-link" data-suggest="${escapeHtml(title)} test deck">Suggest a change to this list</button>
                 </div>
             </div>`;
 
-        if (loader && loader.loadCards) loader.loadCards(idMap.cards);
-        wire(container, { archetype, title, list, groups, record, n });
+        function decorateCards(rootEl) {
+            if (!rootEl) return;
+            rootEl.querySelectorAll('.dl-card[data-card-name]').forEach(card => {
+                const name = card.dataset.cardName;
+                if (!name) return;
+                const pts = genesys.getPoints(name);
+                const rec = record(name);
+                const isLink = rec ? isLinkCard(rec) : card.dataset.isLink === '1';
+                const isPendulum = rec ? isPendulumCard(rec) : card.dataset.isPendulum === '1';
+
+                card.querySelectorAll('.dl-card-badge').forEach(b => b.remove());
+
+                if (pts > 0) {
+                    card.classList.add('dl-card--pointed');
+                    const badge = document.createElement('span');
+                    const tier = pts >= 50 ? 'high' : pts >= 20 ? 'mid' : 'low';
+                    badge.className = `dl-card-badge dl-card-pts dl-card-pts--${tier}`;
+                    badge.textContent = `${pts}p`;
+                    badge.title = `${pts} Genesys point${pts === 1 ? '' : 's'}`;
+                    card.appendChild(badge);
+                } else {
+                    card.classList.remove('dl-card--pointed');
+                }
+
+                if (isLink || isPendulum) {
+                    card.classList.add('dl-card--forbidden');
+                    const banBadge = document.createElement('span');
+                    banBadge.className = 'dl-card-badge dl-card-ban';
+                    banBadge.innerHTML = '<i class="fas fa-ban" aria-hidden="true"></i>';
+                    banBadge.title = `Forbidden in Genesys: ${isLink ? 'Link Monster' : 'Pendulum Monster'}`;
+                    card.appendChild(banBadge);
+                } else {
+                    card.classList.remove('dl-card--forbidden');
+                }
+            });
+        }
+
+        decorateCards(container);
+        if (loader && loader.loadCards) {
+            Promise.resolve(loader.loadCards(idMap.cards)).then(() => {
+                decorateCards(container);
+            });
+        }
+        wire(container, { archetype, title, list, groups, record, n, genesys, decorateCards });
     }
 
     function wire(container, ctx) {
@@ -721,9 +1044,35 @@
             const cards = {};
             handCards.innerHTML = pool.slice(0, handSize).map((name, i) => {
                 cards[`${prefix}-${i}`] = name;
-                return `<div class="card-placeholder dl-card dl-card--hand" id="${prefix}-${i}" title="${escapeHtml(name)}">${escapeHtml(name)}</div>`;
+                return `<div class="card-placeholder dl-card dl-card--hand" id="${prefix}-${i}" data-card-name="${escapeHtml(name)}" title="${escapeHtml(name)}">${escapeHtml(name)}</div>`;
             }).join('');
-            if (root.CardLoader && root.CardLoader.loadCards) root.CardLoader.loadCards(cards);
+            if (ctx.decorateCards) ctx.decorateCards(handCards);
+            if (root.CardLoader && root.CardLoader.loadCards) {
+                Promise.resolve(root.CardLoader.loadCards(cards)).then(() => {
+                    if (ctx.decorateCards) ctx.decorateCards(handCards);
+                });
+            }
+        }
+
+        function toggleGenesysMode(forceState) {
+            const genesysPanel = container.querySelector('.dl-genesys');
+            const panel = container.querySelector('.dl-panel');
+            if (!genesysPanel || !panel) return;
+            const willShow = typeof forceState === 'boolean' ? forceState : genesysPanel.hidden;
+            genesysPanel.hidden = !willShow;
+            container.classList.toggle('dl-show-genesys', willShow);
+            panel.classList.toggle('dl-show-genesys', willShow);
+            container.querySelectorAll('[data-dl-act="genesys"]').forEach(b => {
+                b.setAttribute('aria-expanded', String(willShow));
+                if (b.classList.contains('dl-btn')) b.classList.toggle('dl-btn--active', willShow);
+                if (b.classList.contains('dl-chip')) b.classList.toggle('dl-chip--active', willShow);
+            });
+            container.querySelectorAll('.dl-card[data-title-genesys]').forEach(card => {
+                card.title = willShow ? card.dataset.titleGenesys : card.dataset.titleTcg;
+            });
+            if (willShow) {
+                genesysPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
         }
 
         container.addEventListener('click', async event => {
@@ -737,7 +1086,11 @@
             const button = event.target.closest('[data-dl-act]');
             if (!button) return;
             const act = button.dataset.dlAct;
-            if (act === 'hand') {
+            if (act === 'genesys') {
+                toggleGenesysMode();
+            } else if (act === 'genesys-close') {
+                toggleGenesysMode(false);
+            } else if (act === 'hand') {
                 hand.hidden = false;
                 drawHand();
                 hand.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

@@ -349,6 +349,9 @@ const GAME_ACTION_RE = /\b(?:summon(?:s|ed|ing)?|activat(?:e|es|ed|ing)|link(?:s
 // A lead-in before the instruction itself: "With 3 counters on Dimonno, ...", "Because ..., ...", "You can then ..."
 const LEADING_CLAUSE_RE = /^(?:(?:with|because|since|if|once|when|whenever|after|before|on|during|in|now that|as soon as|as|using|by)\b[^,:]{0,140}[,:]\s*|you (?:can|may|could|should|then|now)\s+(?:then\s+|now\s+|immediately\s+|also\s+)*)/i;
 
+// Engine system strings a script can offer as options (aux.ToHandOrElse asks "add to hand" 573 or "send to GY" 574)
+const SYSTEM_OPTION_TEXT = { 573: 'Add it to your hand', 574: 'Send it to the GY' };
+
 /**
  * Decides whether a step the engine did not match is a step the engine cannot simulate (and why),
  * as opposed to a concrete action the engine refused. Returns a key of UNSIMULATED_REASONS, or null.
@@ -2457,8 +2460,12 @@ export async function runComboReplay(combo, options = {}) {
                             const actorPart = cleanCardName(steps[s]?.text || '')
                                 .replace(/^(?:(?:during|in)\s+(?:the|your)\s+\w+\s+phase,?\s*)?(?:activat(?:e|ing)|us(?:e|ing)|chain(?:ing)?)\s+(?:the\s+)?/i, '')
                                 .split(/'s\b|[:,;]|\s+(?:to|by|and|choosing|targeting|from|in|on|with|for)\s+/i)[0];
-                            if (findStepCardCodes({ text: actorPart }, null).includes(m.code) &&
-                                /\b(?:return|bounce|destroy|banish|send|shuffle|effect|activat)/i.test(cleanCardName(steps[s]?.text || ''))) {
+                            // ... and the step must still be ahead, or be about this removal: "Activate Diamond Bell's effect ...
+                            // to inflict 1200 damage", once played, doesn't ask for its "destroy 1 card on the field" trigger
+                            const stepText = cleanCardName(steps[s]?.text || '');
+                            const asksRemoval = /\b(?:return|bounce|destroy|banish|send|shuffle)/i.test(stepText) ||
+                                (s >= stepIdx && /\b(?:effect|activat)/i.test(stepText));
+                            if (findStepCardCodes({ text: actorPart }, null).includes(m.code) && asksRemoval) {
                                 asked = true;
                                 break;
                             }
@@ -2535,7 +2542,9 @@ export async function runComboReplay(combo, options = {}) {
                     // not a player command ("Normal Summon Diameter") and not the card acting ("Rising Carp's effect ...")
                     // The card a step is about: "Rising Carp's effect ...", "LV7 triggers ...", "Hope searches ..."
                     const stepSubjectCodes = (s) => {
-                        const subject = cleanCardName(steps[s]?.text || '').match(/^\s*(?:then,?\s+)?(.+?)(?:'s\b|\s+(?:then\s+)?(?:searches|adds|sends|special summons|summons|revives|sets|places|equips|draws|banishes|destroys|triggers|activates|tributes|attaches|detaches)\b)/i);
+                        // "With Rock Hammer and Pebble Dog in your hand, activate Rock Hammer's effect": the setup clause
+                        // names cards that aren't the subject
+                        const subject = cleanCardName(steps[s]?.text || '').replace(LEADING_CLAUSE_RE, '').match(/^\s*(?:then,?\s+)?(.+?)(?:'s\b|\s+(?:then\s+)?(?:searches|adds|sends|special summons|summons|revives|sets|places|equips|draws|banishes|destroys|triggers|activates|tributes|attaches|detaches)\b)/i);
                         return subject ? matchFragmentCodes(subject[1]) : [];
                     };
                     const selectionCompletesStep = (s, pickedIdx) => {
@@ -2546,6 +2555,19 @@ export async function runComboReplay(combo, options = {}) {
                         if (/^(?:then,?\s+)?reviv(?:e|ing)\b/i.test(commandText) &&
                             pickedIdx.some(i => ![OcgLocation.GRAVE, OcgLocation.REMOVED].includes(m.selects?.[i]?.location))) return false;
                         const subjectCodes = stepSubjectCodes(s);
+                        // "Archosaur's effect destroys Babycerasaurus in your hand and adds Deep Sea Diva ...": after the
+                        // first pick the step still names a card it picks later
+                        const pickedCodes = pickedIdx.map(i => m.selects?.[i]?.code);
+                        const andVerb = /\b(?:and|then)\s+(?:adds?|sends?|special summons?|sets?|places?|banish(?:es)?|returns?|destroys?)\b/i.exec(commandText);
+                        if (andVerb) {
+                            const lower = commandText.toLowerCase();
+                            const head = lower.slice(0, andVerb.index), tail = lower.slice(andVerb.index);
+                            const mentions = (code, part) => [...(nameVariants.get(code) || [])].some(v => part.includes(v));
+                            const pickedInHead = pickedCodes.some(c => mentions(c, head) && !mentions(c, tail));
+                            const pendingInTail = [...(stepNamedCodes[s] || [])].some(c =>
+                                !subjectCodes.includes(c) && !pickedCodes.includes(c) && mentions(c, tail));
+                            if (pickedInHead && pendingInTail) return false;
+                        }
                         // "Scout Buggy's effect Special Summons a second Scout Buggy from your Deck": another copy of the subject
                         const namesCopy = /\b(?:a second|another|a copy of)\b/i.test(commandText);
                         return !pickedIdx.some(i => subjectCodes.includes(m.selects?.[i]?.code) &&
@@ -2718,11 +2740,23 @@ export async function runComboReplay(combo, options = {}) {
                             : steps[s];
                         // The engine's hint says what this pick does (Tribute 500, discard 501, banish 503, send 504): take
                         // the card the step's matching clause names ("banishing Mikpolar from your GY ..., to revive Megatanus")
-                        const clauseVerb = { 500: 'tribut', 501: 'discard', 503: 'banish', 504: 'send' }[lastHintCardCode];
+                        // (Special Summon 509: "destroy Archosaur and revive Systegosaur from your GY")
+                        const clauseVerb = { 500: 'tribut', 501: 'discard', 503: 'banish', 504: 'send', 509: '(?:special summon|reviv)' }[lastHintCardCode];
                         if (clauseVerb && chosen.length < maxSelect && steps[chainStepIdx] && !chainStepsConsumed.has(chainStepIdx)) {
-                            const clause = new RegExp(`\\b${clauseVerb}\\w*\\s+(.+?)(?:\\s+(?:from|to|instead)\\b|[,.;:]|$)`, 'i')
-                                .exec(cleanCardName(steps[chainStepIdx].text || '').replace(LEADING_CLAUSE_RE, ''));
-                            const clauseCodes = clause ? findStepCardCodes({ text: clause[1] }, null).filter(c => c !== actorCode) : [];
+                            const clauseRe = new RegExp(`\\b${clauseVerb}\\w*\\s+(.+?)(?:\\s+(?:from|to|instead)\\b|[,.;:]|$)`, 'i');
+                            const offeredClauseCodes = (text) => {
+                                const clause = clauseRe.exec(cleanCardName(text || '').replace(LEADING_CLAUSE_RE, ''));
+                                return clause ? findStepCardCodes({ text: clause[1] }, null)
+                                    .filter(c => c !== actorCode && m.selects.some(sel => sel.code === c)) : [];
+                            };
+                            let clauseCodes = offeredClauseCodes(steps[chainStepIdx].text);
+                            // A trigger that fired during another step ("Link Summon Code Talker using ... Firewall Phantom")
+                            // is described a step or two later ("Firewall Phantom's effect adds Cynet Codec ..., then discard
+                            // Code Radiator"; "Neptabyss's effect Special Summons Atlantean Dragoons from your GY")
+                            const chainStepIsActors = stepSubjectCodes(chainStepIdx).includes(actorCode);
+                            for (let s = chainStepIdx + 1; clauseCodes.length === 0 && !chainStepIsActors && s <= Math.min(steps.length - 1, chainStepIdx + 3); s++) {
+                                if (stepSubjectCodes(s).includes(actorCode)) clauseCodes = offeredClauseCodes(steps[s]?.text);
+                            }
                             if (clauseCodes.length > 0) tryMatchCodes(clauseCodes, null, 1, steps[chainStepIdx]);
                         }
                         // Targets are picked on activation: "Activate Bone Archfiend's effect, targeting itself, sending Red
@@ -3327,7 +3361,7 @@ export async function runComboReplay(combo, options = {}) {
                     const opts = m.options || [];
 
                     if (opts.length > 1) {
-                        const optDescs = opts.map(o => getEffectDescription(o));
+                        const optDescs = opts.map(o => getEffectDescription(o) || SYSTEM_OPTION_TEXT[Number(o)] || '');
                         // The step that names the card offering the choice ("Arrive in Light's effect draws 1 card")
                         // outweighs a later step that happens to share words with another option
                         const optCardCode = opts.length ? Number(BigInt(opts[0]) >> 20n) : 0;
@@ -3335,10 +3369,17 @@ export async function runComboReplay(combo, options = {}) {
                         const ownStep = optCardCode ? [stepIdx, stepIdx + 1, stepIdx - 1, stepIdx + 2]
                             .map(s => steps[s]).find(st => st && /'s effect\s+(?!:)\w+/i.test(st.text || '') &&
                                 findStepCardCodes(st, null).includes(optCardCode)) : null;
+                        // The step about to be played says what this prompt is for ("Special Summon Artmage Power Patron
+                        // from your Deck"), more than a later step that happens to "add ... to your hand"
+                        // (an action sentence only: "If the opponent negates it with a hand trap, ..." is commentary)
+                        const nearStep = steps[stepIdx] && steps[stepIdx] !== ownStep &&
+                            /^(?:special summon|normal summon|add|send|banish|set|draw|shuffle|return|destroy|equip|place|search)\b/i
+                                .test(cleanCardName(steps[stepIdx].text || '').trim()) ? steps[stepIdx] : null;
                         let bestScore = -Infinity;
                         for (let i = 0; i < opts.length; i++) {
                             let sc = scoreEffectDescAgainstStep(optDescs[i], contextText, false, opts[i]) +
-                                (ownStep ? 3 * scoreEffectDescAgainstStep(optDescs[i], ownStep.text || '', false, opts[i]) : 0);
+                                (ownStep ? 3 * scoreEffectDescAgainstStep(optDescs[i], ownStep.text || '', false, opts[i]) : 0) +
+                                (nearStep ? 2 * scoreEffectDescAgainstStep(optDescs[i], nearStep.text || '', false, opts[i]) : 0);
                             const dLower = (optDescs[i] || '').toLowerCase();
                             // Level modulation check against upcoming Synchro/Xyz summon
                             if (/\b(?:decrease|reduce|increase|raise)\b/i.test(dLower)) {
@@ -3463,7 +3504,16 @@ export async function runComboReplay(combo, options = {}) {
                     }
 
                     const stepMaterialCodes = [];
-                    if (activeStep?.actions && activeStep.actions.length > 0) {
+                    // "Link Summon Code Talker using Link Disciple and Firewall Phantom": for a material prompt the summon
+                    // sentence names its own materials, even when the next step (a discard) has actions of its own
+                    const ownSummonText = currentActiveStepIdx != null
+                        ? cleanCardName(steps[currentActiveStepIdx]?.text || '').replace(LEADING_CLAUSE_RE, '') : '';
+                    const ownUsing = [511, 512, 513, 533].includes(lastHintCardCode)
+                        ? /^(?:link|xyz|synchro|fusion)\s+summon\b[^.]*?\busing\s+([^.;]+)/i.exec(ownSummonText) : null;
+                    if (ownUsing) {
+                        for (const c of findStepCardCodes({ text: ownUsing[1] }, null)) stepMaterialCodes.push(c);
+                    }
+                    if (stepMaterialCodes.length === 0 && activeStep?.actions && activeStep.actions.length > 0) {
                         for (const act of activeStep.actions) {
                             if (act.isOverlay || act.to === 'zone-gy' || act.to === 'zone-banish' || act.to === 'zone-deck' || act.to === 'zone-extra' || act.to?.startsWith('material:')) {
                                 if (act.card && idMap.has(act.card)) {

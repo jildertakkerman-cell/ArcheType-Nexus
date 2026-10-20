@@ -23,6 +23,7 @@ const DeckList = require('../assets/js/decklist.js');
 
 const DATA_DIR = path.join(__dirname, '..', 'assets', 'data');
 const DECK_DIR = path.join(DATA_DIR, 'decklists');
+const GENESYS_FILE = path.join(DATA_DIR, 'genesys_points.json');
 const RESERVED = new Set(['index.json', 'packages.json', 'packages.generated.json', 'profiles.json', 'report.json']);
 const API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
 const EXTRA_TYPES = /fusion|synchro|xyz|link/i;
@@ -102,6 +103,8 @@ function main() {
 async function run() {
     const banlist = readJson(path.join(DATA_DIR, 'banlist.json'));
     const banMap = DeckList.banMapFromJson(banlist);
+    let genesys = null;
+    try { genesys = readJson(GENESYS_FILE); } catch (e) {}
     const { packages } = readJson(path.join(DECK_DIR, 'packages.json'));
     const generatedFile = path.join(DECK_DIR, 'packages.generated.json');
     const generated = fs.existsSync(generatedFile) ? readJson(generatedFile) : { packages: {} };
@@ -229,9 +232,15 @@ async function run() {
         });
 
         const count = zone => list[zone].reduce((s, e) => s + e.count, 0);
+        const genesysRes = DeckList.verifyGenesys(list, name => cardInfo.get(name.toLowerCase()), genesys, 'tcg');
         report.decks[archetype || file] = {
             file, status: deck.status, reviewed: deck.reviewed,
             main: count('main'), extra: count('extra'),
+            genesys: {
+                totalPoints: genesysRes.totalPoints,
+                isLegal: genesysRes.isLegal,
+                violations: genesysRes.violations.map(v => v.message)
+            },
             errors, review, warnings
         };
     }
@@ -252,7 +261,8 @@ async function run() {
     Object.entries(report.decks).forEach(([name, d]) => {
         errorCount += d.errors.length;
         const state = d.errors.length ? 'needs fixing' : d.review.length ? 'needs review' : 'ok';
-        console.log(`${name} (${d.file}) — ${d.status}, reviewed ${d.reviewed} · ${d.main} + ${d.extra} · ${state}`);
+        const genesysStr = d.genesys ? ` · Genesys: ${d.genesys.totalPoints} pts (${d.genesys.isLegal ? 'Legal' : 'Not Legal'})` : '';
+        console.log(`${name} (${d.file}) — ${d.status}, reviewed ${d.reviewed} · ${d.main} + ${d.extra}${genesysStr} · ${state}`);
         d.errors.forEach(m => console.log(`  ✗ ${m}`));
         d.review.forEach(m => console.log(`  ! ${m}`));
         d.warnings.forEach(m => console.log(`  · ${m}`));
