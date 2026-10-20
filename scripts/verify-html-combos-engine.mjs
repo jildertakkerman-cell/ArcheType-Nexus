@@ -720,7 +720,12 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         if (/(?:start with|begin with|with)\s+[^.;]+?\s+on (?:your |the )?field|\bsit(?:s)? on (?:your |the )?field|\bactive on (?:your |the )?field|^with\s+[A-Z][A-Za-z0-9'\s-]+\s+active\b/i.test(firstStep.text)) {
             // Each named card starts where its own clause says: "Start with Revolution Synchron in hand and ..."
             const startText = firstStep.text;
-            for (const m of (firstStep.cardsMentioned || [])) {
+            // Only the cards inside the start clause: "With Diviner and Serve on your field, Synchro Summon Cupid Pitch
+            // using ..." doesn't start with Cupid Pitch on the field
+            const startSeg = (/(?:start with|begin with|with)\s+[^.;]+?\s+on (?:your |the )?field[^,.;]*/i.exec(startText)?.[0] || '').toLowerCase();
+            // (each card once: "With Diviner and Serve on your field, ... using Diviner and Serve" names them twice)
+            for (const m of [...new Set(firstStep.cardsMentioned || [])]) {
+                if (startSeg && !startSeg.includes(String(m).toLowerCase())) continue;
                 const cData = await resolveInComboOrDb(m);
                 if (!cData) continue;
                 const at = startText.toLowerCase().indexOf(m.toLowerCase());
@@ -1180,11 +1185,16 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
     // monster on the opponent's field, so conditions like Tenma's "if only your opponent controls a monster" can be met
     const goingSecond = /\bgoing second\b|\bonly your opponent controls a monster\b/i.test(
         [parsedCombo.comboTitle, ...parsedCombo.steps.map(s => s.text)].join(' '));
+    // A line that looks at or reveals your opponent's Deck ("Drone's effect places the top 3 cards of your opponent's
+    // Deck ...", SPYRAL's "declaring Monster") needs them to have one: 10 vanilla monsters
+    const opponentDeck = /\bopponent'?s\s+(?:top\s+card|deck)\b|\btop\s+(?:card|\d+\s+cards)\s+of\s+(?:your\s+)?opponent'?s\b/i.test(
+        parsedCombo.steps.map(s => s.text).join(' '));
     return {
         title: parsedCombo.comboTitle,
         cards: [...cardsMap.values()],
         steps: decomposedSteps,
-        ...(goingSecond ? { opponentMonsters: [32452818] } : {}) // Beaver Warrior, vanilla Level 4
+        ...(goingSecond ? { opponentMonsters: [32452818], goingSecond: true } : {}), // Beaver Warrior, vanilla Level 4
+        ...(opponentDeck ? { opponentDeck: Array(10).fill(32452818) } : {})
     };
 }
 
