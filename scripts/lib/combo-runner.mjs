@@ -974,6 +974,10 @@ export async function runComboReplay(combo, options = {}) {
         let triggersFiredSinceLastIdle = 0;
         const cardsSelectedSinceLastIdle = new Set();
         const cardsSummonedSinceLastIdle = new Set();
+        // Monsters an effect Special Summoned "but negate its/their effects" (Urgent Schedule), by idle prompt count: their
+        // own "If this card is Summoned" triggers can't be used then
+        const negatedSummonAtIdle = new Map();
+        let idlePromptCount = 0;
         const cardsSetSinceLastIdle = new Set();
         const cardsBanishedSinceLastIdle = new Set();
         const cardsSentToGYSinceLastIdle = new Set();
@@ -1215,8 +1219,10 @@ export async function runComboReplay(combo, options = {}) {
             }
             // Same place named on both sides: "summon Sharakusai from the deck" vs "Special Summon ... from the Deck"
             // rather than "Special Summon this card from your hand"
-            for (const place of [/\bextra deck\b/i, /\bdeck\b/i, /\b(?:gy|graveyard)\b/i, /\bhand\b/i]) {
-                if (place.test(st) && place.test(d)) {
+            // ("from your Deck" is not "to the Extra Deck")
+            const stPlace = st.replace(/\bextra deck\b/g, 'extradeck'), dPlace = d.replace(/\bextra deck\b/g, 'extradeck');
+            for (const place of [/\bextradeck\b/i, /\bdeck\b/i, /\b(?:gy|graveyard)\b/i, /\bhand\b/i]) {
+                if (place.test(stPlace) && place.test(dPlace)) {
                     score += 4;
                     break;
                 }
@@ -1294,6 +1300,10 @@ export async function runComboReplay(combo, options = {}) {
                         const toZone = ocgLocPosToZone(m.to);
 
                         if (m.to && (m.to.controller === 0 || m.to.controller == null)) {
+                            if (m.to.location === OcgLocation.MZONE && currentSolvingChainCard?.code &&
+                                /\bspecial summon\b[^.]*\bnegate (?:its|their|the) effects\b/i.test(getCardText(currentSolvingChainCard.code) || '')) {
+                                negatedSummonAtIdle.set(code, idlePromptCount);
+                            }
                             if (m.to.location === OcgLocation.MZONE) {
                                 if (code !== playerInvokedSummonCode) {
                                     cardsSummonedSinceLastIdle.add(code);
@@ -1457,6 +1467,7 @@ export async function runComboReplay(combo, options = {}) {
                         });
                         continue;
                     }
+                    idlePromptCount++;
                     // A going-second line ("Melomelody ... can attack twice") needs a turn with a Battle Phase: end turn 1
                     // untouched, let the opponent pass, and play the line on turn 3
                     if (!passedFirstTurn) {
@@ -2424,7 +2435,8 @@ export async function runComboReplay(combo, options = {}) {
                     }
 
                 } else if (m.type === 12) { // SELECT_EFFECTYN
-                    let acceptTrigger = true;
+                    // Summoned with its effects negated just now (Urgent Schedule): its own summon trigger can't be used
+                    let acceptTrigger = negatedSummonAtIdle.get(m.code) !== idlePromptCount;
                     const prevStep = stepIdx > 0 ? steps[stepIdx - 1] : null;
                     const nextStep = steps[stepIdx] || null;
                     const prevText = (prevStep?.text || '');
@@ -2836,7 +2848,14 @@ export async function runComboReplay(combo, options = {}) {
                         if (actorCode) {
                             for (let s = chainStepIdx; s < Math.min(steps.length, chainStepIdx + 5) && chosen.length < maxSelect; s++) {
                                 if (chainStepsConsumed.has(s) || skipForDiscard(s) || !stepSubjectCodes(s).includes(actorCode)) continue;
-                                const objectCodes = findStepCardCodes(deckPickText(s), actorCode).filter(c => c !== actorCode);
+                                let objectCodes = findStepCardCodes(deckPickText(s), actorCode).filter(c => c !== actorCode);
+                                // A Deck pick is what the step adds ("targeting your banished Rampengu and Lara, to return
+                                // them to the GY and add Steeds"), not the targets named first
+                                if (m.selects?.length && m.selects.every(c => c.location === OcgLocation.DECK)) {
+                                    const added = /\badd(?:s|ing)?\s+(.+?)(?:\s+from\b|\s+to\b|[,.;]|$)/i.exec(cleanCardName(steps[s]?.text || ''));
+                                    const addedCodes = added ? findStepCardCodes({ text: added[1] }, null).filter(c => c !== actorCode) : [];
+                                    if (addedCodes.length > 0) objectCodes = addedCodes;
+                                }
                                 // "Strategist's effect changes itself to Defense Position" picks the activating card, also
                                 // when it targets on activation rather than on resolution
                                 const selfPick = objectCodes.length === 0 && /\b(?:itself|this card)\b/i.test(steps[s]?.text || '');
@@ -3299,6 +3318,14 @@ export async function runComboReplay(combo, options = {}) {
                                     chainStepsConsumed.has(s);
                                 if (isPassive) continue;
                                 if (SUMMON_COMMAND_STEP_RE.test(cleanCardName(stText).replace(LEADING_CLAUSE_RE, ''))) continue;
+                                // "Activate Nochiudrago's effect, targeting your banished Winda": not while Winda is still on
+                                // her way there (the Cannahawk activation that banishes her hasn't resolved yet)
+                                const targetWhere = /\btargeting\s+(?:your\s+|the\s+)?banished\s+(.+?)(?:[,.;]|\s+to\b|$)/i.exec(cleanCardName(stText));
+                                if (targetWhere) {
+                                    const wanted = findStepCardCodes({ text: targetWhere[1] }, null);
+                                    const banishedNow = lib.duelQueryLocation(duel, { flags: 17, controller: 0, location: OcgLocation.REMOVED }) || [];
+                                    if (wanted.length > 0 && !wanted.some(c => banishedNow.some(b => b && b.code === c))) continue;
+                                }
                                 const isExplicitTriggerStep = /(?:chain link \d|a chain forms|\bchain\b|in response|summon trigger|turns on|when .* is (?:sent|destroyed|summoned)|triggered\b)/i.test(stText) ||
                                     /^[A-Z][A-Za-z0-9"',\s-]+?\s+effect\s+(?:sends?|adds?|places?|sets?|triggers?|resolves?|special\s+summons?|summons?|revives?)\b/i.test(stText);
                                 if (s > stepIdx && !isExplicitTriggerStep) continue;
@@ -3339,7 +3366,7 @@ export async function runComboReplay(combo, options = {}) {
                                     // If the step specifies a concrete effect action (summon, search, send, draw, destroy, etc.)
                                     // and the best matching effect in SELECT_CHAIN scores <= 0 and has a mismatched effect description,
                                     // do not prematurely chain an unrelated Quick Effect; defer to IDLECMD!
-                                    const expectsSpecificAction = /(?:special summon|\bsummon\b|\brevives?\b|search|add .* to hand|\bsend\b|\bdump\b|foolish|draw\b|destroy\b)/i.test(contextText);
+                                    const expectsSpecificAction = /(?:special summon|\bsummon\b|\brevives?\b|search|add .* to (?:your )?hand|\bsend\b|\bdump\b|foolish|draw\b|destroy\b)/i.test(contextText);
                                     const bestDesc = (found != null && m.selects[found]) ? getEffectDescription(m.selects[found].description) : '';
                                     if (!m.forced && !isExplicitTriggerStep && expectsSpecificAction && bestDesc && bestScore <= 0) {
                                         continue;
@@ -3508,6 +3535,15 @@ export async function runComboReplay(combo, options = {}) {
                         }
                         if (bestScore <= 0 && /sends itself|send itself|\brevives?\b|\bdecrease\b|\breduce\b|\badd\b.*\bback\b|\btwo\b/i.test(contextText)) {
                             optIdx = 1;
+                        }
+                        // Choosing how to Normal Summon (option 1 is the usual Tribute Summon): "Normal Summon Babel Decker"
+                        // with no Tribute named means its own "without Tributing" procedure
+                        const procIdx = opts.findIndex(o => BigInt(o) >> 20n > 0n);
+                        const summonStep = [steps[currentActiveStepIdx ?? -1], steps[stepIdx - 1], steps[stepIdx]].find(st =>
+                            st && /^(?:then\s+)?normal summon\b/i.test(cleanCardName(st.text || '').replace(LEADING_CLAUSE_RE, '')));
+                        if (opts.some(o => BigInt(o) === 1n) && procIdx !== -1 && bestScore <= 0 && summonStep &&
+                            !/\btribut/i.test(summonStep.text || '')) {
+                            optIdx = procIdx;
                         }
                         optIdx = recordDecision('OPTION', optIdx, opts.map((_, i) => i).filter(i => i !== optIdx), {
                             confident: bestScore > 0,
@@ -4065,6 +4101,13 @@ export async function runComboReplay(combo, options = {}) {
                         if (!expectsSummon) {
                             answerYes = false;
                         }
+                    }
+                    // Urgula's "..., then you can destroy 1 Spell/Trap on the field": with nothing to destroy but your own
+                    // cards, a step has to ask for it
+                    const optionalDestroy = /\bdestroy\b/i.test(descStr) ||
+                        (!descStr && descCode && /\bthen,? you can destroy\b/i.test(getCardText(descCode) || ''));
+                    if (optionalDestroy && !steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3).some(st => /\bdestroy/i.test(st?.text || ''))) {
+                        answerYes = false;
                     }
                     // "then you can add 1 Ryu-Ge Pendulum Monster from your hand to your face-up Extra Deck": an optional
                     // extra the write-up may not use, so the choice search can try declining it
