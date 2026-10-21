@@ -3863,18 +3863,18 @@ window.CardLoader = (function () {
                                     <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
                                     <div class="flex-1">
                                         <p class="text-gray-300 font-semibold mb-1" style="font-size: 0.7rem;">Banlist Status Summary</p>
-                                        <p class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
-                                            <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                        <div class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
+                                            <button type="button" class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                                                 ${cards.length} core cards
                                             </button>
-                                            <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;">
+                                            <div class="hidden mt-2 bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;">
                                                 <strong class="text-gray-200">Core cards checked:</strong><br>
-                                                ${cards.sort().map(c => `• ${c}`).join('<br>')}
-                                            </span>
-                                            ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
+                                                ${cards.sort().map(c => `• ${esc(c)}`).join('<br>')}
+                                            </div>
+                                            ${merged.length > 0 ? ` + <button type="button" class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><div class="hidden mt-2 bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${esc(c)}`).join('<br>')}</div>` : ''} analyzed • 
                                             <strong class="text-gray-200">0 restrictions</strong> found • 
                                             All cards legal at <strong class="text-gray-200">3 copies</strong>
-                                        </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -3906,7 +3906,7 @@ window.CardLoader = (function () {
                             <div class="combo-step-card p-4 border-l-4 border-red-500">
                                 <h4 class="text-md font-bold text-red-400 mb-2">Forbidden</h4>
                                 <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                    ${relatedForbidden.map(c => `<li class="text-red-300">${c}</li>`).join('')}
+                                    ${relatedForbidden.map(c => `<li class="text-red-300">${esc(c)}</li>`).join('')}
                                 </ul>
                             </div>
                         `;
@@ -3917,7 +3917,7 @@ window.CardLoader = (function () {
                             <div class="combo-step-card p-4 border-l-4 border-yellow-500">
                                 <h4 class="text-md font-bold text-yellow-400 mb-2">Limited</h4>
                                 <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                    ${relatedLimited.map(c => `<li class="text-yellow-300">${c}</li>`).join('')}
+                                    ${relatedLimited.map(c => `<li class="text-yellow-300">${esc(c)}</li>`).join('')}
                                 </ul>
                             </div>
                         `;
@@ -3928,7 +3928,7 @@ window.CardLoader = (function () {
                             <div class="combo-step-card p-4 border-l-4 border-orange-500">
                                 <h4 class="text-md font-bold text-orange-400 mb-2">Semi-Limited</h4>
                                 <ul class="list-disc list-inside space-y-1 text-xs ${pageColors.bodyTextColor}">
-                                    ${relatedSemiLimited.map(c => `<li class="text-orange-300">${c}</li>`).join('')}
+                                    ${relatedSemiLimited.map(c => `<li class="text-orange-300">${esc(c)}</li>`).join('')}
                                 </ul>
                             </div>
                         `;
@@ -3962,18 +3962,18 @@ window.CardLoader = (function () {
                                 <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
                                 <div class="flex-1">
                                     <p class="text-gray-300 font-semibold mb-1" style="font-size: 0.7rem;">Banlist Status Summary</p>
-                                    <p class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
-                                        <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                    <div class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
+                                        <button type="button" class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                                             ${cards.length} core cards
                                         </button>
-                                        <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;">
+                                        <div class="hidden mt-2 bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;">
                                             <strong class="text-gray-200">Core cards checked:</strong><br>
-                                            ${cards.sort().map(c => `• ${c}`).join('<br>')}
-                                        </span>
-                                        ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
+                                            ${cards.sort().map(c => `• ${esc(c)}`).join('<br>')}
+                                        </div>
+                                        ${merged.length > 0 ? ` + <button type="button" class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><div class="hidden mt-2 bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${esc(c)}`).join('<br>')}</div>` : ''} analyzed • 
                                         <strong class="text-gray-200">0 archetype restrictions</strong> • 
                                         <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''} restricted</strong>
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -3995,10 +3995,10 @@ window.CardLoader = (function () {
             } else if (forbidden.length > 0) {
                 // Build forbidden card list text
                 const forbiddenText = forbidden.length === 1
-                    ? `<strong class="text-red-300">${forbidden[0]}</strong>`
+                    ? `<strong class="text-red-300">${esc(forbidden[0])}</strong>`
                     : forbidden.length === 2
-                        ? `<strong class="text-red-300">${forbidden[0]}</strong> and <strong class="text-red-300">${forbidden[1]}</strong>`
-                        : `<strong class="text-red-300">${forbidden[0]}</strong> and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}`;
+                        ? `<strong class="text-red-300">${esc(forbidden[0])}</strong> and <strong class="text-red-300">${esc(forbidden[1])}</strong>`
+                        : `<strong class="text-red-300">${esc(forbidden[0])}</strong> and ${forbidden.length - 1} other card${forbidden.length > 2 ? 's' : ''}`;
 
                 autoIntro = `The ${options.archetypeName} archetype faces significant restrictions on the ${formatName} banlist with ${forbiddenText} forbidden.`;
 
@@ -4008,9 +4008,9 @@ window.CardLoader = (function () {
                 }
             } else if (limited.length > 0) {
                 const limitedText = limited.length === 1
-                    ? `<strong class="text-yellow-300">${limited[0]}</strong>`
+                    ? `<strong class="text-yellow-300">${esc(limited[0])}</strong>`
                     : limited.length === 2
-                        ? `<strong class="text-yellow-300">${limited[0]}</strong> and <strong class="text-yellow-300">${limited[1]}</strong>`
+                        ? `<strong class="text-yellow-300">${esc(limited[0])}</strong> and <strong class="text-yellow-300">${esc(limited[1])}</strong>`
                         : `${limited.length} cards`;
 
                 autoIntro = `The ${options.archetypeName} archetype has been moderately restricted by the ${formatName} banlist, with ${limitedText} limited.`;
@@ -4036,7 +4036,7 @@ window.CardLoader = (function () {
                                         <i class="fas fa-ban mr-2"></i>Forbidden
                                     </h4>
                                     <ul class="list-none space-y-1 text-sm ${pageColors.bodyTextColor} text-left">
-                                        ${forbidden.map(c => `<li class="text-red-300">• ${c}</li>`).join('')}
+                                        ${forbidden.map(c => `<li class="text-red-300">• ${esc(c)}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -4049,7 +4049,7 @@ window.CardLoader = (function () {
                                         <i class="fas fa-exclamation-triangle mr-2"></i>Limited
                                     </h4>
                                     <ul class="list-none space-y-1 text-sm ${pageColors.bodyTextColor} text-left">
-                                        ${limited.map(c => `<li class="text-yellow-300">• ${c}</li>`).join('')}
+                                        ${limited.map(c => `<li class="text-yellow-300">• ${esc(c)}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -4062,7 +4062,7 @@ window.CardLoader = (function () {
                                         <i class="fas fa-exclamation-circle mr-2"></i>Semi-Limited
                                     </h4>
                                     <ul class="list-none space-y-1 text-sm ${pageColors.bodyTextColor} text-left">
-                                        ${semiLimited.map(c => `<li class="text-orange-300">• ${c}</li>`).join('')}
+                                        ${semiLimited.map(c => `<li class="text-orange-300">• ${esc(c)}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -4080,7 +4080,7 @@ window.CardLoader = (function () {
                                 <div class="combo-step-card p-4 border-l-4 border-red-500">
                                     <h4 class="text-md font-bold text-red-400 mb-2 text-left">Forbidden</h4>
                                     <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
-                                        ${relatedForbidden.map(c => `<li class="text-red-300">• ${c}</li>`).join('')}
+                                        ${relatedForbidden.map(c => `<li class="text-red-300">• ${esc(c)}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -4091,7 +4091,7 @@ window.CardLoader = (function () {
                                 <div class="combo-step-card p-4 border-l-4 border-yellow-500">
                                     <h4 class="text-md font-bold text-yellow-400 mb-2 text-left">Limited</h4>
                                     <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
-                                        ${relatedLimited.map(c => `<li class="text-yellow-300">• ${c}</li>`).join('')}
+                                        ${relatedLimited.map(c => `<li class="text-yellow-300">• ${esc(c)}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -4102,7 +4102,7 @@ window.CardLoader = (function () {
                                 <div class="combo-step-card p-4 border-l-4 border-orange-500">
                                     <h4 class="text-md font-bold text-orange-400 mb-2 text-left">Semi-Limited</h4>
                                     <ul class="list-none space-y-1 text-xs ${pageColors.bodyTextColor} text-left">
-                                        ${relatedSemiLimited.map(c => `<li class="text-orange-300">• ${c}</li>`).join('')}
+                                        ${relatedSemiLimited.map(c => `<li class="text-orange-300">• ${esc(c)}</li>`).join('')}
                                     </ul>
                                 </div>
                             `;
@@ -4139,7 +4139,7 @@ window.CardLoader = (function () {
                             </div>
                         `;
             } else if (forbidden.length > 0) {
-                const cardList = forbidden.join(', ');
+                const cardList = forbidden.map(esc).join(', ');
                 html += `
                             <div class="mt-4 p-3 bg-yellow-900 bg-opacity-30 rounded border-l-4 border-yellow-500">
                                 <p class="text-sm ${pageColors.bodyTextColor}">
@@ -4160,19 +4160,19 @@ window.CardLoader = (function () {
                                 <i class="fas fa-info-circle text-gray-400 text-xs mr-2 mt-0.5"></i>
                                 <div class="flex-1">
                                     <p class="text-gray-300 font-semibold mb-1" style="font-size: 0.7rem;">Banlist Status Summary</p>
-                                    <p class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
-                                        <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                    <div class="text-gray-400" style="font-size: 0.65rem; line-height: 1.3;">
+                                        <button type="button" class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
                                             ${cards.length} core cards
                                         </button>
-                                        <span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;">
+                                        <div class="hidden mt-2 bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;">
                                             <strong class="text-gray-200">Core cards checked:</strong><br>
-                                            ${cards.sort().map(c => `• ${c}`).join('<br>')}
-                                        </span>
-                                        ${merged.length > 0 ? ` + <button class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><span class="hidden mt-2 block bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${c}`).join('<br>')}</span>` : ''} analyzed • 
-                                        <strong class="text-gray-200">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''} found
+                                            ${cards.sort().map(c => `• ${esc(c)}`).join('<br>')}
+                                        </div>
+                                        ${merged.length > 0 ? ` + <button type="button" class="text-blue-400 hover:text-blue-300 underline cursor-pointer transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">${merged.length} related cards</button><div class="hidden mt-2 bg-gray-800 bg-opacity-70 p-2 rounded border border-gray-600 max-h-48 overflow-y-auto" style="font-size: 0.65rem;"><strong class="text-gray-200">Related cards checked:</strong><br>${merged.sort().map(c => `• ${esc(c)}`).join('<br>')}</div>` : ''} analyzed • 
+                                        <strong class="text-gray-200">${totalRestricted} total restriction${totalRestricted !== 1 ? 's' : ''} found</strong>
                                         ${totalArchetypeRestricted > 0 ? ` • <strong class="text-gray-300">${totalArchetypeRestricted} archetype card${totalArchetypeRestricted !== 1 ? 's' : ''}</strong>` : ''}
                                         ${totalRelatedRestricted > 0 ? ` • <strong class="text-gray-300">${totalRelatedRestricted} synergistic card${totalRelatedRestricted !== 1 ? 's' : ''}</strong>` : ''}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -4255,7 +4255,30 @@ window.CardLoader = (function () {
     async function fetchArchetypeCardNamesFromSupabase(archetypeName) {
         const rows = await fetchArchetypeCardsFromSupabase(archetypeName);
         if (!rows) return null;
-        const cardNames = [...new Set(rows.map(row => row.cardname).filter(Boolean))];
+
+        // Deduplicate cards that share the same passcode (e.g. pre-release translations vs official TCG names)
+        const byPasscode = new Map();
+        const withoutPasscode = [];
+
+        for (const row of rows) {
+            if (!row.cardname) continue;
+            const code = row.passcode ? String(row.passcode) : null;
+            if (!code) {
+                withoutPasscode.push(row.cardname);
+                continue;
+            }
+            if (!byPasscode.has(code)) {
+                byPasscode.set(code, row.cardname);
+            } else {
+                const existing = byPasscode.get(code);
+                // Prefer the official name containing angle brackets '<'
+                if (!existing.includes('<') && row.cardname.includes('<')) {
+                    byPasscode.set(code, row.cardname);
+                }
+            }
+        }
+
+        const cardNames = [...new Set([...byPasscode.values(), ...withoutPasscode])];
         console.log(`[CardLoader] Found ${cardNames.length} cards for ${archetypeName} in the site database`);
         return cardNames;
     }
