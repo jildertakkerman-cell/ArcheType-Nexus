@@ -1300,7 +1300,10 @@ export async function runComboReplay(combo, options = {}) {
                         const toZone = ocgLocPosToZone(m.to);
 
                         if (m.to && (m.to.controller === 0 || m.to.controller == null)) {
-                            if (m.to.location === OcgLocation.MZONE && currentSolvingChainCard?.code &&
+                            // (not the resolving card itself, as Brutal Dozer summons itself and then negates what it pulls
+                            // from the Deck, and not an Xyz/Fusion made from the Extra Deck in the same effect)
+                            if (m.to.location === OcgLocation.MZONE && currentSolvingChainCard?.code && code !== currentSolvingChainCard.code &&
+                                m.from?.location !== OcgLocation.EXTRA &&
                                 /\bspecial summon\b[^.]*\bnegate (?:its|their|the) effects\b/i.test(getCardText(currentSolvingChainCard.code) || '')) {
                                 negatedSummonAtIdle.set(code, idlePromptCount);
                             }
@@ -2852,7 +2855,8 @@ export async function runComboReplay(combo, options = {}) {
                                 // A Deck pick is what the step adds ("targeting your banished Rampengu and Lara, to return
                                 // them to the GY and add Steeds"), not the targets named first
                                 if (m.selects?.length && m.selects.every(c => c.location === OcgLocation.DECK)) {
-                                    const added = /\badd(?:s|ing)?\s+(.+?)(?:\s+from\b|\s+to\b|[,.;]|$)/i.exec(cleanCardName(steps[s]?.text || ''));
+                                    // (names can hold commas: "add Dark Magician, the Pharaoh's Servant")
+                                    const added = /\badd(?:s|ing)?\s+(.+?)(?:\s+from\b|\s+to\b|[.;]|$)/i.exec(cleanCardName(steps[s]?.text || ''));
                                     const addedCodes = added ? findStepCardCodes({ text: added[1] }, null).filter(c => c !== actorCode) : [];
                                     if (addedCodes.length > 0) objectCodes = addedCodes;
                                 }
