@@ -219,7 +219,20 @@ export function deriveSetcodeFromName(name) {
     return codes.slice(0, 4).reduce((acc, c, i) => acc | (BigInt(c) << BigInt(16 * i)), 0n);
 }
 
-export function parseSupabaseRow(row) {
+// Supabase has a card's Link Rating but not its arrows: YGOProDeck's linkmarkers, as the cards.cdb bitmask
+const LINK_MARKER_BITS = { 'Bottom-Left': 0x1, 'Bottom': 0x2, 'Bottom-Right': 0x4, 'Left': 0x8, 'Right': 0x20, 'Top-Left': 0x40, 'Top': 0x80, 'Top-Right': 0x100 };
+async function fetchLinkMarkers(passcode) {
+    try {
+        const res = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?id=${Number(passcode)}`);
+        if (!res.ok) return 0;
+        const markers = (await res.json())?.data?.[0]?.linkmarkers || [];
+        return markers.reduce((acc, m) => acc | (LINK_MARKER_BITS[m] || 0), 0);
+    } catch {
+        return 0;
+    }
+}
+
+export function parseSupabaseRow(row, linkMarkers = 0) {
     if (!row || !row.passcode) return null;
     const passcode = Number(row.passcode);
     const cardtype = (row.cardtype || '');
@@ -235,6 +248,8 @@ export function parseSupabaseRow(row) {
         if (/xyz/i.test(cardtype)) type |= 0x800000;
         if (/pendulum/i.test(cardtype)) type |= 0x1000000;
         if (/link/i.test(cardtype)) type |= 0x4000000;
+        // Supabase calls every Link Monster "Link Monster": text past the materials line makes it an Effect Monster
+        if (/link/i.test(cardtype) && desc.split(/\r?\n/).filter(l => l.trim()).length > 1) type |= 0x20;
         if (/toon/i.test(cardtype) || /"toon"/i.test(row.cardname)) type |= 0x400000;
         if (/(cannot be normal summoned|must be special summoned)/i.test(desc)) type |= 0x2000000; // TYPE_SPECIAL
     } else if (/spell/i.test(cardtype)) {
@@ -259,8 +274,10 @@ export function parseSupabaseRow(row) {
     const race = RACE_MAP[raceKey] || 0n;
 
     const atk = row.atk != null ? Number(row.atk) : 0;
-    const def = row.def != null ? Number(row.def) : 0;
-    const level = row.level != null ? Number(row.level) : 0;
+    const isLink = (type & 0x4000000) !== 0;
+    // cards.cdb keeps a Link Monster's rating in level and its arrows in def
+    const def = isLink ? linkMarkers : row.def != null ? Number(row.def) : 0;
+    const level = isLink ? Number(row.link) || 0 : row.level != null ? Number(row.level) : 0;
     const derived = deriveSetcodeFromName(row.cardname);
     const setcode = derived !== 0n ? derived : (/toon/i.test(row.cardname) || /toon/i.test(cardtype)) ? 0x62 : 0;
 
@@ -281,10 +298,10 @@ export function parseSupabaseRow(row) {
         attribute,
         race,
         attack: atk,
-        defense: def,
+        defense: isLink ? 0 : def,
         lscale: 0,
         rscale: 0,
-        link_marker: 0,
+        link_marker: isLink ? def : 0,
         name: row.cardname
     };
 }
@@ -383,22 +400,30 @@ export async function resolveCardAsync(nameOrCode) {
         // An exact card name wins over the generic-word filter: "My Friend Purrely" is a card, "my field" is not
         const exact = getCardByName(rawClean);
         if (exact) return exact;
-        if (GENERIC_NON_CARD_RE.test(rawClean)) return null;
+        // Some official names keep their quotation marks: "A Case for K9"
+        const quoted = getCardByName(`"${rawClean}"`);
+        if (quoted) return quoted;
+        // "Spell Shattering Sword" starts with a generic word but is a card newer than cards.cdb: a name of three or more
+        // capitalised words still gets the exact Supabase lookup below (never the local LIKE match)
+        const genericStart = GENERIC_NON_CARD_RE.test(rawClean);
+        if (genericStart && !/^[A-Z]\S*(?:\s+[A-Z0-9"'(]\S*){2,}$/.test(rawClean)) return null;
 
-        const strippedPossessive = rawClean
-            .replace(/\s*'s(?:\s+(?:monster|gy|graveyard|hand|field|scale|on-summon|summon|quick|second|first|other))?(?:\s+effect)?$/i, '')
-            .replace(/\s+effect$/i, '')
-            .trim();
-        if (!strippedPossessive || GENERIC_NON_CARD_RE.test(strippedPossessive)) return null;
+        if (!genericStart) {
+            const strippedPossessive = rawClean
+                .replace(/\s*'s(?:\s+(?:monster|gy|graveyard|hand|field|scale|on-summon|summon|quick|second|first|other))?(?:\s+effect)?$/i, '')
+                .replace(/\s+effect$/i, '')
+                .trim();
+            if (!strippedPossessive || GENERIC_NON_CARD_RE.test(strippedPossessive)) return null;
 
-        if (strippedPossessive !== rawClean) {
-            const exactStripped = getCardByName(strippedPossessive);
-            if (exactStripped) return exactStripped;
-        }
+            if (strippedPossessive !== rawClean) {
+                const exactStripped = getCardByName(strippedPossessive);
+                if (exactStripped) return exactStripped;
+            }
 
-        if (strippedPossessive.length >= 4) {
-            const likeRow = stmtByNameLike.get(`%${strippedPossessive.toLowerCase()}%`);
-            if (likeRow) return formatCardData(likeRow);
+            if (strippedPossessive.length >= 4) {
+                const likeRow = stmtByNameLike.get(`%${strippedPossessive.toLowerCase()}%`);
+                if (likeRow) return formatCardData(likeRow);
+            }
         }
     }
 
@@ -422,7 +447,11 @@ export async function resolveCardAsync(nameOrCode) {
         if (res.ok) {
             const rows = await res.json();
             if (rows && rows.length > 0) {
-                return parseSupabaseRow(rows[0]);
+                // "Maliss Dormouse" is "Maliss <P> Dormouse" in cards.cdb: keep that ProjectIgnis row, since overwriting
+                // it dropped the Link Rating, arrows, setcodes and effect strings the engine needs
+                const local = getCardByCode(rows[0].passcode);
+                if (local && !isSupabaseCached(rows[0].passcode)) return local;
+                return parseSupabaseRow(rows[0], /link/i.test(rows[0].cardtype || '') ? await fetchLinkMarkers(rows[0].passcode) : 0);
             }
         }
     } catch (err) {

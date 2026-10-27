@@ -966,8 +966,8 @@
             // Source filter
             if (fSource !== 'all' && it.source !== fSource) return false;
 
-            // Engine verdict filter
-            if (fVerdict !== 'all' && it.verdict !== fVerdict) return false;
+            // Engine verdict filter (applies to HTML items; curated JSON items have no verdict)
+            if (fVerdict !== 'all' && (fSource === 'curated' ? false : it.verdict !== fVerdict)) return false;
 
             // Triage status filter
             const st = triage[it.id]?.status || 'untriaged';
@@ -1168,7 +1168,7 @@
                     </div>
 
                     ${Object.keys(counts.verdicts || {}).length > 0 ? `
-                    <div style="display:flex; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                    <div id="audit-verdict-filter-group" style="display:${auditReport.filterSource === 'curated' ? 'none' : 'flex'}; gap:0.4rem; align-items:center; flex-wrap:wrap;">
                         <span style="font-size:0.78rem; color:#a3a3a3; font-weight:600; text-transform:uppercase;">Verdict:</span>
                         <button class="tab-btn${auditReport.filterVerdict === 'all' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditVerdict('all', this)">All</button>
                         ${Object.entries(AUDIT_VERDICTS).filter(([key]) => counts.verdicts[key]).map(([key, v]) => `
@@ -1641,6 +1641,14 @@
 
     window.filterAuditSource = function (source, btn) {
         auditReport.filterSource = source;
+        if (source === 'curated' && auditReport.filterVerdict !== 'all') {
+            auditReport.filterVerdict = 'all';
+            document.querySelectorAll('.tab-btn[onclick*="filterAuditVerdict"]').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('onclick')?.includes("'all'"));
+            });
+        }
+        const vg = document.getElementById('audit-verdict-filter-group');
+        if (vg) vg.style.display = source === 'curated' ? 'none' : 'flex';
         auditReport.shownCount = 30;
         document.querySelectorAll('.tab-btn[onclick*="filterAuditSource"]').forEach(b => b.classList.toggle('active', b === btn));
         renderAuditList();
@@ -1649,6 +1657,14 @@
 
     window.filterAuditVerdict = function (verdict, btn) {
         auditReport.filterVerdict = verdict;
+        if (verdict !== 'all' && auditReport.filterSource === 'curated') {
+            auditReport.filterSource = 'all';
+            document.querySelectorAll('.tab-btn[onclick*="filterAuditSource"]').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('onclick')?.includes("'all'"));
+            });
+            const vg = document.getElementById('audit-verdict-filter-group');
+            if (vg) vg.style.display = 'flex';
+        }
         auditReport.shownCount = 30;
         document.querySelectorAll('.tab-btn[onclick*="filterAuditVerdict"]').forEach(b => b.classList.toggle('active', b === btn));
         renderAuditList();

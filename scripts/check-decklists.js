@@ -15,7 +15,7 @@
 //            deck size, another archetype's card that isn't in "allow"
 //   review   a card the banlist now cuts, a combo card the list doesn't run,
 //            a card of the archetype released in the TCG after "reviewed"
-//   warnings an "allow"/"exclude" entry the list doesn't use
+//   warnings an "allow"/"exclude" entry the list doesn't use, a Forbidden combo card
 
 const fs = require('fs');
 const path = require('path');
@@ -223,12 +223,16 @@ async function run() {
             if (!listed.has(name.toLowerCase())) warnings.push(`"allow" names ${name}, but the list doesn't run it.`);
         });
 
-        // Every card the page's combos use should be in the list.
+        // Every card the page's combos use should be in the list. A Forbidden one can't
+        // be, so that's for the combo's own TCG heads-up, not the list.
         (deck.combos || []).forEach(comboFile => {
             let names;
             try { names = comboCardNames(comboFile); } catch (error) { warnings.push(`Couldn't read ${comboFile}: ${error.message}`); return; }
             const missing = names.filter(n => !listed.has(n.toLowerCase()));
-            if (missing.length) review.push(`Combos in ${comboFile} use cards the list doesn't run: ${missing.join(', ')}.`);
+            const forbidden = missing.filter(n => DeckList.banStatus(n, banMap) === 'Forbidden');
+            const runnable = missing.filter(n => !forbidden.includes(n));
+            if (runnable.length) review.push(`Combos in ${comboFile} use cards the list doesn't run: ${runnable.join(', ')}.`);
+            if (forbidden.length) warnings.push(`Combos in ${comboFile} use Forbidden cards no list can run: ${forbidden.join(', ')}.`);
         });
 
         const count = zone => list[zone].reduce((s, e) => s + e.count, 0);

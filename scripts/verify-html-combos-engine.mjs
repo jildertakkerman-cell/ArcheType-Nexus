@@ -66,6 +66,8 @@ function decodeHtml(str) {
         .replace(/&quot;/gi, '"')
         .replace(/&#39;|&#x27;|&apos;/gi, "'")
         .replace(/&amp;/gi, '&')
+        // "K9-&Oslash;&Oslash; Lupis"
+        .replace(/&Oslash;/g, 'Ø').replace(/&oslash;/g, 'ø')
         .replace(/&mdash;|&ndash;/gi, '-')
         .replace(/&nbsp;/gi, ' ')
         .replace(/\s+/g, ' ')
@@ -103,6 +105,11 @@ export function parseHtmlCombos(filePath) {
             );
 
             const stepMatches = [...blockContent.matchAll(/<div class="nc-step">([\s\S]*?)<\/div>\s*(?=<div class="nc-step"|$)/g)];
+            // A block whose badges are all icons is a feature list ("Cannot be destroyed by battle ...", one line per
+            // effect), not a numbered combo
+            if (!stepMatches.some(sm => /<span class="nc-step-n">\s*\d+\s*<\/span>/i.test(sm[1]))) continue;
+            // ...and a numbered "Rulings Worth Knowing" / FAQ list is rulings, not a line to play
+            if (/\b(?:rulings?|faq)\b/i.test(comboTitle)) continue;
             let steps = [];
             let subComboIdx = 1;
 
@@ -392,7 +399,17 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         }
         const wordRe = new RegExp(`\\b${lower.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
         for (const c of cardsMap.values()) {
-            if (wordRe.test(c.name)) return c.data;
+            if (!wordRe.test(c.name)) continue;
+            // A card with exactly this name beats a longer combo card that contains it: "Gagaga Magician" is Gagaga
+            // Magician, not "Gagaga Magician - Gagaga Magic", and "Red Dragon Archfiend" isn't "Hot Red Dragon Archfiend
+            // Abyss". A short name for a combo card stays that card ("Dark Blade" on the Memento page is Mementotlan Dark
+            // Blade), and so does a name cut at a comma ("Dark Magician, the Pharaoh's Servant")
+            const full = c.name.toLowerCase();
+            if (!full.endsWith(` ${lower}`) && !full.startsWith(`${lower},`)) {
+                const exactInDb = findLocalCard(candidate);
+                if (exactInDb && exactInDb.name.toLowerCase() === lower) return exactInDb;
+            }
+            return c.data;
         }
         // A short name on an archetype page means that archetype's card: "Sigma" on the Mathmech page is
         // Mathmech Sigma, not the shortest database name containing it (Vylon Sigma)
@@ -429,6 +446,9 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         if (verbStripped === baseClean) {
             return await lookupCleanInDeckOrDb(baseClean);
         }
+        // A card whose exact name starts with a verb ("Chain Resonator", "Draw Muscle") is that card, not "Chain" + a name
+        const exactWhole = findLocalCard(baseClean);
+        if (exactWhole && exactWhole.name.toLowerCase() === baseClean.toLowerCase()) return exactWhole;
         // If baseClean started with a single-word potential card-name prefix ("Tribute Lanius", "Link Spider", "Set Rotation"), try baseClean first
         if (/^(?:tribute|link|set|fusion|synchro|xyz|ritual|pendulum|place|target)\s+[A-Z]/i.test(baseClean)) {
             const direct = await lookupCleanInDeckOrDb(baseClean);
@@ -662,7 +682,7 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         const firstStep = parsedCombo.steps[0];
         const candidateNames = [];
 
-        const verbMatch = firstStep.text.match(/(?:normal summon(?:ing)?|tribute summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|link summon(?:ing)?|overlay(?:ing)?|activat(?:e|ing)|reveal(?:ing)?|special summon(?:ing)?|summon(?:ing)?|start (?:with|by)|open(?:ing)?(?:\s+on|\s+with)?|required hand:)\s+([A-Za-z0-9',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+in\b|\s+by\b|\s+using\b|\s+with\b|\s+plus\b|,(?!\s*the\b)|\s+and\b|$)/i);
+        const verbMatch = firstStep.text.match(/(?:normal summon(?:ing)?|tribute summon(?:ing)?|synchro summon(?:ing)?|xyz summon(?:ing)?|link summon(?:ing)?|overlay(?:ing)?|activat(?:e|ing)|reveal(?:ing)?|special summon(?:ing)?|summon(?:ing)?|start (?:with|by)|open(?:ing)?(?:\s+on|\s+with)?|required hand:)\s+([A-Za-z0-9@',\s-:]+?)(?::|\.|\s+to\b|\s+from\b|\s+in\b|\s+by\b|\s+using\b|\s+with\b|\s+plus\b|,(?!\s*the\b)|\s+and\b|$)/i);
         if (verbMatch && /^[A-Z0-9"']/.test(verbMatch[1].trim())) candidateNames.push(verbMatch[1].trim());
         const exMatches = [...firstStep.text.matchAll(/(?:\(\s*(?:e\.g\.?,?|i\.e\.?,?|like|such as|optimally|ideally)\s+|\b(?:e\.g\.?,?|like|such as)\s+)([A-Z][A-Za-z0-9"',\s-:]+?)(?=\)|,|\.|\s+to\b|\s+from\b|\s+in\b|\s+and\b|\s+or\b|$)/gi)];
         for (const em of exMatches) {
@@ -679,10 +699,17 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         const isMultiStarterSetup = /^(?:start with|open(?:ing)?|required hand:|with\b.*?\bin (?:your )?hand)/i.test(firstStep.text.trim());
         // Only the cards the setup clause names start in hand: "With Regulator and Winder in your hand, ... Special
         // Summons Winder and Adjuster from your Deck" keeps Adjuster in the Deck
+        // ("With Carrier and Helix on your field and Stealth in your hand" puts only Stealth in the hand)
         const setupClause = !isMultiStarterSetup ? '' :
-            (/^with\b.*?\bin (?:your )?hand\b/i.exec(firstStep.text.trim())?.[0] || firstStep.text.trim().split(/\.(?:\s|$)/)[0]).toLowerCase();
+            (/^with\b.*?\bin (?:your )?hand\b/i.exec(firstStep.text.trim())?.[0] || firstStep.text.trim().split(/\.(?:\s|$)/)[0]).toLowerCase()
+                .split(/\b(?:on (?:your |the )?field|in (?:your |the )?(?:gy|graveyard))\b/).pop();
+        // ...and when the clause names a candidate, not even the first one outside it ("Activate Ignister A.I.Land"
+        // later in Step 1 after "With Achichi @Ignister in your hand")
+        // (a whole name: "Megalith Phuloch" in the clause doesn't name "Megalith Phul")
+        const clauseHas = (c) => new RegExp(`(?:^|[^a-z0-9])${String(c).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![a-z0-9])`).test(setupClause);
+        const clauseNamesCandidate = Boolean(setupClause) && candidateNames.some(clauseHas);
         for (const cand of candidateNames) {
-            if (placedStarter && setupClause && !setupClause.includes(String(cand).toLowerCase())) continue;
+            if ((placedStarter || clauseNamesCandidate) && setupClause && !clauseHas(cand)) continue;
             const cardData = await resolveInComboOrDb(cand);
             if (cardData && ensureInHand(cardData)) {
                 placedStarter = true;
@@ -729,9 +756,12 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
                 const cData = await resolveInComboOrDb(m);
                 if (!cData) continue;
                 const at = startText.toLowerCase().indexOf(m.toLowerCase());
-                const after = at === -1 ? '' : startText.slice(at + m.length, at + m.length + 40);
-                if (/^\s*(?:\([^)]*\)\s*)?in (?:your )?hand\b/i.test(after)) ensureInHand(cData);
-                else if (/^\s*(?:\([^)]*\)\s*)?in (?:your |the )?(?:gy|graveyard)\b/i.test(after)) ensureInZone(cData, 'zone-gy', true);
+                // The first place named after the card is where it starts: "With Cube and Soldier on your field and
+                // Element and Material in your hand" puts Element in the hand, not just a card directly before "in your hand"
+                const after = at === -1 ? '' : startText.slice(at + m.length);
+                const place = /\b(?:in (?:your )?(hand)|in (?:your |the )?(gy|graveyard)|on (?:your |the )?field)\b/i.exec(after);
+                if (place?.[1]) ensureInHand(cData);
+                else if (place?.[2]) ensureInZone(cData, 'zone-gy', true);
                 else placeOnField(cData);
             }
             // Described monsters ("any two Level 3 non-Tuner monsters on the field") get real matching cards, vanilla
@@ -855,7 +885,13 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
 
         // Explicit pre-existing GY setup ("With X in your GY", "already in the graveyard", or Step 1 GY activation)
         if (/(?:with|having|already)\b.*?\bin (?:your |the )?(?:gy|graveyard)/i.test(s.text) || (sIdx === 0 && /\bin (?:your |the )?(?:gy|graveyard)|\b(?:gy|graveyard) effect\b/i.test(s.text))) {
+            // Only the cards inside a "With X and Y in your GY," clause: "..., activate Necro Slime's effect to Fusion
+            // Summon Genghis" doesn't start with Genghis in the GY
+            // ("With Gagaga Magic in your hand and Golem and Gigas in your GY," puts only Golem and Gigas there)
+            const gySeg = (/^\s*(?:with|having)\s+[^.;]+?\s+in (?:your |the )?(?:gy|graveyard)\s*,/i.exec(s.text)?.[0] || '')
+                .toLowerCase().split(/\bin (?:your )?hand\b/).pop();
             for (const m of (s.cardsMentioned || [])) {
+                if (gySeg && !gySeg.includes(String(m).toLowerCase())) continue;
                 const gyCard = await resolveInComboOrDb(m);
                 if (gyCard && !searchedCodes.has(gyCard.code) && !/^(?:activate|use)\s+/i.test(s.text)) {
                     ensureInZone(gyCard, 'zone-gy', sIdx === 0);
@@ -874,10 +910,15 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
             // "send Nunu, the Ogdoadic Remnant, Nauya, ... from your Deck to the GY": the match stops at the first
             // comma, so read on to the end of the sentence for where the cards come from
             const restOfSentence = s.text.slice(dm.index + dm[0].length).split(/[.;](?:\s|$)/)[0];
-            const fromElsewhere = /^(?:send|sending)\b/i.test(dm[0]) && /\bfrom (?:the |your )?(?:deck|extra deck|gy|graveyard)\b/i.test(restOfSentence);
+            // (and "reveal Kozmo Dark Destroyer, ... from your Deck" for Tincan reveals Deck cards, not hand cards)
+            const fromElsewhere = /^(?:send|sending|reveal|revealing)\b/i.test(dm[0]) && /\bfrom (?:the |your )?(?:deck|extra deck|gy|graveyard)\b/i.test(restOfSentence);
             if (/^[A-Z0-9"']/.test(candStr) && !fromElsewhere && !/\b(?:deck|extra deck|gy|graveyard)\b/i.test(dm[0])) {
                 const dCard = await resolveInComboOrDb(candStr);
-                if (dCard && !searchedCodes.has(dCard.code) && !searchedBefore(dCard, sIdx, dm.index)) {
+                // "Special Summon Scar from your Deck ... by Tributing Scar": the Tribute is the summoned copy, not a hand card
+                const summonedBefore = dCard && /^tribut/i.test(dm[0]) && new RegExp(
+                    `special summons?\\s+(?:a\\s+|the\\s+)?${dCard.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+from (?:the |your )?(?:deck|gy|graveyard|extra deck)\\b`)
+                    .test(`${parsedCombo.steps.slice(0, sIdx).map(st => st.text).join(' ')} ${s.text.slice(0, dm.index)}`.toLowerCase());
+                if (dCard && !searchedCodes.has(dCard.code) && !searchedBefore(dCard, sIdx, dm.index) && !summonedBefore) {
                     ensureInHand(dCard);
                 }
             }
@@ -917,7 +958,10 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
                     !(s.cardsMentioned || []).some(n => [...cardsMap.values()].some(c => c.name.toLowerCase() === String(n).toLowerCase() && (c.data.type & 0x82) === 0x82))) {
                     const spellName = (getCardText(hCard.code).match(/Ritual Summon this card with "([^"]+)"/i) || [])[1];
                     const spell = spellName && !s.text.toLowerCase().includes(spellName.toLowerCase()) ? findLocalCard(spellName) : null;
-                    if (spell && !searchedCodes.has(spell.code) && !searchedBefore(spell, sIdx, fhm.index)) ensureInHand(spell);
+                    // (only that exact Ritual Spell: Phul's 'with a "Megalith" card' names an archetype, and a fuzzy
+                    // match put a second Megalith Phul in the hand)
+                    if (spell && (spell.type & 0x82) === 0x82 && spell.name.toLowerCase() === spellName.toLowerCase() &&
+                        !searchedCodes.has(spell.code) && !searchedBefore(spell, sIdx, fhm.index)) ensureInHand(spell);
                 }
             }
         }
@@ -1040,7 +1084,9 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
     }
 
     // Fill remaining opening hand slots up to 5 cards using distinct archetype monsters (avoiding generic hand traps and duplicate names)
-    let inHand = [...cardsMap.values()].filter(c => c.zone === 'zone-hand').length;
+    // ("With only A and B in your hand" is the whole hand: empty-hand lines like Infernity need nothing else in it)
+    const onlyTheseInHand = /^\s*with only\b[^.;]*\bin your hand\b/i.test(parsedCombo.steps[0]?.text || '');
+    let inHand = onlyTheseInHand ? 5 : [...cardsMap.values()].filter(c => c.zone === 'zone-hand').length;
     const handTrapCodes = new Set([14558127, 23434538, 97268402, 94145021, 27204311, 59438930, 73642296, 10045474, 24224830]);
     const cleanArchWord = (archetype || '')
         .replace(/\s+(?:Deck Analysis|Archetype Breakdown|Archetype Deep Dive|Strategy Guide|Guide|Analysis)\.html$/i, '')
@@ -1183,8 +1229,15 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
 
     // A going-second line ("Going Second: ...", "while only your opponent controls a monster") starts with one vanilla
     // monster on the opponent's field, so conditions like Tenma's "if only your opponent controls a monster" can be met
-    const goingSecond = /\bgoing second\b|\bonly your opponent controls a monster\b/i.test(
-        [parsedCombo.comboTitle, ...parsedCombo.steps.map(s => s.text)].join(' '));
+    const comboText = [parsedCombo.comboTitle, ...parsedCombo.steps.map(s => s.text)].join(' ');
+    // "Tribute 3 of your opponent's monsters" (Soul Crossing): the opponent needs that many monsters
+    const countWords = { two: 2, three: 3, four: 4, five: 5 };
+    let opponentMonsterCount = 0;
+    for (const cm of comboText.matchAll(/\b(\d|two|three|four|five)\s+(?:of\s+)?(?:your\s+)?opponent'?s\s+monsters\b|\byour opponent controls\s+(\d|two|three|four|five)\s+monsters\b/gi)) {
+        const n = (cm[1] || cm[2]).toLowerCase();
+        opponentMonsterCount = Math.max(opponentMonsterCount, countWords[n] || Number(n) || 0);
+    }
+    const goingSecond = opponentMonsterCount > 0 || /\bgoing second\b|\bonly your opponent controls a monster\b/i.test(comboText);
     // A line that looks at or reveals your opponent's Deck ("Drone's effect places the top 3 cards of your opponent's
     // Deck ...", SPYRAL's "declaring Monster") needs them to have one: 10 vanilla monsters
     const opponentDeck = /\bopponent'?s\s+(?:top\s+card|deck)\b|\btop\s+(?:card|\d+\s+cards)\s+of\s+(?:your\s+)?opponent'?s\b/i.test(
@@ -1193,7 +1246,8 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         title: parsedCombo.comboTitle,
         cards: [...cardsMap.values()],
         steps: decomposedSteps,
-        ...(goingSecond ? { opponentMonsters: [32452818], goingSecond: true } : {}), // Beaver Warrior, vanilla Level 4
+        // Beaver Warrior, vanilla Level 4
+        ...(goingSecond ? { opponentMonsters: Array(Math.max(1, opponentMonsterCount)).fill(32452818), goingSecond: true } : {}),
         ...(opponentDeck ? { opponentDeck: Array(10).fill(32452818) } : {})
     };
 }

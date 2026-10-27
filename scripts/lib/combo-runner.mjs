@@ -347,7 +347,8 @@ const NON_SPECIFIC_RE = /\b(?:standard|usual|same (?:as|way|three|steps)|as abov
 // lead-in ("With two monsters, Link Summon...") or is a fragment ("rank it up into...", "revives Meek from the GY")
 const GAME_ACTION_RE = /\b(?:summon(?:s|ed|ing)?|activat(?:e|es|ed|ing)|link(?:s|ed|ing)?|xyz|synchro|fusion|fus(?:e|es|ed|ing)|overlay|tun(?:e|es|ed|ing)|rank[- ]?up|rank (?:it|them) up|search(?:es|ed|ing)?|add(?:s|ed|ing)?|send(?:s|ing)?|sent|discard(?:s|ed|ing)?|banish(?:es|ed|ing)?|tribut(?:e|es|ed|ing)|destroy(?:s|ed|ing)?|reviv(?:e|es|ed|ing)|set(?:s|ting)?(?!\s*up)|equip(?:s|ped|ping)?|attach(?:es|ed|ing)?|detach(?:es|ed|ing)?|draw(?:s|n|ing)?|mill(?:s|ed|ing)?|excavat(?:e|es|ed|ing)|return(?:s|ed|ing)?|shuffl(?:e|es|ed|ing)|flip(?:s|ped|ping)?|reveal(?:s|ed|ing)?|negat(?:e|es|ed|ing)|pay(?:s|ing)?|declar(?:e|es|ed|ing)|plac(?:e|es|ed|ing)(?<!in(?:to)? place)|dump(?:s|ed|ing)?|recover(?:s|ed|ing)?|retriev(?:e|es|ed|ing)|bounc(?:e|es|ed|ing)|pop(?:s|ped|ping)?|scale[sd]?|ritual|climb(?:s|ed|ing)?|deploy(?:s|ed|ing)?|brings?|us(?:e|es|ed|ing)|swap(?:s|ped|ping)?|switch(?:es|ed|ing)?|steal(?:s|ing)?|take control|chain(?:s|ed|ing)?|attack(?:s|ed|ing)?|ss|ns)\b/i;
 // A lead-in before the instruction itself: "With 3 counters on Dimonno, ...", "Because ..., ...", "You can then ..."
-const LEADING_CLAUSE_RE = /^(?:(?:with|because|since|if|once|when|whenever|after|before|on|during|in|now that|as soon as|as|using|by)\b[^,:]{0,140}[,:]\s*|you (?:can|may|could|should|then|now)\s+(?:then\s+|now\s+|immediately\s+|also\s+)*)/i;
+// (a setup clause listing several cards is one lead-in: "With Alpha Thuban, Benten and Meteonis Drytron in your hand, ...")
+const LEADING_CLAUSE_RE = /^(?:with\s+[^.;:]{0,200}?\s+(?:in|on)\s+(?:your|the)\s+(?:hand|gy|graveyard|field|pendulum zones?|monster zones?|extra deck|deck|banishment)\b[^,.;:]{0,40},\s*|(?:with|because|since|if|once|when|whenever|after|before|on|during|in|now that|as soon as|as|using|by)\b[^,:]{0,140}[,:]\s*|you (?:can|may|could|should|then|now)\s+(?:then\s+|now\s+|immediately\s+|also\s+)*)/i;
 
 // Engine system strings a script can offer as options (aux.ToHandOrElse asks "add to hand" 573 or "send to GY" 574)
 // (70-72: declaring a card type, as SPYRAL Super Agent does)
@@ -482,9 +483,15 @@ export async function runComboReplay(combo, options = {}) {
     // Counts responses, so the run can tell the idle prompt where it issued the last step (keep going until that
     // action has resolved) from the next one, which it leaves unanswered (the combo is done)
     let responsesSet = 0;
+    // An idle command (a step's own activation) was answered and its chain link hasn't been seen yet
+    let idleActivationPending = false;
     const lib = new Proxy(coreLib, {
         get(target, prop) {
-            if (prop === 'duelSetResponse') return (d, r) => { responsesSet++; return target.duelSetResponse(d, r); };
+            if (prop === 'duelSetResponse') return (d, r) => {
+                responsesSet++;
+                if (r?.type === OcgResponseType.SELECT_IDLECMD) idleActivationPending = true;
+                return target.duelSetResponse(d, r);
+            };
             const v = target[prop];
             return typeof v === 'function' ? v.bind(target) : v;
         }
@@ -1255,6 +1262,8 @@ export async function runComboReplay(combo, options = {}) {
                     console.log('[DEBUG CHAIN MSG]', m.type, JSON.stringify(m, (k, v) => typeof v === 'bigint' ? v.toString() : v));
                 }
 
+                // A summon or Set answered the idle command: the next chain is its triggers, not that step's activation
+                if (m.type === 54 || m.type === 60 || m.type === 62 || m.type === 64) idleActivationPending = false;
                 if (m.type === 70) { // CHAINING
                     chainStack.set(m.chain_size, {
                         code: m.code,
@@ -1262,8 +1271,10 @@ export async function runComboReplay(combo, options = {}) {
                         location: m.location,
                         sequence: m.sequence,
                         description: m.description,
-                        stepIdx: currentActiveStepIdx
+                        stepIdx: currentActiveStepIdx,
+                        fromIdle: idleActivationPending
                     });
+                    idleActivationPending = false;
                     if (m.controller === 0 || m.controller == null) {
                         lastActorCode = m.code;
                         triggersFiredSinceLastIdle++;
@@ -1304,7 +1315,10 @@ export async function runComboReplay(combo, options = {}) {
                             // from the Deck, and not an Xyz/Fusion made from the Extra Deck in the same effect)
                             if (m.to.location === OcgLocation.MZONE && currentSolvingChainCard?.code && code !== currentSolvingChainCard.code &&
                                 m.from?.location !== OcgLocation.EXTRA &&
-                                /\bspecial summon\b[^.]*\bnegate (?:its|their|the) effects\b/i.test(getCardText(currentSolvingChainCard.code) || '')) {
+                                // (only a summon to your side: Mikanko Fire Dance negates the monster it gives your opponent
+                                // from their GY, not the Mikanko it summons for you)
+                                [...(getCardText(currentSolvingChainCard.code) || '').matchAll(/\bspecial summon\b(?:(?!\bspecial summon\b)[^.])*\bnegate (?:its|their|the) effects\b/gi)]
+                                    .some(c => !/\b(?:opponent's (?:gy|graveyard|field)|to their field)\b/i.test(c[0]))) {
                                 negatedSummonAtIdle.set(code, idlePromptCount);
                             }
                             if (m.to.location === OcgLocation.MZONE) {
@@ -1632,8 +1646,10 @@ export async function runComboReplay(combo, options = {}) {
 
                         // If this step describes a Chain Link or a trigger/search/on-activation effect that already resolved since the last IDLECMD, advance immediately
                         // "Guru's FLIP effect now activates", "Its effect triggers", "Sachi's effect then adds ..."
-                        const isPossessiveTriggerDesc = /^(?:(?:(?:its|her|his|their|[a-z0-9'\s-]+?\s*'s)\s+(?:on-summon\s+|summon\s+|on-activation\s+|gy\s+|graveyard\s+|hand\s+|flip\s+|trigger\s+|pendulum\s+)?effect|(?:the\s+)?effect\s+of\s+[a-z0-9"',\s-]+?)\s+(?:then\s+|now\s+|immediately\s+|automatically\s+|also\s+|upon\s+its\s+summon\s+)?(?:activates|triggers|resolves|searches|adds|places|sets|sends|dumps|grants|allows|lets|special summons|summons|revives|continues|destroys|banishes|draws|equips|returns|recovers)\b)/i.test(rawStepText);
-                        const isDeclarativeTriggerDesc = /^[A-Z][A-Za-z0-9"',\s-]+?\s+(?:then\s+|successfully\s+|immediately\s+|also\s+|automatically\s+)?(?:searches|adds|sends|dumps|places|sets|triggers|resolves|equips|attaches|draws|recovers|returns|recycles|grants|allows|lets|fuses|fusion\s+summons|special\s+summons|summons|revives|becomes\s+level|is\s+always\s+treated)\b/i.test(rawStepText) && !/\s*->\s*gy\b/i.test(rawStepText) && !(m.special_summons && m.special_summons.some(s => stepCodes.includes(s.code)));
+                        // "@" for "Dark Templar @Ignister's effect Special Summons Achichi"
+                        // (a name's colon has no space after it: "I:P Masquerena", never "Activate Girsu's other effect: it ...")
+                        const isPossessiveTriggerDesc = /^(?:(?:(?:its|her|his|their|(?:[a-z0-9@/&'\s-]|:(?=\S))+?\s*'s)\s+(?:on-summon\s+|summon\s+|on-activation\s+|gy\s+|graveyard\s+|hand\s+|flip\s+|trigger\s+|pendulum\s+)?effect|(?:the\s+)?effect\s+of\s+[a-z0-9@"',\s-]+?)\s+(?:then\s+|now\s+|immediately\s+|automatically\s+|also\s+|upon\s+its\s+summon\s+)?(?:activates|triggers|resolves|searches|adds|places|sets|sends|dumps|grants|allows|lets|special summons|(?:fusion|synchro|xyz|link|ritual)\s+summons|summons|revives|continues|destroys|banishes|draws|equips|returns|recovers|changes)\b)/i.test(rawStepText);
+                        const isDeclarativeTriggerDesc = /^[A-Z](?:[A-Za-z0-9@/&"',\s-]|:(?=\S))+?\s+(?:then\s+|successfully\s+|immediately\s+|also\s+|automatically\s+)?(?:searches|adds|sends|dumps|places|sets|triggers|resolves|equips|attaches|draws|recovers|returns|recycles|grants|allows|lets|fuses|fusion\s+summons|special\s+summons|summons|revives|becomes\s+level|is\s+always\s+treated)\b/i.test(rawStepText) && !/\s*->\s*gy\b/i.test(rawStepText) && !(m.special_summons && m.special_summons.some(s => stepCodes.includes(s.code)));
                         // "Shinonome's effect adds Solo Activation" right after Shinonome summoned itself, "Palace adds
                         // Lapauila Mana" right after Palace was activated: the search is the card's other effect, still to
                         // activate, while the named card hasn't reached the hand and the card offers an effect now
@@ -1648,16 +1664,19 @@ export async function runComboReplay(combo, options = {}) {
                         // Lacrima is still in your Deck or Extra Deck (the Fusion Summon before it never happened)
                         const subjectStillInDeck = (isPossessiveTriggerDesc || isDeclarativeTriggerDesc) && (() => {
                             const subj = (/^([A-Z][^,.;]*?)\s*'s\s+(?:[a-z-]+\s+)?effect\b/.exec(rawStepText) ||
-                                /^([A-Z][A-Za-z0-9"',\s-]+?)\s+(?:then\s+|successfully\s+|immediately\s+|also\s+|automatically\s+)?(?:searches|adds|sends|dumps|places|sets|triggers|resolves|equips|attaches|draws|recovers|returns|recycles|grants|fuses|fusion\s+summons|special\s+summons|summons|revives)\b/.exec(rawStepText) || [])[1];
+                                /^([A-Z](?:[A-Za-z0-9@/&"',\s-]|:(?=\S))+?)\s+(?:then\s+|successfully\s+|immediately\s+|also\s+|automatically\s+)?(?:searches|adds|sends|dumps|places|sets|triggers|resolves|equips|attaches|draws|recovers|returns|recycles|grants|fuses|fusion\s+summons|special\s+summons|summons|revives)\b/.exec(rawStepText) || [])[1];
                             const codes = subj ? matchFragmentCodes(subj) : [];
                             if (codes.length === 0) return false;
+                            // (a card that just acted can be back in the Deck: Tearlaments Merrli puts its own Fusion
+                            // materials, itself included, on the bottom of the Deck)
+                            if (codes.some(c => c === lastActorCode || cardsSelectedSinceLastIdle.has(c))) return false;
                             const has = (loc) => (lib.duelQueryLocation(duel, { flags: 17, controller: 0, location: loc }) || []).some(c => c && codes.includes(c.code));
                             return (has(OcgLocation.DECK) || has(OcgLocation.EXTRA)) &&
                                 ![OcgLocation.HAND, OcgLocation.MZONE, OcgLocation.SZONE, OcgLocation.GRAVE, OcgLocation.REMOVED].some(has);
                         })();
                         const strippedCommentary = rawStepText.replace(/\s*\([^)]*\)/g, '').trim();
                         const isPassiveResolutionDesc =/\b(?:is|are|was|were)\s+(?:added|sent|special summoned|summoned|tributed|banished|placed|set|drawn|discarded|excavated|destroyed|shuffled(?: back)?|returned)\b/i.test(strippedCommentary);
-                        const isOnSummonTriggerDesc = /^(?:activat(?:e|ing)\s+effect:\s*)?[A-Z][A-Za-z0-9"',\s-]+?\s+(?:was\s+(?:normal|special|tribute|flip|synchro|link|xyz|fusion)?\s*summoned|targets?\s+[A-Za-z0-9"',\s-]+?,\s*which\s+you\s+just\s+(?:special\s+)?summoned)\b/i.test(rawStepText);
+                        const isOnSummonTriggerDesc = /^(?:activat(?:e|ing)\s+effect:\s*)?[A-Z](?:[A-Za-z0-9@/&"',\s-]|:(?=\S))+?\s+(?:was\s+(?:normal|special|tribute|flip|synchro|link|xyz|fusion)?\s*summoned|targets?\s+[A-Za-z0-9"',\s-]+?,\s*which\s+you\s+just\s+(?:special\s+)?summoned)\b/i.test(rawStepText);
                         const isTriggerActivationDesc = /^(?:activat(?:e|ing)\s+effect(?:\s+of)?\s+[A-Za-z0-9"',\s-]+|action:\s*activate\s+.*)$/i.test(rawStepText) && triggersFiredSinceLastIdle > 0 && lastActorCode && stepCodes.includes(lastActorCode) && !stepActorHasIdleEffect;
                         const isPureChainOrTriggerStep = /^(?:chain link \d|cl\d+\b|a (?:new )?chain forms|the chain resolves|build the chain|both (?:monsters )?trigger|this triggers|action:\s*activate .* \(on .* summon\)|on summon\b|when summoned\b|if summoned\b|its own on-activation effect\b|[^\s]+(?:'s)? summon trigger\b|her arrival turns on\b|his arrival turns on\b|its arrival turns on\b|(?:when|if|as)\s+[a-z0-9"',\s-]+?\s+(?:is|are)\s+(?:sent|cast|destroyed|tributed|banished|used|detached|summoned|discarded)\b|as [a-z0-9"'\s-]+? leaves the field)/i.test(rawStepText) ||
                             isTriggerActivationDesc ||
@@ -1731,12 +1750,13 @@ export async function runComboReplay(combo, options = {}) {
                             stepCodes.some(c => cardsBanishedSinceLastIdle.has(c) || banishCardsNow.some(bc => bc && bc.code === c))
                         );
 
-                        const gyCardsNow = (stepCodes.length > 0 && /\b(?:send|dump|discard|tribute)\b.*(?:to (?:the |your )?(?:gy|graveyard)|(?:cost|effect)\))/i.test(rawStepText))
+                        // ("Reinoheart's effect sends Merrli from your Deck to the GY")
+                        const gyCardsNow = (stepCodes.length > 0 && /\b(?:sends?|dumps?|discards?|tributes?)\b.*(?:to (?:the |your )?(?:gy|graveyard)|(?:cost|effect)\))/i.test(rawStepText))
                             ? (lib.duelQueryLocation(duel, { flags: 17, controller: 0, location: OcgLocation.GRAVE }) || [])
                             : [];
                         const alreadySentTargetToGY = Boolean(
                             stepCodes.length > 0 &&
-                            /\b(?:send|dump|discard|tribute)\b.*(?:to (?:the |your )?(?:gy|graveyard)|(?:cost|effect)\))/i.test(rawStepText) &&
+                            /\b(?:sends?|dumps?|discards?|tributes?)\b.*(?:to (?:the |your )?(?:gy|graveyard)|(?:cost|effect)\))/i.test(rawStepText) &&
                             !stepActorHasIdleEffect &&
                             stepCodes.some(c => cardsSentToGYSinceLastIdle.has(c) || gyCardsNow.some(gc => gc && gc.code === c))
                         );
@@ -2513,7 +2533,8 @@ export async function runComboReplay(combo, options = {}) {
                     // hit on turn 1 (Miragestallio returning Sunlight Wolf). The engine's prompt is a generic "use it?",
                     // so read the card text, and use it only when a step from here on asks for that card's effect
                     // (being named as Link material is not asking)
-                    if (acceptTrigger && /\btarget\s+1\s+(?:card|monster)s?\s+on the field\b[^.]*\b(?:return|destroy|banish|send|shuffle)/i.test(getCardText(m.code))) {
+                    // ("target 1 face-up monster on the field; destroy it": DoomZ Raiders destroyed by Drastea)
+                    if (acceptTrigger && /\btarget\s+1\s+(?:face-up\s+)?(?:card|monster)s?\s+on the field\b[^.]*\b(?:return|destroy|banish|send|shuffle)/i.test(getCardText(m.code))) {
                         let asked = false;
                         for (let s = currentActiveStepIdx ?? stepIdx; s < Math.min(steps.length, stepIdx + 3); s++) {
                             // The card must be the step's actor: "send N'tss and Titaniklad to the GY" doesn't ask for N'tss's effect
@@ -2619,6 +2640,10 @@ export async function runComboReplay(combo, options = {}) {
                         // Discarding Zephyros from the hand is not "Revive Zephyros": a revive picks from the GY or banishment
                         if (/^(?:then,?\s+)?reviv(?:e|ing)\b/i.test(commandText) &&
                             pickedIdx.some(i => ![OcgLocation.GRAVE, OcgLocation.REMOVED].includes(m.selects?.[i]?.location))) return false;
+                        // "Activate Tempest's effect, discarding it and Drill Armed Dragon, to add Drill Armed Dragon from your
+                        // Deck": the cost pick (Tribute/discard/banish/send hint) leaves the step's purpose still to come
+                        if ([500, 501, 503, 504].includes(lastHintCardCode) &&
+                            /,\s*(?:discarding|tributing|banishing|sending|detaching|revealing)\b[^.]*?,?\s+to\s+(?:add|search|special summon|send|set|place|draw|destroy|return)\b/i.test(commandText)) return false;
                         const subjectCodes = stepSubjectCodes(s);
                         // "Archosaur's effect destroys Babycerasaurus in your hand and adds Deep Sea Diva ...": after the
                         // first pick the step still names a card it picks later
@@ -2638,7 +2663,8 @@ export async function runComboReplay(combo, options = {}) {
                         return !pickedIdx.some(i => subjectCodes.includes(m.selects?.[i]?.code) &&
                             !(namesCopy && ![OcgLocation.MZONE, OcgLocation.SZONE].includes(m.selects?.[i]?.location)));
                     };
-                    const maxSelect = m.max || 1;
+                    // (lowered once the step describing this effect has named all of its picks)
+                    let maxSelect = m.max || 1;
                     const minSelect = m.min || 1;
 
                     const getDesiredLocFromStep = (stepObj, forCode = null) => {
@@ -2781,7 +2807,12 @@ export async function runComboReplay(combo, options = {}) {
                         for (const s of scanOrder) {
                             if (chosen.length >= maxSelect) break;
                             if (!isExtraTargetStep(steps[s])) continue;
-                            const stepCodes = findStepCardCodes(steps[s], actorCode);
+                            // The summoned monster before the others the step names ("With Necro Slime and Alfred in your
+                            // GY, ... Fusion Summon Genghis by banishing Alfred ..." summons Genghis, not Alfred)
+                            const summonObj = /\b(?:(?:fusion|synchro|xyz|link|ritual|special)\s+)?summon(?:s|ing)?\s+(.+?)(?:\s+(?:from|to|by|using|with)\b|[,.;:]|$)/i
+                                .exec(cleanCardName(steps[s].text || '').replace(LEADING_CLAUSE_RE, ''));
+                            const summonCodes = summonObj ? findStepCardCodes({ text: summonObj[1] }, null) : [];
+                            const stepCodes = [...new Set([...summonCodes, ...findStepCardCodes(steps[s], actorCode)])];
                             for (const code of stepCodes) {
                                 const foundIdx = m.selects.findIndex((c, i) => c.code === code && !chosen.includes(i));
                                 if (foundIdx !== -1) {
@@ -2813,23 +2844,65 @@ export async function runComboReplay(combo, options = {}) {
                         // The engine's hint says what this pick does (Tribute 500, discard 501, banish 503, send 504): take
                         // the card the step's matching clause names ("banishing Mikpolar from your GY ..., to revive Megatanus")
                         // (Special Summon 509: "destroy Archosaur and revive Systegosaur from your GY")
-                        const clauseVerb = { 500: 'tribut', 501: 'discard', 503: 'banish', 504: 'send', 509: '(?:special summon|reviv)' }[lastHintCardCode];
+                        // ("Fusion Summon Genghis by banishing Alfred ..." picks Genghis from the Extra Deck, not Alfred)
+                        // (506 add to hand: Ryu-Ge War Zone's "add Kaiva ..., with Hakva banished and Emva sent to the GY")
+                        const clauseVerb = { 500: 'tribut', 501: 'discard', 503: 'banish', 504: 'send', 506: 'add', 509: '(?:(?:special|fusion|ritual|synchro|xyz|link) summon|reviv)' }[lastHintCardCode];
                         if (clauseVerb && chosen.length < maxSelect && steps[chainStepIdx] && !chainStepsConsumed.has(chainStepIdx)) {
-                            const clauseRe = new RegExp(`\\b${clauseVerb}\\w*\\s+(.+?)(?:\\s+(?:from|to|instead)\\b|[,.;:]|$)`, 'i');
+                            const clauseRe = new RegExp(`\\b${clauseVerb}\\w*\\s+(.+?)(?:\\s+(?:from|to|instead|by|using)\\b|[,.;:]|$)`, 'i');
                             const offeredClauseCodes = (text) => {
-                                const clause = clauseRe.exec(cleanCardName(text || '').replace(LEADING_CLAUSE_RE, ''));
-                                return clause ? findStepCardCodes({ text: clause[1] }, null)
-                                    .filter(c => c !== actorCode && m.selects.some(sel => sel.code === c)) : [];
+                                const src = cleanCardName(text || '').replace(LEADING_CLAUSE_RE, '');
+                                const clause = clauseRe.exec(src);
+                                if (!clause) return [];
+                                // a name with a comma is one card, not the end of the clause: "add Dark Magician, the
+                                // Pharaoh's Servant" is the Servant, not Dark Magician
+                                const wide = new RegExp(`\\b${clauseVerb}\\w*\\s+(.+?)(?:\\s+(?:from|to|instead|by|using)\\b|[.;:]|$)`, 'i').exec(src);
+                                const cut = clause[1].trim().toLowerCase();
+                                const commaNamed = wide ? findStepCardCodes({ text: wide[1] }, null).filter(c =>
+                                    (getCardByCode(c)?.name || '').toLowerCase().startsWith(`${cut},`) && m.selects.some(sel => sel.code === c)) : [];
+                                if (commaNamed.length) return commaNamed;
+                                // a pick of several cards reads the whole list: "sends Combined Creation, Angwitch and Dark
+                                // Blade from your Deck to the GY" (the comma ended the clause after the first name)
+                                if (wide && maxSelect > 1) {
+                                    const listed = findStepCardCodes({ text: wide[1].replace(/\s+and\s+(?:discard|send|banish|add|destroy|tribut|return|shuffle|draw|set|place)\w*\b.*$/i, '') }, null)
+                                        .filter(c => (c !== actorCode || lastHintCardCode === 509) && m.selects.some(sel => sel.code === c));
+                                    if (listed.length > 1) return listed;
+                                }
+                                // "to Special Summon Fishborg Harpooner and discard Nimble Angler" summons Harpooner only, and
+                                // Harpooner (the activating card, revealed with Angler) is a fair pick for a summon prompt
+                                const object = clause[1].replace(/\s+and\s+(?:discard|send|banish|add|destroy|tribut|return|shuffle|draw|set|place)\w*\b.*$/i, '');
+                                return findStepCardCodes({ text: object }, null)
+                                    .filter(c => (c !== actorCode || lastHintCardCode === 509) && m.selects.some(sel => sel.code === c));
                             };
-                            let clauseCodes = offeredClauseCodes(steps[chainStepIdx].text);
                             // A trigger that fired during another step ("Link Summon Code Talker using ... Firewall Phantom")
                             // is described a step or two later ("Firewall Phantom's effect adds Cynet Codec ..., then discard
-                            // Code Radiator"; "Neptabyss's effect Special Summons Atlantean Dragoons from your GY")
-                            const chainStepIsActors = stepSubjectCodes(chainStepIdx).includes(actorCode);
+                            // Code Radiator"; "Neptabyss's effect Special Summons Atlantean Dragoons from your GY"), and that
+                            // description beats the other card's step ("Tristaros ... Special Summon Sulfefnir and Sulfador"
+                            // doesn't say what Eleskeletus, destroyed by it, revives)
+                            // (a step about "its effect" names no other card, so it still speaks for the actor)
+                            const chainStepSubjects = stepSubjectCodes(chainStepIdx);
+                            const chainStepIsActors = chainStepSubjects.includes(actorCode);
+                            const chainStepIsOtherCards = chainStepSubjects.length > 0 && !chainStepIsActors;
+                            let clauseCodes = chainStepIsOtherCards ? [] : offeredClauseCodes(steps[chainStepIdx].text);
+                            let clauseStep = chainStepIdx;
                             for (let s = chainStepIdx + 1; clauseCodes.length === 0 && !chainStepIsActors && s <= Math.min(steps.length - 1, chainStepIdx + 3); s++) {
-                                if (stepSubjectCodes(s).includes(actorCode)) clauseCodes = offeredClauseCodes(steps[s]?.text);
+                                if (stepSubjectCodes(s).includes(actorCode)) {
+                                    clauseCodes = offeredClauseCodes(steps[s]?.text);
+                                    clauseStep = s;
+                                }
                             }
-                            if (clauseCodes.length > 0) tryMatchCodes(clauseCodes, null, 1, steps[chainStepIdx]);
+                            if (clauseCodes.length === 0 && chainStepIsOtherCards) {
+                                clauseCodes = offeredClauseCodes(steps[chainStepIdx].text);
+                                clauseStep = chainStepIdx;
+                            }
+                            if (clauseCodes.length > 0) {
+                                const beforeLen = chosen.length;
+                                tryMatchCodes(clauseCodes, null, 1, steps[chainStepIdx]);
+                                // a later "Nightcatcher's effect adds S-Force Origin" step this pick fulfilled is done; left open,
+                                // it pulled Nightcatcher's Quick Effect forward to "match" it
+                                if (clauseStep !== chainStepIdx && chosen.length > beforeLen && selectionCompletesStep(clauseStep, chosen.slice(beforeLen))) {
+                                    chainStepsConsumed.add(clauseStep);
+                                }
+                            }
                         }
                         // Targets are picked on activation: "Activate Bone Archfiend's effect, targeting itself, sending Red
                         // Resonator ..." targets Bone Archfiend, not a monster the step names elsewhere
@@ -2846,15 +2919,40 @@ export async function runComboReplay(combo, options = {}) {
                                 if (oppIdx !== -1) chosen.push(oppIdx);
                             }
                         }
+                        // "Tyrant Ogre's effect destroys two of your opponent's monsters" names no card, only whose: take
+                        // the opponent's (it used to take the named Tyrant Ogre itself)
+                        if (actorCode && chosen.length < maxSelect && m.selects?.some(c => c.controller === 1)) {
+                            const oppObjectRe = /\b(?:destroy|banish|return|target|send|negate|shuffle|attach|equip|take)\w*\s+(?:up to\s+)?(?:\w+\s+)?(?:of\s+)?your opponent'?s\s+(?:face-up\s+)?(?:monsters?|cards?|spells?|traps?)\b/i;
+                            const wantsOpponents = [chainStepIdx, chainStepIdx + 1, chainStepIdx + 2].some(s => steps[s] && !chainStepsConsumed.has(s) &&
+                                stepSubjectCodes(s).includes(actorCode) && oppObjectRe.test(cleanCardName(steps[s].text || '')));
+                            if (wantsOpponents) {
+                                for (let j = 0; j < m.selects.length && chosen.length < maxSelect; j++) {
+                                    if (m.selects[j].controller === 1 && !chosen.includes(j)) chosen.push(j);
+                                }
+                            }
+                        }
                         // A step a little later that is about the resolving card ("LV7 triggers ... to search Drill Armed
                         // Dragon") says what its effect picks, even when it chained during another step's activation
                         if (actorCode) {
-                            for (let s = chainStepIdx; s < Math.min(steps.length, chainStepIdx + 5) && chosen.length < maxSelect; s++) {
+                            // "Activate Crystron Inclusion to add Crystron Sulfador" is the resolving card's own step: the
+                            // checks below read it, and a later step about the same card ("Inclusion's effect, banishing
+                            // it, ... Tristaros") is another of its effects
+                            const chainCommand = cleanCardName(steps[chainStepIdx]?.text || '').replace(LEADING_CLAUSE_RE, '');
+                            const activatedHere = /^\s*(?:then,?\s+)?activat(?:e|ing)\s+(.+?)(?:\s+to\b|,|\s+by\b|\s+and\b|\.(?:\s|$)|$)/i.exec(chainCommand);
+                            // (not "Activate Tempest, Dragon Ruler of Storms's effect, ...": an effect, whose name has a comma)
+                            const activatesAnEffect = /^\s*(?:then,?\s+)?activat(?:e|ing)\s+[^.]*?'s\s+(?:[\w-]+\s+)?effect\b/i.test(chainCommand);
+                            const chainStepActivatesActor = Boolean(activatedHere) && !activatesAnEffect && !/'s\s/.test(activatedHere[1]) &&
+                                matchFragmentCodes(activatedHere[1]).includes(actorCode);
+                            for (let s = chainStepIdx; !chainStepActivatesActor && s < Math.min(steps.length, chainStepIdx + 5) && chosen.length < maxSelect; s++) {
                                 if (chainStepsConsumed.has(s) || skipForDiscard(s) || !stepSubjectCodes(s).includes(actorCode)) continue;
                                 let objectCodes = findStepCardCodes(deckPickText(s), actorCode).filter(c => c !== actorCode);
                                 // A Deck pick is what the step adds ("targeting your banished Rampengu and Lara, to return
                                 // them to the GY and add Steeds"), not the targets named first
                                 if (m.selects?.length && m.selects.every(c => c.location === OcgLocation.DECK)) {
+                                    // "Charge's effect adds Stegosaur from your Extra Deck" is the card's other effect, not
+                                    // this Deck search
+                                    if (/\b(?:add(?:s|ing)?|search(?:es|ing)?)\s+[^.;]*?\bfrom (?:your |the )?(?:extra deck|gy|graveyard|banishment)\b/i
+                                        .test(cleanCardName(steps[s]?.text || ''))) continue;
                                     // (names can hold commas: "add Dark Magician, the Pharaoh's Servant")
                                     const added = /\badd(?:s|ing)?\s+(.+?)(?:\s+from\b|\s+to\b|[.;]|$)/i.exec(cleanCardName(steps[s]?.text || ''));
                                     const addedCodes = added ? findStepCardCodes({ text: added[1] }, null).filter(c => c !== actorCode) : [];
@@ -2872,6 +2970,10 @@ export async function runComboReplay(combo, options = {}) {
                                 tryMatchCodes(selfPick ? [actorCode] : objectCodes, null, 1, steps[s]);
                                 if (chosen.length > beforeLen) {
                                     if (selectionCompletesStep(s, chosen.slice(beforeLen))) chainStepsConsumed.add(s);
+                                    // "Beagalltach's effect destroys Artifact Moralltach" on an "up to 2" prompt: the step named
+                                    // its picks, so later steps (which mention Artifacts Unleashed) don't top it up
+                                    const chosenCodes = chosen.map(i => m.selects[i]?.code);
+                                    if (!selfPick && chosen.length >= minSelect && objectCodes.every(c => chosenCodes.includes(c) || !m.selects.some(x => x.code === c))) maxSelect = chosen.length;
                                     break;
                                 }
                             }
@@ -2879,7 +2981,12 @@ export async function runComboReplay(combo, options = {}) {
                         // 0. Check the active step (chainStepIdx) first for explicit targets/costs
                         if (steps[chainStepIdx] && !chainStepsConsumed.has(chainStepIdx) && !chainStepIsSummonOfActor) {
                             const stepCodes = findStepCardCodes(deckPickText(chainStepIdx), actorCode);
-                            const nonActorCodes = stepCodes.filter(c => c !== actorCode && !cardsSelectedSinceLastIdle.has(c));
+                            // A card picked earlier this chain (Lukias as Fusion Material) can still be what the actor's own
+                            // step names: "Arthalion's effect returns Faimena and Lukias from your GY to your hand"
+                            const ownObjects = stepSubjectCodes(chainStepIdx).includes(actorCode)
+                                ? findStepCardCodes({ text: /'s\s+(?:[\w-]+\s+)?effect\s+\w+\s+(.+)$/i.exec(cleanCardName(steps[chainStepIdx].text || ''))?.[1] || '' }, null)
+                                : [];
+                            const nonActorCodes = stepCodes.filter(c => c !== actorCode && (!cardsSelectedSinceLastIdle.has(c) || ownObjects.includes(c)));
                             if (options.debug) {
                                 console.log('[DEBUG SELECT_CARD Phase 0] stepCodes:', stepCodes, 'nonActorCodes:', nonActorCodes);
                             }
@@ -3127,6 +3234,14 @@ export async function runComboReplay(combo, options = {}) {
                     const prevStep = steps[stepIdx - 1];
                     const avail = getAvailablePlaces(m.field_mask);
 
+                    // The opponent placing a card (a Mimighoul handing control back to you): the mask is read from their
+                    // side, so "player 1" in it is you, and the answer names the absolute player
+                    if (m.player === 1) {
+                        const place = avail[0] || { player: 0, location: OcgLocation.MZONE, sequence: 2 };
+                        lib.duelSetResponse(duel, { type: OcgResponseType.SELECT_PLACE, places: [{ ...place, player: 1 - place.player }] });
+                        continue;
+                    }
+
                     let chosenPlace = avail[0] || { player: 0, location: OcgLocation.MZONE, sequence: 2 };
                     if (options.debug) {
                         console.log('[DEBUG SELECT_PLACE]', 'stepIdx:', stepIdx, 'currentActiveStepIdx:', currentActiveStepIdx, 'activeStep:', activeStep?.text, 'm:', JSON.stringify(m), 'avail:', avail);
@@ -3178,6 +3293,7 @@ export async function runComboReplay(combo, options = {}) {
                     if (!targetZoneStr) {
                         targetZoneStr = getTargetZoneForCard(activeStep, null) || getTargetZoneForCard(prevStep, null);
                     }
+                    const placingCard = lastHintCardCode ? getCardByCode(lastHintCardCode) : null;
                     lastHintCardCode = null;
 
                     let targetZoneMatched = false;
@@ -3238,6 +3354,27 @@ export async function runComboReplay(combo, options = {}) {
                     const facingPlace = facesEmz && avail.find(p => p.player === 1 && p.location === OcgLocation.MZONE &&
                         p.sequence === (facesEmz[1].toLowerCase() === 'left' ? 3 : 1));
                     if (facingPlace) chosenPlace = facingPlace;
+                    // "Fusion Summon Infernoid Evil to your Extra Monster Zone" (Gravity Controller needs it there)
+                    const toEmz = /\bto (?:your |the )?(?:(left|right) )?extra monster zone\b/i.exec(activeStep?.text || '');
+                    const emzPlace = toEmz && avail.find(p => p.player === 0 && p.location === OcgLocation.MZONE &&
+                        (toEmz[1] ? p.sequence === (toEmz[1].toLowerCase() === 'left' ? 5 : 6) : p.sequence >= 5));
+                    if (emzPlace) chosenPlace = emzPlace;
+                    // A Spell or Trap goes in a middle column, as a player would, keeping both Pendulum Zones free
+                    // ("activate Dinomist Charge ..." before two Pendulum Scales)
+                    if (chosenPlace.player === 0 && chosenPlace.location === OcgLocation.SZONE && (chosenPlace.sequence === 0 || chosenPlace.sequence === 4) &&
+                        placingCard && (placingCard.type & 0x6) && !(placingCard.type & 0x1)) {
+                        const middle = avail.find(p => p.player === 0 && p.location === OcgLocation.SZONE && p.sequence >= 1 && p.sequence <= 3);
+                        if (middle) chosenPlace = middle;
+                    }
+                    // A Pendulum Monster goes to the Pendulum Zone whose column has a free Main Monster Zone (Vaylantz
+                    // monsters Special Summon themselves "to your Main Monster Zone in its same column")
+                    if (chosenPlace.player === 0 && chosenPlace.location === OcgLocation.SZONE && placingCard && (placingCard.type & 0x1000000) &&
+                        !/\b(?:left|right)\s+pendulum zone\b/i.test(activeStep?.text || '')) {
+                        const mzCards = lib.duelQueryLocation(duel, { flags: 17, controller: 0, location: OcgLocation.MZONE }) || [];
+                        const freeColumn = avail.find(p => p.player === 0 && p.location === OcgLocation.SZONE && (p.sequence === 0 || p.sequence === 4) &&
+                            !(mzCards[p.sequence] && mzCards[p.sequence].code));
+                        if (freeColumn) chosenPlace = freeColumn;
+                    }
 
                     // Monster zone choice decides later Link arrows and Extra Monster Zone access: offer an EMZ/main-zone swap and other main zones
                     if (chosenPlace.player === 0 && chosenPlace.location === OcgLocation.MZONE) {
@@ -3322,6 +3459,14 @@ export async function runComboReplay(combo, options = {}) {
                                     chainStepsConsumed.has(s);
                                 if (isPassive) continue;
                                 if (SUMMON_COMMAND_STEP_RE.test(cleanCardName(stText).replace(LEADING_CLAUSE_RE, ''))) continue;
+                                // "Activate Origin ... Activate Nightcatcher's effect ...": the next step waits for the card
+                                // the previous step just activated to resolve, unless the write-up chains it
+                                // (also a hand Quick Effect, "Activate Tachyon Primal's effect to Special Summon it from your
+                                // hand", while another card's trigger is on the chain)
+                                const topLink = chainStack.get(Math.max(0, ...chainStack.keys()));
+                                const waitsForChain = Boolean(topLink) && /^activat/i.test(cleanCardName(stText).replace(LEADING_CLAUSE_RE, '')) &&
+                                    !/\b(?:chain|in response|respond)/i.test(stText);
+                                if (waitsForChain && topLink.fromIdle) continue;
                                 // "Activate Nochiudrago's effect, targeting your banished Winda": not while Winda is still on
                                 // her way there (the Cannahawk activation that banishes her hasn't resolved yet)
                                 const targetWhere = /\btargeting\s+(?:your\s+|the\s+)?banished\s+(.+?)(?:[,.;]|\s+to\b|$)/i.exec(cleanCardName(stText));
@@ -3331,7 +3476,8 @@ export async function runComboReplay(combo, options = {}) {
                                     if (wanted.length > 0 && !wanted.some(c => banishedNow.some(b => b && b.code === c))) continue;
                                 }
                                 const isExplicitTriggerStep = /(?:chain link \d|a chain forms|\bchain\b|in response|summon trigger|turns on|when .* is (?:sent|destroyed|summoned)|triggered\b)/i.test(stText) ||
-                                    /^[A-Z][A-Za-z0-9"',\s-]+?\s+effect\s+(?:sends?|adds?|places?|sets?|triggers?|resolves?|special\s+summons?|summons?|revives?)\b/i.test(stText);
+                                    // ("Galaxy Photon Dragon's effect makes Tachyon Primal Level 4")
+                                    /^[A-Z][A-Za-z0-9"',:\s-]+?\s+effect\s+(?:sends?|adds?|places?|sets?|triggers?|resolves?|special\s+summons?|summons?|revives?|makes|changes|attaches|equips)\b/i.test(stText);
                                 if (s > stepIdx && !isExplicitTriggerStep) continue;
 
                                 const isSearchTargetCard = steps[s]?.to === 'zone-hand' || steps[s]?.to === 'zone-deck' || /\b(?:to\s+(?:hand|deck)|adds?\b|searches?\b)/i.test(stText);
@@ -3339,15 +3485,28 @@ export async function runComboReplay(combo, options = {}) {
                                 // ", sending Ghost to revive itself" names a cost, not a card to chain
                                 // "Activate Tract's effect in your GY to Fusion Summon Lacrima using Engraver and Requiem" names
                                 // the materials, not a Requiem Quick Effect to chain
-                                const chainActorText = stText
+                                // "Galaxy Photon Dragon's effect makes Tachyon Primal Level 4": only the effect's owner can be
+                                // this chain link, not the card it acts on
+                                const effectOwner = /^activat/i.test(cleanCardName(stText)) ? null
+                                    : /^\s*(.+?)\s*'s\s+(?:[\w-]+\s+)?effect\s+(?!to\b)\w+/i.exec(cleanCardName(stText))?.[1];
+                                const chainActorText = effectOwner || stText
                                     .replace(/(?:,\s*|\bby\s+)(?:send|discard|tribut|detach|banish)\w*\s+[^,.;]*/gi, '')
                                     .replace(/\b(?:to\s+(?:search|add|send|dump|set)|searches|adds|sets|sends)\b.*$/i, '')
                                     .replace(/\bto\s+(?:fusion|synchro|xyz|link|ritual)\s+summon\b.*$/i, '')
                                     .replace(/\busing\b.*$/i, '');
-                                const codes = findStepCardCodes({ ...steps[s], text: chainActorText, card: stepCard, featuredCard: null }, lastActorCode);
+                                const codes = findStepCardCodes({ ...steps[s], text: chainActorText, card: effectOwner ? null : stepCard, featuredCard: null }, lastActorCode);
                                 const matchingIndices = [];
+                                // "Nightcatcher's effect adds Origin" describes the trigger already on this chain, not a
+                                // second activation (its Quick Effect) of the same card
+                                const describesChainedCard = (code) => !/^activat/i.test(cleanCardName(stText)) &&
+                                    /'s\s+(?:[a-z-]+\s+)?effect\s+(?!to\b)/i.test(stText) &&
+                                    [...chainStack.values()].some(c => c?.code === code);
+                                // ...and "Activate Megalith Phul's effect to Ritual Summon ..." waits while Phul's own trigger
+                                // (which makes it Level 8) is still on the chain
                                 for (let i = 0; i < m.selects.length; i++) {
-                                    if (codes.includes(m.selects[i].code)) matchingIndices.push(i);
+                                    if (codes.includes(m.selects[i].code) && !describesChainedCard(m.selects[i].code) &&
+                                        !(waitsForChain && m.selects[i].location === OcgLocation.HAND) &&
+                                        !(waitsForChain && [...chainStack.values()].some(c => c?.code === m.selects[i].code))) matchingIndices.push(i);
                                 }
                                 if (matchingIndices.length > 0) {
                                     const contextText = [
@@ -3374,6 +3533,22 @@ export async function runComboReplay(combo, options = {}) {
                                     const bestDesc = (found != null && m.selects[found]) ? getEffectDescription(m.selects[found].description) : '';
                                     if (!m.forced && !isExplicitTriggerStep && expectsSpecificAction && bestDesc && bestScore <= 0) {
                                         continue;
+                                    }
+                                    // A later step describing another effect of the same card ("Power Patron's effect adds
+                                    // Varnish", its GY trigger) doesn't claim the one offered now (its Fusion Summon Quick
+                                    // Effect): the actions have to overlap
+                                    if (s > stepIdx && bestDesc && !m.forced) {
+                                        const actionsOf = (t) => new Set([
+                                            /\bfusion summon/i.test(t) && 'fusion', /\b(?:adds?|search)/i.test(t) && 'add',
+                                            /\b(?:special summons?|summons?|reviv)/i.test(t) && !/\bfusion summon/i.test(t) && 'summon',
+                                            /\bsends?\b/i.test(t) && 'send', /\bdestroy/i.test(t) && 'destroy', /\bbanish/i.test(t) && 'banish',
+                                            /\bdraws?\b/i.test(t) && 'draw', /\b(?:sets?|places?)\b/i.test(t) && 'set'
+                                        ].filter(Boolean));
+                                        const stepActions = actionsOf((/'s\s+(?:[\w-]+\s+)?effect\s+(.*)$/i.exec(cleanCardName(stText)) || [])[1] || '');
+                                        const descActions = actionsOf(bestDesc);
+                                        // ("Increase ATK", Twistcobra's Quick Effect, names no action of its own)
+                                        const genericDesc = /^\s*(?:activate|effect|use|apply|choose|select)\b/i.test(bestDesc);
+                                        if (stepActions.size > 0 && !genericDesc && ![...stepActions].some(a => descActions.has(a))) continue;
                                     }
 
                                     chainIdx = found;
@@ -3482,7 +3657,9 @@ export async function runComboReplay(combo, options = {}) {
                         let bestScore = -Infinity;
                         for (let i = 0; i < opts.length; i++) {
                             let sc = scoreEffectDescAgainstStep(optDescs[i], contextText, false, opts[i]) +
-                                (ownStep ? 3 * scoreEffectDescAgainstStep(optDescs[i], ownStep.text || '', false, opts[i]) : 0) +
+                                // ("Kepler's effect adds Dark Contract ..." is its search option, not its return-to-hand one;
+                                // only here: a later step's "adds" in the wider context says nothing about this choice)
+                                (ownStep ? 3 * scoreEffectDescAgainstStep(optDescs[i], (ownStep.text || '').replace(/\badds\b/gi, 'add'), false, opts[i]) : 0) +
                                 (nearStep ? 2 * scoreEffectDescAgainstStep(optDescs[i], nearStep.text || '', false, opts[i]) : 0);
                             const dLower = (optDescs[i] || '').toLowerCase();
                             // Level modulation check against upcoming Synchro/Xyz summon
@@ -3540,6 +3717,24 @@ export async function runComboReplay(combo, options = {}) {
                         if (bestScore <= 0 && /sends itself|send itself|\brevives?\b|\bdecrease\b|\breduce\b|\badd\b.*\bback\b|\btwo\b/i.test(contextText)) {
                             optIdx = 1;
                         }
+                        // "...to reduce its Level by 2" picks "Decrease its Level by 2", not the first amount offered
+                        const amountRe = /\b(?:reduc|decreas|lower|increas|rais)\w*\b[^.]*?\blevels?\b[^.]*?\bby\s+(\d+)\b/i;
+                        const amountStep = [steps[currentActiveStepIdx ?? -1], ownStep, steps[stepIdx]].find(st =>
+                            st && amountRe.test(cleanCardName(st.text || '')));
+                        if (amountStep) {
+                            // (the direction too: "Increase its Level by 1" and "Decrease its Level by 1" both say "by 1")
+                            const [said, n] = amountRe.exec(cleanCardName(amountStep.text || '')).slice(0, 2);
+                            const down = /\b(?:reduc|decreas|lower)/i.test(said);
+                            const amountIdx = optDescs.findIndex(d => /\blevel/i.test(d) && new RegExp(`\\bby\\s+${n}\\b`).test(d) &&
+                                (down ? /\b(?:reduc|decreas|lower)/i : /\b(?:increas|rais)/i).test(d));
+                            if (amountIdx !== -1) { optIdx = amountIdx; bestScore = Math.max(bestScore, 1); }
+                        }
+                        // "Afterglow Dragon's effect attaches Photon Dragon to Cipher Dragon" is its "Attach as material"
+                        // option, not the Special Summon one the later summon sentences score up
+                        if (ownStep && /'s effect\s+attach(?:es)?\b/i.test(cleanCardName(ownStep.text || ''))) {
+                            const attachIdx = optDescs.findIndex(d => /^\s*attach\b/i.test(d));
+                            if (attachIdx !== -1) { optIdx = attachIdx; bestScore = Math.max(bestScore, 1); }
+                        }
                         // Choosing how to Normal Summon (option 1 is the usual Tribute Summon): "Normal Summon Babel Decker"
                         // with no Tribute named means its own "without Tributing" procedure
                         const procIdx = opts.findIndex(o => BigInt(o) >> 20n > 0n);
@@ -3549,6 +3744,11 @@ export async function runComboReplay(combo, options = {}) {
                             !/\btribut/i.test(summonStep.text || '')) {
                             optIdx = procIdx;
                         }
+                        // ...and "Tribute Summon Qliphort Stealth by Tributing Carrier and Helix" is the Tribute Summon, not
+                        // its own "Normal Summon without Tributing"
+                        const tributeStep = [steps[currentActiveStepIdx ?? -1], steps[stepIdx - 1], steps[stepIdx]].find(st =>
+                            st && /\btribute summon\b|\bby tributing\b/i.test(cleanCardName(st.text || '')));
+                        if (tributeStep && procIdx !== -1 && opts.some(o => BigInt(o) === 1n)) optIdx = opts.findIndex(o => BigInt(o) === 1n);
                         optIdx = recordDecision('OPTION', optIdx, opts.map((_, i) => i).filter(i => i !== optIdx), {
                             confident: bestScore > 0,
                             describe: (i) => `option "${getEffectDescription(opts[i]) || i + 1}"`
@@ -3625,6 +3825,21 @@ export async function runComboReplay(combo, options = {}) {
                         ? /^(?:link|xyz|synchro|fusion)\s+summon\b[^.]*?\busing\s+([^.;]+)/i.exec(ownSummonText) : null;
                     if (ownUsing) {
                         for (const c of findStepCardCodes({ text: ownUsing[1] }, null)) stepMaterialCodes.push(c);
+                    }
+                    // An add-to-hand prompt takes what the step adds, not its cost: "activate Onomatopaira, sending
+                    // Onomatokage from your hand to the GY, to add Zubababancho Gagagacoat and Dodododo Warrior"
+                    // (the nearest step whose "add" clause names offered cards: the summon sentence before "Evil Seed's
+                    // effect adds Samurai Beetle and Bloom" has no add clause)
+                    if (stepMaterialCodes.length === 0 && lastHintCardCode === 506) {
+                        const offered = new Set([...selectCards, ...unselectCards].map(c => c.code));
+                        for (const cand of [activeStep, ...actionStepCandidates]) {
+                            const added = cand?.text && /\badd(?:s|ing)?\s+(.+?)(?:\s+from\b|\s+to\s+your\s+hand\b|[.;]|$)/i.exec(cleanCardName(cand.text));
+                            const codes = added ? findStepCardCodes({ text: added[1] }, null).filter(c => offered.has(c)) : [];
+                            if (codes.length > 0) {
+                                stepMaterialCodes.push(...codes);
+                                break;
+                            }
+                        }
                     }
                     if (stepMaterialCodes.length === 0 && activeStep?.actions && activeStep.actions.length > 0) {
                         for (const act of activeStep.actions) {
@@ -3955,7 +4170,14 @@ export async function runComboReplay(combo, options = {}) {
                     const resolvingStep = stepIdx > 0 ? steps[stepIdx - 1] : steps[stepIdx];
                     // "Gryphon counts as 2 of its 3 materials" answers a "treat as how many materials" prompt;
                     // otherwise the first number in the text ("Number 69" would match nothing useful there)
+                    // ...but a nearby step about the resolving card that names its Level wins ("Princessprout's effect
+                    // Special Summons it as a Level 8 monster", after "excavate it and draw 1 card")
+                    // (the card being activated or resolving: a trigger declares while it is put on the chain)
+                    const levelCodes = [lastActorCode, currentSolvingChainCard?.code].filter(Boolean);
+                    const levelStep = [steps[stepIdx - 1], steps[stepIdx], steps[stepIdx + 1]].find(st =>
+                        st && /\blevel\s+\d+\b/i.test(st.text || '') && findStepCardCodes(st, null).some(c => levelCodes.includes(c)));
                     const numMatch = (resolvingStep?.text || '').match(/\b(?:counts?|counting|treated|treat(?:ing)?)\s+as\s+(\d+)\b/i) ||
+                        (levelStep?.text || '').match(/\blevel\s+(\d+)\b/i) ||
                         (resolvingStep?.text || '').match(/\b(?:level|rank)?\s*(\d+)\b/i);
                     if (numMatch && m.options) {
                         const targetNum = BigInt(numMatch[1]);
@@ -4110,8 +4332,33 @@ export async function runComboReplay(combo, options = {}) {
                     // cards, a step has to ask for it
                     const optionalDestroy = /\bdestroy\b/i.test(descStr) ||
                         (!descStr && descCode && /\bthen,? you can destroy\b/i.test(getCardText(descCode) || ''));
-                    if (optionalDestroy && !steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3).some(st => /\bdestroy/i.test(st?.text || ''))) {
+                    // (a step about another card's effect doesn't ask: "Activate Luster Pendulum's effect to destroy Majesty
+                    // Pegasus" is not Pegasus's "then you can destroy 1 card in your Pendulum Zone")
+                    const asksForDestroy = (st) => {
+                        const t = cleanCardName(st?.text || '').replace(LEADING_CLAUSE_RE, '');
+                        if (!/\bdestroy/i.test(t)) return false;
+                        const subj = /^(?:then,?\s+)?(?:activate\s+)?(.+?)\s*'s\s+(?:[\w-]+\s+)?effect\b/i.exec(t)?.[1];
+                        const subjCodes = subj ? findStepCardCodes({ text: subj }, null) : [];
+                        return !descCode || subjCodes.length === 0 || subjCodes.includes(descCode);
+                    };
+                    if (optionalDestroy && !steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3).some(asksForDestroy)) {
                         answerYes = false;
+                    }
+                    // Ryu-Ge Rising's "then you can add 1 Ryu-Ge Pendulum Monster from your hand to your face-up Extra Deck":
+                    // only when a step around here sends a card to the Extra Deck (the next step may place it as a scale)
+                    if (answerYes && /\bto your (?:face-up )?extra deck\b/i.test(descStr || '') &&
+                        !steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3).some(st => /\bextra deck\b/i.test(st?.text || ''))) {
+                        answerYes = false;
+                    }
+                    // Diactorus's "destroy 1 DoomZ card ..., then you can destroy 1 monster on the field" with your opponent's
+                    // field empty: "Diactorus's effect destroys Power Patron DoomZ" asks for the first destruction only, and
+                    // the second would hit your own monster
+                    if (answerYes && optionalDestroy && descCode && /\bdestroy\b[^.]*\bthen,? you can destroy\b/i.test(getCardText(descCode) || '')) {
+                        const oppCards = [OcgLocation.MZONE, OcgLocation.SZONE].flatMap(location =>
+                            lib.duelQueryLocation(duel, { flags: 17, controller: 1, location }) || []).filter(c => c && c.code);
+                        const asksSecond = steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3)
+                            .some(st => ((st?.text || '').match(/\bdestroy/gi) || []).length >= 2);
+                        if (oppCards.length === 0 && !asksSecond) answerYes = false;
                     }
                     // "then you can add 1 Ryu-Ge Pendulum Monster from your hand to your face-up Extra Deck": an optional
                     // extra the write-up may not use, so the choice search can try declining it
