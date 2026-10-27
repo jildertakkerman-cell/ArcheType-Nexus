@@ -75,10 +75,11 @@ function sanitizeComboData(cd) {
 }
 
 const existingAuditMap = new Map();
+let existingReport = null;
 if (fs.existsSync(OUTPUT_FILE)) {
     try {
-        const old = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8'));
-        (old.items || []).forEach(it => {
+        existingReport = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8'));
+        (existingReport.items || []).forEach(it => {
             if (it && it.id) existingAuditMap.set(it.id, it);
         });
     } catch {}
@@ -246,18 +247,23 @@ for (const it of auditItems) {
     byVerdict[v] = (byVerdict[v] || 0) + 1;
 }
 
+const summary = {
+    totalFlagged: auditItems.length,
+    curatedCount,
+    htmlCount,
+    byVerdict
+};
+const serialize = obj => JSON.stringify(obj, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2);
+const unchanged = existingReport
+    && serialize({ summary: existingReport.summary, items: existingReport.items }) === serialize({ summary, items: auditItems });
+
 const reportData = {
-    timestamp: new Date().toISOString(),
-    summary: {
-        totalFlagged: auditItems.length,
-        curatedCount,
-        htmlCount,
-        byVerdict
-    },
+    timestamp: (unchanged && existingReport.timestamp) ? existingReport.timestamp : new Date().toISOString(),
+    summary,
     items: auditItems
 };
 
-fs.writeFileSync(OUTPUT_FILE, JSON.stringify(reportData, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2), 'utf8');
+fs.writeFileSync(OUTPUT_FILE, serialize(reportData), 'utf8');
 console.log(`\nSuccess! Unified audit report with ${auditItems.length} combos saved to:`);
 console.log(`  ${OUTPUT_FILE}`);
 console.log(`  (${curatedCount} Curated JSON combos, ${htmlCount} HTML combos)\n`);

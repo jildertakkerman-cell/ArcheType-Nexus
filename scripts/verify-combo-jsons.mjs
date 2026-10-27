@@ -17,12 +17,15 @@ let runAll = false;
 
 let targetCombo = null;
 let debugMode = false;
+let noFail = false;
 
 for (const arg of args) {
     if (arg === '--all') {
         runAll = true;
     } else if (arg === '--debug') {
         debugMode = true;
+    } else if (arg === '--no-fail') {
+        noFail = true;
     } else if (arg.startsWith('--file=')) {
         targetFile = arg.split('=')[1];
     } else if (arg.startsWith('--archetype=')) {
@@ -39,7 +42,7 @@ for (const arg of args) {
 }
 
 // Find files to process
-let files = fs.readdirSync(COMBOS_DIR).filter(f => f.endsWith('.json'));
+let files = fs.readdirSync(COMBOS_DIR).filter(f => f.endsWith('.json') && f !== 'engine-audit-report.json');
 
 if (targetFile) {
     const base = path.basename(targetFile);
@@ -180,7 +183,7 @@ fs.writeFileSync(REPORT_FILE, JSON.stringify({
 
 console.log(`Detailed report saved to: ${REPORT_FILE}`);
 
-if (issuesDetected > 0 && process.env.CI) {
+if (issuesDetected > 0 && process.env.CI && !noFail) {
     process.exit(1);
 } else {
     process.exit(0);

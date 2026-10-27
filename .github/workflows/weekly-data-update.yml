@@ -1,4 +1,4 @@
-name: Weekly Banlist & Genesys Points Update
+name: Weekly Banlist, Genesys Points & Combo Audit Update
 
 on:
   schedule:
@@ -28,6 +28,20 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Cache OCGCore Card Database & Scripts
+        uses: actions/cache@v4
+        with:
+          path: |
+            assets/data/cards.cdb
+            assets/data/cardscripts
+          key: ocgcore-cache-v1-${{ github.run_id }}
+          restore-keys: |
+            ocgcore-cache-v1-
 
       - name: Run Data Update Script
         run: node scripts/update-genesys-points.js
@@ -44,6 +58,18 @@ jobs:
       - name: Check Test Decks
         run: node scripts/check-decklists.js --report assets/data/decklists/report.json --no-fail
 
+      # Validates all curated JSON combos (assets/data/combos/*.json) and HTML written
+      # combo walkthroughs (pages/*.html) against the headless OCGCore engine, then
+      # rebuilds the unified audit report (assets/data/combos/engine-audit-report.json).
+      - name: Validate Curated JSON Combos
+        run: node scripts/verify-combo-jsons.mjs --all --no-fail
+
+      - name: Validate HTML Guide Combos
+        run: node scripts/verify-html-combos-engine.mjs --all
+
+      - name: Build Unified Combo Audit Report
+        run: node scripts/build-engine-audit-report.mjs
+
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
@@ -51,15 +77,15 @@ jobs:
 
           branch=$(git rev-parse --abbrev-ref HEAD)
 
-          if git diff --quiet --exit-code -- assets/data/ scripts/data/; then
+          if git diff --quiet --exit-code -- assets/data/ scripts/data/ scripts/ILLEGAL_COMBOS_AUDIT.md; then
             echo "No data changes detected. Everything is up to date."
             exit 0
           fi
 
           echo "Data changes detected. Committing and pushing..."
-          git add assets/data/
+          git add assets/data/ scripts/ILLEGAL_COMBOS_AUDIT.md
           if [ -d scripts/data ]; then git add scripts/data/; fi
-          git commit -m "chore(data): auto-update banlist, genesys points, and Extra Deck packages [skip ci]"
+          git commit -m "chore(data): auto-update banlist, genesys points, Extra Deck packages, and combo audit [skip ci]"
 
           git fetch origin "$branch"
 

@@ -1488,6 +1488,14 @@ if (violations.length === 0 && unverifiableCombos.length === 0) {
     mdContent += `## All Audited Pages Passed 100% Legal!\n`;
 }
 
+    if (fs.existsSync(CHECKLIST_FILE)) {
+        const prevMd = fs.readFileSync(CHECKLIST_FILE, 'utf8');
+        const stripGen = s => s.replace(/^Generated: .*$/m, '');
+        if (stripGen(prevMd) === stripGen(mdContent)) {
+            const genMatch = prevMd.match(/^Generated: .*$/m);
+            if (genMatch) mdContent = mdContent.replace(/^Generated: .*$/m, genMatch[0]);
+        }
+    }
     fs.writeFileSync(CHECKLIST_FILE, mdContent, 'utf8');
     console.log(`Actionable checklist saved to: ${CHECKLIST_FILE}`);
 }
