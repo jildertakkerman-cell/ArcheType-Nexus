@@ -1,11 +1,11 @@
 # Headless Yu-Gi-Oh! OCGCore HTML Combo Audit
 
-Generated: Tue, 27 Oct 2026 23:17:06 GMT
+Generated: Wed, 28 Oct 2026 14:08:07 GMT
 
 ### Summary
 - **Pages Audited**: 406
 - **Total Combos Audited**: 515
-- **Total Steps Audited**: 1616
+- **Total Steps Audited**: 1613
 - **100% Legal Confirmed**: 511
 - **Partially Verified** (no illegal play found; some prose steps could not be simulated): 1
 - **Likely Illegal** (the card was in place and the engine refused the action): 0

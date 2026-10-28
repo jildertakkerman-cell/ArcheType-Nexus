@@ -46,6 +46,7 @@ export function cleanCardName(name) {
         .replace(/&mdash;|&ndash;/gi, '-')
         .replace(/[\u2018\u2019]/g, "'")
         .replace(/[\u201C\u201D]/g, '"')
+        .replace(/^(?:[A-Z][A-Z0-9\s/-]{1,22}\s*·\s*)+/, '')
         .trim();
 }
 
@@ -110,8 +111,12 @@ export function formatCardData(row) {
     };
 }
 
+const dynamicTokens = new Map();
+
 export function getCardByCode(code) {
-    const row = stmtByCode.get(Number(code));
+    const num = Number(code);
+    if (dynamicTokens.has(num)) return dynamicTokens.get(num);
+    const row = stmtByCode.get(num);
     return formatCardData(row);
 }
 
@@ -362,10 +367,12 @@ export function parseCardDescription(desc) {
         else spec.maxLevel = n;
         specific = true;
     }
-    // Write-ups capitalize Attributes; a lowercase "Dark" is usually part of a card name
-    const attr = raw.match(/\b(LIGHT|DARK|EARTH|WATER|FIRE|WIND|DIVINE)\b/);
+    // Write-ups capitalize Attributes; a lowercase "Dark" is usually part of a card name (unless after "any ")
+    const attr = /^any\s+/i.test(raw)
+        ? raw.match(/\b(LIGHT|DARK|EARTH|WATER|FIRE|WIND|DIVINE)\b/i)
+        : raw.match(/\b(LIGHT|DARK|EARTH|WATER|FIRE|WIND|DIVINE)\b/);
     if (attr) {
-        spec.attribute = ATTRIBUTE_MAP[attr[1]];
+        spec.attribute = ATTRIBUTE_MAP[attr[1].toUpperCase()];
         specific = true;
     }
     for (const r of RACE_NAMES) {
@@ -606,7 +613,27 @@ export async function createDuelInstance(options = {}) {
                 const custom = options.cardReader(code);
                 if (custom) return custom;
             }
-            return getCardByCode(code);
+            const card = getCardByCode(code);
+            if (card) return card;
+            // Fallback for dynamically spawned Tokens (e.g., Duel.CreateToken with custom/unindexed Token passcodes)
+            const tokenFallback = {
+                code: Number(code),
+                name: 'Token',
+                desc: 'Special Summoned with the effect of a card.',
+                alias: 0,
+                setcodes: [],
+                type: 0x4011, // TYPE_MONSTER | TYPE_NORMAL | TYPE_TOKEN
+                level: 1,
+                attribute: 1,
+                race: 1n,
+                attack: 0,
+                defense: 0,
+                lscale: 0,
+                rscale: 0,
+                link_marker: 0
+            };
+            dynamicTokens.set(Number(code), tokenFallback);
+            return tokenFallback;
         },
         scriptReader: (scriptName) => {
             if (coreScriptMap.has(scriptName)) {

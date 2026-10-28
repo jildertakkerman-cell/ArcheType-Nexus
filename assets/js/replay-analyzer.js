@@ -49,12 +49,79 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Check for combo guide upload mode via query params
     const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('duel')) {
+        await openDuelView(urlParams.get('duel'), urlParams.get('combo'));
+        return;
+    }
     const archetypeParam = urlParams.get('archetype');
     const isComboMode = urlParams.get('action') === 'combo' || !!archetypeParam;
     if (isComboMode && archetypeParam) {
         initComboUploadMode(archetypeParam);
     }
 });
+
+// ?duel=<source>&combo=<key>: play the whole duel of a v2 replay combo
+// (docs/replay-combo-format.md) in the Replay Browser. There's no analysis for
+// these, only moves and decklists. <source> is a site combo file or a GCS object
+// path; nothing else is fetched.
+const DUEL_SOURCE_SITE = /^assets\/data\/combos\/[\w.-]+\.json$/;
+const DUEL_SOURCE_GCS = /^(?:combo-json|replays_json)\/[^?#]+\.json$/;
+const DUEL_GCS_BASE = 'https://storage.googleapis.com/yugioh-card-images-archetype-nexus/';
+
+async function openDuelView(src, key) {
+    let url = null;
+    if (DUEL_SOURCE_SITE.test(src)) url = '../' + src;
+    else if (DUEL_SOURCE_GCS.test(src) && !src.split('/').includes('..')) {
+        url = DUEL_GCS_BASE + src.split('/').map(encodeURIComponent).join('/');
+    }
+    if (!url) {
+        showError('That duel link isn\'t one this page can open.');
+        return;
+    }
+
+    dropZone.style.display = 'none';
+    loadingState.style.display = 'block';
+    errorMessage.style.display = 'none';
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Could not load the duel (HTTP ${res.status}).`);
+        const data = await res.json();
+        const combos = data.combos || {};
+        const combo = combos[key] || Object.values(combos)[0];
+        if (!window.ReplayV2 || !ReplayV2.isV2(combo)) {
+            throw new Error('This combo was recorded before full duels were kept, so there is no duel to replay.');
+        }
+        showDuel(combo, data);
+    } catch (e) {
+        console.error('[duel view]', e);
+        showError(esc(e.message));
+        dropZone.style.display = 'block';
+    } finally {
+        loadingState.style.display = 'none';
+    }
+}
+
+function showDuel(combo, data) {
+    // v2 only names player 0, the uploader.
+    const names = [data.playerName || 'Player 1', 'Opponent'];
+    const isPlaceholderTitle = !combo.title || combo.title === 'Imported Combo';
+
+    analysisContainer.dataset.mode = 'duel';
+    analysisContainer.classList.add('visible');
+    document.getElementById('replayBrowserSection').style.display = '';
+    const note = document.getElementById('rb-section-note');
+    if (note) note.textContent = isPlaceholderTitle ? names[0] : `${combo.title} · ${names[0]}`;
+
+    if (currentReplayBrowser) currentReplayBrowser.destroy();
+    currentReplayBrowser = new ReplayBrowser('replayBrowserContainer', ReplayV2.toMoveLog(combo), names, {
+        decks: combo.decks || null,
+        cardMeta: cardMetadataCache,
+        fetchMeta: fetchCardMetadata,
+        stableIds: true,
+    });
+    currentReplayBrowser.buildUI();
+    currentReplayBrowser.wireFullscreenButtons();
+}
 
 // Drag and drop handlers
 dropZone.addEventListener('dragover', (e) => {
@@ -85,6 +152,7 @@ fileInput.addEventListener('change', () => {
 // Reset button
 document.getElementById('resetBtn').addEventListener('click', () => {
     analysisContainer.classList.remove('visible');
+    delete analysisContainer.dataset.mode;
     dropZone.style.display = 'block';
     errorMessage.style.display = 'none';
     if (chartInstance) {
@@ -213,6 +281,7 @@ function showSavedToast() {
 
 async function displayAnalysis(data) {
     const { resourceAnalysis, chainAnalysis, playerNames } = data;
+    delete analysisContainer.dataset.mode;   // leaving the ?duel= view, if it was open
 
     // Safety check for resourceAnalysis
     if (!resourceAnalysis || !resourceAnalysis.summary) {

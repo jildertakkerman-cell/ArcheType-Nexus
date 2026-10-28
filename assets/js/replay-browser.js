@@ -17,6 +17,11 @@
          player: 0|1,  // which player's board the card belongs to
          from: string, // source zone (canonical name, see ZONE_MAP)
          to: string    // destination zone (canonical name, see ZONE_MAP)
+         // Optional, sent by ReplayV2.toMoveLog for v2 replay combos:
+         fromPlayer: 0|1,     // board the card was on before (control changes)
+         owner: 0|1,          // whose Deck counts the card leaves
+         origin: string,      // pile the card starts the duel in (Deck counts)
+         overlayHost: string, // id of the Xyz Monster an 'overlay' move attaches to
        }
      ]
    }
@@ -47,8 +52,12 @@ const REPLAY_SOUND_MAP = {
     'lp-damage':              'lp-damage',
     'lp-cost':                'lp-damage',
     'lp-recover':             'lp-recover',
+    'tribute-summon':         'tribute',
+    'flip-summon':            'normal-summon',
     'send-to-gy':             'to-gy',
     'banish':                 'to-banish',
+    'cease-to-exist':         'to-banish',
+    'add-to-hand':            'to-hand',
     'equip':                  'equip',
     'set':                    'normal-summon',
     'set-monster':            'normal-summon',
@@ -138,6 +147,9 @@ class ReplayBrowser {
      *                                     those counts are hidden when it's absent.
      * @param {object} [options.cardMeta]  live passcode → {type, atk, def, linkval} map.
      * @param {Function} [options.fetchMeta] batch loader that fills cardMeta.
+     * @param {boolean} [options.stableIds] every id is one physical copy for the
+     *                                     whole duel (v2 replay combos), so never
+     *                                     re-pair a "new" id with a lookalike token.
      *
      * cardMeta/fetchMeta are injected rather than reached for as globals so this
      * stays a standalone component — it degrades to per-card CardLoader lookups
@@ -150,6 +162,7 @@ class ReplayBrowser {
         this.decks = options.decks || null;
         this.cardMeta = options.cardMeta || null;
         this.fetchMeta = options.fetchMeta || null;
+        this.stableIds = !!options.stableIds;
         this.currentIndex = -1;
         this.tokens = new Map();    // id → { el, player, zone }
         this.isPlaying = false;
@@ -396,7 +409,18 @@ class ReplayBrowser {
         this._syncMusic();
         this._prefetchCardData();
         this._updateZoneCounts();
+        this._hideUntrackedLifePoints();
         setTimeout(() => this._repositionAll(), 100);
+    }
+
+    // LP only moves through lp-* steps. A log without any (v2 replay combos)
+    // would show 8000 all duel, which reads as a fact; show nothing instead.
+    _hideUntrackedLifePoints() {
+        if (this.moveLog.some(s => String(s.type || '').startsWith('lp-'))) return;
+        ['rb-p1-lp', 'rb-p2-lp'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
     }
 
     _wireMobileToggle() {
@@ -794,7 +818,8 @@ class ReplayBrowser {
     _departed(player, origin, zoneElId) {
         const out = [];
         this.tokens.forEach(t => {
-            if (t.player === player && t.origin === origin && t.zone !== zoneElId) out.push(t.code);
+            // A card under the opponent's control still left its owner's Deck.
+            if ((t.owner ?? t.player) === player && t.origin === origin && t.zone !== zoneElId) out.push(t.code);
         });
         return out;
     }
@@ -989,7 +1014,10 @@ class ReplayBrowser {
     }
 
     _ensureToken(action) {
-        const { id, code, name, player, from, isToken } = action;
+        const { id, code, name, from, isToken } = action;
+        // A new token starts where the card was, which is on another board than
+        // `player` when this very move changes its controller.
+        const player = action.fromPlayer ?? action.player;
 
         // If token already exists, check if the card identity changed
         if (this.tokens.has(id)) {
@@ -1047,8 +1075,9 @@ class ReplayBrowser {
         // Fallback: the backend sometimes assigns a new ID to the same physical card
         // when it transitions zones (e.g. hand → spell zone on activation). Look for
         // an existing token with the same card code at the same from-zone and re-register
-        // it under the new ID instead of creating a duplicate.
-        if (code > 0) {
+        // it under the new ID instead of creating a duplicate. With stable ids a new id
+        // is a different copy, and re-pairing would swap two copies of a card.
+        if (code > 0 && !this.stableIds) {
             const fromElId = this._zoneElId(player, from);
             if (fromElId) {
                 for (const [existingId, t] of this.tokens) {
@@ -1088,6 +1117,7 @@ class ReplayBrowser {
         layer.appendChild(el);
         this.tokens.set(id, {
             el, player, zone: zoneElId,
+            owner: action.owner ?? player,
             code: code || 0,
             name: name || '',
             isToken: !!isToken,
@@ -1095,7 +1125,8 @@ class ReplayBrowser {
             // The zone this card first appeared from. Used to work out how much
             // of the deck/extra deck is still unaccounted for — tokens only get
             // created once a card moves, so the deck itself is never populated.
-            origin: from || null,
+            // v2 logs name the starting pile outright.
+            origin: action.origin || from || null,
             atk: null,
             def: null,
         });
@@ -1148,6 +1179,8 @@ class ReplayBrowser {
 
         const t = this.tokens.get(id);
         if (!t) return;
+
+        if ((player === 0 || player === 1) && t.player !== player) this._changeSide(t, player);
 
         // Xyz materials attach to their host monster — they are NOT in the
         // graveyard, which is where the old 'overlay' → 'gy' zone mapping put
@@ -1205,6 +1238,18 @@ class ReplayBrowser {
         // Remembered so a later step that attaches materials without naming the
         // host in the same step still has something to attach them to.
         if (/-(m[1-5]|em-(left|right))$/.test(toElId)) this._lastSummonedId = id;
+    }
+
+    // A control change: each board half has its own token layer, so the card's
+    // element moves over, and its Xyz Materials with it.
+    _changeSide(t, player) {
+        const layer = this._tokenLayer(player);
+        if (!layer) return;
+        const id = t.el.getAttribute('data-rb-id');
+        [t, ...(id ? this._materialsOf(id) : [])].forEach(card => {
+            layer.appendChild(card.el);
+            card.player = player;
+        });
     }
 
     /* ------------------------------------------------------------------
@@ -1352,7 +1397,7 @@ class ReplayBrowser {
     _zonesTouchedBy(step) {
         const out = new Set();
         (step?.actions || []).forEach(a => {
-            const from = this._zoneElId(a.player, a.from);
+            const from = this._zoneElId(a.fromPlayer ?? a.player, a.from);
             const to = this._zoneElId(a.player, a.to);
             if (from) out.add(from);
             if (to) out.add(to);
@@ -1594,7 +1639,9 @@ class ReplayBrowser {
                 if (actions.some(a => a.to === 'overlay')) {
                     const host = actions.find(a => /^(monster-zone-|extra-monster-zone-)/.test(a.to || ''));
                     actions.forEach(a => {
-                        if (a.to === 'overlay') a._overlayHost = host ? host.id : null;
+                        // v2 names the host, which matters when it isn't in this step
+                        // (attach-material onto a monster already on the field).
+                        if (a.to === 'overlay') a._overlayHost = a.overlayHost ?? (host ? host.id : null);
                     });
                     // The host has to land on the board before anything attaches to it.
                     ordered = [...actions].sort((a, b) =>

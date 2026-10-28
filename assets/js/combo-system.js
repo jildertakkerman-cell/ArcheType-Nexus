@@ -26,6 +26,54 @@ async function fetchStaticComboVotes(comboIds) {
     return { enabled: !!session, byId };
 }
 
+// Replay combos in format version 2 (docs/replay-combo-format.md) are played
+// through replay-v2.js, which sits next to this file. Pages with hand-written
+// combos only never load it.
+const COMBO_SYSTEM_SRC = (document.currentScript && document.currentScript.src) || '';
+let replayV2Promise = null;
+
+const isReplayV2Combo = combo => !!combo && Number(combo.formatVersion) >= 2 && !combo._v2;
+
+function ensureReplayV2() {
+    if (window.ReplayV2) return Promise.resolve(window.ReplayV2);
+    if (!replayV2Promise) {
+        replayV2Promise = new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = new URL('replay-v2.js', COMBO_SYSTEM_SRC || new URL('../assets/js/', document.baseURI)).href;
+            s.onload = () => resolve(window.ReplayV2);
+            s.onerror = () => {
+                replayV2Promise = null; // let the next combo try again
+                reject(new Error('could not load replay-v2.js'));
+            };
+            document.head.appendChild(s);
+        });
+    }
+    return replayV2Promise;
+}
+
+// The Replay Analyzer page plays a whole v2 duel; `src` is a site combo file
+// (assets/data/combos/…) or a GCS object path (combo-json/…, replays_json/…).
+function fullDuelUrl(src, key) {
+    const page = new URL('../../pages/Replay-Analyzer.html', COMBO_SYSTEM_SRC || new URL('../assets/js/', document.baseURI));
+    page.searchParams.set('duel', src);
+    if (key) page.searchParams.set('combo', key);
+    return page.href;
+}
+
+const V2_PHASE_NAMES = {
+    standby: 'Standby Phase',
+    main1: 'Main Phase 1',
+    battle: 'Battle Phase',
+    main2: 'Main Phase 2',
+    end: 'End Phase',
+};
+
+// Heading for a v2 turn or phase marker step. Player 0 is the combo player.
+function v2MarkerText(step) {
+    if (step.type === 'turn') return `Turn ${step._v2.turn} · ${step.player === 0 ? 'your turn' : "opponent's turn"}`;
+    return V2_PHASE_NAMES[step._v2.phase] || step.text;
+}
+
 /**
  * ComboLoader - Utility for loading and initializing combo visualizer data
  * * This utility provides methods to:
@@ -144,6 +192,16 @@ class ComboLoader {
             if (!comboData || !comboData.combos) {
                 console.error(`[ComboLoader] No combo data found for ${archetypeName}`);
                 return null;
+            }
+
+            // The guide and the board must show the same steps, so a v2 replay
+            // combo is cut to its window once, here, before either renders.
+            const comboFile = `assets/data/combos/${archetypeName.toLowerCase()}-combos.json`;
+            if (Object.values(comboData.combos).some(isReplayV2Combo)) {
+                await ensureReplayV2();
+                Object.keys(comboData.combos).forEach(key => {
+                    comboData.combos[key] = ReplayV2.prepareForSimulator(comboData.combos[key]);
+                });
             }
 
             const curatedCount = Object.keys(comboData.combos).length;
@@ -282,7 +340,9 @@ class ComboLoader {
             Object.keys(comboData.combos).forEach(key => {
                 const normalizedKey = key.replace('combo', '');
                 const simElementId = `duel-simulator-${key}`;
-                simulators[key] = new DuelSimulator(simElementId, { [normalizedKey]: comboData.combos[key] });
+                simulators[key] = new DuelSimulator(simElementId, { [normalizedKey]: comboData.combos[key] }, {
+                    duelSource: { src: comboFile, key }
+                });
             });
 
             console.log(`[ComboLoader] Successfully loaded combo system for ${archetypeName}`);
@@ -1152,6 +1212,8 @@ class ComboGuide {
 
             const cardNameMap = {};
             if (combo.cards) combo.cards.forEach(c => cardNameMap[c.id] = c.name);
+            // A v2 replay's steps also name the opponent's cards, which have no token.
+            if (combo._v2) Object.assign(cardNameMap, combo._v2.names);
             // Tokens are just "Token" by name, so their step art comes by passcode, as on the board.
             const tokenCodeMap = {};
             if (combo.cards) combo.cards.forEach(c => { if (c.isToken && c.code) tokenCodeMap[c.id] = c.code; });
@@ -1247,8 +1309,21 @@ class ComboGuide {
             guideContainer.appendChild(voteBarDiv.firstElementChild);
 
             if (combo.steps) {
+                let stepNum = 0;
                 combo.steps.forEach((step, stepIndex) => {
-                    const stepNum = stepIndex + 1;
+                    // v2 replay steps: turn and phase markers are headings, not steps,
+                    // and a phase nothing happens in is left out.
+                    const v2Step = step._v2;
+                    if (v2Step && v2Step.kind === 'marker') {
+                        if (!v2Step.empty) stepsWrapper.appendChild(this.markerDivider(v2MarkerText(step), accent, step.type === 'turn'));
+                        return;
+                    }
+                    stepNum++;
+                    const isOpponentStep = !!v2Step && v2Step.kind === 'opponent';
+                    const badgeColor = isOpponentStep ? '#ef4444' : accent;
+                    const badgeText = `STEP ${stepNum}`
+                        + (isOpponentStep ? ' · OPPONENT' : '')
+                        + (v2Step && v2Step.chainSize > 1 ? ` · CHAIN LINK ${v2Step.chainLink}` : '');
 
                     // Resolve primary card for this step (handle single card or multiple actions)
                     let primaryCardId = step.card;
@@ -1284,12 +1359,12 @@ class ComboGuide {
                             transition-all duration-300 hover:shadow-md
                             relative overflow-hidden
                         " style="
-                            background-color: ${theme.cardBg}; 
-                            border-color: ${accent}40;
+                            background-color: ${theme.cardBg};
+                            border-color: ${badgeColor}40;
                         ">
                             <div class="absolute top-0 left-0 px-3 py-1 rounded-br-lg text-[10px] font-bold tracking-widest z-10 shadow-sm"
-                                 style="background: ${accent}; color: ${theme.isDarkMode ? '#000' : '#fff'};">
-                                STEP ${stepNum}
+                                 style="background: ${badgeColor}; color: ${theme.isDarkMode && !isOpponentStep ? '#000' : '#fff'};">
+                                ${badgeText}
                             </div>
 
                             <div id="${imgId}" 
@@ -1312,8 +1387,9 @@ class ComboGuide {
                     `;
                     stepsWrapper.appendChild(stepCard);
 
-                    // Arrow
-                    if (stepIndex < combo.steps.length - 1) {
+                    // Arrow (none into a v2 turn/phase heading)
+                    const nextStep = combo.steps[stepIndex + 1];
+                    if (nextStep && !(nextStep._v2 && nextStep._v2.kind === 'marker')) {
                         const arrow = document.createElement('div');
                         arrow.className = 'flex justify-center -my-3 opacity-30';
                         arrow.innerHTML = `<i class="fas fa-arrow-down text-xl" style="color: ${accent}"></i>`;
@@ -1533,6 +1609,22 @@ class ComboGuide {
     }
 
     /**
+     * Turn or phase heading between the steps of a v2 replay combo.
+     */
+    static markerDivider(text, accent, isTurn) {
+        const el = document.createElement('div');
+        el.style.cssText = `display:flex; align-items:center; gap:0.75rem; color:${accent}; margin:${isTurn ? '0.5rem' : '-0.5rem'} 0 -0.5rem;`;
+        const rule = `<span style="flex:1; height:1px; background:${accent}40;"></span>`;
+        const label = document.createElement('span');
+        label.style.cssText = `font-size:${isTurn ? '0.8rem' : '0.68rem'}; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; opacity:${isTurn ? 1 : 0.75};`;
+        label.textContent = text;
+        el.innerHTML = rule;
+        el.appendChild(label);
+        el.insertAdjacentHTML('beforeend', rule);
+        return el;
+    }
+
+    /**
      * Replaces competitive jargon with beginner-friendly terms
      */
     static formatForBeginners(text) {
@@ -1642,7 +1734,17 @@ class DuelSimulator {
         this.equippedTo = {};
         this.fieldMonsterOrder = [];
 
+        // A v2 replay combo is played through replay-v2.js, fetched on first use.
+        // If that fails it still plays, unwindowed and with both players' cards.
+        // Callers that drive the board right away (jumpToStep) wait on `ready`.
+        if (Object.values(comboData).some(isReplayV2Combo) && !window.ReplayV2) {
+            this.ready = ensureReplayV2()
+                .catch(e => console.warn('[DuelSimulator] Playing a v2 replay combo without replay-v2.js:', e))
+                .then(() => this.init());
+            return;
+        }
         this.init();
+        this.ready = Promise.resolve();
     }
 
     notifyStepChange() {
@@ -1664,6 +1766,16 @@ class DuelSimulator {
     init() {
         const container = document.getElementById(this.containerId);
         if (!container) return;
+
+        // 0. Cut v2 replay combos to the window this board plays: player 0's
+        //    first turn unless options.v2Range says otherwise ('all', {start, end}).
+        if (window.ReplayV2 && Object.values(this.combos).some(isReplayV2Combo)) {
+            const prepared = {};
+            Object.entries(this.combos).forEach(([key, combo]) => {
+                prepared[key] = ReplayV2.prepareForSimulator(combo, { range: this.options.v2Range });
+            });
+            this.combos = prepared;
+        }
 
         // 1. Render Board
         this.renderBoard(container);
@@ -1727,10 +1839,17 @@ class DuelSimulator {
         if (typeof window.CardLoader === 'undefined') return;
         const names = new Set();
         // Tokens and placeholders aren't looked up by name (see the token art cases), so skip them here too.
-        Object.values(this.combos).forEach(c => c.cards.forEach(card => {
-            const isPlaceholder = card.isDummy || String(card.id).startsWith('dummy-') || String(card.name).toLowerCase().startsWith('any ');
-            if (!(card.isToken && card.code) && !isPlaceholder) names.add(card.name);
-        }));
+        Object.values(this.combos).forEach(c => {
+            c.cards.forEach(card => {
+                const isPlaceholder = card.isDummy || String(card.id).startsWith('dummy-') || String(card.name).toLowerCase().startsWith('any ');
+                if (!(card.isToken && card.code) && !isPlaceholder) names.add(card.name);
+            });
+            // v2: the opponent's cards have no token, but what they activate still
+            // shows its text in the Last Effect panel.
+            if (c._v2) c.steps.forEach(s => {
+                if (s.type === 'activate' && s._v2.kind === 'opponent' && c._v2.names[s.card]) names.add(c._v2.names[s.card]);
+            });
+        });
         // Use the robust CardLoader to handle API calls and caching
         window.CardLoader.preloadCards(Array.from(names));
     }
@@ -1781,6 +1900,7 @@ class DuelSimulator {
                 <button class="sim-btn sim-btn-nav btn-extra" title="View Extra Deck"><i class="fas fa-layer-group"></i> Extra</button>
                 <button class="sim-btn sim-btn-nav btn-banish" title="View Banished Cards"><i class="fas fa-fire"></i> Banish</button>
                 <button class="sim-btn sim-btn-sound btn-sound" title="Sound On"><i class="fas fa-volume-up"></i></button>
+                ${this.fullDuelHref() ? `<a class="sim-btn sim-btn-nav btn-duel" href="${this.fullDuelHref()}" target="_blank" rel="noopener" style="text-decoration:none;" title="Watch the whole duel, both players' moves"><i class="fas fa-film"></i> Full duel</a>` : ''}
             </div>
             <div class="sim-settings">
                 <i class="fas fa-tachometer-alt" style="color:var(--text-muted); font-size: 0.8rem;"></i>
@@ -1869,17 +1989,48 @@ class DuelSimulator {
         // 1. Create Cards
         combo.cards.forEach(c => this.createCardToken(c));
 
-        // 2. Fill Hand
-        const hand = combo.cards.filter(c => c.zone === 'zone-hand');
-        for (let i = 0; i < (5 - hand.length); i++) {
-            this.createCardToken({
-                id: `dummy-${i}`, name: "Random Card", type: "monster",
-                zone: "zone-hand", isDummy: true
-            });
+        // 2. Fill Hand. A v2 replay's opening hand is exact, so it needs no stand-ins.
+        if (combo._v2) {
+            this.setUpV2Start(combo);
+        } else {
+            const hand = combo.cards.filter(c => c.zone === 'zone-hand');
+            for (let i = 0; i < (5 - hand.length); i++) {
+                this.createCardToken({
+                    id: `dummy-${i}`, name: "Random Card", type: "monster",
+                    zone: "zone-hand", isDummy: true
+                });
+            }
         }
 
         requestAnimationFrame(() => this.repositionCards());
         this.notifyStepChange();
+    }
+
+    // What a v2 window can open on besides cards in zones: Xyz Materials already
+    // attached, and (going second) an opponent's board this one-sided view can
+    // only name.
+    setUpV2Start(combo) {
+        (combo._v2.startMaterials || []).forEach(({ card, host }) => this.attachMaterial(card, host));
+        const field = combo._v2.opponentField || [];
+        if (field.length) {
+            const faceUp = field.filter(c => !c.faceDown).map(c => c.name);
+            const set = field.length - faceUp.length;
+            const parts = faceUp.concat(set ? [`${set} Set card${set > 1 ? 's' : ''}`] : []);
+            this.log(`Opponent's field: ${parts.join(', ')}`, 'log-opponent');
+        }
+    }
+
+    // Link to the whole duel on the Replay Analyzer, for a v2 combo that has
+    // more to it than this board plays. A trimmed curated combo names the replay
+    // it came from (`source`); otherwise the caller says where this combo's file
+    // is (options.duelSource: { src, key }).
+    fullDuelHref() {
+        const combo = this.combos[this.currentComboId];
+        if (!combo || !combo._v2) return null;
+        if (combo.source) return fullDuelUrl(combo.source, combo.sourceKey);
+        const src = this.options.duelSource;
+        if (!src || combo._v2.totalSteps <= combo.steps.length) return null;
+        return fullDuelUrl(src.src, src.key);
     }
 
     createCardToken(data) {
@@ -1976,8 +2127,9 @@ class DuelSimulator {
     setPosition(token, zoneId, cachedRects = null) {
         // "zone-vanish" is not a real board location — cards that start here (mostly
         // Tokens not yet Special Summoned) or that have vanished must not be rendered
-        // anywhere: no pile, no position, no count.
-        if (zoneId === 'zone-vanish') {
+        // anywhere: no pile, no position, no count. Nor is "zone-offside": a v2
+        // replay card on the opponent's half, which this board doesn't draw.
+        if (zoneId === 'zone-vanish' || zoneId === 'zone-offside') {
             token.style.opacity = '0';
             token.style.display = 'none';
             token.style.pointerEvents = 'none';
@@ -2279,19 +2431,28 @@ class DuelSimulator {
         // "zone-vanish" is not a real board zone — it's a signal that a Token ceases to
         // exist (e.g. tributed/used as material) instead of physically going to the GY.
         const isVanishTarget = targetZoneId === 'zone-vanish';
+        // "zone-offside" (v2 replays): the card went to the opponent's half of the
+        // board, which this one-sided board doesn't draw.
+        const isOffside = targetZoneId === 'zone-offside';
 
         if (c.vanishTimeout) {
             clearTimeout(c.vanishTimeout);
             c.vanishTimeout = null;
         }
 
-        if (isVanishTarget || (isToken && isLeaving)) {
-            this.log(isVanishTarget ? `(${c.data.name} vanishes)` : `(Token removed)`);
+        if (isVanishTarget || isOffside || (isToken && isLeaving)) {
+            this.log(isOffside ? `(${c.data.name} goes to the opponent's side)`
+                : isVanishTarget ? `(${c.data.name} vanishes)` : `(Token removed)`);
             c.element.style.opacity = "0";
             c.element.style.setProperty('--tk-fx', 'scale(0.5)');
             // Note: data-zone is deliberately left untouched (rather than set to the vanish
             // target) so the GY/Banish viewer panels, which filter by data-zone, never list
-            // a vanished Token — it never actually occupied that zone.
+            // a vanished Token — it never actually occupied that zone. An offside card did
+            // leave its zone, so it must not linger in that zone's pile either.
+            if (isOffside) {
+                c.element.setAttribute('data-zone', 'zone-offside');
+                this.trackFieldMonster(cardId, '');
+            }
             c.vanishTimeout = setTimeout(() => c.element.style.display = 'none', 500);
             return;
         }
@@ -2339,9 +2500,10 @@ class DuelSimulator {
 
         const currentZone = c.element.getAttribute('data-zone') || c.data.zone;
         // Cards materializing out of "zone-vanish" (e.g. a Token being Special Summoned)
-        // were never actually positioned anywhere — skip the snap-to-current-position
-        // step so we don't call setPosition('zone-vanish'), which would just re-hide them.
-        if (!c.element.style.left && currentZone !== 'zone-vanish') {
+        // or "zone-offside" were never actually positioned anywhere — skip the
+        // snap-to-current-position step so we don't call setPosition on them, which
+        // would just re-hide them.
+        if (!c.element.style.left && currentZone !== 'zone-vanish' && currentZone !== 'zone-offside') {
             // Temporarily disable transition for initial placement if it was missing
             const originalTransition = c.element.style.transition;
             c.element.style.transition = 'none';
@@ -2405,7 +2567,12 @@ class DuelSimulator {
     }
 
     nextStep() {
-        const steps = this.combos[this.currentComboId].steps;
+        const combo = this.combos[this.currentComboId];
+        if (combo._v2) {
+            this.nextStepV2(combo.steps);
+            return;
+        }
+        const steps = combo.steps;
         if (this.currentStep < steps.length) {
             const s = steps[this.currentStep];
             this.log(`> ${s.text}`);
@@ -2491,6 +2658,39 @@ class DuelSimulator {
             this.togglePlay(false);
             if (typeof ComboSounds !== 'undefined') ComboSounds.play('combo-complete');
         }
+    }
+
+    // v2 replay steps carry their own type and side (see ReplayV2.prepareForSimulator),
+    // so nothing here reads the step text. Turn and phase markers move no cards:
+    // they're logged on the way to the next real step instead of costing a click
+    // or a tick of autoplay.
+    nextStepV2(steps) {
+        while (this.currentStep < steps.length && steps[this.currentStep]._v2.kind === 'marker') {
+            const marker = steps[this.currentStep];
+            if (!marker._v2.empty) this.log(v2MarkerText(marker), 'log-marker');
+            this.currentStep++;
+        }
+        if (this.currentStep >= steps.length) {
+            this.notifyStepChange();
+            this.log("Combo Complete!");
+            this.togglePlay(false);
+            if (typeof ComboSounds !== 'undefined') ComboSounds.play('combo-complete');
+            return;
+        }
+
+        const s = steps[this.currentStep];
+        const v = s._v2;
+        this.log(`> ${s.text}`, v.kind === 'opponent' ? 'log-opponent' : '');
+        if (s.type === 'activate') {
+            this.playEffectAnimation(s.card);
+            this.showLastEffectForCard(s.card, s.text);
+        }
+        if (v.anim) this.playSummonAnimation(s.card, v.anim);
+        s.actions.forEach(a => this.moveStepCard(s, a.card, a.to));
+
+        this.currentStep++;
+        this.notifyStepChange();
+        if (typeof ComboSounds !== 'undefined') ComboSounds.play(v.sound);
     }
 
     /**
@@ -2607,7 +2807,7 @@ class DuelSimulator {
         // Restore the Last Effect panel to match the target step
         for (let i = targetStep - 1; i >= 0; i--) {
             const s = steps[i];
-            if (s.text && s.text.toLowerCase().includes('activate effect')) {
+            if (s.type === 'activate' || (s.text && s.text.toLowerCase().includes('activate effect'))) {
                 const cardId = s.card || (s.actions && s.actions[0] && s.actions[0].card);
                 if (cardId) this.showLastEffectForCard(cardId, s.text);
                 break;
@@ -2696,7 +2896,9 @@ class DuelSimulator {
      */
     showLastEffectForCard(cardId, stepText) {
         const cardEntry = this.cards[cardId];
-        const cardName = cardEntry && cardEntry.data ? cardEntry.data.name : null;
+        // v2: an opponent's card has no token, only a name.
+        const cardName = (cardEntry && cardEntry.data ? cardEntry.data.name : null)
+            || this.combos[this.currentComboId]?._v2?.names?.[cardId] || null;
         if (!cardName) return;
         const effectText = this.getEffectTextForCard(cardName) || stepText;
         this.showLastEffect(cardName, effectText);
@@ -2735,9 +2937,9 @@ class DuelSimulator {
         this.playBtn.classList.toggle('paused', this.isPlaying);
     }
 
-    log(msg) {
+    log(msg, cls = '') {
         const d = document.createElement('div');
-        d.className = 'log-entry';
+        d.className = cls ? `log-entry ${cls}` : 'log-entry';
         d.textContent = msg;
         this.logEl.appendChild(d);
         this.logEl.scrollTop = this.logEl.scrollHeight;

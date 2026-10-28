@@ -464,14 +464,21 @@ async function _loadComboSim(panel, gcscombojsonpath) {
 
         const firstKey = comboKeys[0];
         const normalizedKey = firstKey.replace('combo', '');
+        // A v2 replay combo (both players, whole duel) is cut to the uploader's
+        // first turn once, so the board and the step list show the same steps.
+        let combo = comboData.combos[firstKey];
+        if (Number(combo.formatVersion) >= 2 && typeof window.ensureReplayV2 === 'function') {
+            await window.ensureReplayV2();
+            combo = window.ReplayV2.prepareForSimulator(combo);
+        }
         // Override the distilled JSON title ("Imported Combo") with the user's actual guide title
         const userTitle = panel.dataset.comboTitle || '';
-        const comboEntry = userTitle
-            ? Object.assign({}, comboData.combos[firstKey], { title: userTitle })
-            : comboData.combos[firstKey];
-        new DuelSimulator(boardId, { [normalizedKey]: comboEntry });
+        const comboEntry = userTitle ? Object.assign({}, combo, { title: userTitle }) : combo;
+        new DuelSimulator(boardId, { [normalizedKey]: comboEntry }, {
+            duelSource: { src: gcscombojsonpath, key: firstKey }
+        });
 
-        _renderComboSteps(panel, simId, comboData.combos[firstKey]);
+        _renderComboSteps(panel, simId, combo);
 
     } catch (e) {
         panel.innerHTML = '<p style="color:#f87171;font-size:0.8rem;padding:0.5rem;">Could not load combo steps: ' + e.message + '</p>';
@@ -482,11 +489,26 @@ async function _loadComboSim(panel, gcscombojsonpath) {
 function _renderComboSteps(panel, simId, combo) {
     const cardNameMap = {};
     if (combo.cards) combo.cards.forEach(function (c) { cardNameMap[c.id] = c.name; });
+    // A v2 replay's steps also name the opponent's cards, which have no token.
+    if (combo._v2) Object.assign(cardNameMap, combo._v2.names);
 
     const guideId = simId + '-guide';
     const iconId  = simId + '-guide-icon';
+    const steps = combo.steps || [];
+    const isMarker = function (step) { return !!(step && step._v2 && step._v2.kind === 'marker'); };
+    let stepNum = 0;
 
-    const stepEls = (combo.steps || []).map(function (step, i) {
+    const stepEls = steps.map(function (step, i) {
+        // v2 turn and phase markers are headings; a phase nothing happens in is left out.
+        if (isMarker(step)) {
+            if (step._v2.empty) return '';
+            const heading = typeof v2MarkerText === 'function' ? v2MarkerText(step) : step.text;
+            return '<div style="margin:' + (step.type === 'turn' ? '0.6rem' : '0.2rem') + ' 0 0.1rem;font-size:0.7rem;font-weight:700;' +
+                   'letter-spacing:0.1em;text-transform:uppercase;color:#f59e0b;opacity:' + (step.type === 'turn' ? '1' : '0.7') + ';">' +
+                   window.escapeHtml(heading) + '</div>';
+        }
+        stepNum++;
+        const isOpponentStep = !!(step._v2 && step._v2.kind === 'opponent');
         const primaryCardId = step.card || (step.actions && step.actions.length > 0 ? step.actions[0].card : null);
         const cardName = cardNameMap[primaryCardId] || '';
         const imgId = simId + '-step-' + i + '-img';
@@ -504,18 +526,22 @@ function _renderComboSteps(panel, simId, combo) {
               'onclick="window.CardLoader && window.CardLoader.showPopup(event, \'' + cardName.replace(/'/g, "\\'") + '\')"></div>'
             : '';
 
-        const arrow = i < (combo.steps || []).length - 1
+        const arrow = i < steps.length - 1 && !isMarker(steps[i + 1])
             ? '<div style="text-align:center;color:rgba(245,158,11,0.3);line-height:1;padding:0.1rem 0;">▼</div>'
+            : '';
+
+        const opponentTag = isOpponentStep
+            ? '<span style="display:block;font-size:0.62rem;font-weight:800;letter-spacing:0.08em;color:#f87171;margin-bottom:0.15rem;">OPPONENT</span>'
             : '';
 
         return '<div style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem;' +
                'background:rgba(255,255,255,0.03);border-radius:0.5rem;' +
-               'border:1px solid rgba(255,255,255,0.07);">' +
+               'border:1px solid ' + (isOpponentStep ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.07)') + ';">' +
                '<div style="flex-shrink:0;min-width:1.75rem;height:1.75rem;border-radius:0.3rem;' +
-               'background:#f59e0b;display:flex;align-items:center;justify-content:center;' +
-               'font-size:0.68rem;font-weight:800;color:#000;margin-top:0.1rem;">' + (i + 1) + '</div>' +
+               'background:' + (isOpponentStep ? '#ef4444' : '#f59e0b') + ';display:flex;align-items:center;justify-content:center;' +
+               'font-size:0.68rem;font-weight:800;color:#000;margin-top:0.1rem;">' + stepNum + '</div>' +
                cardHtml +
-               '<p style="margin:0;font-size:0.83rem;color:#d4d4d4;line-height:1.5;flex:1;">' + text + '</p>' +
+               '<p style="margin:0;font-size:0.83rem;color:#d4d4d4;line-height:1.5;flex:1;">' + opponentTag + text + '</p>' +
                '</div>' + arrow;
     }).join('');
 

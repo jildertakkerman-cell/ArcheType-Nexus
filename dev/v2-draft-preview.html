@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>v2 Draft Preview</title>
+    <!--
+        Dev tool: a v2 replay draft (assets/data/combos/v2-drafts/, made by
+        scripts/import-replay-combo.mjs) next to the live combo with the same key,
+        each in the real combo system. Without ?which= this is the side-by-side
+        shell; with ?which=current|draft it is one of its two frames.
+        Lives one folder deep on purpose: ComboLoader fetches ../assets/data/combos/.
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="../output.css" rel="stylesheet">
+    <script src="../assets/js/combo-sounds.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <style>
+        body { margin: 0; background: #0b1120; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; }
+        .shell-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid #1e293b; }
+        .shell-bar h1 { font-size: 1rem; margin: 0 0.5rem 0 0; }
+        .shell-bar select { background: #111827; color: #e2e8f0; border: 1px solid #334155; border-radius: 0.4rem; padding: 0.35rem 0.5rem; }
+        .shell-bar a { color: #93c5fd; font-size: 0.85rem; }
+        .shell-note { font-size: 0.8rem; color: #94a3b8; }
+        .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: calc(100vh - 58px); }
+        .pane { display: flex; flex-direction: column; min-width: 0; border-right: 1px solid #1e293b; }
+        .pane h2 { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0; padding: 0.5rem 1rem; background: #111827; color: #94a3b8; }
+        .pane iframe { flex: 1; border: 0; width: 100%; }
+        .frame-msg { padding: 2rem; color: #94a3b8; }
+        @media (max-width: 900px) { .panes { grid-template-columns: 1fr; height: auto; } .pane iframe { height: 90vh; } }
+    </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function () {
+    const params = new URLSearchParams(location.search);
+    const which = params.get('which');
+    const root = document.getElementById('root');
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    // ---- Frame: one combo system, the live file or the draft ----
+    if (which) {
+        const arch = params.get('arch') || '';
+        const key = params.get('combo');
+        root.innerHTML = '<div id="mount" style="max-width:1100px;margin:0 auto;padding:1rem;"></div>';
+        if (!/^[a-z0-9-]+$/.test(arch)) return;
+        const name = which === 'draft' ? `v2-drafts/${arch}` : arch;
+        ComboLoader.renderComboSystem('mount', name).then(res => {
+            if (!res || !key) return;
+            if (!res.data.combos[key]) {
+                document.getElementById('mount').insertAdjacentHTML('afterbegin',
+                    `<p class="frame-msg">No ${esc(key)} here${which === 'current' ? ': the draft is a new line' : ''}.</p>`);
+                return;
+            }
+            // Through the selector, so its label follows the combo shown.
+            const option = document.querySelector(`.combo-selector-option[data-value="${key.replace('combo', '')}"]`);
+            if (option) option.click(); else res.showCombo(key.replace('combo', ''));
+        });
+        return;
+    }
+
+    // ---- Shell: pick an archetype and a combo, see both side by side ----
+    root.innerHTML = `
+        <div class="shell-bar">
+            <h1>v2 draft preview</h1>
+            <select id="arch" aria-label="Archetype"></select>
+            <select id="combo" aria-label="Combo"></select>
+            <a href="../assets/data/combos/v2-drafts/REPORT.md" target="_blank" rel="noopener">REPORT.md</a>
+            <span class="shell-note" id="note"></span>
+        </div>
+        <div class="panes">
+            <div class="pane"><h2>Live combo</h2><iframe id="current" title="Live combo"></iframe></div>
+            <div class="pane"><h2>v2 draft</h2><iframe id="draft" title="v2 draft"></iframe></div>
+        </div>`;
+
+    const archSel = document.getElementById('arch');
+    const comboSel = document.getElementById('combo');
+    const note = document.getElementById('note');
+    let index = null;
+
+    function load() {
+        const arch = archSel.value;
+        const key = comboSel.value;
+        const q = `arch=${encodeURIComponent(arch)}&combo=${encodeURIComponent(key)}`;
+        document.getElementById('current').src = `?which=current&${q}`;
+        document.getElementById('draft').src = `?which=draft&${q}`;
+        const entry = index.archetypes.find(a => a.slug === arch);
+        const combo = entry && entry.combos.find(c => c.key === key);
+        note.textContent = !combo ? ''
+            : combo.status === 'new' ? 'New line: nothing to compare on the live page.'
+            : combo.status === 'unchanged' ? 'No v2 replay for this combo yet: the draft carries it over unchanged.'
+            : '';
+        history.replaceState(null, '', `?${q}`);
+    }
+
+    // Each draft file is the whole page; the status says what happened to a combo.
+    const STATUS_LABEL = { v2: 'v2 draft', unchanged: 'unchanged', new: 'new line' };
+
+    function fillCombos(preferred) {
+        const entry = index.archetypes.find(a => a.slug === archSel.value);
+        comboSel.innerHTML = (entry ? entry.combos : []).map(c =>
+            `<option value="${esc(c.key)}">${esc(c.key)} (${STATUS_LABEL[c.status] || c.status}): ${esc(c.title)}</option>`).join('');
+        if (preferred && [...comboSel.options].some(o => o.value === preferred)) comboSel.value = preferred;
+    }
+
+    fetch('../assets/data/combos/v2-drafts/index.json')
+        .then(r => r.json())
+        .then(data => {
+            index = data;
+            archSel.innerHTML = data.archetypes.map(a => `<option value="${esc(a.slug)}">${esc(a.slug)}</option>`).join('');
+            if (params.get('arch')) archSel.value = params.get('arch');
+            fillCombos(params.get('combo'));
+            archSel.onchange = () => { fillCombos(); load(); };
+            comboSel.onchange = load;
+            load();
+        })
+        .catch(() => {
+            note.textContent = 'No drafts yet: run node scripts/import-replay-combo.mjs';
+        });
+})();
+</script>
+</body>
+</html>

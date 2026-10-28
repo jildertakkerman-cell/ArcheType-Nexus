@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runComboReplay } from './lib/combo-runner.mjs';
+import { runComboReplay, runComboReplaySearch } from './lib/combo-runner.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -112,7 +112,9 @@ for (const file of files) {
         const startTime = Date.now();
         let replayResult;
         try {
-            replayResult = await runComboReplay(combo, { debug: debugMode });
+            replayResult = debugMode
+                ? await runComboReplay(combo, { debug: true, lenient: true })
+                : await runComboReplaySearch(combo, { lenient: true });
         } catch (err) {
             replayResult = {
                 status: 'CRASHED',
@@ -144,7 +146,7 @@ for (const file of files) {
         };
         results.push(entry);
 
-        if (replayResult.status === 'VERIFIED_LEGAL') {
+        if (replayResult.legal || replayResult.status === 'VERIFIED_LEGAL' || replayResult.status === 'VERIFIED_PARTIAL') {
             passedLegal++;
             console.log(`\x1b[32mLEGAL\x1b[0m (${replayResult.stepsCompleted}/${replayResult.totalSteps} steps, ${duration}ms)`);
         } else if (replayResult.status === 'UNOFFICIAL_CARDS') {

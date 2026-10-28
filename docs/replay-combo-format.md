@@ -1,0 +1,304 @@
+# Replay combo JSON, format version 2
+
+Combo JSONs distilled from EDOPro replays (`.yrpX`) by the yrp service. Since 2026-10-28 they are
+`formatVersion: 2`: they hold **both players' moves, turn and phase boundaries, chain results and
+full decklists**, so a replay can be re-run in ocgcore as it was played.
+
+The generator is `src/distill_combo_v2.ts` in the `yrp-private` repo, and its type comments are the
+source of truth. The move tracking behind it is in `src/move_log_builder.ts`.
+
+## Where these files are
+
+| Location | Produced by | Notes |
+|---|---|---|
+| GCS `combo-json/{comboid}.json` | `POST /generate-combo-json` (admin, my-replays, replay analyzer) | Community combos (`combos.gcscombojsonpath`). The 4 existing files are still v1 until regenerated. |
+| GCS `replays_json/<timestamp>_<raw replay name>.json` | `npm run replays:reanalyze-raw` | Replay archive. Older v1 copies sit next to the v2 ones. For each replay, the file with the latest timestamp prefix is current. The same folder also holds upload-time *analysis* JSONs (`replaySteps`, `moveLog`, …), which are a different format. |
+| yrp-private `replays/synced_by_archetype/<archetype>/json/` | `npm run replays:sync-local` | Local copies of the above. |
+
+## Detecting the version
+
+```js
+const combo = data.combos.combo1;
+const isV2 = combo.formatVersion >= 2;
+```
+
+A combo without `formatVersion` is v1: player 0's moves only, no turn or phase markers, an opening
+hand that can include later draws, and ids that may merge copies. Hand-written combos in
+`assets/data/combos/` are also unversioned. Keep the old code path for them.
+
+## Top level
+
+```jsonc
+{
+  "archetype": "Tearlaments",          // inferred from player 0's cards
+  "playerName": "[AI] Tearlaments",    // player 0's name
+  "combos": {
+    "combo1": {
+      "title": "Imported Combo",       // placeholder
+      "description": "Automatically distilled from replay file.",
+      "formatVersion": 2,
+      "cards": [ /* CardDetail */ ],
+      "decks": [ /* DeckList | null, per player */ ],   // optional, see below
+      "steps": [ /* ComboStep */ ]
+    }
+  }
+}
+```
+
+**Player 0 is the combo player** (the replay's first player, usually the uploader). Player 1 is the
+opponent.
+
+## `cards`: one entry per physical copy
+
+```json
+{ "id": "p1-card-003", "name": "Tearlaments Reinoheart", "type": "monster", "zone": "zone-hand", "code": 73956664, "isToken": false, "player": 0 }
+{ "id": "p2-card-001", "name": "Infinite Impermanence", "type": "trap", "zone": "zone-hand", "code": 10045474, "isToken": false, "player": 1 }
+```
+
+| Field | Meaning |
+|---|---|
+| `id` | Stable for the whole duel, one per physical copy: two copies of the same card get different ids. **The prefix names the owner, counting from 1: `p1-` is player 0, `p2-` is player 1.** Numbers can have gaps. |
+| `player` | Owner: `0` or `1`. It always agrees with the id prefix. |
+| `code` | EDOPro passcode. A few are EDOPro-only alias codes that YGOPRODeck doesn't know; those get the name `Card #<code>` and `type` `monster`. |
+| `type` | `monster` \| `spell` \| `trap` \| `extra` (Fusion/Synchro/Xyz/Link), from YGOPRODeck. It defaults to `monster` when the lookup fails, so for engine work use the cdb by `code`. |
+| `zone` | **Where the card is when the duel starts:** `zone-hand` (opening hand), `zone-deck`, `zone-extra`, or `zone-vanish` (Tokens, which don't exist yet). |
+| `isToken` | The card is a Token. Never put it in a Deck. It appears through a summon step `from: "zone-vanish"`. |
+| `preset` | Only on preset-board replays (puzzles, test hand; see below): the card starts on the field, in the GY or banished, and `zone` says where. |
+
+`cards` lists only the copies that **do something in the replay**. A card that never leaves the Deck
+is not in `cards`; it is in `decks`. Order: player 0's cards, then player 1's, each by first
+appearance.
+
+The opening hand is exactly the cards drawn before turn 1. Every later draw is a `draw` step, and
+the card it draws starts in `zone-deck`.
+
+## `decks`: full decklists
+
+```jsonc
+"decks": [
+  { "main": [/* 40 codes, bottom → top */], "extra": [/* 15 codes */] },   // player 0
+  { "main": [/* … */], "extra": [/* … */] }                               // player 1
+]
+```
+
+- `main` is the Main Deck in its **real starting order, bottom to top**. The last code is the top
+  card, which is drawn first. It **includes the opening hand**: player *p*'s opening hand is the last
+  *n* codes of `decks[p].main`, where *n* is the number of `zone-hand` cards player *p* owns.
+- `extra` is the Extra Deck. Its order carries no meaning.
+- The ids in `cards` are particular copies within these lists. Copies of the same code are
+  interchangeable at the start, so to build a Deck, take `main` and remove the codes that start in
+  hand. The rest is the Deck, still in order.
+- An entry is `null` when the replay's deck snapshot didn't match the deck sizes the duel reported.
+  `decks` is absent on preset-board replays.
+- The order only holds until that Deck is first shuffled in the real game, for example after a
+  search. A `draw` step always names the card drawn, so a verifier that disables shuffling should put
+  that card on top before the draw.
+
+## Zones and sides
+
+Zone ids are the DuelSimulator's own:
+
+| Zone | Meaning |
+|---|---|
+| `zone-hand`, `zone-deck`, `zone-extra`, `zone-gy`, `zone-banish` | Piles |
+| `zone-m1` … `zone-m5` | Main Monster Zones, left to right (ocgcore sequence 0–4) |
+| `zone-em-left`, `zone-em-right` | Extra Monster Zones (sequence 5, 6) |
+| `zone-s1` … `zone-s5` | Spell & Trap Zones (sequence 0–4; s1/s5 are the Pendulum Zones) |
+| `zone-field` | Field Zone |
+| `material:<hostId>` | Attached as Xyz Material to card `<hostId>` |
+| `zone-vanish` | Not on the board: a Token before it is created or after it leaves the field, or a card removed from the game |
+
+A zone id doesn't say whose zone it is. **A zone belongs to whoever controls the card, which is
+its owner unless the action carries `controller`:**
+
+```js
+const owner = id => (id.startsWith('p2-') ? 1 : 0);
+const sideAfter = action => action.controller ?? owner(action.card);
+```
+
+`controller` is present exactly when the card's controller after the step isn't its owner. That
+happens after a control change, when the opponent's monster is revived onto your field, for a
+monster summoned to the opponent's field (Kaiju, Lava Golem), and so on. Every later action on that
+card keeps carrying `controller` until the card is back with its owner. Cards always go to their
+owner's piles, so a `to` pile zone never has `controller`. A card's `from` side is wherever its
+previous action left it, or its owner at the start.
+
+## `steps`
+
+Every step has `text`, `type` and `player`. Card movements are either a single card on the step or
+a list of `actions`:
+
+```jsonc
+// single card
+{ "text": "Normal Summon Tearlaments Reinoheart", "type": "normal-summon", "player": 0,
+  "card": "p1-card-003", "from": "zone-hand", "to": "zone-m3", "position": "atk" }
+
+// several cards at once (Xyz Summons, multi-card draws, simultaneous summons, swaps)
+{ "text": "Opponent: Xyz Summon Officiator of Doom Samuel", "type": "xyz-summon", "player": 1,
+  "actions": [
+    { "card": "p2-card-010", "from": "zone-extra", "to": "zone-m1", "position": "def" },
+    { "card": "p2-card-003", "from": "zone-m1", "to": "material:p2-card-010" },
+    { "card": "p2-card-009", "from": "zone-m3", "to": "material:p2-card-010" } ] }
+```
+
+| Field | Meaning |
+|---|---|
+| `text` | Human-readable and generated. It starts with `Opponent: ` when `player` is 1. Display it, but don't parse it: every fact in it is also a field. |
+| `type` | What happened; see the table below. |
+| `player` | See "Whose step it is". |
+| `card`, `from`, `to` | Single-card steps. **`from` is always present.** |
+| `actions[]` | `{ card, from, to, position?, controller? }` per card |
+| `position` | On summons, Sets and position changes: `atk`, `def`, or `set` (face-down) |
+| `controller` | See "Zones and sides" |
+
+### Step types
+
+| `type` | What happened | Notes |
+|---|---|---|
+| `turn` | A turn starts | `turn` (1-based) and `player` (the turn player). It implies the Draw Phase. |
+| `phase` | The turn player enters a phase | `phase`: `standby`, `main1`, `battle`, `main2` or `end`. Battle Phase steps are merged into one `battle`. |
+| `draw` | Card(s) drawn | Draw-phase draws and effect draws alike. The opening hand is never a step. |
+| `activate` | A card or effect is activated | See "Activations and chains". `from` is where it was, `to` is where it is after activating: a Spell/Trap from the hand goes `zone-hand` → `zone-sN`. |
+| `normal-summon`, `tribute-summon`, `flip-summon` | Those summons | A Tribute Summon is preceded by its `tribute` steps. |
+| `special-summon`, `fusion-summon`, `synchro-summon`, `xyz-summon`, `link-summon`, `ritual-summon`, `pendulum-summon` | A monster is Special Summoned | **The kind comes from the monster's card type, not from how it was summoned.** A Link Monster revived from the GY is still `link-summon`, so check `from`. In `xyz-summon`, `actions[0]` is the Xyz Monster and the rest are its materials. |
+| `set`, `set-monster` | A Spell/Trap Set, or a monster Set | |
+| `tribute` | A monster tributed for a summon | |
+| `send-to-gy`, `banish` | To the GY, or banished | Costs, effects, battle, rules (a Normal Spell after it resolves), and Xyz Materials detached (`from: "material:<host>"`) |
+| `add-to-hand` | To the hand from anywhere off the field | Searches, GY → hand, … |
+| `return-to-hand` | Field → hand | |
+| `return-to-extra` | Field → Extra Deck **or Deck** | `to` tells which. |
+| `attach-material` | Attached to a monster already on the field | `to: "material:<host>"`. If the host isn't known, `to` falls back to `zone-gy`; this is rare. |
+| `cease-to-exist` | A Token leaves the field (or a card leaves the game) | `to: "zone-vanish"` |
+| `move` | Any other move | Deck → S/T placement (e.g. Black Whirlwind placed by an effect), GY/banished → Deck, hand → Deck, a control change on the field (`from` may equal `to`, with `controller` set), a monster becoming an Equip, … |
+| `swap-control` | Two monsters swap controllers | Two actions; each card goes to the other's zone, with `controller` on whichever isn't with its owner. |
+| `attack` | An attack | `card` is the attacker. `target` is the attacked monster's id, absent for a direct attack. |
+| `position-change` | A battle-position change | `position` is the new position. |
+
+LP changes and ATK/DEF changes are left out: they follow from the steps.
+
+### Whose step it is (`player`)
+
+| Steps | `player` is |
+|---|---|
+| `turn`, `phase`, `swap-control` | the turn player |
+| `activate` | the player who activated |
+| `draw`, `normal-summon`, `tribute-summon`, `flip-summon`, `set`, `set-monster`, `attack`, `position-change` | the player who did it |
+| Special Summon types | who controls the monster afterwards: normally the summoner, but the opponent for a summon onto their field |
+| All other moves | **whose card it was before the move**, not who caused it. Your effect banishing the opponent's monster is a `banish` step with `player: 1`. |
+
+### Activations and chains
+
+```json
+{ "type": "activate", "player": 0, "card": "p1-card-003", "from": "zone-m3", "to": "zone-m3",
+  "chainLink": 1, "desc": 77549182910465, "disabled": true }
+{ "type": "activate", "player": 1, "card": "p2-card-001", "from": "zone-hand", "to": "zone-s3", "chainLink": 2 }
+```
+
+- `chainLink` is the link number in the chain being built. Each new chain restarts at 1. Activation
+  steps come in the order the chain was built, and the steps that resolve it follow.
+- `desc` says which effect was used. It is the effect's description id, `aux.Stringid(code, n)` =
+  `code * 2^20 + n`, **wider than 32 bits**, so use arithmetic, never bitwise operators:
+  ```js
+  const code = Math.floor(desc / 2 ** 20);  // whose string table: usually the activated card
+  const n = desc % 2 ** 20;                 // string index, effect 0, 1, 2, …
+  ```
+  Compare the whole value against the `desc`/description of the options ocgcore offers in
+  `SELECT_IDLECMD` / `SELECT_CHAIN` to pick the same effect. `desc` is absent when the effect has no
+  description, which is typical for activating a Spell/Trap card itself.
+- `negated: true`: the activation was negated (MSG_CHAIN_NEGATED), for example Herald of Orange
+  Light on Pumpking.
+- `disabled: true`: the activation stood, but its effect was negated at resolution
+  (MSG_CHAIN_DISABLED), for example Infinite Impermanence on Reinoheart.
+- In both cases the activation happened and its costs were paid.
+
+### Player actions and their consequences
+
+Steps record everything that moved, not only player decisions. Costs, effect results and rule moves
+are steps too. **There is no field yet that marks a step as a cost or a chain result.** In practice:
+
+- The steps between an `activate` and the next activation or chain resolution are mostly its costs
+  (discards, tributes, detached materials).
+- After the last activation of a chain, the following steps until the next activation, summon or
+  marker are its resolution, in resolution order (last link first).
+- A summon `from: "zone-extra"` that isn't inside a chain is a player's summon procedure. Inside a
+  chain, it is an effect result.
+- `draw` steps right after a `turn` marker are the normal draw.
+
+## Preset boards: puzzles and test hand
+
+Some replays start from a preset board (EDOPro puzzles and test-hand mode) instead of a normal duel
+start. On these:
+
+- Cards that start on the field, in the GY or banished have that `zone` and `preset: true`.
+  `combo-runner.mjs` already keeps a preset zone when `card.preset` is set.
+- `decks` is absent, and the opponent may have no cards at all.
+
+## What existing site code assumes that v2 changes
+
+**`scripts/lib/combo-runner.mjs` (verifier)**
+
+- Every `p2-*` card is placed face-down in the opponent's hand. In v2, a p2 card's `zone` is its
+  real starting zone (`zone-deck`, `zone-extra`, `zone-hand`), and `decks[1]` is the opponent's full
+  Deck.
+- The Deck is built from `zone-deck` cards plus filler. Use `decks[p].main` in order instead,
+  falling back to the old filler when `decks` or `decks[p]` is missing.
+- Steps are matched by `text`. In v2, `Opponent: …` steps match `OPPONENT_RE` and are classified
+  `opponent-board`, while `turn`/`phase` markers read as narrative. To actually replay, switch on
+  `type` and `player` when `formatVersion >= 2`: respond as player 1 to `player: 1` activations, and
+  advance phases and turns at the markers. If the first `turn` marker has `player: 1`, player 0 is
+  going second.
+- The "leading `Draw … to zone-hand` steps start in hand" heuristic has no effect on v2, since the
+  first step is always a `turn` marker and opening hands are already `zone-hand`. That's fine.
+- The rule that moves `p1-card-*` cards on the field or in the GY into the Deck stays harmless:
+  outside preset boards, v2 never gives a card a starting zone on the field or in the GY.
+
+**Viewers: handled since 2026-10-28**
+
+`assets/js/replay-v2.js` holds the v2 rules for the site (browser global `ReplayV2`, also
+`require()`-able from Node):
+
+- `combo-system.js` loads it on demand when it meets a v2 combo. `prepareForSimulator()` cuts the
+  combo to player 0's first turn and to player 0's half of the board: the opponent's moves become
+  log lines and step-list entries tagged "Opponent", a card that crosses to the opponent's half
+  goes to the hidden `zone-offside`, and the opening hand gets no dummies. ComboLoader prepares
+  the combo once, so the guide and the board show the same steps. A **Full duel** button links to
+  the whole duel. The admin audit passes `v2Range: 'all'` so step numbers match the verifier's.
+- `Replay-Analyzer.html?duel=<source>&combo=<key>` plays the whole duel in the Replay Browser
+  through `toMoveLog()`. `<source>` is a site combo file (`assets/data/combos/…`) or a GCS path
+  (`combo-json/…`, `replays_json/…`). A trimmed curated combo can name its full replay in
+  `source` (plus `sourceKey`), and the button uses that.
+- `node scripts/check-replay-v2.mjs` checks local exports (yrp-private's `synced_by_archetype` by
+  default) against this document and runs them through both viewers' preparation.
+- `node scripts/import-replay-combo.mjs` turns the exports in yrp-private's `combo_guides` into
+  curated combo drafts in `assets/data/combos/v2-drafts/`, with a `REPORT.md`. Drafts have one card
+  per step (split steps share `replayStep`) and keep the key of the curated combo they match.
+  `dev/v2-draft-preview.html` shows a draft next to the live combo. Nothing on the site reads the
+  drafts; adopting one means copying it into the real file.
+
+## Known limitations
+
+- **No targets or chosen options yet.** The replay has them (`MSG_BECOME_TARGET`, selections), but
+  they aren't decoded into the export.
+- **No cost/result tagging** (see above).
+- **Tag duels (2 vs 2) aren't tracked.** Hands swapped in from a tag partner get fresh ids.
+- In a handful of long full duels the tracker misses a card's arrival somewhere. That card then
+  starts in `zone-deck` (9 of 225 local replays, none of them combo guides).
+- `title` and `description` are placeholders, and `archetype` is a best guess from player 0's cards.
+
+### Seen in the first export run (check-replay-v2, 224 combos, 2026-10-28)
+
+These differ from what the sections above promise. The viewers cope with all of them.
+
+- **`desc` below 2²⁰** (2, 1068, 1160, 1170, 1171; 171 steps). These are EDOPro system strings, not
+  `aux.Stringid(code, n)`, so `Math.floor(desc / 2 ** 20)` gives code 0. `ReplayV2.decodeDesc()`
+  returns `{ system }` for them.
+- **`decks` missing on 38 combos without `preset` cards**, 27 of which also have an opening hand
+  that isn't 5 cards (test-hand replays, apparently). `decks[p]` is `null` on 4 more.
+- **Steps before the first `turn` marker** on 3 combos: a skill card (alias code, `Card #…`)
+  leaving the Deck by `cease-to-exist` before turn 1.
+- **2 combos with no steps at all.**
+- **A multi-card `draw` names only the first card in `text`** ("Draw Ancient Gear Castle" for 2
+  cards; 193 steps). The viewers write "Draw 2 cards" instead.
+- **`from` differs from the tracked zone** 21 times: the missed-arrival case above, in full duels.
+- **`controller` also appears on `material:` moves**, when a card is attached to the opponent's
+  Xyz Monster. `sideAfter()` covers it as written.

@@ -1563,6 +1563,9 @@
             auditReport.simulatorInstance = new DuelSimulator('audit-sim-mount', {
                 auditCombo: item.comboData
             }, {
+                // Verifier step numbers count every step of a v2 replay combo,
+                // so the board can't cut it to the first turn here.
+                v2Range: 'all',
                 onStepChange: (stepIdx) => {
                     handleAuditSimStepChange(stepIdx);
                 }
@@ -1570,12 +1573,13 @@
 
             // Automatically position the board right before the failure!
             const target = Math.max(0, (item.failedStepNumber || 1) - 1);
-            setTimeout(() => {
-                if (auditReport.simulatorInstance) {
-                    auditReport.simulatorInstance.jumpToStep(target, item.fieldSnapshot);
+            const sim = auditReport.simulatorInstance;
+            sim.ready.then(() => setTimeout(() => {
+                if (auditReport.simulatorInstance === sim) {
+                    sim.jumpToStep(target, item.fieldSnapshot);
                     handleAuditSimStepChange(target, item.failedStepNumber || 1);
                 }
-            }, 120);
+            }, 120));
         } catch (e) {
             console.error('Failed to initialize DuelSimulator for audit', e);
             mount.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>Could not load DuelSimulator: ${window.escapeHtml(e.message)}</div>`;
