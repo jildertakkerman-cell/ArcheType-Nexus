@@ -2,10 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runComboReplay, runComboReplaySearch } from './lib/combo-runner.mjs';
+import { runComboReplayV2Search } from './lib/combo-runner-v2.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const COMBOS_DIR = path.resolve(__dirname, '../assets/data/combos');
+// --dir=<folder> checks another folder of combo files (e.g. assets/data/combos/v2-drafts)
+const dirArg = process.argv.find(a => a.startsWith('--dir='));
+const COMBOS_DIR = dirArg ? path.resolve(dirArg.slice(6)) : path.resolve(__dirname, '../assets/data/combos');
 const REPORT_FILE = path.resolve(__dirname, 'engine-verification-report.json');
 
 // Parse CLI arguments
@@ -32,6 +35,8 @@ for (const arg of args) {
         targetArchetype = arg.split('=')[1].toLowerCase();
     } else if (arg.startsWith('--combo=')) {
         targetCombo = arg.split('=')[1];
+    } else if (arg.startsWith('--dir=')) {
+        // handled above
     } else if (arg.startsWith('--max=')) {
         maxCombos = Number(arg.split('=')[1]);
     } else if (!arg.startsWith('--') && arg.endsWith('.json')) {
@@ -42,7 +47,7 @@ for (const arg of args) {
 }
 
 // Find files to process
-let files = fs.readdirSync(COMBOS_DIR).filter(f => f.endsWith('.json') && f !== 'engine-audit-report.json');
+let files = fs.readdirSync(COMBOS_DIR).filter(f => f.endsWith('-combos.json'));
 
 if (targetFile) {
     const base = path.basename(targetFile);
@@ -112,9 +117,12 @@ for (const file of files) {
         const startTime = Date.now();
         let replayResult;
         try {
-            replayResult = debugMode
-                ? await runComboReplay(combo, { debug: true, lenient: true })
-                : await runComboReplaySearch(combo, { lenient: true });
+            // Format version 2 (docs/replay-combo-format.md): the replay as played, both players, replayed step by step
+            replayResult = combo.formatVersion >= 2
+                ? await runComboReplayV2Search(combo, { debug: debugMode })
+                : debugMode
+                    ? await runComboReplay(combo, { debug: true, lenient: true })
+                    : await runComboReplaySearch(combo, { lenient: true });
         } catch (err) {
             replayResult = {
                 status: 'CRASHED',
@@ -142,6 +150,10 @@ for (const file of files) {
             missingCards: replayResult.missingCards || [],
             failedStepIdx: replayResult.failedStepIdx != null ? replayResult.failedStepIdx : null,
             offeredActions: replayResult.offeredActions || null,
+            formatVersion: combo.formatVersion || 1,
+            // v2 only: answers the export doesn't record, picked from the steps that follow; cards cards.cdb lacks
+            guesses: replayResult.guesses || [],
+            unknownCards: replayResult.unknownCards || [],
             comboData: combo
         };
         results.push(entry);

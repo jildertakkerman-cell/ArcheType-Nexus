@@ -159,7 +159,7 @@ export function parseHtmlCombos(filePath) {
     const stepCards = [...content.matchAll(/class="[^"]*combo-step-card[^"]*"([\s\S]*?)(?=(?:class="[^"]*combo-step-card[^"]*")|<\/section>|$)/gi)];
     const numberedStepCards = [];
     for (const match of stepCards) {
-        const chunk = match[1].slice(0, 2500);
+        const chunk = match[1].slice(0, 5000);
         const numMatch = chunk.match(/<span[^>]*class="[^"]*(?:rounded-full|h-8|w-8)[^"]*"[^>]*>\s*(\d+)\s*<\/span>/i)
             || chunk.match(/<span[^>]*>\s*(\d+)\s*<\/span>/i);
         if (numMatch) {
