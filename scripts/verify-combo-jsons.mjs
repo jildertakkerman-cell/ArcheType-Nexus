@@ -6,10 +6,12 @@ import { runComboReplayV2Search } from './lib/combo-runner-v2.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// --dir=<folder> checks another folder of combo files (e.g. assets/data/combos/v2-drafts)
+// --dir=<folder> checks another folder of combo files (e.g. assets/data/combos/v2-drafts), into its own report
+// (engine-verification-<folder>-report.json), so the live report the admin audit is built from stays as it is
+// --v2-only skips combos that aren't format version 2 (the drafts carry the page's other combos over unchanged)
 const dirArg = process.argv.find(a => a.startsWith('--dir='));
 const COMBOS_DIR = dirArg ? path.resolve(dirArg.slice(6)) : path.resolve(__dirname, '../assets/data/combos');
-const REPORT_FILE = path.resolve(__dirname, 'engine-verification-report.json');
+const REPORT_FILE = path.resolve(__dirname, dirArg ? `engine-verification-${path.basename(COMBOS_DIR)}-report.json` : 'engine-verification-report.json');
 
 // Parse CLI arguments
 const args = process.argv.slice(2);
@@ -21,6 +23,7 @@ let runAll = false;
 let targetCombo = null;
 let debugMode = false;
 let noFail = false;
+let v2Only = false;
 
 for (const arg of args) {
     if (arg === '--all') {
@@ -29,6 +32,8 @@ for (const arg of args) {
         debugMode = true;
     } else if (arg === '--no-fail') {
         noFail = true;
+    } else if (arg === '--v2-only') {
+        v2Only = true;
     } else if (arg.startsWith('--file=')) {
         targetFile = arg.split('=')[1];
     } else if (arg.startsWith('--archetype=')) {
@@ -109,6 +114,7 @@ for (const file of files) {
         if (maxCombos && totalCombosTested >= maxCombos) break;
 
         const combo = combos[key];
+        if (v2Only && !(combo.formatVersion >= 2)) continue;
         totalCombosTested++;
 
         const comboTitle = combo.title || key;
@@ -154,6 +160,12 @@ for (const file of files) {
             // v2 only: answers the export doesn't record, picked from the steps that follow; cards cards.cdb lacks
             guesses: replayResult.guesses || [],
             unknownCards: replayResult.unknownCards || [],
+            // v2 only: 'recorded' when the export's own duel (seed + responses) replayed, else 'steps'; where the
+            // recorded duel diverged when it didn't (scripts that changed since)
+            mode: replayResult.mode || null,
+            recordedFailure: replayResult.recordedFailure || null,
+            responsesUsed: replayResult.responsesUsed ?? null,
+            responsesTotal: combo.duel?.replay?.responses?.length ?? null,
             comboData: combo
         };
         results.push(entry);

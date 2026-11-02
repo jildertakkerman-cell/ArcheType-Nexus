@@ -120,6 +120,11 @@ export function getCardByCode(code) {
     return formatCardData(row);
 }
 
+// Whether cards.cdb has the card (getCardByCode also answers for the Token data made up for unknown codes)
+export function inCardsDb(code) {
+    return !!stmtByCode.get(Number(code));
+}
+
 // The card's rules text from cards.cdb ('' if unknown)
 const stmtTextByCode = db.prepare('SELECT desc FROM texts WHERE id = ?');
 export function getCardText(code) {
@@ -247,6 +252,15 @@ export function parseSupabaseRow(row, linkMarkers = 0) {
     if (/monster/i.test(cardtype)) {
         type |= 0x1; // TYPE_MONSTER
         if (/effect/i.test(cardtype)) type |= 0x20;
+        // "Tuner Monster" (Chaospawn Bishop) is an Effect Tuner, "Normal Tuner Monster" a vanilla one; Spirit, Union,
+        // Gemini, Flip and Toon monsters are Effect Monsters too, whether or not the label says "Effect"
+        if (/tuner/i.test(cardtype)) type |= 0x1000;
+        if (/normal/i.test(cardtype)) type |= 0x10;
+        else if (/tuner|spirit|union|gemini|flip|toon/i.test(cardtype)) type |= 0x20;
+        if (/spirit/i.test(cardtype)) type |= 0x200;
+        if (/union/i.test(cardtype)) type |= 0x400;
+        if (/gemini/i.test(cardtype)) type |= 0x800;
+        if (/flip/i.test(cardtype)) type |= 0x200000;
         if (/fusion/i.test(cardtype)) type |= 0x40;
         if (/ritual/i.test(cardtype)) type |= 0x80;
         if (/synchro/i.test(cardtype)) type |= 0x2000;
@@ -471,6 +485,38 @@ export async function resolveCardAsync(nameOrCode) {
 // Script names already looked up remotely and not found, so one audit run doesn't re-request them for every combo
 const missingScripts = new Set();
 
+// Card name (lowercase) -> pre-release code, from BabelCDB's prerelease-*.cdb files. Read once per run, and only
+// when a script is missing under a card's passcode.
+let prereleaseNames = null;
+async function prereleaseCodeFor(name) {
+    if (!name) return null;
+    if (!prereleaseNames) prereleaseNames = loadPrereleaseNames();
+    return (await prereleaseNames).get(name.toLowerCase()) || null;
+}
+
+async function loadPrereleaseNames() {
+    const names = new Map();
+    const dir = path.join(SCRIPT_DIR, 'babel-prerelease');
+    try {
+        const res = await fetch('https://api.github.com/repos/ProjectIgnis/BabelCDB/contents/');
+        if (!res.ok) return names;
+        const files = (await res.json()).filter(f => /^prerelease-.*\.cdb$/.test(f.name) && !/rush/i.test(f.name));
+        fs.mkdirSync(dir, { recursive: true });
+        for (const f of files) {
+            const file = await fetch(f.download_url);
+            if (!file.ok) continue;
+            const localCdb = path.join(dir, f.name);
+            fs.writeFileSync(localCdb, Buffer.from(await file.arrayBuffer()));
+            const cdb = new DatabaseSync(localCdb, { readOnly: true });
+            for (const row of cdb.prepare('SELECT id, name FROM texts').all()) names.set(String(row.name).toLowerCase(), Number(row.id));
+            cdb.close();
+        }
+    } catch (err) {
+        console.warn('[getScript] Could not read the BabelCDB pre-release databases:', err.message);
+    }
+    return names;
+}
+
 export function isScriptMissing(scriptName) {
     return missingScripts.has(scriptName);
 }
@@ -520,6 +566,18 @@ export async function getScript(scriptName) {
                     return aliasScript;
                 }
             }
+            // A card whose passcode came out after its script was written can still be filed under its pre-release
+            // code (Chaospawn Bishop: 24780790 in cards.cdb, its script pre-release/c101402089.lua). The script
+            // reads its own code through GetID(), so it runs under the passcode as it is.
+            const preCode = card && await prereleaseCodeFor(card.name);
+            if (preCode && preCode !== card.code) {
+                const res = await fetch(`${base}/pre-release/c${preCode}.lua`);
+                if (res.ok) {
+                    const text = await res.text();
+                    fs.writeFileSync(localPath, text, 'utf8');
+                    return text;
+                }
+            }
         }
         missingScripts.add(scriptName);
         return '';
@@ -529,8 +587,45 @@ export async function getScript(scriptName) {
     }
 }
 
-// Load WebAssembly module exports
-const wasmModule = await import(WASM_INDEX);
+// Load WebAssembly module exports, from a copy with two binding bugs fixed (the original if neither is there any more):
+// - MSG_SHUFFLE_SET_CARD (36) is read as a u32 count of from/to pairs, but the core writes a u8 count, then every card's
+//   old position, then every new one, so the message threw "eof" (Call of the Haunted's Set-2 lines)
+// - a SORT_CARD answer is written as a count byte and the order, but the core reads only the order (one byte per card),
+//   so any order other than "keep it" (-1) was refused (Dark Magical Circle's excavated cards)
+async function loadWasmModule() {
+    const src = fs.readFileSync(fileURLToPath(WASM_INDEX), 'utf8');
+    const FIXES = [
+        ['case 36:return{type:t,location:e.u8(),cards:Array.from({length:e.u32()},()=>({from:p(e),to:p(e)}))};',
+            'case 36:{let l=e.u8(),n=e.u8(),f=Array.from({length:n},()=>p(e)),g=Array.from({length:n},()=>p(e));' +
+            'return{type:t,location:l,cards:f.map((x,i)=>({from:x,to:g[i]}))}}'],
+        ['case 15:if(!e.order){t.i8(-1);break}t.i8(e.order.length);for(let r of e.order)t.i8(r);break;',
+            'case 15:if(!e.order){t.i8(-1);break}for(let r of e.order)t.i8(r);break;']
+    ].filter(([buggy]) => src.includes(buggy));
+    if (!FIXES.length) return import(WASM_INDEX);
+    const base = WASM_INDEX.slice(0, WASM_INDEX.lastIndexOf('/') + 1);
+    const patched = FIXES.reduce((code, [buggy, fixed]) => code.replace(buggy, fixed), src).replace(/(["'])\.\//g, `$1${base}`);
+    return import('data:text/javascript;base64,' + Buffer.from(patched).toString('base64'));
+}
+// Rows an earlier run cached from Supabase are read from Supabase again once per run, in one request, so a parser fix
+// reaches them (Chaospawn Bishop was cached as a plain monster before "Tuner Monster" was read as an Effect Tuner)
+async function refreshSupabaseCachedRows() {
+    const ids = db.prepare('SELECT id FROM texts WHERE str1 IS NULL').all().map(r => Number(r.id));
+    if (!ids.length) return;
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/cards?passcode=in.(${ids.join(',')})&select=*`, {
+            headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+        });
+        if (!res.ok) return;
+        for (const row of await res.json()) {
+            parseSupabaseRow(row, /link/i.test(row.cardtype || '') ? await fetchLinkMarkers(row.passcode) : 0);
+        }
+    } catch {
+        // Offline: keep the cached rows
+    }
+}
+await refreshSupabaseCachedRows();
+
+const wasmModule = await loadWasmModule();
 export const {
     default: createCore,
     OcgAttribute,

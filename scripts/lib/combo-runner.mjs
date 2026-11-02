@@ -198,6 +198,26 @@ export async function preloadComboScripts(resolvedCards) {
 /**
  * Maps a combo zone string to OcgLocation and sequence.
  */
+// The own Monster Zone sequences a Link Monster in `seq` points to (0-4 Main, 5/6 the left/right Extra Monster Zone,
+// which sit above Main Monster Zones 1 and 3). Arrows: 0x001 bottom-left, 0x002 bottom, 0x004 bottom-right, 0x008 left,
+// 0x020 right, 0x040 top-left, 0x080 top, 0x100 top-right.
+export function linkArrowTargets(seq, markers) {
+    const out = [];
+    if (seq >= 5) {
+        const below = seq === 5 ? 1 : 3;
+        if (markers & 0x001) out.push(below - 1);
+        if (markers & 0x002) out.push(below);
+        if (markers & 0x004) out.push(below + 1);
+        return out;
+    }
+    if ((markers & 0x008) && seq > 0) out.push(seq - 1);
+    if ((markers & 0x020) && seq < 4) out.push(seq + 1);
+    if ((markers & 0x080) && (seq === 1 || seq === 3)) out.push(seq === 1 ? 5 : 6);
+    if ((markers & 0x040) && (seq === 2 || seq === 4)) out.push(seq === 2 ? 5 : 6);
+    if ((markers & 0x100) && (seq === 0 || seq === 2)) out.push(seq === 0 ? 5 : 6);
+    return out;
+}
+
 export function parseZone(zoneStr) {
     if (!zoneStr) return null;
     const z = zoneStr.toLowerCase().trim();
@@ -392,7 +412,7 @@ export const UNSIMULATED_REASONS = {
 const LEADING_CONNECTOR_RE = /^(?:(?:then|next|now|finally|also|first|and|afterwards?|optionally|immediately|after that|from there|on resolution),?\s+)+/i;
 const ACTION_VERB_RE = /^(?:normal summon|tribute summon|special summon|link summon|xyz summon|synchro summon|fusion summon|ritual summon|pendulum summon|normal set|summon|ss|ns|activate|use|set|send|discard|tribute|banish|add|search|equip|link|xyz|synchro|fuse|fusion|overlay|tune|place|reveal|detach|attach|target|destroy|pay|declare|shuffle|return|revive|excavate|mill|dump|chain|negate|flip|draw|rank[- ]?up|contact fuse|pop|bounce|scale|move|choose|select|apply|resolve|trigger|pass|enter|attack|perform|make|climb|bring|copy|gain|swap|switch|take|stack|recover|retrieve|deploy|field|open|start|begin|play|go|get|do|finish|end)\b/i;
 const OPPONENT_RE = /\b(?:opponent|opponents|opponent's|their\s+(?:[a-z-]+\s+){0,2}(?:boss|monsters?|cards?|field|board|turn|hand|gy|graveyard|deck|extra deck|life|lp|effects?|backrow)|enemy|opposing|attack(?:s|ing|ed)?(?!\s+position)|battle|battle damage|damage|direct(?:ly)? attack|otk|for game|lethal)\b/i;
-const NON_SPECIFIC_RE = /\b(?:standard|usual|same (?:as|way|three|steps)|as above|as before|previous(?:ly)?|repeat|again|continue|loop|until|as (?:many|much) as|any (?:number|combination)|multiple|several|various|extenders?|swarm|build (?:your|the|a) (?:board|field)|end board|etc\.?|and so on|or (?:any|another|other)|e\.g\.?|such as|for example|(?:a|an|any|some|another|other|two|three|your)\s+(?:[A-Za-z0-9"'+/-]+\s+){0,3}(?:monsters?|cards?|tuners?|spells?|traps?|bodies|materials?|extenders?|starters?)\b|start(?:ing)? (?:by|with)|begin(?:ning)? (?:by|with)|(?:a|an|another|any)\s+(?:[A-Za-z0-9"'+/-]+\s+){0,3}like\b)/i;
+const NON_SPECIFIC_RE = /\b(?:standard|usual|same (?:as|way|three|steps)|as above|as before|previous(?:ly)?|repeat|again|continue|loop|until|as (?:many|much) as|any (?:number|combination)|multiple|several|various|extenders?|swarm|build (?:your|the|a) (?:board|field)|end board|etc\.?|and so on|or (?:any|another|other)|e\.g\.?|such as|for example|(?:a|an|any|some|another|other|two|three|your)\s+(?:[A-Za-z0-9"'+/-]+\s+){0,3}(?:monsters?|cards?|tuners?|spells?|traps?|bodies|materials?|extenders?|starters?)\b(?!\s+zones?\b)|start(?:ing)? (?:by|with)|begin(?:ning)? (?:by|with)|(?:a|an|another|any)\s+(?:[A-Za-z0-9"'+/-]+\s+){0,3}like\b)/i;
 
 // Any game-action word anywhere in a sentence means it is not pure commentary, even when the action follows a
 // lead-in ("With two monsters, Link Summon...") or is a fragment ("rank it up into...", "revives Meek from the GY")
@@ -874,7 +894,10 @@ export async function runComboReplay(combo, options = {}) {
                 position: OcgPosition.FACEDOWN
             });
         }
-        if (/\b(?:opponent's hand|their hand|random card from .* hand|gustkraken)\b/i.test(fullComboProse)) {
+        // The opponent holds cards when the line looks at their hand, or when a card's own condition counts them (K9-04
+        // Noroi's Normal Summon without Tributing needs 2 or more)
+        if (/\b(?:opponent's hand|their hand|random card from .* hand|gustkraken)\b/i.test(fullComboProse) ||
+            resolved.some(c => /\bopponent has \d+ or more cards in their hand\b/i.test(getCardText(c.code) || ''))) {
             for (let i = 0; i < 2; i++) {
                 lib.duelNewCard(duel, {
                     team: 1,
@@ -3059,6 +3082,10 @@ export async function runComboReplay(combo, options = {}) {
                         // Discarding Zephyros from the hand is not "Revive Zephyros": a revive picks from the GY or banishment
                         if (/^(?:then,?\s+)?reviv(?:e|ing)\b/i.test(commandText) &&
                             pickedIdx.some(i => ![OcgLocation.GRAVE, OcgLocation.REMOVED].includes(m.selects?.[i]?.location))) return false;
+                        // ...and picking Saji in the Deck to summon it is not "Habakiri's effect then Tributes Saji": nothing is
+                        // Tributed from the Deck
+                        if (/\btribut(?:es?|ing)\b/i.test(commandText) &&
+                            pickedIdx.some(i => m.selects?.[i]?.location === OcgLocation.DECK)) return false;
                         // "Activate Tempest's effect, discarding it and Drill Armed Dragon, to add Drill Armed Dragon from your
                         // Deck": the cost pick (Tribute/discard/banish/send hint) leaves the step's purpose still to come
                         if ([500, 501, 503, 504].includes(lastHintCardCode) &&
@@ -3461,7 +3488,12 @@ export async function runComboReplay(combo, options = {}) {
                             if (s !== chainStepIdx && /^(?:(?:fusion|synchro|xyz|link|special|normal)?\s*summon\b|ss\b)/i.test(steps[s]?.text || '')) continue;
                             const stepCodes = findStepCardCodes(deckPickText(s), actorCode);
                             if (stepCodes.includes(actorCode)) {
-                                const nonActorCodes = stepCodes.filter(c => c !== actorCode && !cardsSelectedSinceLastIdle.has(c));
+                                // As in Phase 0, a card picked earlier this chain can be what the actor's own sentence names
+                                // next: "Habakiri Effect: Summon Saji", then "Habakiri's effect then Tributes Saji"
+                                const ownObjects = s > chainStepIdx && stepSubjectCodes(s).includes(actorCode)
+                                    ? findStepCardCodes({ text: /'s\s+(?:[\w-]+\s+)?effect\s+\w+\s+(.+)$/i.exec(cleanCardName(steps[s].text || ''))?.[1] || '' }, null)
+                                    : [];
+                                const nonActorCodes = stepCodes.filter(c => c !== actorCode && (!cardsSelectedSinceLastIdle.has(c) || ownObjects.includes(c)));
                                 if (options.debug) {
                                     console.log('[DEBUG SELECT_CARD Phase 1] s:', s, 'text:', steps[s]?.text, 'stepCodes:', stepCodes, 'nonActorCodes:', nonActorCodes);
                                 }
@@ -3806,6 +3838,19 @@ export async function runComboReplay(combo, options = {}) {
                             : null;
                         if (freeOfArrows) chosenPlace = freeOfArrows;
                         else if (linkedPlace) chosenPlace = linkedPlace;
+
+                        // "Link Summon Codebreaker Virus Swordsman ... so the two are co-linked": a zone where the new Link
+                        // Monster's own arrows point back at a Link Monster that points to it (under Celtopus, not beside it)
+                        const placingLink = placingCard && (placingCard.type & 0x4000000) ? (placingCard.link_marker || placingCard.def || 0) : 0;
+                        if (placingLink && /\bco-?linked\b/i.test(activeStep?.text || '')) {
+                            const coLinked = avail.find(p => p.player === 0 && p.location === OcgLocation.MZONE &&
+                                linkArrowTargets(p.sequence, placingLink).some(t => {
+                                    const other = mzoneCards[t] && mzoneCards[t].code ? getCardByCode(mzoneCards[t].code) : null;
+                                    return other && (other.type & 0x4000000) &&
+                                        linkArrowTargets(t, other.link_marker || other.def || 0).includes(p.sequence);
+                                }));
+                            if (coLinked) chosenPlace = coLinked;
+                        }
                     }
 
                     // "Special Summon Gameciel to your opponent's field, in front of your left Extra Monster Zone": their
@@ -4255,6 +4300,13 @@ export async function runComboReplay(combo, options = {}) {
                         const tributeStep = [steps[currentActiveStepIdx ?? -1], steps[stepIdx - 1], steps[stepIdx]].find(st =>
                             st && /\btribute summon\b|\bby tributing\b/i.test(cleanCardName(st.text || '')));
                         if (tributeStep && procIdx !== -1 && opts.some(o => BigInt(o) === 1n)) optIdx = opts.findIndex(o => BigInt(o) === 1n);
+                        // "Activate Prayers: Tribute Murakumo to apply both effects": its "Apply both effects, in sequence"
+                        // option, which the first effect's own words ("Add Kusanagi") otherwise outscore
+                        const bothIdx = optDescs.findIndex(d => /\bapply both\b/i.test(d));
+                        if (bothIdx !== -1 && /\b(?:apply|applies|applying)\s+both\b|\bboth effects\b/i.test(contextText)) {
+                            optIdx = bothIdx;
+                            bestScore = Math.max(bestScore, 1);
+                        }
                         optIdx = recordDecision('OPTION', optIdx, opts.map((_, i) => i).filter(i => i !== optIdx), {
                             confident: bestScore > 0,
                             describe: (i) => `option "${getEffectDescription(opts[i]) || i + 1}"`
@@ -4334,7 +4386,14 @@ export async function runComboReplay(combo, options = {}) {
                             /^(?:link|xyz|synchro|fusion)(?:\s+summon)?\b[^(]*\(([^)]+\+[^)]+)\)/i.exec(ownSummonText))
                         : null;
                     if (ownUsing) {
-                        for (const c of findStepCardCodes({ text: ownUsing[1] }, null).filter(c => offered.has(c))) stepMaterialCodes.push(c);
+                        for (const c of findStepCardCodes({ text: ownUsing[1] }, null).filter(c => offered.has(c))) {
+                            stepMaterialCodes.push(c);
+                            // "using both Parallel eXceed": that many copies of the one card, not one copy and a guess
+                            const name = getCardByCode(c)?.name;
+                            const copies = name && new RegExp(`\\b(both|two|three|2|3)\\s+(?:copies\\s+of\\s+)?${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'i').exec(ownUsing[1]);
+                            const extra = copies ? ({ both: 1, two: 1, 2: 1, three: 2, 3: 2 })[copies[1].toLowerCase()] : 0;
+                            for (let i = 0; i < extra; i++) stepMaterialCodes.push(c);
+                        }
                     }
                     // An add-to-hand prompt takes what the step adds, not its cost: "activate Onomatopaira, sending
                     // Onomatokage from your hand to the GY, to add Zubababancho Gagagacoat and Dodododo Warrior"
@@ -4915,6 +4974,14 @@ export async function runComboReplay(combo, options = {}) {
                         const asksSecond = steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3)
                             .some(st => ((st?.text || '').match(/\bdestroy/gi) || []).length >= 2);
                         if (oppCards.length === 0 && !asksSecond) answerYes = false;
+                    }
+                    // Murakumo's "add 1 Mitsurugi card ..., then you can Special Summon this card": only when a step around here
+                    // summons that card ("Murakumo Effect (CL1): Add Purification" doesn't)
+                    if (answerYes && descCode && /^special summon this card\??$/i.test((descStr || '').trim()) &&
+                        !steps.slice(Math.max(0, stepIdx - 1), stepIdx + 3).some(st => st &&
+                            /\b(?:special summons?|summons?|revives?|ss)\b/i.test(st.text || '') &&
+                            (findStepCardCodes(st, null).includes(descCode) || /\b(?:itself|this card)\b/i.test(st.text || '')))) {
+                        answerYes = false;
                     }
                     // "then you can add 1 Ryu-Ge Pendulum Monster from your hand to your face-up Extra Deck": an optional
                     // extra the write-up may not use, so the choice search can try declining it

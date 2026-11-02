@@ -376,6 +376,8 @@ for (const [slug, slugFolders] of bySlug) {
             cards: r.curated.cards,
         };
         if (r.combo.decks) draft.decks = r.combo.decks;
+        // The duel's flags, seed, decks as built and every response: the engine audit replays the recorded duel
+        if (r.combo.duel) draft.duel = r.combo.duel;
         draft.steps = r.curated.steps;
         if (!cur) draft.todo = ['title', 'description'];
 

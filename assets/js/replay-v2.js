@@ -129,6 +129,9 @@
 
     function resolveRange(combo, range) {
         const total = (combo.steps || []).length;
+        // A combo can name its own window (`v2Range`: 'all' or { start, end }) when the line goes on past player 0's
+        // first turn: Varuroon summoning Fonix on the opponent's turn, a combo that happens on turn 3
+        if (range == null && combo.v2Range != null) range = combo.v2Range;
         if (range === 'all') return { start: 0, end: total };
         if (range && typeof range === 'object') {
             const start = Math.max(0, Math.min(range.start ?? 0, total));

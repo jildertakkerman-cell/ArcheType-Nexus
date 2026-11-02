@@ -160,8 +160,11 @@ export function parseHtmlCombos(filePath) {
     const numberedStepCards = [];
     for (const match of stepCards) {
         const chunk = match[1].slice(0, 5000);
-        const numMatch = chunk.match(/<span[^>]*class="[^"]*(?:rounded-full|h-8|w-8)[^"]*"[^>]*>\s*(\d+)\s*<\/span>/i)
-            || chunk.match(/<span[^>]*>\s*(\d+)\s*<\/span>/i);
+        // The step number sits in the card's header, before its text: the last card's chunk runs on past the card, and
+        // Synchron's unnumbered "What Does Not Happen" note picked up the next block's <span class="nc-step-n">1</span>
+        const header = chunk.split(/<p[\s>]/i)[0];
+        const numMatch = header.match(/<span[^>]*class="[^"]*(?:rounded-full|h-8|w-8)[^"]*"[^>]*>\s*(\d+)\s*<\/span>/i)
+            || header.match(/<span[^>]*>\s*(\d+)\s*<\/span>/i);
         if (numMatch) {
             numberedStepCards.push({ chunk, stepNum: parseInt(numMatch[1], 10) });
         }
@@ -970,7 +973,9 @@ export async function buildComboFromHtml(parsedCombo, archetype = null) {
         // copy there. Only after a play-from-hand verb ("Special Summons a second X" comes from the Deck) and only for an
         // exact card name ("another HERO" means a different card, not a copy)
         for (const sm of s.text.matchAll(/\b(?:second|2nd|another)\s+(?:copy\s+of\s+)?("[^"]+"|[A-Z][A-Za-z0-9'!-]*(?:\s+[A-Z0-9][A-Za-z0-9'!-]*)*)/g)) {
-            const playedFromHand = /\b(?:activat(?:e|ing)|us(?:e|ing)|set(?:ting)?|play(?:ing)?|chain(?:ing)?|normal summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?)\s+(?:the\s+|a\s+|your\s+)?$/i.test(s.text.slice(Math.max(0, sm.index - 30), sm.index));
+            // ("Special Summon a second Appliancer Socketroll from your hand" says where it comes from)
+            const playedFromHand = /\b(?:activat(?:e|ing)|us(?:e|ing)|set(?:ting)?|play(?:ing)?|chain(?:ing)?|normal summon(?:ing)?|discard(?:ing)?|reveal(?:ing)?)\s+(?:the\s+|a\s+|your\s+)?$/i.test(s.text.slice(Math.max(0, sm.index - 30), sm.index)) ||
+                /^\s+from (?:your |the )?hand\b/i.test(s.text.slice(sm.index + sm[0].length));
             const again = playedFromHand ? await resolveExactCardName(sm[1]) : null;
             if (again && !(again.type & 0x4802040)) extraHandRequests.push({ kind: 'copy', card: again });
         }

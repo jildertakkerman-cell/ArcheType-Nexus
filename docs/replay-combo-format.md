@@ -399,6 +399,9 @@ are steps too. **There is no field yet that marks a step as a cost or a chain re
   goes to the hidden `zone-offside`, and the opening hand gets no dummies. ComboLoader prepares
   the combo once, so the guide and the board show the same steps. A **Full duel** button links to
   the whole duel. The admin audit passes `v2Range: 'all'` so step numbers match the verifier's.
+  A curated combo whose line goes on past player 0's first turn (a Quick Effect on the opponent's
+  turn, a combo that happens on turn 3) names its own window in `v2Range` (`'all'` or
+  `{ start, end }` in step indices); the page shows that instead of the first turn.
 - `Replay-Analyzer.html?duel=<source>&combo=<key>` plays the whole duel in the Replay Browser
   through `toMoveLog()`. `<source>` is a site combo file (`assets/data/combos/…`) or a GCS path
   (`combo-json/…`, `replays_json/…`). A trimmed curated combo can name its full replay in
@@ -409,7 +412,8 @@ are steps too. **There is no field yet that marks a step as a cost or a chain re
   curated combo drafts in `assets/data/combos/v2-drafts/`, with a `REPORT.md`. Drafts have one card
   per step (split steps share `replayStep`) and keep the key of the curated combo they match.
   `dev/v2-draft-preview.html` shows a draft next to the live combo. Nothing on the site reads the
-  drafts; adopting one means copying it into the real file.
+  drafts; adopting one means copying it into the real file. Drafts carry the export's `duel` block,
+  so the engine audit can replay the recorded duel.
 
 ## Known limitations
 
