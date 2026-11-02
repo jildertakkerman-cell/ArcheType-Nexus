@@ -858,7 +858,7 @@
         data: null,
         triage: {}, // itemId -> { status, notes, updatedAt }
         filterTriage: 'all', // 'all', 'untriaged', 'illegal', 'fp', 'resolved'
-        filterSource: 'all', // 'all', 'curated', 'html'
+        filterSource: 'all', // 'all', 'curated', 'html', 'drafts' (v2 replay drafts, not live yet)
         filterVerdict: 'all', // 'all', 'LIKELY_ILLEGAL', 'NEEDS_REVIEW', 'UNVERIFIABLE' (engine verdicts on HTML items)
         query: '',
         shownCount: 30,
@@ -866,7 +866,7 @@
         activeSimStep: 1,
         logMode: 'follow', // 'follow' or 'all'
         simulatorInstance: null,
-        counts: { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0, verdicts: {} },
+        counts: { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0, drafts: 0, verdicts: {} },
     };
 
     function loadSavedTriage() {
@@ -911,6 +911,7 @@
             resolved: 0,
             curated: 0,
             html: 0,
+            drafts: 0,
             verdicts: {}
         };
         items.forEach(it => {
@@ -922,6 +923,7 @@
 
             if (it.source === 'curated') counts.curated++;
             else if (it.source === 'html') counts.html++;
+            else if (it.source === 'drafts') counts.drafts++;
 
             if (it.verdict) counts.verdicts[it.verdict] = (counts.verdicts[it.verdict] || 0) + 1;
         });
@@ -966,8 +968,8 @@
             // Source filter
             if (fSource !== 'all' && it.source !== fSource) return false;
 
-            // Engine verdict filter (applies to HTML items; curated JSON items have no verdict)
-            if (fVerdict !== 'all' && (fSource === 'curated' ? false : it.verdict !== fVerdict)) return false;
+            // Engine verdict filter (applies to HTML items; curated JSON and draft items have no verdict)
+            if (fVerdict !== 'all' && (!auditVerdictsApply(fSource) ? false : it.verdict !== fVerdict)) return false;
 
             // Triage status filter
             const st = triage[it.id]?.status || 'untriaged';
@@ -1119,12 +1121,176 @@
         return url;
     }
 
+    // Only HTML walkthrough items carry an engine verdict
+    const auditVerdictsApply = (source) => source === 'all' || source === 'html';
+
+    // How a v2 replay combo was checked (the report's `replay.recorded`)
+    const AUDIT_RECORDED = {
+        exact: { label: 'Recorded duel', color: '#4ade80', bg: 'rgba(34,197,94,0.15)', hint: "Replayed exactly from the export's own duel: its seed, decks and every recorded answer" },
+        diverged: { label: 'Step check', color: '#fcd34d', bg: 'rgba(245,158,11,0.15)', hint: "Today's card scripts refused one of the recorded answers, so the line was checked step by step instead" },
+        'old-seed': { label: 'Step check', color: '#d4d4d4', bg: 'rgba(163,163,163,0.15)', hint: "An EDOPro replay from before 2021 (one-part seed): today's ocgcore can't replay its recorded duel, so the line was checked step by step" },
+        none: { label: 'Step check', color: '#d4d4d4', bg: 'rgba(163,163,163,0.15)', hint: 'Exported before the converter recorded the duel, so the line was checked step by step' }
+    };
+
+    function auditRecordedPill(recorded, extraTitle = '') {
+        const r = AUDIT_RECORDED[recorded] || AUDIT_RECORDED.none;
+        const title = extraTitle ? `${r.hint}. ${extraTitle}` : r.hint;
+        return `<span class="tag-pill" style="background:${r.bg}; color:${r.color};" title="${window.escapeHtml(title)}">${r.label}</span>`;
+    }
+
+    // Totals of the last engine run per source, and every v2 replay draft with how it was checked
+    function renderAuditOverview() {
+        const o = auditReport.data?.overview;
+        if (!o) return '';
+        const tile = (icon, color, title, value, sub) => `
+            <div class="audit-overview-tile">
+                <div class="audit-overview-label"><i class="fas ${icon}" style="color:${color};"></i> ${title}</div>
+                <div class="audit-overview-value">${value}</div>
+                <div class="audit-overview-sub">${sub}</div>
+            </div>`;
+        const legalOf = stats => (stats ? `${stats.legal}<span>/${stats.tested} legal</span>` : '<span>not checked</span>');
+        const c = o.curated, h = o.html, d = o.drafts, l = o.legacy;
+        const tiles = [
+            tile('fa-database', '#60a5fa', 'Curated JSON (live)', legalOf(c),
+                c ? `${c.tested - c.legal} flagged${c.v2?.tested ? ` · ${c.v2.legal}/${c.v2.tested} v2 replays` : ''}` : 'Run verify-combo-jsons.mjs --all'),
+            tile('fa-book-open', '#c084fc', 'HTML guides (live)', legalOf(h),
+                h ? `${h.partial} partial · ${h.unverifiable} not verifiable · ${h.likelyIllegal + h.needsReview} flagged plays` : 'Run verify-html-combos-engine.mjs --all'),
+            tile('fa-film', '#2dd4bf', 'v2 replay drafts', legalOf(d),
+                d ? `${d.recorded} replayed exactly from the recorded duel` : 'Run verify-combo-jsons.mjs --dir=assets/data/combos/v2-drafts --all --v2-only'),
+            l ? tile('fa-ban', '#f87171', 'Legacy lines (live)', `${l.count}<span>/${l.lines} curated lines</span>`,
+                `Use TCG Forbidden cards${l.banlistDate ? ` (list of ${window.escapeHtml(formatBanlistDate(l.banlistDate))})` : ''} · kept as archive`) : ''
+        ].join('');
+
+        let legacyTable = '';
+        if (l && l.results?.length) {
+            const rows = l.results.map(r => {
+                const pageLink = getArchetypePageLink({ archetype: r.archetype, archetypeSlug: r.slug });
+                const engine = r.legal === null
+                    ? '<span style="color:#737373;">not checked</span>'
+                    : r.legal
+                        ? '<i class="fas fa-check-circle" style="color:#4ade80;" title="Passes the OCGCore check"></i> Legal'
+                        : `<i class="fas fa-times-circle" style="color:#f87171;"></i> <a href="#" onclick="openAuditItem('${r.id}'); return false;" title="Inspect the failure">Flagged</a>`;
+                return `
+                    <tr>
+                        <td style="white-space:nowrap;">${pageLink ? `<a href="${window.escapeHtml(pageLink)}#combos" target="_blank" rel="noopener" title="Open the live guide">${window.escapeHtml(r.archetype)}</a>` : window.escapeHtml(r.archetype)}</td>
+                        <td>${window.escapeHtml(r.title)} <span style="color:#737373;">(${window.escapeHtml(r.comboKey)})</span></td>
+                        <td style="color:#fca5a5;">${window.escapeHtml(r.cards.join(', '))}</td>
+                        <td style="white-space:nowrap;">${engine}</td>
+                    </tr>`;
+            }).join('');
+            legacyTable = `
+                <details class="audit-overview-legacy">
+                    <summary>All legacy lines (${l.count}): the Forbidden cards each one uses</summary>
+                    <div class="audit-overview-table-wrap">
+                        <table class="audit-overview-table">
+                            <thead><tr><th>Page</th><th>Line</th><th>Forbidden cards</th><th>Engine</th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </details>`;
+        }
+
+        let draftsTable = '';
+        if (d && d.results?.length) {
+            const rows = d.results.map(r => {
+                const preview = `../dev/v2-draft-preview.html?arch=${encodeURIComponent(r.slug)}&combo=${encodeURIComponent(r.comboKey)}`;
+                const status = r.legal
+                    ? '<i class="fas fa-check-circle" style="color:#4ade80;" title="Legal"></i>'
+                    : `<i class="fas fa-times-circle" style="color:#f87171;" title="${window.escapeHtml(r.error || 'Not legal')}"></i>`;
+                return `
+                    <tr${r.legal ? '' : ' class="is-flagged"'}>
+                        <td>${status}</td>
+                        <td>${window.escapeHtml(r.slug)}</td>
+                        <td>${window.escapeHtml(r.title)} <span style="color:#737373;">(${window.escapeHtml(r.comboKey)})</span></td>
+                        <td>${auditRecordedPill(r.recorded, r.recordedFailure || '')}</td>
+                        <td style="white-space:nowrap;">${r.legal ? r.totalSteps : `${r.stepsCompleted}/${r.totalSteps}`}</td>
+                        <td style="white-space:nowrap;">
+                            <a href="${preview}" target="_blank" rel="noopener" title="Open the draft next to the live combo"><i class="fas fa-external-link-alt"></i> Preview</a>
+                            ${r.id ? ` · <a href="#" onclick="openAuditItem('${r.id}'); return false;" title="Inspect the failure">Inspect</a>` : ''}
+                        </td>
+                    </tr>`;
+            }).join('');
+            draftsTable = `
+                <details class="audit-overview-drafts">
+                    <summary>All v2 replay drafts (${d.tested}): how each was checked</summary>
+                    <div class="audit-overview-table-wrap">
+                        <table class="audit-overview-table">
+                            <thead><tr><th></th><th>Page</th><th>Draft</th><th>Checked by</th><th>Steps</th><th></th></tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </details>`;
+        }
+
+        return `
+            <div class="audit-overview">
+                <div class="audit-overview-tiles">${tiles}</div>
+                <div class="audit-overview-note">
+                    <i class="fas fa-info-circle"></i> OCGCore engine check${auditReport.data.timestamp ? `, results last changed ${formatDate(auditReport.data.timestamp)}` : ''}.
+                    Drafts aren't live yet: they come from <code>npm run import:replays</code>.
+                    Legacy lines stay live as an archive; the combo selector marks them with a "Legacy" pill and a note.
+                </div>
+                ${draftsTable}
+                ${legacyTable}
+            </div>`;
+    }
+
+    // banlist.json writes dates as "18/05/2026"
+    function formatBanlistDate(value) {
+        const m = String(value).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (!m) return String(value);
+        return new Date(Date.UTC(+m[3], +m[2] - 1, +m[1])).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    }
+
+    function auditLegacyPill(item) {
+        if (!item.legacy?.length) return '';
+        return `<span class="tag-pill tag-pill-legacy" title="${window.escapeHtml(`Legacy line, kept as archive. Forbidden in the TCG: ${item.legacy.join(', ')}`)}"><i class="fas fa-ban"></i> Legacy</span>`;
+    }
+
+    // The v2 replay check behind an item: the recorded duel, the step check, and what it had to guess
+    function renderAuditReplayBox(item) {
+        const r = item.replay;
+        if (!r) return '';
+        const answers = r.responsesTotal ? ` (${r.responsesUsed ?? 0} of ${r.responsesTotal} recorded answers)` : '';
+        const recordedLine = {
+            exact: `Replayed exactly${answers}.`,
+            diverged: `Diverged${answers}: ${r.recordedFailure || ''}`,
+            'old-seed': AUDIT_RECORDED['old-seed'].hint + '.',
+            none: AUDIT_RECORDED.none.hint + '.'
+        }[r.recorded] || '';
+        return `
+            <div class="audit-replay-box">
+                <div class="audit-replay-title"><i class="fas fa-film"></i> v2 replay check ${auditRecordedPill(r.recorded)}</div>
+                <div><strong>Recorded duel:</strong> ${window.escapeHtml(recordedLine)}</div>
+                <div><strong>Step check:</strong> stopped at step ${item.failedStepNumber ?? '?'} of ${item.totalSteps}.</div>
+                ${r.unknownCards?.length ? `<div><strong>cards.cdb doesn't have:</strong> ${window.escapeHtml(r.unknownCards.join(', '))}</div>` : ''}
+                ${r.guesses?.length ? `
+                <details>
+                    <summary>Answers the export didn't record (${r.guesses.length})</summary>
+                    <ul>${r.guesses.map(g => `<li>${window.escapeHtml(g)}</li>`).join('')}</ul>
+                </details>` : ''}
+            </div>`;
+    }
+
+    window.openAuditItem = function (id) {
+        const item = (auditReport.data?.items || []).find(it => it.id === id);
+        if (!item) return;
+        auditReport.filterTriage = 'all';
+        auditReport.filterSource = item.source;
+        auditReport.filterVerdict = 'all';
+        auditReport.query = '';
+        auditReport.activeItemId = id;
+        renderAuditShell();
+        document.getElementById(`audit-card-${id}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    };
+
     function renderAuditShell() {
         const body = document.getElementById('audit-body');
         if (!body) return;
         const counts = auditReport.counts || { all: 0, untriaged: 0, illegal: 0, fp: 0, resolved: 0, curated: 0, html: 0 };
 
         body.innerHTML = `
+            ${renderAuditOverview()}
             <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:1rem;">
                 <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:0.75rem;">
                     <div class="tab-bar" style="margin-bottom:0; flex-wrap:wrap;">
@@ -1165,10 +1331,11 @@
                         <button class="tab-btn${auditReport.filterSource === 'all' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('all', this)">All</button>
                         <button class="tab-btn${auditReport.filterSource === 'curated' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('curated', this)">Curated JSON (${counts.curated})</button>
                         <button class="tab-btn${auditReport.filterSource === 'html' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('html', this)">HTML Guides (${counts.html})</button>
+                        ${counts.drafts ? `<button class="tab-btn${auditReport.filterSource === 'drafts' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditSource('drafts', this)" title="v2 replay drafts that aren't live yet">Replay Drafts (${counts.drafts})</button>` : ''}
                     </div>
 
                     ${Object.keys(counts.verdicts || {}).length > 0 ? `
-                    <div id="audit-verdict-filter-group" style="display:${auditReport.filterSource === 'curated' ? 'none' : 'flex'}; gap:0.4rem; align-items:center; flex-wrap:wrap;">
+                    <div id="audit-verdict-filter-group" style="display:${auditVerdictsApply(auditReport.filterSource) ? 'flex' : 'none'}; gap:0.4rem; align-items:center; flex-wrap:wrap;">
                         <span style="font-size:0.78rem; color:#a3a3a3; font-weight:600; text-transform:uppercase;">Verdict:</span>
                         <button class="tab-btn${auditReport.filterVerdict === 'all' ? ' active' : ''}" style="padding:0.3rem 0.7rem; font-size:0.78rem;" onclick="filterAuditVerdict('all', this)">All</button>
                         ${Object.entries(AUDIT_VERDICTS).filter(([key]) => counts.verdicts[key]).map(([key, v]) => `
@@ -1221,7 +1388,7 @@
             else if (tr === 'false_positive') { trLabel = 'False Positive'; trClass = 'tag-pill-fp'; }
             else if (tr === 'resolved') { trLabel = 'Resolved'; trClass = 'tag-pill-resolved'; }
 
-            const srcClass = it.source === 'curated' ? 'tag-pill-curated' : 'tag-pill-html';
+            const srcClass = it.source === 'curated' ? 'tag-pill-curated' : it.source === 'drafts' ? 'tag-pill-draft' : 'tag-pill-html';
             const errPreview = it.engineError || it.writtenText || 'Engine rejection';
 
             return `
@@ -1236,6 +1403,8 @@
                     </div>
                     <div class="audit-badges">
                         ${auditVerdictPill(it)}
+                        ${auditLegacyPill(it)}
+                        ${it.replay ? auditRecordedPill(it.replay.recorded) : ''}
                         <span class="tag-pill ${trClass}">${trLabel}</span>
                         ${it.offeredActions ? `<span style="font-size:0.68rem;color:#a3a3a3;"><i class="fas fa-list-ul"></i> ${getOfferedCount(it.offeredActions)} actions</span>` : ''}
                     </div>
@@ -1341,10 +1510,15 @@
                     <div class="audit-insp-title">
                         <span>${window.escapeHtml(item.archetype)}: ${window.escapeHtml(item.comboTitle)}</span>
                         ${pageLink ? `<a class="pcs-admin-live-link" href="${window.escapeHtml(pageLink)}#combos" target="_blank" rel="noopener"><i class="fas fa-external-link-alt"></i>Live guide</a>` : ''}
+                        ${item.source === 'drafts' ? `<a class="pcs-admin-live-link" href="../dev/v2-draft-preview.html?arch=${encodeURIComponent(item.archetypeSlug)}&combo=${encodeURIComponent(item.comboKey)}" target="_blank" rel="noopener"><i class="fas fa-film"></i>Draft preview</a>` : ''}
                     </div>
                     <div style="font-size:0.78rem; color:#a3a3a3; margin-top:0.25rem;">
                         Source: <span style="color:#e5e5e5;">${window.escapeHtml(item.sourceLabel || item.source)}</span> (${window.escapeHtml(item.file)}) · Step ${item.failedStepNumber ?? '?'}/${item.totalSteps}
                     </div>
+                    ${item.legacy?.length ? `
+                    <div class="audit-legacy-line">
+                        ${auditLegacyPill(item)} Kept as archive. Forbidden in the TCG: ${window.escapeHtml(item.legacy.join(', '))}
+                    </div>` : ''}
                 </div>
 
                 <div class="audit-insp-actions">
@@ -1363,6 +1537,8 @@
                     </button>` : ''}
                 </div>
             </div>
+
+            ${renderAuditReplayBox(item)}
 
             <!-- Diagnostics: Engine Log & Offered Actions -->
             <div class="audit-diag-grid">
@@ -1645,14 +1821,14 @@
 
     window.filterAuditSource = function (source, btn) {
         auditReport.filterSource = source;
-        if (source === 'curated' && auditReport.filterVerdict !== 'all') {
+        if (!auditVerdictsApply(source) && auditReport.filterVerdict !== 'all') {
             auditReport.filterVerdict = 'all';
             document.querySelectorAll('.tab-btn[onclick*="filterAuditVerdict"]').forEach(b => {
                 b.classList.toggle('active', b.getAttribute('onclick')?.includes("'all'"));
             });
         }
         const vg = document.getElementById('audit-verdict-filter-group');
-        if (vg) vg.style.display = source === 'curated' ? 'none' : 'flex';
+        if (vg) vg.style.display = auditVerdictsApply(source) ? 'flex' : 'none';
         auditReport.shownCount = 30;
         document.querySelectorAll('.tab-btn[onclick*="filterAuditSource"]').forEach(b => b.classList.toggle('active', b === btn));
         renderAuditList();

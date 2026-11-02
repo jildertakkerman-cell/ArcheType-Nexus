@@ -609,8 +609,93 @@ class ComboSelector {
                 color: var(--csel-accent);
             }
             .combo-selector-option-date i { opacity: 0.8; }
+            .combo-selector-option-legacy {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                flex-shrink: 0;
+                font-size: 0.68rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                color: var(--csel-legacy);
+            }
+            .combo-selector-legacy-note {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.6rem;
+                margin-top: 0.75rem;
+                padding: 0.65rem 0.85rem;
+                border: 1px solid rgba(248, 113, 113, 0.45);
+                border-left-width: 4px;
+                border-radius: 0.5rem;
+                background-color: rgba(248, 113, 113, 0.1);
+                font-size: 0.8rem;
+                line-height: 1.45;
+                text-align: left;
+            }
+            .combo-selector-legacy-note[hidden] { display: none; }
+            .combo-selector-wrapper[data-open="true"] + .combo-selector-legacy-note { visibility: hidden; }
+            .combo-selector-legacy-note > i { color: #f87171; margin-top: 0.2rem; }
+            .combo-selector-legacy-note strong { color: #fca5a5; }
+            .combo-selector-legacy-note.is-light {
+                border-color: rgba(220, 38, 38, 0.4);
+                background-color: rgba(254, 226, 226, 0.85);
+            }
+            .combo-selector-legacy-note.is-light > i { color: #dc2626; }
+            .combo-selector-legacy-note.is-light strong { color: #b91c1c; }
         `;
         document.head.appendChild(style);
+    }
+
+    /**
+     * Card names are compared without case, spaces or punctuation: combo files
+     * write "Cupsy★Yummy Way" and "\"A Case for K9\"", the banlist
+     * "Cupsy☆Yummy Way" and "A Case for K9".
+     */
+    static banlistKey(name) {
+        return String(name || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+    }
+
+    /**
+     * Resolve to the TCG Forbidden list as a Set of banlistKey()s. CardLoader
+     * already caches the banlist (and switches to a scheduled list on its
+     * date); a page that loads it after this script reads the JSON itself.
+     */
+    static loadForbiddenKeys() {
+        if (!ComboSelector._forbiddenPromise) {
+            const names = window.CardLoader && typeof window.CardLoader.fetchBanlistData === 'function'
+                ? window.CardLoader.fetchBanlistData('tcg').then(map => Object.keys(map || {}).filter(name => map[name] === 'Forbidden'))
+                : fetch('../assets/data/banlist.json').then(r => (r.ok ? r.json() : {})).then(data => (data.tcg && data.tcg.forbidden) || []);
+            ComboSelector._forbiddenPromise = names.then(list => {
+                // Don't keep a failed load for the page's life.
+                if (!list.length) ComboSelector._forbiddenPromise = null;
+                return new Set(list.map(ComboSelector.banlistKey));
+            });
+        }
+        return ComboSelector._forbiddenPromise;
+    }
+
+    /**
+     * The Forbidden cards a combo's own player uses: their cards that move in a
+     * step, plus a step's featuredCard. The opponent's cards don't count, and
+     * neither does a card that only sits in the opening hand.
+     */
+    static forbiddenCardsIn(combo, forbiddenKeys) {
+        const cards = new Map((combo.cards || []).map(c => [c.id, c]));
+        const isOwn = c => c && !c.isOpponentCard && c.player !== 1 && !/^p2-/.test(c.id || '');
+        const found = [];
+        const check = name => {
+            if (name && forbiddenKeys.has(ComboSelector.banlistKey(name)) && !found.includes(name)) found.push(name);
+        };
+        (combo.steps || []).forEach(step => {
+            [step.card, ...(step.actions || []).map(a => a && a.card)].forEach(id => {
+                const card = cards.get(id);
+                if (isOwn(card)) check(card.name);
+            });
+            if (step.player !== 1) check(step.featuredCard);
+        });
+        return found;
     }
 
     /**
@@ -727,6 +812,7 @@ class ComboSelector {
                     --csel-card-bg: ${theme.cardBg};
                     --csel-bg: ${theme.backgroundColor};
                     --csel-text: ${theme.textColor};
+                    --csel-legacy: ${theme.isDarkMode === false ? '#dc2626' : '#f87171'};
                 ">
                     <button type="button" id="${selectorId}" class="combo-selector-trigger" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="${selectorId}-label" aria-controls="${selectorId}-menu" data-value="${initialCombo}">
                         <span class="combo-selector-trigger-text">
@@ -751,6 +837,10 @@ class ComboSelector {
                         ${showSearch ? `<div id="${selectorId}-no-results" class="combo-selector-no-results">No combos match your search.</div>` : ''}
                     </div>
                 </div>
+                <div id="${selectorId}-legacy-note" class="combo-selector-legacy-note${theme.isDarkMode === false ? ' is-light' : ''}" role="note" hidden style="color: ${theme.textColor};">
+                    <i class="fas fa-ban" aria-hidden="true"></i>
+                    <span><strong>Legacy line.</strong> It uses cards that are Forbidden in the TCG: <span class="combo-selector-legacy-cards"></span>. It stays here as an archive of how the deck played, but you can't play it as written.</span>
+                </div>
             </div>
         `;
 
@@ -765,6 +855,19 @@ class ComboSelector {
         // "visible options" (keyboard nav target - excludes filtered-out rows).
         const optionEls = Array.from(menu.querySelectorAll('.combo-selector-option'));
         const getVisibleOptions = () => optionEls.filter(opt => opt.style.display !== 'none');
+
+        // Lines that use a card now Forbidden in the TCG stay up as a legacy
+        // archive: their rows get a pill, and choosing one shows a note naming
+        // the cards. Filled in once the banlist loads; keyed by combo number.
+        const legacyCards = {};
+        const listNames = names => (names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0]);
+        const showLegacyNote = (num) => {
+            const note = document.getElementById(`${selectorId}-legacy-note`);
+            const names = legacyCards[num];
+            if (!note) return;
+            note.hidden = !names;
+            if (names) note.querySelector('.combo-selector-legacy-cards').textContent = listNames(names);
+        };
 
         let activeIndex = Math.max(0, comboNumbers.indexOf(initialCombo));
 
@@ -795,7 +898,8 @@ class ComboSelector {
             let anyVisible = false;
             optionEls.forEach(li => {
                 const combo = combos[`combo${li.dataset.value}`];
-                const match = !q || `${combo.title || ''} ${combo.credits || ''}`.toLowerCase().includes(q);
+                const legacy = legacyCards[li.dataset.value];
+                const match = !q || `${combo.title || ''} ${combo.credits || ''} ${legacy ? `legacy forbidden ${legacy.join(' ')}` : ''}`.toLowerCase().includes(q);
                 li.style.display = match ? '' : 'none';
                 if (match) anyVisible = true;
             });
@@ -865,6 +969,7 @@ class ComboSelector {
                 triggerMeta.innerHTML = '';
             }
             optionEls.forEach(opt => opt.setAttribute('aria-selected', opt.dataset.value === num ? 'true' : 'false'));
+            showLegacyNote(num);
             if (!silent && onChangeCallback) onChangeCallback(num);
         };
 
@@ -960,6 +1065,23 @@ class ComboSelector {
                 if (wrapper.getAttribute('data-open') === 'true') updateHasMore();
             }).catch(err => console.error('[ComboSelector] Failed to load votes:', err));
         }
+
+        ComboSelector.loadForbiddenKeys().then(keys => {
+            comboNumbers.forEach(num => {
+                const names = ComboSelector.forbiddenCardsIn(combos[`combo${num}`], keys);
+                const metaEl = document.getElementById(`${selectorId}-option-meta-${num}`);
+                if (!names.length || !metaEl) return;
+                legacyCards[num] = names;
+                const pill = document.createElement('span');
+                pill.className = 'combo-selector-option-legacy';
+                pill.title = `Legacy line, Forbidden in the TCG: ${listNames(names)}`;
+                pill.innerHTML = '<i class="fas fa-ban" aria-hidden="true"></i> Legacy';
+                metaEl.prepend(pill);
+                metaEl.style.display = '';
+            });
+            showLegacyNote(trigger.dataset.value);
+            if (wrapper.getAttribute('data-open') === 'true') updateHasMore();
+        }).catch(err => console.error('[ComboSelector] Failed to load the banlist:', err));
 
         return trigger;
     }

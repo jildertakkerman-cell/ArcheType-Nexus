@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import { parseHtmlCombos, buildComboFromHtml } from './verify-html-combos-engine.mjs';
 import { runComboReplay } from './lib/combo-runner.mjs';
@@ -14,7 +15,11 @@ const CDB_PATH = path.resolve(__dirname, '../assets/data/cards.cdb');
 
 const HTML_REPORT_FILE = path.resolve(__dirname, 'engine-illegal-plays-report.json');
 const CURATED_REPORT_FILE = path.resolve(__dirname, 'engine-verification-report.json');
+// v2 replay drafts (assets/data/combos/v2-drafts), checked by verify-combo-jsons.mjs --dir=... --v2-only
+const DRAFTS_REPORT_FILE = path.resolve(__dirname, 'engine-verification-v2-drafts-report.json');
 const OUTPUT_FILE = path.resolve(COMBOS_DIR, 'engine-audit-report.json');
+const BANLIST_FILE = path.resolve(__dirname, '../assets/data/banlist.json');
+const ReplayV2 = createRequire(import.meta.url)('../assets/js/replay-v2.js');
 
 console.log('='.repeat(70));
 console.log(' ArcheType Nexus - Building Unified Combo Audit Report for Admin');
@@ -47,6 +52,12 @@ function enrichLogString(str) {
 
 function sanitizeComboData(cd) {
     if (!cd) return null;
+    // A v2 replay combo keeps its own shape (type/player/from/controller...), which the DuelSimulator turns into
+    // player 0's board; only the recorded duel (seed, decks, responses) is left out
+    if (cd.formatVersion >= 2) {
+        const { duel, decks, ...rest } = cd;
+        return rest;
+    }
     return {
         title: cd.title || '',
         description: cd.description || '',
@@ -86,12 +97,51 @@ if (fs.existsSync(OUTPUT_FILE)) {
 }
 
 const auditItems = [];
+const readReport = (file) => {
+    if (!fs.existsSync(file)) return null;
+    try {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (err) {
+        console.warn(`Warning: Failed to parse ${path.basename(file)}:`, err.message);
+        return null;
+    }
+};
+// How a v2 combo was checked: the export's recorded duel replayed exactly ('recorded'), or step by step ('steps'),
+// with what happened to the recorded duel and the answers the export didn't record. `recorded`: 'exact' (it
+// replayed), 'diverged' (today's scripts refused a recorded answer), 'old-seed' (a one-part seed from EDOPro before
+// 2021, which today's core can't replay) or 'none' (exported before the converter recorded the duel)
+function replayInfo(item) {
+    if (!(item.formatVersion >= 2)) return null;
+    const rec = item.comboData?.duel?.replay;
+    const recorded = item.mode === 'recorded' ? 'exact'
+        : item.recordedFailure ? 'diverged'
+            : Array.isArray(rec?.seed) && rec.seed.length !== 4 ? 'old-seed'
+                : 'none';
+    return {
+        mode: item.mode || 'steps',
+        recorded,
+        recordedFailure: item.recordedFailure || null,
+        responsesUsed: item.responsesUsed ?? null,
+        responsesTotal: item.responsesTotal ?? null,
+        guesses: item.guesses || [],
+        unknownCards: item.unknownCards || []
+    };
+}
+// Totals per source, for the overview at the top of the admin audit
+const overview = {};
 
 // 1. Process Curated JSON Combos
 if (fs.existsSync(CURATED_REPORT_FILE)) {
     try {
         const curatedRaw = JSON.parse(fs.readFileSync(CURATED_REPORT_FILE, 'utf8'));
-        const issues = (curatedRaw.results || []).filter(r => !r.legal);
+        const all = curatedRaw.results || [];
+        const v2 = all.filter(r => r.formatVersion >= 2);
+        overview.curated = {
+            tested: all.length,
+            legal: all.filter(r => r.legal).length,
+            v2: { tested: v2.length, legal: v2.filter(r => r.legal).length, recorded: v2.filter(r => r.legal && r.mode === 'recorded').length }
+        };
+        const issues = all.filter(r => !r.legal);
         console.log(`Processing ${issues.length} flagged curated JSON combo(s)...`);
 
         for (const item of issues) {
@@ -133,6 +183,8 @@ if (fs.existsSync(CURATED_REPORT_FILE)) {
                 stepsCompletedBeforeFailure: item.stepsCompleted || 0,
                 log: (item.log || []).map(enrichLogString),
                 offeredActions: item.offeredActions || null,
+                formatVersion: item.formatVersion || 1,
+                replay: replayInfo(item),
                 comboData: sanitizeComboData(comboData),
                 fieldSnapshot: item.fieldSnapshot || null
             });
@@ -142,10 +194,140 @@ if (fs.existsSync(CURATED_REPORT_FILE)) {
     }
 }
 
+// 1b. v2 replay drafts: every result goes in the overview, the ones that fail in the queue too
+const draftsRaw = readReport(DRAFTS_REPORT_FILE);
+if (draftsRaw) {
+    const results = (draftsRaw.results || []).filter(r => r.formatVersion >= 2);
+    const slugOf = (file) => file.replace(/-combos\.json$/i, '');
+    overview.drafts = {
+        tested: results.length,
+        legal: results.filter(r => r.legal).length,
+        recorded: results.filter(r => r.legal && r.mode === 'recorded').length,
+        results: results.map(r => ({
+            id: r.legal ? null : `draft_${r.file}_${r.comboKey}`,
+            slug: slugOf(r.file),
+            comboKey: r.comboKey,
+            title: r.title || r.comboKey,
+            legal: Boolean(r.legal),
+            mode: r.mode || 'steps',
+            recorded: replayInfo(r).recorded,
+            recordedFailure: r.recordedFailure || null,
+            stepsCompleted: r.stepsCompleted || 0,
+            totalSteps: r.totalSteps || 0,
+            error: r.legal ? null : (r.errors?.[0] || null)
+        }))
+    };
+    const issues = results.filter(r => !r.legal);
+    console.log(`Processing ${issues.length} flagged v2 replay draft(s) of ${results.length}...`);
+    for (const item of issues) {
+        const slug = slugOf(item.file);
+        const comboData = item.comboData || null;
+        const failedStepNum = (item.stepsCompleted || 0) + 1;
+        auditItems.push({
+            id: `draft_${item.file}_${item.comboKey}`,
+            source: 'drafts',
+            sourceLabel: 'Replay Draft (v2)',
+            archetype: slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            archetypeSlug: slug,
+            comboKey: item.comboKey,
+            comboTitle: item.title || item.comboKey,
+            file: `v2-drafts/${item.file}`,
+            failedStepNumber: failedStepNum,
+            totalSteps: item.totalSteps || comboData?.steps?.length || 0,
+            writtenTitle: item.title || '',
+            writtenText: comboData?.steps?.[item.stepsCompleted]?.text || item.errors?.[0] || 'Unknown step',
+            engineError: item.errors?.[0] || `Step ${failedStepNum} could not be legally verified by OCGCore.`,
+            stepsCompletedBeforeFailure: item.stepsCompleted || 0,
+            log: (item.log || []).map(enrichLogString),
+            offeredActions: item.offeredActions || null,
+            formatVersion: item.formatVersion,
+            replay: replayInfo(item),
+            comboData: sanitizeComboData(comboData),
+            fieldSnapshot: item.fieldSnapshot || null
+        });
+    }
+}
+
+// 1c. Legacy lines: live curated combos that use a card Forbidden in the TCG. They stay up as an archive, and the
+// combo selector marks them by the same rule (ComboSelector.forbiddenCardsIn in combo-system.js, keep the two in
+// step): the combo player's cards that move in a step of the window the page plays, plus a step's featuredCard.
+// Names are compared without case or punctuation ("Cupsy★Yummy Way" vs the banlist's "Cupsy☆Yummy Way").
+const banlistKey = name => String(name || '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+function forbiddenCardsIn(combo, forbiddenKeys) {
+    const cards = new Map((combo.cards || []).map(c => [c.id, c]));
+    const isOwn = c => c && !c.isOpponentCard && c.player !== 1 && !/^p2-/.test(c.id || '');
+    const found = [];
+    const check = name => {
+        if (name && forbiddenKeys.has(banlistKey(name)) && !found.includes(name)) found.push(name);
+    };
+    (combo.steps || []).forEach(step => {
+        [step.card, ...(step.actions || []).map(a => a && a.card)].forEach(id => {
+            const card = cards.get(id);
+            if (isOwn(card)) check(card.name);
+        });
+        if (step.player !== 1) check(step.featuredCard);
+    });
+    return found;
+}
+const banlist = readReport(BANLIST_FILE);
+if (banlist?.tcg?.forbidden) {
+    // Like card-loader.js, switch to a scheduled list once its date has passed
+    const next = banlist.nextBanlist;
+    const useNext = next?.tcg?.forbidden && next.effectiveDate && new Date(next.effectiveDate) <= new Date();
+    const forbiddenKeys = new Set((useNext ? next.tcg : banlist.tcg).forbidden.map(banlistKey));
+    const engine = new Map((readReport(CURATED_REPORT_FILE)?.results || []).map(r => [`${r.file}:${r.comboKey}`, r]));
+    const results = [];
+    let lines = 0;
+    for (const file of fs.readdirSync(COMBOS_DIR).filter(f => f.endsWith('-combos.json')).sort()) {
+        let combos;
+        try {
+            combos = JSON.parse(fs.readFileSync(path.join(COMBOS_DIR, file), 'utf8').replace(/^\uFEFF/, '')).combos || {};
+        } catch {
+            continue;
+        }
+        const slug = file.replace(/-combos\.json$/i, '');
+        for (const [comboKey, combo] of Object.entries(combos)) {
+            lines++;
+            const cards = forbiddenCardsIn(ReplayV2.prepareForSimulator(combo), forbiddenKeys);
+            if (!cards.length) continue;
+            const r = engine.get(`${file}:${comboKey}`);
+            results.push({
+                id: r && !r.legal ? `curated_${file}_${comboKey}` : null,
+                slug,
+                archetype: r?.archetype
+                    ? r.archetype.replace(/^\w/, c => c.toUpperCase())
+                    : slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                comboKey,
+                title: combo.title || comboKey,
+                cards,
+                legal: r ? Boolean(r.legal) : null
+            });
+            const item = auditItems.find(it => it.source === 'curated' && it.file === file && it.comboKey === comboKey);
+            if (item) item.legacy = cards;
+        }
+    }
+    overview.legacy = {
+        lines,
+        count: results.length,
+        banlistDate: (useNext ? next.effectiveDate : banlist.tcg.effectiveDate) || null,
+        results
+    };
+    console.log(`Legacy lines (TCG Forbidden cards): ${results.length} of ${lines} curated lines`);
+}
+
 // 2. Process HTML Written Guide Combos
 if (fs.existsSync(HTML_REPORT_FILE)) {
     try {
         const htmlRaw = JSON.parse(fs.readFileSync(HTML_REPORT_FILE, 'utf8'));
+        const hs = htmlRaw.summary || {};
+        overview.html = {
+            tested: htmlRaw.totalCombosScanned || 0,
+            legal: hs.legal || 0,
+            partial: hs.partial || 0,
+            likelyIllegal: hs.likelyIllegal || 0,
+            needsReview: hs.needsReview || 0,
+            unverifiable: hs.unverifiable || 0
+        };
         // Likely illegal / needs review first, then combos the engine could not verify (each carries its verdict)
         const violations = [...(htmlRaw.violations || []), ...(htmlRaw.unverifiableCombos || [])];
         console.log(`Processing ${violations.length} flagged HTML walkthrough combo(s)...`);
@@ -241,6 +423,7 @@ if (fs.existsSync(HTML_REPORT_FILE)) {
 // Summary Statistics
 const curatedCount = auditItems.filter(i => i.source === 'curated').length;
 const htmlCount = auditItems.filter(i => i.source === 'html').length;
+const draftsCount = auditItems.filter(i => i.source === 'drafts').length;
 const byVerdict = {};
 for (const it of auditItems) {
     const v = it.verdict || 'UNCLASSIFIED';
@@ -251,19 +434,21 @@ const summary = {
     totalFlagged: auditItems.length,
     curatedCount,
     htmlCount,
+    draftsCount,
     byVerdict
 };
 const serialize = obj => JSON.stringify(obj, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2);
 const unchanged = existingReport
-    && serialize({ summary: existingReport.summary, items: existingReport.items }) === serialize({ summary, items: auditItems });
+    && serialize({ summary: existingReport.summary, overview: existingReport.overview, items: existingReport.items }) === serialize({ summary, overview, items: auditItems });
 
 const reportData = {
     timestamp: (unchanged && existingReport.timestamp) ? existingReport.timestamp : new Date().toISOString(),
     summary,
+    overview,
     items: auditItems
 };
 
 fs.writeFileSync(OUTPUT_FILE, serialize(reportData), 'utf8');
 console.log(`\nSuccess! Unified audit report with ${auditItems.length} combos saved to:`);
 console.log(`  ${OUTPUT_FILE}`);
-console.log(`  (${curatedCount} Curated JSON combos, ${htmlCount} HTML combos)\n`);
+console.log(`  (${curatedCount} Curated JSON combos, ${htmlCount} HTML combos, ${draftsCount} v2 replay drafts)\n`);
