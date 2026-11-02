@@ -402,6 +402,12 @@ are steps too. **There is no field yet that marks a step as a cost or a chain re
   A curated combo whose line goes on past player 0's first turn (a Quick Effect on the opponent's
   turn, a combo that happens on turn 3) names its own window in `v2Range` (`'all'` or
   `{ start, end }` in step indices); the page shows that instead of the first turn.
+  A line played by player 1 (a going-second OTK) sets `viewPlayer: 1`. `fromViewpoint()` then
+  swaps the players for both viewers (ids `p1-`/`p2-`, `player`, `controller`, the "Opponent"
+  labels, `decks`), so that player's first turn is the window and the other board is the
+  opponent's. The file keeps the replay's own player order for the verifier's recorded duel.
+  Exports don't say which player's line it is, and name only player 0, so the importer can't set
+  this or the credit: both are set by hand (Darklord combo3 and combo4).
 - `Replay-Analyzer.html?duel=<source>&combo=<key>` plays the whole duel in the Replay Browser
   through `toMoveLog()`. `<source>` is a site combo file (`assets/data/combos/…`) or a GCS path
   (`combo-json/…`, `replays_json/…`). A trimmed curated combo can name its full replay in

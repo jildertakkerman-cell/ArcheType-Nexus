@@ -32,6 +32,55 @@
 
     const isMarker = step => step.type === 'turn' || step.type === 'phase';
 
+    // A line played by player 1 (a going-second OTK) sets `viewPlayer: 1`. The simulator and the replay browser
+    // then see the duel with the players swapped, so that player's turn is "your" turn and the other player's
+    // board is the opponent's. The file keeps the replay's own player order, which the verifier needs to replay
+    // the recorded duel.
+    const swapSide = p => (p === 0 ? 1 : p === 1 ? 0 : p);
+    const swapId = id => (typeof id === 'string' ? id.replace(/^p([12])-/, (m, n) => `p${n === '1' ? 2 : 1}-`) : id);
+    const swapZone = zone => (typeof zone === 'string' && zone.startsWith('material:') ? `material:${swapId(zone.slice(9))}` : zone);
+
+    function relabel(step, player) {
+        const text = step.text;
+        if (typeof text !== 'string') return text;
+        if (step.type === 'turn') return text.replace(/your turn|opponent's turn/, player === 0 ? 'your turn' : "opponent's turn");
+        if (step.type === 'phase') {
+            const rest = text.replace(/^(?:Opponent enters|Enter)\s+/, '');
+            return rest === text ? text : `${player === 1 ? 'Opponent enters' : 'Enter'} ${rest}`;
+        }
+        const bare = text.replace(/^Opponent:\s*/, '');
+        return player === 1 ? `Opponent: ${bare}` : bare;
+    }
+
+    function fromViewpoint(combo) {
+        if (!combo || combo.viewPlayer !== 1) return combo;
+        const swapAction = a => {
+            const out = Object.assign({}, a, { card: swapId(a.card), to: swapZone(a.to) });
+            if (a.controller !== undefined) out.controller = swapSide(a.controller);
+            return out;
+        };
+        const steps = (combo.steps || []).map(s => {
+            const out = Object.assign({}, s);
+            if (s.player !== undefined) out.player = swapSide(s.player);
+            if (s.controller !== undefined) out.controller = swapSide(s.controller);
+            if (s.card) out.card = swapId(s.card);
+            if (s.target) out.target = swapId(s.target);
+            if (s.to) out.to = swapZone(s.to);
+            if (Array.isArray(s.targets)) out.targets = s.targets.map(swapId);
+            if (Array.isArray(s.selected)) out.selected = s.selected.map(swapId);
+            if (Array.isArray(s.actions)) out.actions = s.actions.map(swapAction);
+            if (out.player !== undefined) out.text = relabel(s, out.player);
+            return out;
+        });
+        const cards = (combo.cards || []).map(c => {
+            const out = Object.assign({}, c, { id: swapId(c.id), zone: swapZone(c.zone) });
+            if (c.player !== undefined) out.player = swapSide(c.player);
+            return out;
+        });
+        const decks = Array.isArray(combo.decks) && combo.decks.length === 2 ? [combo.decks[1], combo.decks[0]] : combo.decks;
+        return Object.assign({}, combo, { cards, steps, decks, viewPlayer: 0, viewedAs: 1 });
+    }
+
     // Every card movement on a step as a list, single-card steps included.
     function stepActions(step) {
         if (Array.isArray(step.actions) && step.actions.length) return step.actions;
@@ -225,6 +274,7 @@
     // goes in `step._v2`; combo-wide facts in `combo._v2`.
     function prepareForSimulator(combo, { range } = {}) {
         if (!isV2(combo) || combo._v2) return combo;
+        combo = fromViewpoint(combo);
 
         const steps = combo.steps || [];
         const { start, end } = resolveRange(combo, range);
@@ -375,6 +425,7 @@
     // with `stableIds: true`: v2 ids never change, so the browser's id re-pairing
     // for older logs must stay off.
     function toMoveLog(combo) {
+        combo = fromViewpoint(combo);
         const byId = cardIndex(combo);
         const marks = annotate(combo);
         const board = startingBoard(combo);
@@ -473,6 +524,7 @@
         applyToBoard,
         boardAt,
         firstOwnTurn,
+        fromViewpoint,
         stepLabel,
         summonAnimation,
         soundFor,
