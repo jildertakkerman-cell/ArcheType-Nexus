@@ -27,6 +27,9 @@ const GENESYS_FILE = path.join(DATA_DIR, 'genesys_points.json');
 const RESERVED = new Set(['index.json', 'packages.json', 'packages.generated.json', 'profiles.json', 'report.json']);
 const API = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
 const EXTRA_TYPES = /fusion|synchro|xyz|link/i;
+// An Extra Deck card by its type or its frame: YGOProDeck types Blue-Eyes Toon Ultimate Dragon a "Toon Monster",
+// but its frameType is "fusion".
+const isExtraCard = info => EXTRA_TYPES.test(info.type || '') || EXTRA_TYPES.test(info.frameType || '');
 
 const args = process.argv.slice(2);
 const reportPath = args.includes('--report') ? args[args.indexOf('--report') + 1] : null;
@@ -47,12 +50,12 @@ async function fetchJson(url) {
     return res.json();
 }
 
-// name (lowercased) -> { name, type, archetype, tcgDate, level, attribute, race, desc }
+// name (lowercased) -> { name, type, frameType, archetype, tcgDate, level, attribute, race, desc }
 const cardInfo = new Map();
 const store = card => {
     const misc = (card.misc_info && card.misc_info[0]) || {};
     cardInfo.set(card.name.toLowerCase(), {
-        name: card.name, type: card.type, archetype: card.archetype || null, tcgDate: misc.tcg_date || null,
+        name: card.name, type: card.type, frameType: card.frameType || null, archetype: card.archetype || null, tcgDate: misc.tcg_date || null,
         level: card.level || null, attribute: card.attribute || null, race: card.race || null, desc: card.desc || ''
     });
 };
@@ -143,7 +146,7 @@ async function run() {
             const info = cardInfo.get(name.toLowerCase());
             if (!info) report.packages.push(`${pkg}: "${name}" isn't a card name.`);
             else if (!released(info)) report.packages.push(`${pkg}: ${notOut(name, info)}`);
-            else if (EXTRA_TYPES.test(info.type) !== (def.zone === 'extra')) report.packages.push(`${pkg}: ${name} is a ${info.type}, but the package is for the ${def.zone === 'extra' ? 'Extra' : 'Main'} Deck.`);
+            else if (isExtraCard(info) !== (def.zone === 'extra')) report.packages.push(`${pkg}: ${name} is a ${info.type}, but the package is for the ${def.zone === 'extra' ? 'Extra' : 'Main'} Deck.`);
             const status = DeckList.banStatus(name, banMap);
             if (status === 'Forbidden') report.packages.push(`${pkg}: ${name} is Forbidden, so every list skips it.`);
         }));
@@ -194,7 +197,7 @@ async function run() {
                 if (!info) { errors.push(`"${name}" isn't a card name (check the spelling).`); return; }
                 if (info.name !== name) errors.push(`"${name}" should be written "${info.name}".`);
                 if (!released(info)) errors.push(notOut(name, info));
-                if (EXTRA_TYPES.test(info.type) !== (zone === 'extra')) errors.push(`${name} is a ${info.type}; move it to the ${zone === 'extra' ? 'Main' : 'Extra'} Deck.`);
+                if (isExtraCard(info) !== (zone === 'extra')) errors.push(`${name} is a ${info.type}; move it to the ${zone === 'extra' ? 'Main' : 'Extra'} Deck.`);
                 // The API's tag can't be trusted to list every card of an archetype, but a card
                 // it tags as this deck's own archetype ("always treated as" cards) does belong.
                 const taggedOwn = info.archetype && archetype && info.archetype.toLowerCase() === archetype.toLowerCase();
