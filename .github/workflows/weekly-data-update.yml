@@ -33,15 +33,17 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Cache OCGCore Card Database & Scripts
-        uses: actions/cache@v4
-        with:
-          path: |
-            assets/data/cards.cdb
-            assets/data/cardscripts
-          key: ocgcore-cache-v1-${{ github.run_id }}
-          restore-keys: |
-            ocgcore-cache-v1-
+      # The duel engine's card data (cards.cdb + card scripts) is committed from the
+      # local setup, so CI gives the same verdicts. It used to live in an actions/cache
+      # that each run restored and wrote back: rows a bug had overwritten stayed there,
+      # and scripts fetched from ProjectIgnis master at different times didn't match
+      # each other or the pinned engine core (127 false flags on 2026-11-08, 0 locally).
+      # Without this data the engine would quietly download fresh copies instead.
+      - name: Check Committed Card Data
+        run: |
+          test -s assets/data/cards.cdb || { echo "::error::assets/data/cards.cdb is missing: commit it from a local audit run"; exit 1; }
+          test -s assets/data/cardscripts/utility.lua || { echo "::error::assets/data/cardscripts is missing: commit it from a local audit run"; exit 1; }
+          echo "Card scripts: $(find assets/data/cardscripts -name 'c*.lua' | wc -l)"
 
       - name: Run Data Update Script
         run: node scripts/update-genesys-points.js
@@ -81,6 +83,17 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
           branch=$(git rev-parse --abbrev-ref HEAD)
+
+          # Card data the engine had to fetch during this run (cards or scripts the
+          # committed set lacks) is not committed: the local copy stays the only source.
+          # Running the audit locally and committing its card data fills the gap.
+          fetched=$(git status --porcelain -- assets/data/cards.cdb assets/data/cardscripts | wc -l)
+          if [ "$fetched" -gt 0 ]; then
+            echo "::warning::The audit fetched $fetched card data file(s) missing from the committed set; their combos may differ from a local run. Run the audit locally and commit assets/data/cards.cdb and assets/data/cardscripts."
+            git status --porcelain -- assets/data/cards.cdb assets/data/cardscripts | head -20
+            git checkout -- assets/data/cards.cdb assets/data/cardscripts
+            git clean -fdq -- assets/data/cardscripts
+          fi
 
           if git diff --quiet --exit-code -- assets/data/ scripts/data/ scripts/ILLEGAL_COMBOS_AUDIT.md; then
             echo "No data changes detected. Everything is up to date."

@@ -33,6 +33,22 @@ const stmtStringsByCode = db.prepare('SELECT str1, str2, str3, str4, str5, str6,
 
 const stmtInsertData = db.prepare('INSERT OR REPLACE INTO datas (id, ot, alias, setcode, type, atk, def, level, race, attribute, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
 const stmtInsertText = db.prepare('INSERT OR REPLACE INTO texts (id, name, desc) VALUES (?, ?, ?)');
+const stmtStoredRow = db.prepare('SELECT d.ot, d.alias, d.setcode, d.type, d.atk, d.def, d.level, d.race, d.attribute, d.category, t.name, t.desc FROM datas d JOIN texts t ON t.id = d.id WHERE d.id = ?');
+stmtStoredRow.setReadBigInts(true);
+
+// Whether cards.cdb already holds exactly this row. Every run re-reads the Supabase-cached rows
+// (refreshSupabaseCachedRows), and rewriting an unchanged row still changes the file, which is
+// tracked in git so the weekly GitHub Action checks combos against the same data.
+function storedRowMatches(passcode, dataValues, name, desc) {
+    try {
+        const stored = stmtStoredRow.get(passcode);
+        if (!stored || stored.name !== name || stored.desc !== desc) return false;
+        const cols = [stored.ot, stored.alias, stored.setcode, stored.type, stored.atk, stored.def, stored.level, stored.race, stored.attribute, stored.category];
+        return dataValues.every((v, i) => BigInt(v) === cols[i]);
+    } catch {
+        return false;
+    }
+}
 
 const SUPABASE_URL = 'https://pdvrdrmmykbznmojacwp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ia1JW1tEjKQgUFe2ni5WQA_qgBU45JZ';
@@ -302,8 +318,11 @@ export function parseSupabaseRow(row, linkMarkers = 0) {
 
     // Persist in local SQLite cards.cdb so all subsequent lookups are synchronous and native
     try {
-        stmtInsertData.run(passcode, 3, 0, setcode, type, atk, def, level, Number(race), attribute, 0);
-        stmtInsertText.run(passcode, row.cardname, desc);
+        const dataValues = [3, 0, setcode, type, atk, def, level, Number(race), attribute, 0];
+        if (!storedRowMatches(passcode, dataValues, row.cardname, desc)) {
+            stmtInsertData.run(passcode, ...dataValues);
+            stmtInsertText.run(passcode, row.cardname, desc);
+        }
     } catch (e) {
         // Ignore write conflicts
     }
@@ -619,7 +638,16 @@ async function refreshSupabaseCachedRows() {
             headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
         });
         if (!res.ok) return;
+        // The site's table can hold two rows for one passcode, under an official and a fan name ("Hey, Space
+        // Trunade!" / "Spatial Trunade"). Refresh one per card: the one already stored while it's still there, else
+        // the last. Refreshing both rewrote the card twice per run, and its text depended on the rows' order.
+        const byPasscode = new Map();
         for (const row of await res.json()) {
+            const code = Number(row.passcode);
+            const kept = byPasscode.get(code);
+            if (!kept || stmtStoredRow.get(code)?.name !== kept.cardname) byPasscode.set(code, row);
+        }
+        for (const row of byPasscode.values()) {
             parseSupabaseRow(row, /link/i.test(row.cardtype || '') ? await fetchLinkMarkers(row.passcode) : 0);
         }
     } catch {
