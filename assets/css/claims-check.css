@@ -1,0 +1,234 @@
+/* "Claims checked against the cards" tables on deck pages (Magnificent Maestros tabs and later).
+   Markup contract: <table data-claims-table> with one row per claim, cells in the order
+   claim | verdict | what the cards say. Colours stay with each page; this file only sets layout,
+   text size and the verdict filter bar that assets/js/claims-check.js adds.
+   Selectors repeat the attribute so they outrank each page's own one-class table rules. */
+
+table[data-claims-table][data-claims-table] > tbody > tr > * {
+    line-height: 1.55;
+}
+table[data-claims-table][data-claims-table] > tbody > tr > :first-child,
+table[data-claims-table][data-claims-table] > tbody > tr > :nth-child(3) {
+    font-size: max(0.875rem, 1em);
+}
+/* The claim is what readers scan for. Row headers (th) already carry the page's own weight. */
+table[data-claims-table][data-claims-table] > tbody > tr > td:first-child {
+    font-weight: 600;
+}
+table[data-claims-table][data-claims-table] > tbody > tr[hidden] {
+    display: none !important;
+}
+/* Zebra stripes count hidden rows, so drop them while a filter is on. */
+table[data-claims-table][data-claims-table][data-cc-filtered] > tbody > tr,
+table[data-claims-table][data-claims-table][data-cc-filtered] > tbody > tr > * {
+    background: none;
+}
+
+@media (min-width: 720px) {
+    /* A steady verdict column: short verdicts sit on one line, long ones ("Only its first effect")
+       take two instead of three, and the claim column keeps its width. */
+    table[data-claims-table][data-claims-table] > tbody > tr > :nth-child(2) {
+        width: 9rem;
+    }
+}
+
+/* Phones: one compact block per claim. Claim and verdict share the first line, the explanation
+   runs full width below it, and the per-cell "Claim / Verdict" labels go. */
+@media (max-width: 719px) {
+    table[data-claims-table][data-claims-table] {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+    table[data-claims-table][data-claims-table] > thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+    table[data-claims-table][data-claims-table] > tbody {
+        display: block;
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+        gap: 0.45rem 0.75rem;
+        padding: 0.85rem 0.95rem;
+        border: 0;
+        border-bottom: 1px var(--cc-line-style, solid) var(--cc-line, rgba(148, 163, 184, 0.24));
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr:last-child {
+        border-bottom: 0;
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr > * {
+        display: block;
+        width: auto;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        text-align: left;
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr > *::before {
+        content: none;
+        display: none;
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr > :nth-child(2) {
+        justify-self: end;
+        max-width: 9.5rem;
+        text-align: right;
+    }
+    /* Long verdicts ("Right idea, wrong name") wrap instead of pushing the row wider. */
+    table[data-claims-table][data-claims-table] > tbody > tr > :nth-child(2) > * {
+        max-width: 100%;
+        white-space: normal;
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr > :nth-child(3) {
+        grid-column: 1 / -1;
+    }
+
+    /* Each claim is its own card with space around it, instead of one long ruled block. The table's
+       own framed wrapper steps aside so the cards aren't boxed twice. */
+    div:has(> table[data-claims-table]) {
+        overflow: visible;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+    }
+    table[data-claims-table][data-claims-table] > tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+    table[data-claims-table][data-claims-table] > tbody > tr,
+    table[data-claims-table][data-claims-table] > tbody > tr:last-child {
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+        border-radius: 0.75rem;
+        background: rgba(148, 163, 184, 0.06);
+        background: color-mix(in srgb, currentColor 5%, transparent);
+    }
+}
+
+/* "More" / "Less" toggle after each short answer. The words live in CSS so they never become part
+   of the cell's text; screen readers get the aria-label and aria-expanded instead. */
+.cc-more-btn {
+    display: inline;
+    margin-left: 0.3em;
+    padding: 0 0.15em;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 0.85em;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+}
+.cc-more-btn::after {
+    content: "More \25BE";
+}
+.cc-more-btn[aria-expanded="true"]::after {
+    content: "Less \25B4";
+}
+.cc-more-btn:hover {
+    text-decoration-thickness: 2px;
+}
+.cc-more-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+@media print {
+    .cc-rest[hidden] { display: inline !important; }
+    .cc-more-btn, .cc-claims-bar { display: none !important; }
+}
+
+/* Tone icon claims-check.js adds to verdicts that had none. */
+[data-cc-icon] {
+    margin-right: 0.35em;
+}
+
+/* Verdict filter bar, inserted above the table by claims-check.js. It inherits the text colour
+   around it, so it reads on dark and light pages alike. */
+.cc-claims-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.5rem;
+    margin: 0 0 0.85rem;
+    font-size: 0.82rem;
+    line-height: 1.2;
+}
+.cc-claims-bar[hidden] {
+    display: none;
+}
+.cc-claims-bar--center {
+    justify-content: center;
+}
+.cc-claims-lead {
+    margin-right: 0.2rem;
+    font-weight: 700;
+}
+.cc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.25rem;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.cc-chip:hover {
+    background: rgba(148, 163, 184, 0.12);
+    background: color-mix(in srgb, currentColor 10%, transparent);
+}
+.cc-chip[aria-pressed="true"] {
+    border-color: currentColor;
+    background: rgba(148, 163, 184, 0.2);
+    background: color-mix(in srgb, currentColor 16%, transparent);
+}
+.cc-chip:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+.cc-chip--details {
+    border-style: dashed;
+}
+.cc-chip-dot {
+    flex: none;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--cc-dot, currentColor);
+}
+.cc-chip-n {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+}
+.cc-claims-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .cc-chip { transition: background-color 0.15s ease, border-color 0.15s ease; }
+}
