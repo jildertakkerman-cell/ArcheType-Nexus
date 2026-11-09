@@ -87,6 +87,20 @@ class UpdatesLoader {
     }
 
     /**
+     * The description as paragraphs: a blank line ("\n\n") in updates.json starts a new one.
+     * The compact card shows only the first paragraph, the full card all of them.
+     */
+    getDescriptionHTML(update, firstOnly = false) {
+        const parts = String(update.description || '')
+            .split(/\n\s*\n/)
+            .map(p => p.trim())
+            .filter(Boolean);
+        return (firstOnly ? parts.slice(0, 1) : parts)
+            .map(p => `<p class="update-description">${p}</p>`)
+            .join('');
+    }
+
+    /**
      * Create HTML for a single update card (compact version for index)
      */
     createUpdateCardHTML(update) {
@@ -104,7 +118,7 @@ class UpdatesLoader {
                 </div>
                 <div class="update-content">
                     <h4 class="update-title">${titleContent}</h4>
-                    <p class="update-description">${update.description}</p>
+                    ${this.getDescriptionHTML(update, true)}
                 </div>
                 <span class="update-date">${relativeDate}</span>
             </div>
@@ -190,7 +204,7 @@ class UpdatesLoader {
                         <h4 class="update-title">${titleContent}</h4>
                         <span class="update-date">${formattedDate}</span>
                     </div>
-                    <p class="update-description">${update.description}</p>
+                    <div class="update-description-body">${this.getDescriptionHTML(update)}</div>
                     ${cardNamesHTML}
                     ${readMoreHTML}
                 </div>
