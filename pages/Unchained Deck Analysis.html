@@ -136,6 +136,412 @@
              font-family: 'Roboto Mono', monospace;
         }
     </style>
+    <!-- Magnificent Maestros tab (2026-11-09): guide tabs, the combo simulator and its board styles. -->
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <script src="../assets/js/guide-tabs.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <style>
+        /* ===== Magnificent Maestros spotlight + guide tabs (assets/js/guide-tabs.js) =====
+           Own class names (unm-*); every colour comes from the --unm-* tokens. */
+        :root {
+            --unm-ember: #ff6b6b;
+            --unm-ember-soft: #fca5a5;
+            --unm-ember-line: rgba(255, 107, 107, 0.45);
+            --unm-ember-wash: rgba(255, 107, 107, 0.12);
+            --unm-flame: #fdba74;
+            --unm-surface: #2e1a1a;
+            --unm-surface-deep: #1f1111;
+            --unm-inset: #150a0a;
+            --unm-border: #8c3a3a;
+            --unm-text: #fde8e8;
+            --unm-muted: #e3b8b8;
+            --unm-heading: #ffffff;
+            --unm-ok: #34d399;
+            --unm-no: #f87171;
+            --unm-part: #fbbf24;
+        }
+        .unm-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        [id^="unm-"], #tab-mams { scroll-margin-top: 4.5rem; }
+
+        /* ----- Tabs ----- */
+        .unm-tabs {
+            display: flex;
+            margin: 0 0 2rem;
+            border-bottom: 2px solid var(--unm-border);
+        }
+        .unm-tab {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: 0;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--unm-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .unm-tab:hover { color: var(--unm-heading); background-color: var(--unm-ember-wash); }
+        .unm-tab[aria-selected="true"] {
+            border-bottom-color: var(--unm-ember);
+            color: var(--unm-ember-soft);
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.45);
+        }
+        .unm-new-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--unm-flame);
+            color: #2a0f05;
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .unm-panel[hidden], .unm-card[hidden] { display: none !important; }
+        .unm-tab:focus-visible,
+        .unm-panel:focus-visible,
+        .unm-card:focus-visible,
+        .unm-cardtab:focus-visible,
+        .unm-spot-cta:focus-visible,
+        .unm-tag:focus-visible,
+        .unm-play:focus-visible,
+        .unm-cn:focus-visible,
+        .unm-link:focus-visible,
+        .unm-table-wrap:focus-visible,
+        .unm-check input:focus-visible {
+            outline: 2px solid var(--unm-flame);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .unm-panel:target:focus-visible { outline: none; }
+        @media (max-width: 639px) {
+            .unm-tab {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.75rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        /* ----- Card art slot (59:86 until CardLoader swaps the image in) ----- */
+        .unm-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.35rem;
+            overflow: hidden;
+            border: 2px dashed var(--unm-ember-line);
+            border-radius: 0.35rem;
+            background: var(--unm-inset);
+            color: var(--unm-ember-soft);
+            font-size: 0.6rem;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .unm-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        .unm-art .card-placeholder { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; font-size: inherit; }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .unm-spot {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas: "arts" "head" "body";
+            gap: 1rem 1.25rem;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--unm-ember-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 6% 0%, rgba(253, 186, 116, 0.12) 0%, transparent 55%),
+                linear-gradient(135deg, var(--unm-surface) 0%, var(--unm-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.12);
+        }
+        .unm-spot-arts {
+            grid-area: arts;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.6rem;
+            max-width: 20rem;
+        }
+        .unm-spot-head { grid-area: head; min-width: 0; }
+        .unm-spot-body { grid-area: body; min-width: 0; }
+        .unm-spot-kicker, .unm-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.4rem;
+            margin: 0 0 0.35rem;
+            color: var(--unm-flame);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .unm-spot-title { margin: 0; color: var(--unm-heading); font-size: 1.3rem; font-weight: 800; line-height: 1.25; }
+        .unm-spot-stats { margin-top: 0.35rem; color: var(--unm-muted); font-size: 0.8rem; font-weight: 700; }
+        .unm-spot-hook { color: var(--unm-text); font-size: 0.92rem; line-height: 1.65; }
+        .unm-spot-hook strong { color: var(--unm-heading); }
+        .unm-spot-label {
+            margin: 0.9rem 0 0.4rem;
+            color: var(--unm-muted);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .unm-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .unm-tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--unm-ember-line);
+            border-radius: 9999px;
+            background: var(--unm-ember-wash);
+            color: var(--unm-ember-soft);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .unm-tag:hover { background: rgba(255, 107, 107, 0.24); color: var(--unm-heading); }
+        .unm-spot-cta, .unm-play {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1rem;
+            padding: 0.55rem 1.1rem;
+            border: 1px solid var(--unm-ember);
+            border-radius: 0.6rem;
+            background: rgba(255, 107, 107, 0.16);
+            color: var(--unm-heading);
+            font-size: 0.88rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .unm-spot-cta:hover, .unm-play:hover { background: rgba(255, 107, 107, 0.3); }
+        @media (min-width: 768px) {
+            .unm-spot {
+                grid-template-columns: 18rem minmax(0, 1fr);
+                grid-template-areas: "arts head" "arts body";
+                padding: 1.5rem;
+            }
+            .unm-spot-arts { align-self: start; }
+            .unm-spot-title { font-size: 1.55rem; }
+        }
+
+        /* ----- Tab content ----- */
+        #tab-mams { color: var(--unm-text); }
+        #tab-mams p { line-height: 1.7; }
+        .unm-intro { margin-bottom: 1.5rem; }
+        .unm-h2 { margin: 0 0 0.75rem; color: var(--unm-heading); font-size: 1.45rem; font-weight: 800; line-height: 1.25; }
+        .unm-h3 { margin: 0 0 0.5rem; color: var(--unm-heading); font-size: 1.1rem; font-weight: 800; }
+        .unm-h4 { margin: 1.1rem 0 0.4rem; color: var(--unm-ember-soft); font-size: 0.95rem; font-weight: 800; }
+        .unm-lede { color: var(--unm-text); font-size: 1rem; }
+        .unm-section {
+            margin: 0 0 2rem;
+            padding: 1.25rem;
+            border: 1px solid var(--unm-border);
+            border-radius: 1rem;
+            background: var(--unm-surface);
+        }
+        .unm-section > p { margin: 0 0 0.85rem; }
+        .unm-facts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+            gap: 0.75rem;
+            margin: 0 0 2rem;
+            padding: 0;
+            list-style: none;
+        }
+        .unm-fact {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--unm-border);
+            border-left: 4px solid var(--unm-ember);
+            border-radius: 0.6rem;
+            background: var(--unm-surface-deep);
+        }
+        .unm-fact-k { color: var(--unm-flame); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+        .unm-fact-v { color: var(--unm-text); font-size: 0.88rem; line-height: 1.5; }
+        .unm-list { margin: 0; padding-left: 1.2rem; list-style: disc; }
+        .unm-list li { margin: 0 0 0.5rem; line-height: 1.65; }
+        .unm-list strong { color: var(--unm-heading); }
+        .unm-cn {
+            display: inline;
+            padding: 0;
+            border: 0;
+            border-bottom: 1px dotted var(--unm-ember-soft);
+            background: none;
+            color: var(--unm-ember-soft);
+            font: inherit;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+        }
+        .unm-cn:hover { color: var(--unm-heading); }
+        .unm-link { color: var(--unm-ember-soft); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+        .unm-link:hover { color: var(--unm-heading); }
+        .unm-callout {
+            margin-top: 1.25rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--unm-ember-line);
+            border-radius: 0.75rem;
+            background: var(--unm-ember-wash);
+        }
+        .unm-callout p { margin: 0 0 0.6rem; }
+        .unm-callout p:last-child { margin-bottom: 0; }
+
+        /* ----- Card tablist ----- */
+        .unm-cardtabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.25rem 0 1rem; }
+        .unm-cardtab {
+            min-height: 40px;
+            padding: 0.4rem 0.85rem;
+            border: 1px solid var(--unm-border);
+            border-radius: 9999px;
+            background: var(--unm-surface-deep);
+            color: var(--unm-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .unm-cardtab:hover { color: var(--unm-heading); border-color: var(--unm-ember-line); }
+        .unm-cardtab[aria-selected="true"] { border-color: var(--unm-ember); background: rgba(255, 107, 107, 0.2); color: var(--unm-heading); }
+        .unm-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas: "head" "art" "body";
+            gap: 1rem 1.5rem;
+            padding: 1.1rem;
+            border: 1px solid var(--unm-border);
+            border-radius: 0.85rem;
+            background: var(--unm-surface-deep);
+        }
+        .unm-card > .unm-art { grid-area: art; max-width: 11rem; }
+        .unm-card-head { grid-area: head; min-width: 0; }
+        .unm-card-body { grid-area: body; min-width: 0; }
+        .unm-card > .cms-section { grid-area: body; }
+        .unm-card-name { margin: 0; color: var(--unm-heading); font-size: 1.25rem; font-weight: 800; line-height: 1.25; }
+        .unm-card-stats { margin: 0.3rem 0 0; color: var(--unm-muted); font-size: 0.8rem; font-weight: 700; }
+        .unm-card-body p { margin: 0 0 0.7rem; }
+        .unm-text {
+            margin: 0 0 0.5rem;
+            padding: 0.85rem 1rem;
+            border-left: 3px solid var(--unm-ember);
+            border-radius: 0.4rem;
+            background: var(--unm-inset);
+            font-size: 0.86rem;
+        }
+        .unm-text p { margin: 0; }
+        .unm-text-label { margin-bottom: 0.35rem !important; color: var(--unm-flame); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+        @media (min-width: 768px) {
+            .unm-card {
+                grid-template-columns: 11rem minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+            }
+            .unm-card > .unm-art { align-self: start; }
+        }
+
+        /* ----- Combo lines ----- */
+        .unm-lines { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; margin: 0 0 1.25rem; }
+        .unm-line {
+            padding: 1.1rem;
+            border: 1px solid var(--unm-border);
+            border-top: 4px solid var(--unm-ember);
+            border-radius: 0.85rem;
+            background: var(--unm-surface-deep);
+        }
+        .unm-line p { margin: 0.75rem 0 0; }
+        .unm-line strong { color: var(--unm-heading); }
+        .unm-meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.3rem 0.8rem; margin: 0.5rem 0 0.75rem; font-size: 0.86rem; }
+        .unm-meta dt { color: var(--unm-flame); font-weight: 800; }
+        .unm-meta dd { margin: 0; color: var(--unm-text); }
+        .unm-steps { margin: 0; padding-left: 1.4rem; list-style: decimal; font-size: 0.9rem; }
+        .unm-steps li { margin: 0 0 0.4rem; line-height: 1.6; }
+        .unm-lab { min-height: 4rem; }
+        .unm-lab-loading { color: var(--unm-muted); font-style: italic; }
+        @media (min-width: 900px) {
+            .unm-lines { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        /* ----- Kamra planner ----- */
+        .unm-fieldset { margin: 0 0 1rem; padding: 0.85rem 1rem 0.5rem; border: 1px solid var(--unm-border); border-radius: 0.75rem; }
+        .unm-fieldset legend { padding: 0 0.4rem; color: var(--unm-flame); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+        .unm-checks { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 0.25rem 1rem; }
+        .unm-check { display: flex; align-items: flex-start; gap: 0.55rem; min-height: 40px; padding: 0.35rem 0; font-size: 0.88rem; line-height: 1.45; cursor: pointer; }
+        .unm-check input { width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; flex-shrink: 0; accent-color: var(--unm-ember); }
+        .unm-check input:disabled + span { opacity: 0.5; }
+        .unm-result {
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--unm-border);
+            border-left: 4px solid var(--unm-muted);
+            border-radius: 0.6rem;
+            background: var(--unm-inset);
+        }
+        .unm-result[data-state="ok"] { border-left-color: var(--unm-ok); }
+        .unm-result[data-state="no"] { border-left-color: var(--unm-no); }
+        .unm-result-head { margin: 0 0 0.5rem; color: var(--unm-heading); font-weight: 800; }
+        .unm-result h3 { margin: 0.75rem 0 0.3rem; color: var(--unm-flame); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+        .unm-result ul { margin: 0; padding-left: 1.2rem; list-style: disc; }
+        .unm-result li { margin: 0 0 0.35rem; line-height: 1.55; font-size: 0.88rem; }
+
+        /* ----- Tables (rows stack below 640px) ----- */
+        .unm-table-wrap { overflow-x: auto; border: 1px solid var(--unm-border); border-radius: 0.75rem; }
+        .unm-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        .unm-table th { padding: 0.65rem 0.8rem; background: var(--unm-surface-deep); color: var(--unm-flame); font-size: 0.72rem; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; }
+        .unm-table td { padding: 0.7rem 0.8rem; border-top: 1px solid var(--unm-border); vertical-align: top; line-height: 1.55; }
+        .unm-verdict { display: inline-block; padding: 0.1rem 0.55rem; border-radius: 9999px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
+        .unm-v-yes { background: rgba(52, 211, 153, 0.16); color: var(--unm-ok); }
+        .unm-v-no { background: rgba(248, 113, 113, 0.16); color: var(--unm-no); }
+        .unm-v-part { background: rgba(251, 191, 36, 0.16); color: var(--unm-part); }
+        @media (max-width: 639px) {
+            .unm-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .unm-table--stack tr { display: block; padding: 0.4rem 0; border-top: 1px solid var(--unm-border); }
+            .unm-table--stack tr:first-child { border-top: 0; }
+            .unm-table--stack td { display: block; padding: 0.3rem 0.8rem; border: 0; }
+            .unm-table--stack td::before { content: attr(data-label); display: block; color: var(--unm-flame); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+            .unm-section { padding: 1rem; }
+        }
+        @media print {
+            .unm-tabs, .unm-spot-cta, .unm-play { display: none !important; }
+            .unm-panel[hidden], .unm-card[hidden] { display: block !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/combo-steps.css">
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
@@ -189,18 +595,52 @@
                         <li><p><span data-card="Unchained Twins - Aruha">Aruha</span> is in this card's art.</p></li>
                         <li><p><span data-card="Unchained Twins - Rakea">Rakea</span> is in this card's art.</p></li>
                         <li><p>Both twins, breaking out.</p></li>
-                        <li><p><span data-card="Unchained Soul of Rage">Soul of Rage</span> merging with an unidentified green beast, apparently the birth of <span data-card="Unchained Soul Rage Abominator">Soul Rage Abominator</span>.</p></li>
+                        <li><p><span data-card="Unchained Soul of Rage">Soul of Rage</span> merging with an unidentified green beast, apparently the birth of <span data-card="Unchained Soul of Abominable Rage">Soul of Abominable Rage</span>.</p></li>
                         <li><p>The evolved Soul of Rage.</p></li>
                         <li><p>It appears in <span data-card="Wailing of the Unchained Souls">Wailing of the Unchained Souls</span> and <span data-card="Abominable Unchained Soul">Abominable Unchained Soul</span>.</p></li>
-                        <li><p>Sharvara, one of the two watchdogs of Yama in Hindu myth. It is the wolf form of <span data-card="Unchained Ogre Shara">Ogre Shara</span>: the same Attribute, with ATK and DEF swapped.</p></li>
-                        <li><p>Shyama, the other watchdog, and the wolf form of <span data-card="Unchained Ogre Shma">Ogre Shma</span>.</p></li>
+                        <li><p>Sharvara, one of the two watchdogs of Yama in Hindu myth. It is the wolf form of <span data-card="Unchained Oni of Shara">Oni of Shara</span>: the same Attribute, with ATK and DEF swapped.</p></li>
+                        <li><p>Shyama, the other watchdog, and the wolf form of <span data-card="Unchained Oni of Shyma">Oni of Shyma</span>.</p></li>
                         <li><p>In Hindu myth, Sarama is the mother of all wolves.</p></li>
-                        <li><p>Yama, the Hindu god of death and justice. Its upgraded form is <span data-card="Unchained Enma Lord Yama">Enma Lord Yama</span>.</p></li>
+                        <li><p>Yama, the Hindu god of death and justice. Its upgraded form is <span data-card="Unchained Firelord of Yama">Firelord of Yama</span>.</p></li>
                         <li><p>Yama as Enma, the king of hell in Japan. It appears in <span data-card="Reincarnation of the Unchained">Reincarnation of the Unchained</span>, whose name refers to Makai Tenshō, a famous Japanese novel.</p></li>
                     </ol>
                 </div>
             </div>
         </section>
+
+        <!-- Magnificent Maestros (TCG 12 Nov 2026): one new-card spotlight, then guide tabs (assets/js/guide-tabs.js).
+             #tab-classic wraps the original sections in place; the banlist, deck resources and community combos
+             stay below both tabs. -->
+        <aside class="unm-spot" data-pcs-scope="spot" aria-labelledby="unm-spot-title">
+            <div class="unm-spot-arts">
+                <div id="unm-spot-firelord-img-container" class="unm-art">Unchained Firelord of Yama</div>
+                <div id="unm-spot-kamra-img-container" class="unm-art">Unchained Zealot - Kamra</div>
+                <div id="unm-spot-shyma-img-container" class="unm-art">Unchained Oni of Shyma</div>
+            </div>
+            <div class="unm-spot-head">
+                <p class="unm-spot-kicker"><span class="unm-new-badge">New cards</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="unm-spot-title" class="unm-spot-title">Seven New Unchained Cards</h2>
+                <p class="unm-spot-stats">3 Main Deck monsters &middot; 2 Link Monsters &middot; 1 Continuous Spell &middot; 1 Normal Trap</p>
+            </div>
+            <div class="unm-spot-body">
+                <p class="unm-spot-hook"><strong>Unchained Oni of Shyma</strong> is a one-card starter: its Normal Summon brings out a Twin from the Deck and destroys it, and the floats run from there. <strong>Unchained Zealot - Kamra</strong> destroys up to three of your own cards at once, and when a card effect destroys it, it can destroy every monster on the field. <strong>Unchained Firelord of Yama</strong> is the new Link-4 boss: in your End Phase it revives two Fiends that were destroyed that turn.</p>
+                <p id="unm-spot-tags-label" class="unm-spot-label">Jump to</p>
+                <ul class="unm-tags" aria-labelledby="unm-spot-tags-label">
+                    <li><a class="unm-tag" href="#unm-cards">The seven cards</a></li>
+                    <li><a class="unm-tag" href="#unm-lines">Two checked combo lines</a></li>
+                    <li><a class="unm-tag" href="#unm-kamra">Kamra planner</a></li>
+                    <li><a class="unm-tag" href="#unm-claims">Claims checked</a></li>
+                </ul>
+                <button type="button" class="unm-spot-cta" data-open-panel="tab-mams">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <div class="unm-tabs" role="tablist" aria-label="Unchained guide" data-guide-tabs>
+            <button type="button" class="unm-tab" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="unm-tab" role="tab" id="tab-btn-mams" aria-controls="tab-mams" aria-selected="false" tabindex="-1">Magnificent Maestros <span class="unm-new-badge" aria-hidden="true">New</span><span class="unm-sr-only">(new cards)</span></button>
+        </div>
+
+        <div id="tab-classic" class="unm-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -385,6 +825,303 @@
                 </div>
             </div>
         </section>   
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- Magnificent Maestros tab (added 2026-11-09). Card text from the YGOProDeck API; rulings from Konami's card
+             notes and Q&A (cids 23170-23176). Combo lines: assets/data/combos/unchained-combos.json, combo1 and combo2,
+             both VERIFIED_LEGAL in the ocgcore runner in search and strict mode. The NotebookLM source behind this tab is
+             the generated "Competitive Analysis of Modern Unchained Support..." in notebook 734036f6; its errors are the
+             #unm-claims rows. The Classic Analysis tab is untouched apart from its wrapper. -->
+        <div id="tab-mams" data-pcs-scope="mams" class="unm-panel" role="tabpanel" aria-labelledby="tab-btn-mams" tabindex="0" hidden>
+            <header class="unm-intro">
+                <p class="unm-kicker">Magnificent Maestros &middot; TCG 12 Nov 2026 &middot; OCG Revolution Booster, 30 May 2026</p>
+                <h2 class="unm-h2">Seven New Unchained Cards</h2>
+                <p class="unm-lede">Magnificent Maestros gives Unchained seven new cards and reprints <button type="button" class="unm-cn" data-cardname="Unchained Soul Lord of Yama">Unchained Soul Lord of Yama</button>, <button type="button" class="unm-cn" data-cardname="Unchained Abomination">Unchained Abomination</button> and <button type="button" class="unm-cn" data-cardname="Unchained Twins - Rakea">Unchained Twins - Rakea</button>. The Main Deck gets a Normal Summon starter, a hand extender that climbs back out of the GY, and a monster that destroys up to three of your own cards at once. The Extra Deck gets a Link-4 boss and a Link-3 that negates on summon and destroys from the GY. A Continuous Spell searches and recycles, and a Trap Link Summons with your opponent's monster on their turn. Soul Lord of Yama, from 2023, is still the hub almost every line goes through.</p>
+            </header>
+
+            <ul class="unm-facts" aria-label="At a glance">
+                <li class="unm-fact"><span class="unm-fact-k">Starter</span><span class="unm-fact-v">Oni of Shyma: one Normal Summon, two summons from the Deck</span></li>
+                <li class="unm-fact"><span class="unm-fact-k">Boss</span><span class="unm-fact-v">Firelord of Yama: Link-4, 3000 ATK, revives 2 in your End Phase</span></li>
+                <li class="unm-fact"><span class="unm-fact-k">Lock</span><span class="unm-fact-v">Oni of Shyma, the Twins and Sharvara all limit you to Fiends</span></li>
+                <li class="unm-fact"><span class="unm-fact-k">Still weak to</span><span class="unm-fact-v">Banishing, Tributing and face-down banishes</span></li>
+            </ul>
+
+            <section id="unm-cards" class="unm-section" aria-labelledby="unm-cards-title">
+                <h2 id="unm-cards-title" class="unm-h2">The Seven Cards</h2>
+                <p>Pick a card to see its text, its job and the rulings that change how you play it.</p>
+                <div class="unm-cardtabs" role="tablist" aria-label="New Unchained cards" data-unm-cardtabs>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-shyma" aria-controls="unm-card-shyma" aria-selected="true">Oni of Shyma</button>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-shara" aria-controls="unm-card-shara" aria-selected="false" tabindex="-1">Oni of Shara</button>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-kamra" aria-controls="unm-card-kamra" aria-selected="false" tabindex="-1">Kamra</button>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-firelord" aria-controls="unm-card-firelord" aria-selected="false" tabindex="-1">Firelord of Yama</button>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-arage" aria-controls="unm-card-arage" aria-selected="false" tabindex="-1">Abominable Rage</button>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-reincarnation" aria-controls="unm-card-reincarnation" aria-selected="false" tabindex="-1">Reincarnation</button>
+                    <button type="button" class="unm-cardtab" role="tab" id="unm-cardtab-hunger" aria-controls="unm-card-hunger" aria-selected="false" tabindex="-1">Hunger</button>
+                </div>
+                <div class="unm-cardpanels">
+                    <article id="unm-card-shyma" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-shyma" tabindex="0" data-unm-card-panel>
+                        <div id="unm-shyma-img-container" class="unm-art">Unchained Oni of Shyma</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">One-card starter</p>
+                            <h3 class="unm-card-name">Unchained Oni of Shyma</h3>
+                            <p class="unm-card-stats">Effect Monster &middot; WATER &middot; Fiend &middot; Level 4 &middot; ATK 1500 / DEF 2000</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>If this card is Normal Summoned: You can Special Summon 1 Level 4 or lower &quot;Unchained&quot; monster from your Deck, except &quot;Unchained Oni of Shyma&quot;, then destroy 1 card you control, also you cannot Special Summon for the rest of this turn, except Fiend monsters. If this card on the field is destroyed by card effect, except &quot;Unchained Oni of Shyma&quot;, or by battle: You can Special Summon 1 &quot;Unchained&quot; monster from your hand or Deck, except &quot;Unchained Oni of Shyma&quot;. You can only use each effect of &quot;Unchained Oni of Shyma&quot; once per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>The new one-card starter. Normal Summon it and it Special Summons a Level 4 or lower "Unchained" monster from your Deck: one of the Twins or <button type="button" class="unm-cn" data-cardname="Unchained Oni of Shara">Oni of Shara</button>. Then it destroys 1 card you control.</p><p>Destroy the monster it just summoned. Aruha, Rakea and Sarama float when another card's effect destroys them, so one Normal Summon becomes two summons from the Deck before you have used anything else.</p><p>If another card's effect destroys Oni of Shyma later, it floats too, into any "Unchained" monster from your hand or Deck. That includes the Level 6 <button type="button" class="unm-cn" data-cardname="Unchained Soul of Sharvara">Soul of Sharvara</button>, which is how Line 1 reaches <button type="button" class="unm-cn" data-cardname="Unchained Soul Lord of Yama">Soul Lord of Yama</button>.</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>The first effect is a Normal Summon trigger. A Special Summon doesn't start it.</li><li>The summon and the destroy are not simultaneous, and the Fiend-only lock applies once the effect resolves, even if the summon or the destroy failed, unless the effect was negated (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23171&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>If it destroys itself with its own first effect, its second effect doesn't trigger: that one excludes "Unchained Oni of Shyma".</li><li>The second effect works in the Damage Step, and also when it is destroyed and banished face-up instead of going to the GY.</li></ul>
+                        </div>
+                    </article>
+                    <article id="unm-card-shara" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-shara" tabindex="0" data-unm-card-panel hidden>
+                        <div id="unm-shara-img-container" class="unm-art">Unchained Oni of Shara</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">Hand extender, GY recursion</p>
+                            <h3 class="unm-card-name">Unchained Oni of Shara</h3>
+                            <p class="unm-card-stats">Effect Monster &middot; FIRE &middot; Fiend &middot; Level 4 &middot; ATK 1500 / DEF 2000</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>During the Main Phase (Quick Effect): You can discard this card; Special Summon 1 Fiend monster from your hand, then destroy 1 card you control. If a card(s) on the field is destroyed by card effect (except the effect of &quot;Unchained Oni of Shara&quot;) or by battle, while this card is in your GY: You can add this card to your hand or Special Summon it, but place it on the bottom of the Deck when it leaves the field. You can only use each effect of &quot;Unchained Oni of Shara&quot; once per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>A hand extender. In either player's Main Phase, discard it to Special Summon any Fiend from your hand, then destroy 1 card you control. That destroy can start a float, so Shara plus <button type="button" class="unm-cn" data-cardname="Unchained Zealot - Kamra">Kamra</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Sharvara">Sharvara</button> or any other Fiend in hand is a two-card start.</p><p>In the GY it waits. Whenever a card on either field is destroyed by battle or by a card effect other than its own, you can add it to your hand or Special Summon it. A copy summoned this way goes to the bottom of the Deck when it leaves the field, which is why Line 1 can summon it from the Deck a second time.</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>The first effect is a Quick Effect from the hand that also works in your opponent's Main Phase (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23170&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>The summon comes first, then the destroy. The destroy isn't optional once the summon succeeds.</li><li>The second effect works in the Damage Step, and Shara has to be in the GY already when the card is destroyed.</li><li>The bottom-of-the-Deck clause ends once Shara is no longer face-up in the Monster Zone.</li></ul>
+                        </div>
+                    </article>
+                    <article id="unm-card-kamra" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-kamra" tabindex="0" data-unm-card-panel hidden>
+                        <div id="unm-kamra-img-container" class="unm-art">Unchained Zealot - Kamra</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">Multi-card destroyer, board wipe</p>
+                            <h3 class="unm-card-name">Unchained Zealot - Kamra</h3>
+                            <p class="unm-card-stats">Effect Monster &middot; DARK &middot; Fiend &middot; Level 8 &middot; ATK 2000 / DEF 2500</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>If this card is in your hand: You can target up to 3 cards you control; destroy them, Special Summon this card, then you can apply any of these effects in sequence (once each), based on the original types of those destroyed cards.<br>● Monster: Draw 1 card.<br>● Spell: Change 1 monster&#x27;s battle position.<br>● Trap: Destroy 1 other card on the field.<br>If this card on the field is destroyed by card effect: You can destroy all monsters on the field. You can only use each effect of &quot;Unchained Zealot - Kamra&quot; once per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>Destroys up to 3 of your cards to Special Summon itself from the hand. Every "Unchained" floater among them triggers once Kamra's effect has finished.</p><p>Then it pays out by the original card types it destroyed. A Monster draws 1 card, a Spell changes 1 monster's battle position, and a Trap destroys 1 other card on the field. That last one can hit your opponent's card, or another of your floaters for one more summon.</p><p>If a card effect destroys Kamra on the field, you can destroy every monster on the field. Going second, your own <button type="button" class="unm-cn" data-cardname="Unchained Twins - Rakea">Rakea</button> or <button type="button" class="unm-cn" data-cardname="Unchained Soul of Sharvara">Sharvara</button> can be that card effect (Line 2).</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>The first effect is an Ignition Effect in the hand, so it only works in your own Main Phase.</li><li>The destroy and the summon count as simultaneous, and Kamra is only summoned if at least 1 card was destroyed. The bonuses come after that, one at a time, in printed order (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23172&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>Ash Blossom &amp; Joyous Spring can be chained to the first effect whatever you target (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=5&amp;fid=23050&amp;request_locale=ja" target="_blank" rel="noopener">Konami Q&amp;A 23050</a>).</li><li>The wipe is optional ("You can"), and battle doesn't start it: Kamra has to be destroyed by a card effect.</li></ul>
+                        </div>
+                    </article>
+                    <article id="unm-card-firelord" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-firelord" tabindex="0" data-unm-card-panel hidden>
+                        <div id="unm-firelord-img-container" class="unm-art">Unchained Firelord of Yama</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">End-board boss</p>
+                            <h3 class="unm-card-name">Unchained Firelord of Yama</h3>
+                            <p class="unm-card-stats">Link Monster &middot; DARK &middot; Fiend &middot; LINK-4 &middot; ATK 3000 &middot; Top, Bottom-Left, Bottom, Bottom-Right</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>2+ monsters, including an &quot;Unchained Soul&quot; monster<br>During your End Phase: You can target up to 2 Fiend monsters in your GY that were destroyed this turn; Special Summon them, but for each one, as long as it remains face-up in your Monster Zone, you cannot Special Summon, except Fiend monsters. If this card on the field would be destroyed by battle or card effect, you can destroy 1 other face-up card on either field instead. You can only use each effect of &quot;Unchained Firelord of Yama&quot; once per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>The new boss. In your End Phase it Special Summons up to 2 Fiends from your GY that were destroyed this turn. After a long Unchained turn that is two more bodies for free, and the best picks keep a Quick Effect: <button type="button" class="unm-cn" data-cardname="Unchained Twins - Rakea">Rakea</button> or <button type="button" class="unm-cn" data-cardname="Unchained Soul of Rage">Soul of Rage</button>.</p><p>Once per turn, if it would be destroyed by battle or a card effect, you can destroy 1 other face-up card on either field instead. That can be one of your opponent's cards, or one of your face-up floaters so it summons something.</p><p>Its materials need an "Unchained Soul" monster: Soul Lord of Yama, Soul of Sharvara, Shyama, Disaster, Rage, Anguish, Abominable Rage or Abominable Unchained Soul. The Twins, both Onis, Kamra and Unchained Abomination don't count.</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>Only your own End Phase. A target must have been destroyed and sent to your GY this turn and stayed there; a monster you revived and then used as Link Material doesn't count (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=5&amp;fid=24344&amp;request_locale=ja" target="_blank" rel="noopener">Konami Q&amp;A 24344</a>).</li><li>While a monster it revived stays face-up, you can only Special Summon Fiends from the Extra Deck (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23173&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>The replacement is once per turn. If Firelord is destroyed together with other cards, none of those other cards can be the replacement.</li><li>Replacing makes "destroy it, and if you do, Special Summon" effects fail, your own Sharvara, Aruha and Soul of Shyama included, if they aim at Firelord (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=5&amp;fid=24345&amp;request_locale=ja" target="_blank" rel="noopener">Konami Q&amp;A 24345</a>). If Sarama, Aruha, Rakea or either Oni destroys Firelord with its effect and Firelord destroys that monster, or a copy of it on the field, instead, the destroyed monster still floats (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=5&amp;fid=24334&amp;request_locale=ja" target="_blank" rel="noopener">Konami Q&amp;A 24334</a>).</li></ul>
+                        </div>
+                    </article>
+                    <article id="unm-card-arage" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-arage" tabindex="0" data-unm-card-panel hidden>
+                        <div id="unm-arage-img-container" class="unm-art">Unchained Soul of Abominable Rage</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">Negate on the field, destroy from the GY</p>
+                            <h3 class="unm-card-name">Unchained Soul of Abominable Rage</h3>
+                            <p class="unm-card-stats">Link Monster &middot; DARK &middot; Fiend &middot; LINK-3 &middot; ATK 2100 &middot; Left, Right, Bottom</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>2+ monsters, including a Fiend monster<br>If your opponent Special Summons a monster(s) face-up (except during the Damage Step): You can target 1 of them; destroy 1 Fiend monster you control, and if you do, negate the targeted monster&#x27;s effects until the end of this turn. When a monster effect is activated on the field and you control a Link-4 or higher &quot;Unchained&quot; Link Monster (Quick Effect): You can banish this card from your GY; destroy the monster that activated its effect. You can only use each effect of &quot;Unchained Soul of Abominable Rage&quot; once per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>On the field: when your opponent Special Summons a face-up monster, target it, destroy 1 Fiend you control and negate the target's effects until the end of the turn. The Fiend you destroy can be a floater.</p><p>In the GY: while you control a Link-4 or higher "Unchained" Link Monster (<button type="button" class="unm-cn" data-cardname="Unchained Firelord of Yama">Firelord of Yama</button> or <button type="button" class="unm-cn" data-cardname="Unchained Abomination">Unchained Abomination</button>), banish it when a monster effect is activated on the field to destroy that monster.</p><p>It is an "Unchained Soul" monster, so it is legal Firelord material. Link Summon it, use it for Firelord, and its GY effect is live for your opponent's turn. Line 1 does exactly this.</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>The first effect is a trigger, not usable in the Damage Step. You need a face-up Fiend to destroy; the destroy and the negation count as simultaneous, and nothing is negated if the destroy fails (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23174&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>The second effect chains directly to the monster effect's activation, on either player's side, and not in the Damage Step. It destroys the monster; it doesn't negate the effect.</li></ul>
+                        </div>
+                    </article>
+                    <article id="unm-card-reincarnation" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-reincarnation" tabindex="0" data-unm-card-panel hidden>
+                        <div id="unm-reincarnation-img-container" class="unm-art">Reincarnation of the Unchained</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">Searcher, recycler, self-destruct</p>
+                            <h3 class="unm-card-name">Reincarnation of the Unchained</h3>
+                            <p class="unm-card-stats">Continuous Spell</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>When this card is activated: You can add 1 &quot;Abomination&#x27;s Prison&quot;, or 1 &quot;Unchained&quot; Spell, except &quot;Reincarnation of the Unchained&quot;, from your Deck to your hand. Once per turn: You can target up to 3 &quot;Unchained&quot; cards in your GY, except &quot;Reincarnation of the Unchained&quot;; shuffle them into the Deck, then you can destroy other cards you control up to the number shuffled. You can only activate 1 &quot;Reincarnation of the Unchained&quot; per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>When you activate it, add 1 "Unchained" Spell or <button type="button" class="unm-cn" data-cardname="Abomination&#x27;s Prison">Abomination&#x27;s Prison</button> from your Deck. Prison adds any "Unchained" card, so Reincarnation is a one-card start: Reincarnation, Prison, <button type="button" class="unm-cn" data-cardname="Unchained Oni of Shyma">Oni of Shyma</button>, then Line 1.</p><p>Once per turn it shuffles up to 3 "Unchained" cards from your GY into the Deck, Link Monsters back to the Extra Deck, then can destroy that many of your other cards. One activation can pop two Set floaters.</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>You can only activate 1 "Reincarnation of the Unchained" per turn. The search is part of the card's activation and you decide it on resolution (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23175&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>The second effect is a Main Phase effect that starts a chain. The destroy is optional, comes after the shuffle, and can't include Reincarnation itself.</li></ul>
+                        </div>
+                    </article>
+                    <article id="unm-card-hunger" class="unm-card" role="tabpanel" aria-labelledby="unm-cardtab-hunger" tabindex="0" data-unm-card-panel hidden>
+                        <div id="unm-hunger-img-container" class="unm-art">Unchained Hunger</div>
+                        <div class="unm-card-head">
+                            <p class="unm-kicker">Opponent-turn removal by Link Summon</p>
+                            <h3 class="unm-card-name">Unchained Hunger</h3>
+                            <p class="unm-card-stats">Normal Trap</p>
+                        </div>
+                        <div class="unm-card-body">
+                            <div class="unm-text" data-pcs-skip><p class="unm-text-label">Card text</p><p>Target 2 face-up monsters anywhere on the field, including an &quot;Unchained Soul&quot; Link Monster you control; immediately after this effect resolves, Link Summon 1 Fiend Link Monster using only those 2 monsters. If this Set card is destroyed by card effect: You can Special Summon 1 &quot;Unchained&quot; monster from your Deck. You can only use each effect of &quot;Unchained Hunger&quot; once per turn.</p></div>
+                            <h4 class="unm-h4">What it does for the deck</h4>
+                            <p>Target 2 face-up monsters, one of them an "Unchained Soul" Link Monster you control (Soul Lord of Yama, Soul of Rage, Soul of Anguish or Abominable Rage). The other can be your opponent's. Then Link Summon a Fiend Link Monster using only those 2. Their monster leaves as Link Material, so destruction protection doesn't save it.</p><p>A Link Monster counts as its Link Rating. Soul of Rage plus one of their monsters makes a Link-3 (<button type="button" class="unm-cn" data-cardname="Unchained Soul of Abominable Rage">Abominable Rage</button> or <button type="button" class="unm-cn" data-cardname="Unchained Soul of Anguish">Soul of Anguish</button>). Abominable Rage plus one of their monsters makes a Link-4 (<button type="button" class="unm-cn" data-cardname="Unchained Firelord of Yama">Firelord of Yama</button> or <button type="button" class="unm-cn" data-cardname="Unchained Abomination">Unchained Abomination</button>).</p><p>If it is destroyed while Set, it Special Summons an "Unchained" monster from your Deck, like the older Unchained Traps.</p>
+                            <h4 class="unm-h4">Rulings that matter</h4>
+                            <ul class="unm-list"><li>Both targets must be legal materials for a Fiend Link Monster in your Extra Deck. A monster unaffected by Traps can't be used, and if either target has left the field or turned face-down, nothing happens (<a class="unm-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23176&amp;request_locale=ja" target="_blank" rel="noopener">Konami card notes</a>).</li><li>It is a Trap your opponent can respond to, not a Quick Effect that "can't be responded to". Not in the Damage Step.</li><li>Like any Trap it can't be activated the turn it is Set. Sharvara Sets it from the Deck, Sarama Sets it from the GY, and Abomination's Prison can add it.</li></ul>
+                        </div>
+                    </article>
+                </div>
+                <div class="unm-callout" id="unm-souls">
+                    <h3 class="unm-h3">Which cards are "Unchained Soul" monsters?</h3>
+                    <p>Firelord of Yama's materials and Unchained Hunger's target both ask for an "Unchained Soul" monster. Those are <button type="button" class="unm-cn" data-cardname="Unchained Soul Lord of Yama">Soul Lord of Yama</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Sharvara">Soul of Sharvara</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Shyama">Soul of Shyama</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Disaster">Soul of Disaster</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Rage">Soul of Rage</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Anguish">Soul of Anguish</button>, <button type="button" class="unm-cn" data-cardname="Unchained Soul of Abominable Rage">Soul of Abominable Rage</button> and <button type="button" class="unm-cn" data-cardname="Abominable Unchained Soul">Abominable Unchained Soul</button>. Firelord of Yama itself, Unchained Abomination, the Twins, both Onis and Kamra are "Unchained" cards but not "Unchained Soul" ones.</p>
+                    <p>For Hunger the Soul has to be a Link Monster you control: Soul Lord of Yama, Soul of Rage, Soul of Anguish or Soul of Abominable Rage.</p>
+                </div>
+            </section>
+
+            <section id="unm-lines" class="unm-section" aria-labelledby="unm-lines-title">
+                <h2 id="unm-lines-title" class="unm-h2">Two Combo Lines, Checked in the Engine</h2>
+                <p>Both lines ran through the site's ocgcore check and every step is legal. Line 1 is the TCG version of the one-card route that <a class="unm-link" href="https://yuyu-tei.jp/show/ygo/content/26810" target="_blank" rel="noopener">にだいめ (nidaime) published on the Yuyu-tei blog</a> on 9 June 2026. That OCG route ends on D/D/D Wave High King Caesar, which is Forbidden in the TCG, so the two Level 6 Fiends make Goblin's Crazy Beast here.</p>
+                <div class="unm-lines">
+                    <article class="unm-line" id="unm-line-1">
+                        <p class="unm-kicker">Line 1 &middot; going first &middot; 1 card</p>
+                        <h3 class="unm-h3">Oni of Shyma into Firelord of Yama</h3>
+                        <dl class="unm-meta">
+                            <dt>Hand</dt><dd>Unchained Oni of Shyma (or Reincarnation of the Unchained, which adds Abomination's Prison, which adds Oni of Shyma)</dd>
+                            <dt>Deck</dt><dd>Rakea, Aruha, Sarama, Soul of Shyama, Soul of Sharvara, Oni of Shara, Escape of the Unchained</dd>
+                            <dt>Extra Deck</dt><dd>Soul Lord of Yama, Soul of Abominable Rage, Soul of Rage, Goblin's Crazy Beast, Firelord of Yama</dd>
+                        </dl>
+                        <ol class="unm-steps">
+                            <li>Normal Summon Oni of Shyma. It summons Rakea from the Deck and destroys it, and Rakea floats into Soul of Shyama.</li>
+                            <li>Soul of Shyama destroys Oni of Shyma, which floats into Soul of Sharvara.</li>
+                            <li>Shyama and Sharvara make Soul Lord of Yama. Sharvara Sets Escape of the Unchained, and Yama adds Aruha.</li>
+                            <li>Aruha destroys the Set Escape and summons itself. Escape floats into Oni of Shara.</li>
+                            <li>Shara and Yama make Soul of Abominable Rage.</li>
+                            <li>Soul of Shyama destroys Aruha from the GY and returns. Three cards answer at once: Aruha floats into Sarama, Oni of Shara revives itself, and Yama banishes itself to revive Sharvara.</li>
+                            <li>Sharvara and Shara make Soul of Rage. Sarama Sets Escape again and destroys Soul of Rage, which adds Sharvara back to your hand.</li>
+                            <li>Sharvara destroys Sarama and summons itself. Sarama floats into Oni of Shara, which went to the bottom of your Deck earlier.</li>
+                            <li>Shyama and Sharvara make Goblin's Crazy Beast. Abominable Rage and Shara make Firelord of Yama.</li>
+                            <li>In your End Phase, Firelord revives Soul of Rage and Rakea. Both were destroyed this turn and are still in the GY.</li>
+                        </ol>
+                        <p><strong>End board:</strong> Firelord of Yama, Goblin's Crazy Beast with 2 materials, Soul of Rage, Rakea and a Set Escape of the Unchained, with Abominable Rage in the GY. On your opponent's turn, Abominable Rage banishes itself to destroy a monster that activates its effect, because you control Firelord. Soul of Rage turns one of their Special Summoned monsters into Link Material. Rakea destroys one of your own cards at any time to start a float. Goblin's Crazy Beast takes a Spell or Trap, and detaching Sharvara for it Sets another "Unchained" card. Firelord survives one destruction by destroying another face-up card.</p>
+                        <button type="button" class="unm-play" data-unm-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i> Play line 1 in the simulator</button>
+                    </article>
+                    <article class="unm-line" id="unm-line-2">
+                        <p class="unm-kicker">Line 2 &middot; going second &middot; 2 cards</p>
+                        <h3 class="unm-h3">Kamra and Escape clear their monsters</h3>
+                        <dl class="unm-meta">
+                            <dt>Hand</dt><dd>Unchained Zealot - Kamra, Escape of the Unchained</dd>
+                            <dt>Deck</dt><dd>Unchained Twins - Rakea, Abominable Unchained Soul</dd>
+                        </dl>
+                        <ol class="unm-steps">
+                            <li>Set Escape of the Unchained. Kamra destroys it and Special Summons itself.</li>
+                            <li>A Trap was destroyed, so Kamra destroys 1 other card on the field: one of your opponent's monsters.</li>
+                            <li>Escape was destroyed while Set, so it summons Rakea from the Deck.</li>
+                            <li>Rakea's Quick Effect destroys Kamra. Kamra was destroyed by a card effect, so it destroys every monster on the field, Rakea included.</li>
+                            <li>Rakea was destroyed by another card's effect, so it summons Abominable Unchained Soul (3000 ATK) from the Deck.</li>
+                        </ol>
+                        <p><strong>Result:</strong> their monsters are gone, you have a 3000 ATK monster, and your Normal Summon is untouched. If they have a Set Spell or Trap, Abominable Unchained Soul can discard 1 card to destroy it. Kamra's own effect is not a Quick Effect, so this is a Main Phase play, and Ash Blossom &amp; Joyous Spring can stop it.</p>
+                        <button type="button" class="unm-play" data-unm-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i> Play line 2 in the simulator</button>
+                    </article>
+                </div>
+                <div id="unm-combo-lab" class="unm-lab" data-pcs-skip>
+                    <p class="unm-lab-loading">The combo simulator loads when this tab opens.</p>
+                </div>
+            </section>
+
+            <section id="unm-kamra" class="unm-section" aria-labelledby="unm-kamra-title">
+                <h2 id="unm-kamra-title" class="unm-h2">Kamra Planner: What Do Your Targets Give You?</h2>
+                <p>Kamra targets up to 3 cards you control. Pick them to see Kamra's bonuses and which cards float once its effect has finished.</p>
+                <form class="unm-planner" data-unm-kamra onsubmit="return false;">
+                    <fieldset class="unm-fieldset">
+                        <legend>Kamra's targets (up to 3)</legend>
+                        <div class="unm-checks">
+                            <label class="unm-check"><input type="checkbox" value="aruha" data-unm-kamra-card> <span>Unchained Twins - Aruha (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="rakea" data-unm-kamra-card> <span>Unchained Twins - Rakea (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="sarama" data-unm-kamra-card> <span>Unchained Twins - Sarama (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="shyma" data-unm-kamra-card> <span>Unchained Oni of Shyma (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="disaster" data-unm-kamra-card> <span>Unchained Soul of Disaster (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="sharvara" data-unm-kamra-card> <span>Unchained Soul of Sharvara (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="sshyama" data-unm-kamra-card> <span>Unchained Soul of Shyama (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="rage" data-unm-kamra-card> <span>Unchained Soul of Rage (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="yama" data-unm-kamra-card> <span>Unchained Soul Lord of Yama (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="arage" data-unm-kamra-card> <span>Unchained Soul of Abominable Rage (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="firelord" data-unm-kamra-card> <span>Unchained Firelord of Yama (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="settrap" data-unm-kamra-card> <span>A Set &quot;Unchained&quot; Trap (Escape, Abominable Chamber or Hunger)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="setprison" data-unm-kamra-card> <span>A Set Abomination&#x27;s Prison</span></label>
+                            <label class="unm-check"><input type="checkbox" value="setwailing" data-unm-kamra-card> <span>A Set Wailing of the Unchained Souls</span></label>
+                            <label class="unm-check"><input type="checkbox" value="reinc" data-unm-kamra-card> <span>Reincarnation of the Unchained (face-up)</span></label>
+                            <label class="unm-check"><input type="checkbox" value="other" data-unm-kamra-card> <span>Any other card you control (not &quot;Unchained&quot;)</span></label>
+                        </div>
+                    </fieldset>
+                    <fieldset class="unm-fieldset">
+                        <legend>Already in your GY</legend>
+                        <div class="unm-checks">
+                            <label class="unm-check"><input type="checkbox" value="gyshara" data-unm-kamra-gy> <span>Unchained Oni of Shara</span></label>
+                            <label class="unm-check"><input type="checkbox" value="gyyama" data-unm-kamra-gy> <span>Unchained Soul Lord of Yama</span></label>
+                        </div>
+                    </fieldset>
+                    <div class="unm-result" data-unm-kamra-result aria-live="polite"></div>
+                </form>
+            </section>
+
+            <section id="unm-claims" class="unm-section" aria-labelledby="unm-claims-title">
+                <h2 id="unm-claims-title" class="unm-h2">Claims Checked Against the Cards</h2>
+                <p>Early write-ups of these cards, written from pre-release translations, repeat a number of mistakes. Each claim below is checked against the official text and Konami's rulings.</p>
+                <div class="unm-table-wrap" tabindex="0" role="region" aria-label="Claims checked against the cards">
+                    <table class="unm-table unm-table--stack">
+                        <thead><tr><th scope="col">Claim</th><th scope="col">Verdict</th><th scope="col">What the card says</th></tr></thead>
+                        <tbody>
+                            <tr><td data-label="Claim">Unchained Soul of Abominable Rage is a Link-2 whose Quick Effect Link Summons using itself and an opponent&#x27;s monster, and it adds a Fiend when destroyed.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong card</span></td><td data-label="What the card says">It is a Link-3 (2+ monsters, including a Fiend). It negates a monster your opponent Special Summons and destroys from the GY. The claim describes Unchained Soul of Rage.</td></tr>
+                            <tr><td data-label="Claim">Kamra&#x27;s board wipe is mandatory.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">The card says "You can destroy all monsters on the field".</td></tr>
+                            <tr><td data-label="Claim">Unchained Firelord of Yama needs an &quot;Unchained&quot; Link Monster among its materials.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">It needs an "Unchained Soul" monster, Link or not. Sharvara, Shyama or Disaster count; the Twins, both Onis and Kamra don't.</td></tr>
+                            <tr><td data-label="Claim">Firelord revives two destroyed Fiends &quot;during every End Phase&quot;.</td><td data-label="Verdict"><span class="unm-verdict unm-v-part">Partly</span></td><td data-label="What the card says">Only your own End Phase, and only Fiends destroyed and sent to your GY this turn that are still there (Konami Q&amp;A 24344). While they stay face-up you can only summon Fiends from the Extra Deck.</td></tr>
+                            <tr><td data-label="Claim">Firelord&#x27;s replacement can destroy your Set &quot;Unchained&quot; Spells and Traps.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">It destroys a face-up card. A Set card isn't face-up, and the Set floaters only trigger while Set.</td></tr>
+                            <tr><td data-label="Claim">Oni of Shara is the Level 4 starter and Oni of Shyma the extender for Rank 4 lines.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Backwards</span></td><td data-label="What the card says">Oni of Shyma's Normal Summon pulls a Level 4 or lower "Unchained" monster from the Deck: it is the one-card starter. Oni of Shara needs another Fiend in hand, and it recurs from the GY.</td></tr>
+                            <tr><td data-label="Claim">Soul Lord of Yama&#x27;s GY effect fires when any card on the field is destroyed.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">A card you control. It also has to be in the GY already, so it can't answer its own destruction.</td></tr>
+                            <tr><td data-label="Claim">Against Nibiru, the floaters fire and Soul Lord of Yama destroys the Primal Being Token.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">Nibiru Tributes. A Tributed monster isn't destroyed, so no floater and no Yama. Sharvara still Sets a Spell/Trap, because it was sent to the GY. Destroying the Token afterwards with one of your own effects does count.</td></tr>
+                            <tr><td data-label="Claim">Continuous banishing stops the floats, because destroyed cards have to reach the GY.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">A floater that is destroyed and banished face-up still triggers (Konami's card notes). What banishing stops is the GY play: Sharvara's Set, Oni of Shara, Soul Lord of Yama, Soul of Shyama, Abominable Rage and Firelord's revive.</td></tr>
+                            <tr><td data-label="Claim">Unchained Hunger is &quot;non-reactable&quot;.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">It is a Trap that targets, so your opponent can respond, and both targets must be legal Fiend Link Material when you activate it.</td></tr>
+                            <tr><td data-label="Claim">Reincarnation of the Unchained&#x27;s search is a &quot;non-activated&quot; effect.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">It is part of the card's activation, and you can only activate 1 per turn.</td></tr>
+                            <tr><td data-label="Claim">Kamra&#x27;s destroyed cards trigger &quot;on Chain Links 2, 3 and 4&quot;.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Wrong</span></td><td data-label="What the card says">Kamra's effect finishes first: destroy, summon, then the bonuses. The floats then start a new chain.</td></tr>
+                            <tr><td data-label="Claim">Two Level 6s make D/D/D Wave High King Caesar.</td><td data-label="Verdict"><span class="unm-verdict unm-v-no">Forbidden</span></td><td data-label="What the card says">Caesar is Forbidden in the TCG. So are other picks in those write-ups: Kashtira Arise-Heart, Dimension Shifter, Dimensional Barrier, Called by the Grave, Crossout Designator, Triple Tactics Talent, Red Reboot and Maxx "C". Line 1 makes Goblin's Crazy Beast instead.</td></tr>
+                            <tr><td data-label="Claim">Unchained Soul Lord of Yama is part of the new support.</td><td data-label="Verdict"><span class="unm-verdict unm-v-part">Reprint</span></td><td data-label="What the card says">It is from Duelist Nexus (2023). Magnificent Maestros reprints it, with Unchained Abomination and Unchained Twins - Rakea.</td></tr>
+                            <tr><td data-label="Claim">Kamra&#x27;s three bonuses follow the original card types: Monster draws, Spell changes a position, Trap destroys.</td><td data-label="Verdict"><span class="unm-verdict unm-v-yes">Right</span></td><td data-label="What the card says">As printed. The Trap bonus can hit any other card on the field.</td></tr>
+                            <tr><td data-label="Claim">Sharvara and Rakea answer Infinite Impermanence or Effect Veiler by destroying the targeted monster in response.</td><td data-label="Verdict"><span class="unm-verdict unm-v-yes">Right</span></td><td data-label="What the card says">Both destroy a card you control (Sharvara: a Fiend or a face-down card). The negation then has no target, and the destroyed floater summons its replacement.</td></tr>
+                            <tr><td data-label="Claim">Matchup grades (&quot;Favorable&quot; vs Yubel, &quot;Unfavorable&quot; vs Kashtira…).</td><td data-label="Verdict"><span class="unm-verdict unm-v-part">No source</span></td><td data-label="What the card says">TCG results start after 12 November 2026, so these grades aren't on this page.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="unm-build" class="unm-section" aria-labelledby="unm-build-title">
+                <h2 id="unm-build-title" class="unm-h2">Building With the New Cards</h2>
+                <p>These counts are this site's suggestion for a TCG build. They are not tournament data: the cards are legal in the TCG from 12 November 2026.</p>
+                <div class="unm-table-wrap" tabindex="0" role="region" aria-label="Suggested copies">
+                    <table class="unm-table unm-table--stack">
+                        <thead><tr><th scope="col">Card</th><th scope="col">Copies</th><th scope="col">Why</th></tr></thead>
+                        <tbody>
+                            <tr><td data-label="Card">Unchained Oni of Shyma</td><td data-label="Copies">3</td><td data-label="Why">The one-card starter. You want to Normal Summon it every game.</td></tr>
+                            <tr><td data-label="Card">Reincarnation of the Unchained</td><td data-label="Copies">2&ndash;3</td><td data-label="Why">A second way to Oni of Shyma (through Abomination's Prison), and a recycler. Only 1 can be activated per turn.</td></tr>
+                            <tr><td data-label="Card">Unchained Oni of Shara</td><td data-label="Copies">1</td><td data-label="Why">It keeps coming back from the GY and the bottom of the Deck; Line 1 summons the same copy twice.</td></tr>
+                            <tr><td data-label="Card">Unchained Zealot - Kamra</td><td data-label="Copies">1&ndash;2</td><td data-label="Why">A going-second breaker and a mid-combo payoff. It needs cards on your field to destroy.</td></tr>
+                            <tr><td data-label="Card">Unchained Hunger</td><td data-label="Copies">1</td><td data-label="Why">Sharvara and Sarama Set it, and it floats if it is destroyed while Set.</td></tr>
+                            <tr><td data-label="Card">Unchained Soul of Abominable Rage</td><td data-label="Copies">2</td><td data-label="Why">One for Firelord's materials, one to Link Summon with Hunger on your opponent's turn.</td></tr>
+                            <tr><td data-label="Card">Unchained Firelord of Yama</td><td data-label="Copies">1</td><td data-label="Why">It revives the monsters it needs; a second copy rarely gets summoned.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Mind the Fiend locks. Oni of Shyma locks you for the turn, Aruha and Rakea do too when they use their own effect, and Sharvara does while it stays face-up. Non-Fiend Extra Deck monsters such as S:P Little Knight only fit before the first of those resolves. In the TCG, Called by the Grave, Crossout Designator, Maxx "C", D/D/D Wave High King Caesar and Kashtira Arise-Heart are Forbidden, so lists copied from the OCG need changing.</p>
+            </section>
+
+            <section id="unm-weak" class="unm-section" aria-labelledby="unm-weak-title">
+                <h2 id="unm-weak-title" class="unm-h2">What Still Beats It</h2>
+                <ul class="unm-list">
+                    <li><strong>Banishing.</strong> Macro Cosmos doesn't stop the floats themselves: a floater that is destroyed and banished face-up still triggers. It stops everything that works from the GY: Sharvara's Set, Oni of Shara, Soul Lord of Yama, Soul of Shyama, Abominable Rage and Firelord's revive.</li>
+                    <li><strong>Face-down banishing.</strong> Evenly Matched removes the field without destroying anything, so nothing floats.</li>
+                    <li><strong>Tributes.</strong> Nibiru, the Primal Being Tributes your monsters, so none of them float. Sharvara still Sets a card because it was sent to the GY, and destroying the Primal Being Token with your own effect later counts as a card you control being destroyed.</li>
+                    <li><strong>Ash Blossom &amp; Joyous Spring.</strong> It answers Oni of Shyma's summon trigger, Soul Lord of Yama's search and Kamra. Lead with whichever you can afford to lose.</li>
+                    <li><strong>Droll &amp; Lock Bird.</strong> Soul Lord of Yama, Abomination's Prison and Reincarnation all add from the Deck, so after Droll only the first add happens. The summons from the Deck still work.</li>
+                    <li><strong>GY banishers.</strong> Bystial Druiswurm and Magnamhut banish the DARK Fiends that work from the GY: Soul Lord of Yama and Abominable Rage.</li>
+                    <li><strong>What it handles well.</strong> Infinite Impermanence or Effect Veiler on one of your monsters: Sharvara or Rakea destroys that monster in response, the negation has no target, and the monster floats.</li>
+                </ul>
+            </section>
+        </div>
+        <!-- END tab-mams -->
 
         <!-- TCG Banlist Impact Section -->
         <section>
@@ -509,6 +1246,267 @@
                 initPageSections('Unchained');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Magnificent Maestros tab. The card tablist runs first, so
+         #unm-card-* deep links land on a visible card; the tab's art and its combo simulator load the first time
+         the tab opens. Then the Kamra planner: card data in CARDS (from each card's printed text). -->
+    <script>
+        (function () {
+            'use strict';
+            var list = document.querySelector('[data-unm-cardtabs]');
+            if (!list) return;
+            var tabs = Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
+            function select(tab, focus) {
+                tabs.forEach(function (t) {
+                    var on = t === tab;
+                    t.setAttribute('aria-selected', on ? 'true' : 'false');
+                    t.tabIndex = on ? 0 : -1;
+                    var panel = document.getElementById(t.getAttribute('aria-controls'));
+                    if (panel) panel.hidden = !on;
+                });
+                if (focus) tab.focus();
+            }
+            tabs.forEach(function (tab, i) {
+                tab.addEventListener('click', function () { select(tab, false); });
+                tab.addEventListener('keydown', function (e) {
+                    var next = null;
+                    if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+                    else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+                    else if (e.key === 'Home') next = tabs[0];
+                    else if (e.key === 'End') next = tabs[tabs.length - 1];
+                    if (next) { e.preventDefault(); select(next, true); }
+                });
+            });
+            // Shows the card panel that holds an element (deep links, in-page links)
+            window.unmShowCardFor = function (el) {
+                var panel = el && el.closest('[data-unm-card-panel]');
+                if (!panel || !panel.hidden) return;
+                var tab = list.querySelector('[aria-controls="' + panel.id + '"]');
+                if (tab) select(tab, false);
+            };
+            function fromHash() {
+                var id = '';
+                try { id = decodeURIComponent(location.hash.slice(1)); } catch (err) { return; }
+                if (id) window.unmShowCardFor(document.getElementById(id));
+            }
+            fromHash();
+            window.addEventListener('hashchange', fromHash);
+        })();
+
+        var unmLab = (function () {
+            var LAB_ID = 'unm-combo-lab';
+            var ready = null;
+            return function () {
+                if (ready) return ready;
+                var mount = document.getElementById(LAB_ID);
+                if (!mount) return (ready = Promise.resolve());
+                // combo-system.js declares ComboLoader as a top-level class, which is not a property of window.
+                if (typeof ComboLoader === 'undefined') {
+                    mount.innerHTML = '<p class="unm-lab-loading">The combo simulator could not load. The line summaries above list every hand, requirement and end board.</p>';
+                    return (ready = Promise.resolve());
+                }
+                ready = Promise.resolve(ComboLoader.renderComboSystem(LAB_ID, 'Unchained', {
+                    selectorContainerId: 'unm-combo-selector-container',
+                    guideContainerId: 'unm-combo-guide-container',
+                    selectorOptions: {
+                        selectorId: 'unm-combo-selector',
+                        labelText: 'Select a Magnificent Maestros line',
+                        defaultCombo: '1'
+                    }
+                }));
+                return ready;
+            };
+        })();
+
+        GuideTabs.init({
+            panelArt: {
+                'tab-mams': [{
+                    'unm-shyma-img-container': 'Unchained Oni of Shyma',
+                    'unm-shara-img-container': 'Unchained Oni of Shara',
+                    'unm-kamra-img-container': 'Unchained Zealot - Kamra',
+                    'unm-firelord-img-container': 'Unchained Firelord of Yama',
+                    'unm-arage-img-container': 'Unchained Soul of Abominable Rage',
+                    'unm-reincarnation-img-container': 'Reincarnation of the Unchained',
+                    'unm-hunger-img-container': 'Unchained Hunger'
+                }]
+            },
+            panelInit: {
+                'tab-mams': function () { unmLab(); }
+            }
+        });
+
+        (function () {
+            'use strict';
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) {
+                CardLoader.loadCards({
+                    'unm-spot-firelord-img-container': 'Unchained Firelord of Yama',
+                    'unm-spot-kamra-img-container': 'Unchained Zealot - Kamra',
+                    'unm-spot-shyma-img-container': 'Unchained Oni of Shyma'
+                });
+            }
+            var tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            function tabFor(panelId) { return tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]'); }
+            function openPanel(panelId) {
+                var panel = document.getElementById(panelId);
+                var tab = tabFor(panelId);
+                if (panel && panel.hidden && tab) tab.click();
+            }
+
+            // Open the tab (and card) holding an in-page link's target before the browser scrolls to it.
+            // guide-tabs.js reacts to hashchange, which doesn't fire when the same link is clicked twice.
+            document.addEventListener('click', function (e) {
+                var link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                var target = null;
+                try { target = document.getElementById(decodeURIComponent(link.hash.slice(1))); } catch (err) { return; }
+                if (!target) return;
+                var panel = target.closest('.unm-panel');
+                if (panel && panel.hidden) openPanel(panel.id);
+                if (window.unmShowCardFor) window.unmShowCardFor(target);
+            });
+
+            var cta = document.querySelector('[data-open-panel]');
+            if (cta) {
+                cta.addEventListener('click', function () {
+                    var tab = tabFor(cta.dataset.openPanel);
+                    if (!tab) return;
+                    tab.click();
+                    tab.focus({ preventScroll: true });
+                    tablist.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                });
+            }
+
+            // "Play line N" selects that line in this tab's simulator, waiting for it to render if needed.
+            function whenOption(num) {
+                var sel = '#unm-combo-lab .combo-selector-option[data-value="' + num + '"]';
+                return new Promise(function (resolve) {
+                    var found = document.querySelector(sel);
+                    if (found) return resolve(found);
+                    var lab = document.getElementById('unm-combo-lab');
+                    if (!lab || !window.MutationObserver) return resolve(null);
+                    var obs = new MutationObserver(function () {
+                        var el = document.querySelector(sel);
+                        if (el) { obs.disconnect(); resolve(el); }
+                    });
+                    obs.observe(lab, { childList: true, subtree: true });
+                    setTimeout(function () { obs.disconnect(); resolve(document.querySelector(sel)); }, 8000);
+                });
+            }
+            document.querySelectorAll('[data-unm-combo-open]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var num = btn.getAttribute('data-unm-combo-open');
+                    openPanel('tab-mams');
+                    unmLab().then(function () { return whenOption(num); }).then(function (option) {
+                        if (option) option.click();
+                        var lab = document.getElementById('unm-combo-lab');
+                        if (lab) lab.scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'start' });
+                    });
+                });
+            });
+
+            // Card popups for the card-name buttons in the tab.
+            document.querySelectorAll('#tab-mams [data-cardname]').forEach(function (el) {
+                el.addEventListener('click', function (event) {
+                    if (typeof CardLoader === 'undefined') return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    var source = event;
+                    // Keyboard activation has no pointer position; anchor the popup to the button instead.
+                    if (!event.clientX && !event.clientY) {
+                        var rect = el.getBoundingClientRect();
+                        source = { clientX: rect.left + rect.width / 2, clientY: rect.bottom, target: el, stopPropagation: function () {} };
+                    }
+                    CardLoader.showPopupByName(el.dataset.cardname, source);
+                });
+            });
+        })();
+
+        (function () {
+            'use strict';
+            var root = document.querySelector('[data-unm-kamra]');
+            if (!root) return;
+            var out = root.querySelector('[data-unm-kamra-result]');
+            var boxes = Array.prototype.slice.call(root.querySelectorAll('[data-unm-kamra-card]'));
+            var gyBoxes = Array.prototype.slice.call(root.querySelectorAll('[data-unm-kamra-gy]'));
+            var MAX = 3;
+            var TWIN = 'Special Summons 1 "Unchained" monster from your hand or Deck, except ';
+            var DECK = 'Special Summons 1 "Unchained" monster from your Deck.';
+            // type: the card's original type (Kamra's bonuses); float: what it does once destroyed; why: when it does nothing
+            var CARDS = {
+                aruha: { name: 'Unchained Twins - Aruha', type: 'monster', float: TWIN + 'Aruha.' },
+                rakea: { name: 'Unchained Twins - Rakea', type: 'monster', float: TWIN + 'Rakea.' },
+                sarama: { name: 'Unchained Twins - Sarama', type: 'monster', float: TWIN + 'Sarama.' },
+                shyma: { name: 'Unchained Oni of Shyma', type: 'monster', float: TWIN + 'Oni of Shyma.' },
+                disaster: { name: 'Unchained Soul of Disaster', type: 'monster', float: 'Special Summons 1 other "Unchained" monster from your GY. It targets, so pick it as the trigger activates.' },
+                sharvara: { name: 'Unchained Soul of Sharvara', type: 'monster', float: 'Sets 1 "Unchained" Spell/Trap from your Deck, because it was sent to the GY.' },
+                sshyama: { name: 'Unchained Soul of Shyama', type: 'monster', why: 'Nothing yet. Later its GY effect can destroy a Fiend or a face-down card you control to bring it back.' },
+                rage: { name: 'Unchained Soul of Rage', type: 'monster', float: 'Adds 1 other Fiend from your GY to your hand.' },
+                yama: { name: 'Unchained Soul Lord of Yama', type: 'monster', why: 'Nothing: its GY effect only answers cards destroyed after it is already in the GY.' },
+                arage: { name: 'Unchained Soul of Abominable Rage', type: 'monster', why: 'Nothing yet. From the GY it destroys a monster that activates its effect, but only while you control a Link-4 or higher "Unchained" Link Monster.' },
+                firelord: { name: 'Unchained Firelord of Yama', type: 'monster', firelord: true },
+                settrap: { name: 'Your Set "Unchained" Trap', type: 'trap', float: DECK },
+                setprison: { name: "Your Set Abomination's Prison", type: 'spell', float: DECK },
+                setwailing: { name: 'Your Set Wailing of the Unchained Souls', type: 'spell', float: DECK },
+                reinc: { name: 'Reincarnation of the Unchained', type: 'spell', why: 'Nothing, and its once-per-turn recycle goes with it.' },
+                other: { name: 'Your other card', type: 'any', why: 'Nothing of its own, unless its text says so. It adds the bonus for its own original card type.' }
+            };
+            var BONUS = {
+                monster: 'Monster destroyed: draw 1 card.',
+                spell: 'Spell destroyed: change the battle position of 1 monster on the field, yours or your opponent\'s.',
+                trap: 'Trap destroyed: destroy 1 other card on the field. Take your opponent\'s card, or another of your face-up floaters for one more summon.'
+            };
+            function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+            function ul(items) { return '<ul>' + items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>'; }
+            function render() {
+                var picked = boxes.filter(function (b) { return b.checked; }).map(function (b) { return CARDS[b.value]; });
+                boxes.forEach(function (b) { b.disabled = !b.checked && picked.length >= MAX; });
+                var gy = gyBoxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; });
+                if (!picked.length) {
+                    out.dataset.state = 'none';
+                    out.innerHTML = '<p class="unm-result-head">Pick 1 to 3 cards for Kamra to target.</p>';
+                    return;
+                }
+                var html = '';
+                var onlyFirelord = picked.length === 1 && picked[0].firelord;
+                out.dataset.state = onlyFirelord ? 'no' : 'ok';
+                var withFirelord = picked.some(function (c) { return c.firelord; });
+                html += '<p class="unm-result-head">' + (onlyFirelord
+                    ? 'Kamra is only summoned if you let Firelord of Yama be destroyed.'
+                    : withFirelord
+                        ? 'Kamra destroys your other ' + (picked.length === 2 ? 'target' : 'targets') + ' and Special Summons itself. Firelord of Yama can replace its own destruction.'
+                        : 'Kamra destroys ' + picked.length + (picked.length === 1 ? ' card' : ' cards') + ' and Special Summons itself.') + '</p>';
+                var types = {};
+                picked.forEach(function (c) { if (c.type) types[c.type] = true; });
+                var bonuses = ['monster', 'spell', 'trap'].filter(function (t) { return types[t]; }).map(function (t) { return BONUS[t]; });
+                if (types.any) bonuses.push('Your other card adds the bonus for its own type: draw for a monster, a position change for a Spell, a destroy for a Trap.');
+                html += '<h3>Kamra\'s bonuses, in this order</h3>' + (bonuses.length ? ul(bonuses) : ul(['None.']));
+                var floats = [], idle = [];
+                picked.forEach(function (c) {
+                    if (c.firelord) {
+                        idle.push('<strong>' + esc(c.name) + '</strong>: you can let it be destroyed, or use its replacement and destroy 1 other face-up card instead, one Kamra isn\'t destroying. If you replace, Firelord stays, counts for no bonus, and Kamra still needs one of its other targets destroyed to summon itself.');
+                    } else if (c.float) {
+                        floats.push('<strong>' + esc(c.name) + '</strong>: ' + esc(c.float));
+                    } else {
+                        idle.push('<strong>' + esc(c.name) + '</strong>: ' + esc(c.why));
+                    }
+                });
+                if (gy.indexOf('gyshara') !== -1) floats.push('<strong>Unchained Oni of Shara</strong> (in your GY): a card on the field was destroyed by a card effect, so add it to your hand or Special Summon it.');
+                if (gy.indexOf('gyyama') !== -1) floats.push('<strong>Unchained Soul Lord of Yama</strong> (in your GY): a card you control was destroyed, so banish it to Special Summon a Fiend from your hand or GY, then you can destroy 1 card you control.');
+                html += '<h3>Then these trigger together</h3>' + (floats.length ? ul(floats) : ul(['Nothing floats.']));
+                if (idle.length) html += '<h3>No float</h3>' + ul(idle);
+                html += '<h3>Keep in mind</h3>' + ul([
+                    'Kamra\'s effect finishes first. The triggers above then start a new chain, in the order you choose.',
+                    'Each float is once per turn for that card name, and each of Kamra\'s effects is once per turn.',
+                    'Your opponent can respond to Kamra itself: Ash Blossom &amp; Joyous Spring works whatever you target.'
+                ]);
+                out.innerHTML = html;
+            }
+            boxes.concat(gyBoxes).forEach(function (b) { b.addEventListener('change', render); });
+            render();
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

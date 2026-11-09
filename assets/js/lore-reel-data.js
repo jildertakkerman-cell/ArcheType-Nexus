@@ -4898,14 +4898,14 @@
             { card: 'Unchained Soul of Rage', title: 'Rage', color: '#ef4444', face: [0.4, 0.3], pan: [0.3, 0.35] },
             { card: 'Unchained Soul of Anguish', title: 'Anguish', color: '#60a5fa', face: [0.5, 0.25], pan: [0.3, 0.3] },
             { card: 'Escape of the Unchained', title: 'Escape', color: '#fde047', face: [0.4, 0.2], pan: [0.25, 0.3] },
-            { card: 'Unchained Syncretism', title: 'Syncretism', color: '#86efac', face: [0.4, 0.3], pan: [0.3, 0.5] },
-            { card: 'Unchained Soul Rage Abominator', title: 'Abominator', color: '#dc2626', face: [0.4, 0.25], pan: [0.3, 0.3] },
+            { card: 'Unchained Hunger', title: 'Hunger', color: '#86efac', face: [0.4, 0.3], pan: [0.3, 0.5] },
+            { card: 'Unchained Soul of Abominable Rage', title: 'Abominable Rage', color: '#dc2626', face: [0.4, 0.25], pan: [0.3, 0.3] },
             { card: 'Unchained Abomination', title: 'Abomination', color: '#a855f7', face: [0.45, 0.3], pan: [0.3, 0.35] },
             { card: 'Unchained Soul of Sharvara', title: 'Sharvara', color: '#fb923c', face: [0.5, 0.25], pan: [0.3, 0.3] },
             { card: 'Unchained Soul of Shyama', title: 'Shyama', color: '#94a3b8', face: [0.5, 0.3], pan: [0.3, 0.35] },
             { card: 'Unchained Twins - Sarama', title: 'Sarama', color: '#fcd34d', face: [0.5, 0.25], pan: [0.3, 0.3] },
             { card: 'Unchained Soul Lord of Yama', title: 'Yama', color: '#b91c1c', face: [0.4, 0.25], pan: [0.3, 0.3] },
-            { card: 'Unchained Enma Lord Yama', title: 'Enma', color: '#fda4af', face: [0.45, 0.25], pan: [0.3, 0.3] }
+            { card: 'Unchained Firelord of Yama', title: 'Enma', color: '#fda4af', face: [0.45, 0.25], pan: [0.3, 0.3] }
         ]
     };
 

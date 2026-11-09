@@ -1781,7 +1781,10 @@ export async function runComboReplay(combo, options = {}) {
                                             if (vc.length > 0) summonTargetCode = vc[0];
                                         }
                                     }
-                                    if (summonTargetCode === code && (!st.to || st.to === toZone)) {
+                                    // (an HTML step's zone is the builder's guess: "in a Main Monster Zone that Rusty Bardiche
+                                    // points to" is honoured when placing, so the monster lands somewhere else)
+                                    const placedByText = st.stepNum != null && /\bpoints?\s+to\b|\bco-linked\b/i.test(st.text || '');
+                                    if (summonTargetCode === code && (!st.to || st.to === toZone || placedByText)) {
                                         chainStepsConsumed.add(si);
                                         while (stepIdx < steps.length && chainStepsConsumed.has(stepIdx)) {
                                             stepIdx++;
@@ -3090,6 +3093,10 @@ export async function runComboReplay(combo, options = {}) {
                         // Deck": the cost pick (Tribute/discard/banish/send hint) leaves the step's purpose still to come
                         if ([500, 501, 503, 504].includes(lastHintCardCode) &&
                             /,\s*(?:discarding|tributing|banishing|sending|detaching|revealing)\b[^.]*?,?\s+to\s+(?:add|search|special summon|send|set|place|draw|destroy|return)\b/i.test(commandText)) return false;
+                        // "Special Summon Dark Rebellion Xyz Dragon, Four Heavenly Dragons from your Extra Deck using The
+                        // Phantom Knights of Malevolent Scythe" (Rank-Up-Magic Requiem): the material pick comes first and
+                        // leaves the summon itself still to come
+                        if ([511, 512, 513, 533].includes(lastHintCardCode) && /\bsummon\w*\s+.+?\busing\b/i.test(commandText)) return false;
                         const subjectCodes = stepSubjectCodes(s);
                         // "Archosaur's effect destroys Babycerasaurus in your hand and adds Deep Sea Diva ...": after the
                         // first pick the step still names a card it picks later
@@ -3264,7 +3271,16 @@ export async function runComboReplay(combo, options = {}) {
                             // GY, ... Fusion Summon Genghis by banishing Alfred ..." summons Genghis, not Alfred)
                             const summonObj = /\b(?:(?:fusion|synchro|xyz|link|ritual|special)\s+)?summon(?:s|ing)?\s+(.+?)(?:\s+(?:from|to|by|using|with)\b|[,.;]|:\s+|$)/i
                                 .exec(cleanCardName(steps[s].text || '').replace(LEADING_CLAUSE_RE, ''));
-                            const summonCodes = summonObj ? findStepCardCodes({ text: summonObj[1] }, null) : [];
+                            // (a name with a comma is one card: "Special Summon Dark Rebellion Xyz Dragon, Four Heavenly
+                            // Dragons from your Extra Deck" is not Dark Rebellion Xyz Dragon)
+                            const summonWide = summonObj && /\b(?:(?:fusion|synchro|xyz|link|ritual|special)\s+)?summon(?:s|ing)?\s+(.+?)(?:\s+(?:from|to|by|using|with)\b|[.;]|:\s+|$)/i
+                                .exec(cleanCardName(steps[s].text || '').replace(LEADING_CLAUSE_RE, ''));
+                            const summonCut = summonObj ? summonObj[1].trim().toLowerCase() : '';
+                            const commaSummonCodes = summonWide ? findStepCardCodes({ text: summonWide[1] }, null).filter(c =>
+                                [getCardByCode(c)?.name || '', ...[...nameMap.entries()].filter(([, e]) => e.code === c).map(([n]) => n)]
+                                    .some(n => n.toLowerCase().startsWith(`${summonCut},`))) : [];
+                            const summonCodes = commaSummonCodes.length ? commaSummonCodes
+                                : summonObj ? findStepCardCodes({ text: summonObj[1] }, null) : [];
                             const stepCodes = [...new Set([...summonCodes, ...findStepCardCodes(steps[s], actorCode)])];
                             for (const code of stepCodes) {
                                 const foundIdx = m.selects.findIndex((c, i) => c.code === code && !chosen.includes(i));
@@ -3310,8 +3326,11 @@ export async function runComboReplay(combo, options = {}) {
                                 // Pharaoh's Servant" is the Servant, not Dark Magician
                                 const wide = new RegExp(`\\b${clauseVerb}\\w*\\s+(.+?)(?:\\s+(?:from|to|instead|by|using)\\b|[.;:]|$)`, 'i').exec(src);
                                 const cut = clause[1].trim().toLowerCase();
+                                // (the combo's own name for the card counts too: cards.cdb files "Dark Rebellion Xyz Dragon,
+                                // Four Heavenly Dragons" as "...Dragon of the Four Heavenly Dragons")
+                                const namesOf = (c) => [getCardByCode(c)?.name || '', ...[...nameMap.entries()].filter(([, e]) => e.code === c).map(([n]) => n)];
                                 const commaNamed = wide ? findStepCardCodes({ text: wide[1] }, null).filter(c =>
-                                    (getCardByCode(c)?.name || '').toLowerCase().startsWith(`${cut},`) && m.selects.some(sel => sel.code === c)) : [];
+                                    namesOf(c).some(n => n.toLowerCase().startsWith(`${cut},`)) && m.selects.some(sel => sel.code === c)) : [];
                                 if (commaNamed.length) return commaNamed;
                                 // a pick of several cards reads the whole list: "sends Combined Creation, Angwitch and Dark
                                 // Blade from your Deck to the GY" (the comma ended the clause after the first name)
@@ -4536,6 +4555,28 @@ export async function runComboReplay(combo, options = {}) {
                                 const n = { one: 1, a: 1, an: 1, two: 2, three: 3, four: 4, five: 5 }[tokenCount[1].toLowerCase()] || Number(tokenCount[1]);
                                 for (let i = 0; i < n; i++) stepMaterialCodes.push(tokenCode);
                             }
+                        }
+                    }
+                    // An iterative target prompt (aux.SelectUnselectGroup) on activation: "Activate Dark Rebellion Xyz
+                    // Dragon, Four Heavenly Dragons's effect, targeting The Phantom Knights of Malevolent Scythe and your
+                    // opponent's monster, to destroy them" takes the cards its "targeting" clause names, then that many of
+                    // the opponent's cards, then stops. It used to take the first card named nearby: the actor itself,
+                    // named in the summon step before.
+                    if (stepMaterialCodes.length === 0 && !currentSolvingChainCard && lastActorCode) {
+                        const planStep = [currentActiveStepIdx, stepIdx - 1, stepIdx, stepIdx + 1]
+                            .map(s => (s != null && s >= 0) ? steps[s] : null)
+                            .find(st => st?.text && /\btargeting\b/i.test(st.text) && findStepCardCodes(st, null)[0] === lastActorCode);
+                        const targetClause = planStep && /\btargeting\s+(.+?)(?:,|\s+to\s|[.;]|$)/i
+                            .exec(cleanCardName(planStep.text).replace(LEADING_CLAUSE_RE, ''));
+                        if (targetClause) {
+                            const named = /^(?:itself|this card)\b/i.test(targetClause[1].trim()) ? [lastActorCode]
+                                : findStepCardCodes({ text: targetClause[1] }, null).filter(c => offered.has(c));
+                            const opp = /\b(?:(one|two|three|four|five|[1-5]|a|an)\s+(?:of\s+)?)?your\s+opponent'?s\s+(?:face-up\s+)?(monsters?|cards?|spells?|traps?)\b/i.exec(targetClause[1]);
+                            const oppCount = !opp ? 0 : opp[1]
+                                ? ({ one: 1, a: 1, an: 1, two: 2, three: 3, four: 4, five: 5 }[opp[1].toLowerCase()] || Number(opp[1]))
+                                : 1;
+                            const oppCards = [...unselectCards, ...selectCards].filter(c => c.controller === 1).slice(0, oppCount);
+                            if (named.length > 0 || oppCards.length > 0) stepMaterialCodes.push(...named, ...oppCards.map(c => c.code));
                         }
                     }
                     if (options.debug) {

@@ -169,13 +169,18 @@
         bar.style.setProperty('--gt-count', String(columnsFor(count)));
         const home = document.querySelector('.ygo-home-button');
 
+        // Neighbours that take up room in the page: not a closed tab's panel
+        // (display: none, measured at 0, 0) and not an absolutely placed decoration.
+        const inFlow = el => el.getClientRects().length > 0 && !/absolute|fixed/.test(getComputedStyle(el).position);
+        const sibling = (el, dir) => {
+            do el = el[dir]; while (el && !inFlow(el));
+            return el;
+        };
+
         // Where the bar sits in the page, measured from the element above it (an
         // inserted marker would add an extra gap in flex and grid layouts).
         function reference() {
-            let prev = bar.previousElementSibling;
-            while (prev && (!prev.getClientRects().length || /absolute|fixed/.test(getComputedStyle(prev).position))) {
-                prev = prev.previousElementSibling;
-            }
+            const prev = sibling(bar, 'previousElementSibling');
             return prev ? { el: prev, edge: 'bottom' } : { el: bar.parentElement, edge: 'top' };
         }
         const refEdge = () => { const r = reference(); return r.el.getBoundingClientRect()[r.edge]; };
@@ -183,10 +188,17 @@
         const naturalTop = () => refEdge() + refOffset; // in viewport coordinates
         // Distance from there to whatever follows the bar, measured unpinned.
         // Margins can collapse into the next element's, so measure it rather
-        // than adding up margins.
-        const span = () => bar.nextElementSibling
-            ? bar.nextElementSibling.getBoundingClientRect().top - naturalTop()
-            : bar.offsetHeight;
+        // than adding up margins. With a later tab open, the element right
+        // after the bar is often the first tab's closed panel; measuring to
+        // that gave a margin of 0, the text below jumped up as the bar pinned,
+        // and the browser's scroll anchoring then pulled the page back and
+        // forth across the pin point (Phantom Knights' third tab).
+        const span = () => {
+            const next = sibling(bar, 'nextElementSibling');
+            return next
+                ? next.getBoundingClientRect().top - naturalTop()
+                : bar.offsetHeight + (parseFloat(getComputedStyle(bar).marginBottom) || 0);
+        };
         let naturalSpan = span();
         let stuck = false;
         let resized = false;

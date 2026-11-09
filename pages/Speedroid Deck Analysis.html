@@ -297,6 +297,534 @@
     <script src="../assets/js/lore-reel-data.js" defer></script>
     <script src="../assets/js/lore-reel-art.js" defer></script>
     <script src="../assets/js/lore-reel.js" defer></script>
+    <!-- Guide tabs: Classic Analysis + Magnificent Maestros (Clear Wing Synchro Dragon, Four Heavenly Dragons).
+         card-loader.js only injects guide-tabs.js on pages with onclick "Tab(" switchers, so it loads here. -->
+    <script src="../assets/js/guide-tabs.js"></script>
+    <style>
+        /* ===== Magnificent Maestros tab (sdm-*), added 2026-11-04. The rules above are untouched. ===== */
+        :root {
+            --sdm-primary: #34d399;
+            --sdm-primary-soft: #6ee7b7;
+            --sdm-primary-line: rgba(52, 211, 153, 0.45);
+            --sdm-primary-wash: rgba(52, 211, 153, 0.12);
+            --sdm-wing: #67e8f9;
+            --sdm-wing-wash: rgba(103, 232, 249, 0.12);
+            --sdm-gold: #fbbf24;
+            --sdm-gold-soft: #fcd34d;
+            --sdm-gold-wash: rgba(251, 191, 36, 0.14);
+            --sdm-ok: #4ade80;
+            --sdm-ok-wash: rgba(74, 222, 128, 0.14);
+            --sdm-no: #f87171;
+            --sdm-no-wash: rgba(248, 113, 113, 0.14);
+            --sdm-surface: #132018;
+            --sdm-surface-deep: #0d1712;
+            --sdm-inset: #07100b;
+            --sdm-border: #1f5f43;
+            --sdm-text: #d1fae5;
+            --sdm-muted: #9cc9b4;
+            --sdm-heading: #ffffff;
+        }
+
+        /* ----- Tab bar (driven by assets/js/guide-tabs.js) ----- */
+        .sdm-tabs {
+            display: flex;
+            max-width: 100%;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--sdm-border);
+        }
+        .sdm-tab {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--sdm-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .sdm-tab:hover { color: #ecfdf5; background-color: var(--sdm-primary-wash); }
+        .sdm-tab[aria-selected="true"] {
+            border-bottom-color: var(--sdm-primary);
+            color: var(--sdm-primary-soft);
+            text-shadow: 0 0 10px rgba(52, 211, 153, 0.45);
+        }
+        .sdm-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--sdm-gold);
+            color: #111;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .sdm-panel[hidden] { display: none !important; }
+        .sdm-tab:focus-visible,
+        .sdm-panel:focus-visible,
+        .sdm-spot-cta:focus-visible,
+        .sdm-chip-link:focus-visible,
+        .sdm-link:focus-visible,
+        .sdm-planner select:focus-visible,
+        .sdm-table-wrap:focus-visible {
+            outline: 2px solid var(--sdm-gold);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .sdm-panel:target:focus-visible { outline: none; }
+        /* Deep-link targets land clear of the pinned tab bar and the home button. */
+        [id^="sdm-"], #tab-mams { scroll-margin-top: 4.5rem; }
+        @media (max-width: 639px) {
+            .sdm-tab {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.78rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+        .sdm-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Card art slot (keeps the card shape until CardLoader swaps the image in) ----- */
+        .sdm-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--sdm-primary-line);
+            border-radius: 0.35rem;
+            background: var(--sdm-inset);
+            color: var(--sdm-primary-soft);
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .sdm-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+
+        /* ----- Spotlight strip (always visible above the tabs) ----- */
+        .sdm-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--sdm-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, var(--sdm-wing-wash) 0%, transparent 55%),
+                linear-gradient(135deg, var(--sdm-surface) 0%, var(--sdm-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(52, 211, 153, 0.12);
+        }
+        .sdm-spot-art { grid-area: art; }
+        .sdm-spot-head { grid-area: head; min-width: 0; }
+        .sdm-spot-body { grid-area: body; min-width: 0; }
+        .sdm-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--sdm-gold-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .sdm-spot-title {
+            color: var(--sdm-heading);
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(103, 232, 249, 0.45);
+        }
+        .sdm-spot-stats { margin-top: 0.35rem; color: var(--sdm-primary-soft); font-size: 0.8rem; font-weight: 700; }
+        .sdm-spot-hook { color: var(--sdm-text); font-size: 0.92rem; line-height: 1.6; }
+        .sdm-spot-hook strong { color: var(--sdm-heading); }
+        .sdm-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--sdm-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .sdm-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .sdm-chip-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--sdm-border);
+            border-radius: 9999px;
+            background: var(--sdm-inset);
+            color: #f0fdf4;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .sdm-chip-link i { color: var(--sdm-wing); }
+        .sdm-chip-link:hover { border-color: var(--sdm-primary); background: var(--sdm-primary-wash); }
+        .sdm-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--sdm-primary);
+            border-radius: 9999px;
+            background: var(--sdm-primary-wash);
+            color: #fff;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .sdm-spot-cta:hover { background: rgba(52, 211, 153, 0.24); box-shadow: 0 0 16px rgba(52, 211, 153, 0.35); }
+        @media (min-width: 640px) {
+            .sdm-spot {
+                grid-template-columns: 120px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+            }
+        }
+
+        /* ----- Tab text ----- */
+        .sdm-section { margin-bottom: 3.5rem; }
+        .sdm-h2 {
+            margin-bottom: 1rem;
+            color: var(--sdm-heading);
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.25;
+            text-align: center;
+        }
+        .sdm-h3 { margin-bottom: 0.6rem; color: var(--sdm-heading); font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+        @media (min-width: 768px) { .sdm-h2 { font-size: 2rem; } }
+        .sdm-release { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        .sdm-chip {
+            /* inline-block, not flex: a flex row would turn the date into its own column when the chip wraps */
+            display: inline-block;
+            max-width: 100%;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--sdm-border);
+            border-radius: 9999px;
+            background: var(--sdm-surface-deep);
+            color: var(--sdm-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .sdm-chip i { margin-right: 0.4rem; color: var(--sdm-primary-soft); }
+        .sdm-chip time { white-space: nowrap; }
+        .sdm-chip--tcg { border-color: rgba(251, 191, 36, 0.55); }
+        .sdm-chip--tcg i { color: var(--sdm-gold); }
+        .sdm-lede { max-width: 46rem; margin: 0 auto 2rem; color: var(--sdm-text); line-height: 1.65; text-align: center; }
+        .sdm-lede strong { color: var(--sdm-heading); }
+        .sdm-box {
+            padding: 1.25rem;
+            border: 1px solid var(--sdm-primary-line);
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, var(--sdm-surface), var(--sdm-surface-deep));
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+            color: var(--sdm-text);
+            line-height: 1.6;
+        }
+        .sdm-box p + p { margin-top: 0.75rem; }
+        .sdm-box strong { color: var(--sdm-heading); }
+        .sdm-pillars { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 768px) { .sdm-pillars { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .sdm-pillar-icon { margin-bottom: 0.6rem; color: var(--sdm-wing); font-size: 1.4rem; }
+        .sdm-callout {
+            margin-top: 1.25rem;
+            padding: 0.9rem 1.15rem;
+            border: 1px solid var(--sdm-border);
+            border-left: 4px solid var(--sdm-gold);
+            border-radius: 0.5rem;
+            background: var(--sdm-surface);
+            color: var(--sdm-text);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .sdm-callout strong { color: var(--sdm-gold-soft); }
+        .sdm-link {
+            color: var(--sdm-primary-soft);
+            text-decoration: underline;
+            text-decoration-color: var(--sdm-primary-line);
+            text-underline-offset: 2px;
+        }
+        .sdm-link:hover { color: #fff; text-decoration-color: var(--sdm-primary); }
+
+        /* ----- Card profiles ----- */
+        .sdm-profiles { display: grid; gap: 1.5rem; }
+        .sdm-profile {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.2rem;
+            align-items: start;
+            padding: 1.25rem;
+            border: 1px solid var(--sdm-primary-line);
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, var(--sdm-surface), var(--sdm-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+        }
+        .sdm-profile-art { grid-area: art; }
+        .sdm-profile-head { grid-area: head; min-width: 0; }
+        .sdm-profile > .cms-section,
+        .sdm-profile-body { grid-area: body; min-width: 0; }
+        @media (min-width: 768px) {
+            .sdm-profile {
+                grid-template-columns: 170px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+            }
+        }
+        .sdm-profiles--pair .sdm-profile { grid-template-columns: 88px minmax(0, 1fr); }
+        @media (min-width: 900px) {
+            .sdm-profiles--pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .sdm-profiles--pair .sdm-profile { grid-template-areas: "art head" "body body"; }
+        }
+        .sdm-kicker { color: var(--sdm-gold-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+        .sdm-card-name {
+            margin-top: 0.2rem;
+            color: var(--sdm-heading);
+            font-size: 1.15rem;
+            font-weight: 800;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(103, 232, 249, 0.35);
+        }
+        .sdm-stats { margin-top: 0.4rem; color: var(--sdm-primary-soft); font-size: 0.8rem; font-weight: 600; }
+        .sdm-text {
+            margin: 0.9rem 0 0;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--sdm-border);
+            border-left: 3px solid var(--sdm-wing);
+            border-radius: 0.5rem;
+            background: var(--sdm-inset);
+            color: #e2fbef;
+            font-size: 0.86rem;
+            line-height: 1.6;
+        }
+        .sdm-text-label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: var(--sdm-muted);
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .sdm-points { display: grid; gap: 0.5rem; margin: 0.9rem 0 0; padding: 0; list-style: none; }
+        .sdm-points > li { position: relative; padding-left: 1.4rem; color: var(--sdm-text); font-size: 0.9rem; line-height: 1.55; }
+        .sdm-points > li::before {
+            content: "";
+            position: absolute;
+            top: 0.55rem;
+            left: 0.2rem;
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 2px;
+            background: var(--sdm-primary);
+            transform: rotate(45deg);
+        }
+        .sdm-points strong { color: var(--sdm-heading); }
+        .sdm-ruling {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--sdm-gold);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--sdm-gold-wash);
+            color: #ecfdf5;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+        .sdm-ruling strong { color: var(--sdm-gold-soft); }
+
+        /* ----- Tables ----- */
+        .sdm-table-wrap { overflow-x: auto; border: 1px solid var(--sdm-border); border-radius: 0.75rem; background: var(--sdm-surface-deep); }
+        .sdm-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        .sdm-table caption { padding: 0.75rem 1rem 0; color: var(--sdm-muted); font-size: 0.8rem; text-align: left; }
+        .sdm-table th,
+        .sdm-table td {
+            padding: 0.7rem 0.9rem;
+            border-bottom: 1px solid var(--sdm-border);
+            color: var(--sdm-text);
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .sdm-table thead th {
+            color: var(--sdm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .sdm-table tbody tr:last-child > * { border-bottom: 0; }
+        .sdm-table th[scope="row"] { color: var(--sdm-heading); font-weight: 700; }
+        .sdm-verdict {
+            display: inline-block;
+            padding: 0.1rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .sdm-verdict--yes { background: var(--sdm-ok-wash); color: var(--sdm-ok); }
+        .sdm-verdict--no { background: var(--sdm-no-wash); color: var(--sdm-no); }
+        .sdm-verdict--part { background: var(--sdm-gold-wash); color: var(--sdm-gold); }
+        /* Below 640px each row stacks into a card instead of scrolling sideways. */
+        @media (max-width: 639px) {
+            .sdm-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .sdm-table--stack tr { display: block; padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--sdm-border); }
+            .sdm-table--stack tbody tr:last-child { border-bottom: 0; }
+            .sdm-table--stack th,
+            .sdm-table--stack td { display: block; padding: 0.2rem 0; border: 0; }
+            .sdm-table--stack td[data-label]::before {
+                content: attr(data-label) ": ";
+                color: var(--sdm-muted);
+                font-size: 0.72rem;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+        }
+
+        /* ----- Quick Effect planner ----- */
+        .sdm-planner { display: grid; gap: 1rem; }
+        .sdm-planner-controls { display: grid; gap: 1rem; }
+        @media (min-width: 768px) { .sdm-planner-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .sdm-planner label { display: block; margin-bottom: 0.4rem; color: var(--sdm-heading); font-weight: 700; }
+        .sdm-planner select {
+            width: 100%;
+            min-height: 44px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--sdm-primary-line);
+            border-radius: 0.5rem;
+            background: var(--sdm-inset);
+            color: #f0fdf4;
+            font-size: 0.95rem;
+        }
+        .sdm-planner-result {
+            min-height: 6rem;
+            padding: 1rem 1.15rem;
+            border: 1px solid var(--sdm-border);
+            border-radius: 0.6rem;
+            background: var(--sdm-inset);
+            color: var(--sdm-text);
+            line-height: 1.6;
+        }
+        .sdm-planner-result[data-verdict="yes"] { border-color: rgba(74, 222, 128, 0.55); }
+        .sdm-planner-result[data-verdict="no"] { border-color: rgba(248, 113, 113, 0.55); }
+        .sdm-planner-result[data-verdict="part"] { border-color: rgba(251, 191, 36, 0.55); }
+        .sdm-planner-sum { margin-bottom: 0.5rem; color: var(--sdm-heading); font-weight: 700; }
+        .sdm-planner-list { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .sdm-planner-list li > span:first-child { margin-right: 0.5rem; }
+        .sdm-planner-list b { color: var(--sdm-heading); }
+        .sdm-planner-foot { margin-top: 0.75rem; color: var(--sdm-muted); font-size: 0.82rem; }
+
+        /* ----- Step-card lines (checked against the ocgcore duel engine) ----- */
+        .sdm-flow { display: grid; gap: 0.25rem; }
+        .sdm-flow .combo-step-card { padding: 1.25rem; }
+        .sdm-step { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        @media (min-width: 768px) { .sdm-step { flex-direction: row; align-items: flex-start; } }
+        .sdm-step-art.card-placeholder { width: 96px; min-height: 140px; height: auto; flex-shrink: 0; cursor: pointer; }
+        .sdm-step-body { min-width: 0; flex: 1 1 auto; }
+        .sdm-step-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .sdm-step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 9999px;
+            background: #065f46;
+            color: #fff;
+            font-weight: 700;
+        }
+        .sdm-step-title { color: var(--sdm-heading); font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+        .sdm-step-text { color: var(--sdm-text); font-size: 0.92rem; line-height: 1.6; }
+        .sdm-note { margin-top: 0.6rem; color: var(--sdm-muted); font-size: 0.86rem; line-height: 1.55; }
+        .sdm-note b { color: #ecfdf5; }
+        .sdm-tag {
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            padding: 0.1rem 0.6rem;
+            border: 1px solid var(--sdm-border);
+            border-radius: 9999px;
+            background: var(--sdm-inset);
+            color: var(--sdm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .sdm-tag--hot { border-color: rgba(251, 191, 36, 0.6); color: var(--sdm-gold-soft); }
+        .sdm-arrow { padding: 0.15rem 0; color: var(--sdm-primary); text-align: center; }
+        .sdm-board {
+            margin-top: 1.25rem;
+            padding: 1.1rem 1.25rem;
+            border: 1px solid var(--sdm-primary-line);
+            border-top: 3px solid var(--sdm-wing);
+            border-radius: 0.75rem;
+            background: var(--sdm-surface-deep);
+            color: var(--sdm-text);
+            line-height: 1.6;
+        }
+        .sdm-board b { color: var(--sdm-heading); }
+        .sdm-board p + p,
+        .sdm-board p + ul,
+        .sdm-board ul + p { margin-top: 0.6rem; }
+        .sdm-board ul { display: grid; gap: 0.4rem; margin: 0; padding-left: 1.2rem; list-style: disc; }
+        .sdm-h4 { margin-bottom: 0.5rem; color: var(--sdm-wing); font-size: 0.95rem; font-weight: 700; }
+        .sdm-h4 i { margin-right: 0.4rem; }
+
+        /* ----- Strengths / weak points ----- */
+        .sdm-two { display: grid; gap: 1rem; }
+        @media (min-width: 768px) { .sdm-two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .sdm-list { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+        .sdm-list > li { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); gap: 0.6rem; font-size: 0.9rem; line-height: 1.55; }
+        .sdm-list > li > i { margin-top: 0.25rem; }
+        .sdm-list--pro > li > i { color: var(--sdm-ok); }
+        .sdm-list--con > li > i { color: var(--sdm-no); }
+    </style>
 </head>
 
 <body class="p-4 md:p-8">
@@ -370,6 +898,41 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== MAGNIFICENT MAESTROS SPOTLIGHT ====================
+             Always visible above the tabs; its chips and button open the new tab. -->
+        <aside class="sdm-spot" data-pcs-scope="spot" aria-labelledby="sdm-spot-title">
+            <div class="sdm-spot-art">
+                <div id="sdm-spot-img-container" class="sdm-art">Clear Wing Synchro Dragon, Four Heavenly Dragons</div>
+            </div>
+            <div class="sdm-spot-head">
+                <p class="sdm-spot-kicker"><span class="sdm-new-badge">New support</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="sdm-spot-title" class="sdm-spot-title">Clear Wing Synchro Dragon, Four Heavenly Dragons</h2>
+                <p class="sdm-spot-stats">Level 7 &middot; WIND &middot; Dragon / Synchro &middot; 2500 / 2000 &middot; always a "Speedroid" card</p>
+            </div>
+            <div class="sdm-spot-body">
+                <p class="sdm-spot-hook">Yugo's dragon from the ARC-V Four Heavenly Dragons comes back as a Speedroid. Whenever it is Special Summoned, it destroys one of your opponent's Effect Monsters without targeting and gains that monster's ATK. When your opponent activates a card or effect, it brings back a Level 4 or lower WIND Tuner and Synchro Summons on the spot. <strong>Speedroid Terrortop alone reaches it in four summons.</strong> It is <strong>not</strong> the card named "Clear Wing Synchro Dragon", though, so Speedroid Wing Synchron and Crystal Clear Wing Over Synchro Dragon still need the original.</p>
+                <p id="sdm-spot-tags-label" class="sdm-label">Jump to</p>
+                <ul class="sdm-chips" aria-labelledby="sdm-spot-tags-label">
+                    <li><a class="sdm-chip-link" href="#sdm-card"><i class="fas fa-dragon" aria-hidden="true"></i> The card and its rulings</a></li>
+                    <li><a class="sdm-chip-link" href="#sdm-planner"><i class="fas fa-sliders-h" aria-hidden="true"></i> What its Quick Effect can make</a></li>
+                    <li><a class="sdm-chip-link" href="#sdm-line-1"><i class="fas fa-play-circle" aria-hidden="true"></i> Two tested lines</a></li>
+                    <li><a class="sdm-chip-link" href="#sdm-claims"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Early claims, checked</a></li>
+                </ul>
+                <button type="button" class="sdm-spot-cta" data-open-panel="tab-mams">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Analysis panel; the
+             Magnificent Maestros card gets its own panel. The banlist, deck resources
+             and community combos stay below both. -->
+        <div class="sdm-tabs" role="tablist" aria-label="Speedroid guide" data-guide-tabs>
+            <button type="button" class="sdm-tab" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="sdm-tab" role="tab" id="tab-btn-mams" aria-controls="tab-mams" aria-selected="false" tabindex="-1">Magnificent Maestros <span class="sdm-new-badge" aria-hidden="true">New</span><span class="sdm-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="sdm-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
         <section class="mb-10 md:mb-16">
             <div class="card p-6">
@@ -904,6 +1467,520 @@
             </div>
         </section>
 
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== MAGNIFICENT MAESTROS TAB ====================
+             Clear Wing Synchro Dragon, Four Heavenly Dragons (TCG: Magnificent Maestros, 12 Nov 2026;
+             OCG: Limit Over Collection: The Rivals, 20 Mar 2026; Konami cid 22729). Card text is the TCG text;
+             rulings are Konami's card notes (19 Mar 2026) and Q&A. Written 2026-11-04 from a NotebookLM
+             summary that was checked claim by claim against the cards (see "Early Claims, Checked").
+             The other tabs are unchanged. Both step-card lines replay in the ocgcore engine in all three
+             audit modes (search, no search, blank hand padding) with the end boards checked, and every card
+             in them is legal in the TCG (banlist checked 4 Nov 2026). -->
+        <div id="tab-mams" data-pcs-scope="mams" class="sdm-panel" role="tabpanel" aria-labelledby="tab-btn-mams" tabindex="0" hidden>
+
+            <!-- Intro -->
+            <section class="sdm-section" id="sdm-intro">
+                <h2 class="sdm-h2">New Support: Clear Wing Synchro Dragon, Four Heavenly Dragons</h2>
+                <ul class="sdm-release" aria-label="Release dates">
+                    <li class="sdm-chip sdm-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Magnificent Maestros &middot; <time datetime="2026-11-12">12 Nov 2026</time></li>
+                    <li class="sdm-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; Limit Over Collection: The Rivals &middot; <time datetime="2026-03-20">20 Mar 2026</time></li>
+                </ul>
+                <p class="sdm-lede">Magnificent Maestros gives Yugo's Speedroids the Synchro member of the Four Heavenly Dragons. <strong>Clear Wing Synchro Dragon, Four Heavenly Dragons</strong> is a Level 7 WIND Dragon that is always treated as a "Speedroid" card. Every time it is Special Summoned it destroys one of your opponent's Effect Monsters, and when your opponent activates something it turns a WIND Tuner from your hand or GY into a Synchro Summon on their turn. The usual Speedroid opening, Terrortop into Taketomborg into Red-Eyed Dice, makes it in four summons.</p>
+                <div class="sdm-pillars">
+                    <div class="sdm-box">
+                        <div class="sdm-pillar-icon"><i class="fas fa-wind" aria-hidden="true"></i></div>
+                        <h3 class="sdm-h3">A Speedroid and a Clear Wing</h3>
+                        <p>It is always treated as a "Speedroid" card, even while its effects are negated, and the name makes it a "Clear Wing" monster. Speedroid Red-Eyed Dice can change its Level, Hi-Speedroid Glider #2 can revive it, and Crystal Clear Wing Over Synchro Dragon can float into it.</p>
+                    </div>
+                    <div class="sdm-box">
+                        <div class="sdm-pillar-icon"><i class="fas fa-crosshairs" aria-hidden="true"></i></div>
+                        <h3 class="sdm-h3">Removal that doesn't target</h3>
+                        <p>Any Special Summon sets it off, not only its Synchro Summon: a revival, a float, a summon from the Extra Deck. It destroys one Effect Monster your opponent controls and adds that monster's original ATK to its own 2500.</p>
+                    </div>
+                    <div class="sdm-box">
+                        <div class="sdm-pillar-icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+                        <h3 class="sdm-h3">A Synchro on their turn</h3>
+                        <p>When your opponent activates a card or effect, it Special Summons a Level 4 or lower WIND Tuner from your hand or GY with its effects negated, then you can Synchro Summon a WIND Synchro Monster right away. With Red-Eyed Dice in the GY, that is Hi-Speedroid Kitedrake.</p>
+                    </div>
+                </div>
+                <div class="sdm-callout"><strong>The catch:</strong> it is a "Clear Wing" monster, but it is not the card <em>named</em> "Clear Wing Synchro Dragon". Speedroid Wing Synchron can only summon that card, and Crystal Clear Wing Over Synchro Dragon's Tuner-Synchro recipe asks for it by name. Keep the original in your Extra Deck too: <a class="sdm-link" href="#sdm-line-2">Line 2</a> uses both dragons.</div>
+            </section>
+
+            <!-- The card -->
+            <section class="sdm-section" id="sdm-card">
+                <h2 class="sdm-h2">The Card</h2>
+                <div class="sdm-profiles">
+                    <article class="sdm-profile" id="sdm-card-fhd" aria-labelledby="sdm-card-fhd-name">
+                        <div class="sdm-profile-art"><div id="sdm-fhd-img-container" class="sdm-art">Clear Wing Synchro Dragon, Four Heavenly Dragons</div></div>
+                        <div class="sdm-profile-head">
+                            <p class="sdm-kicker">Yugo's Heavenly Dragon</p>
+                            <h3 id="sdm-card-fhd-name" class="sdm-card-name">Clear Wing Synchro Dragon, Four Heavenly Dragons</h3>
+                            <p class="sdm-stats">Level 7 &middot; WIND &middot; Dragon / Synchro / Effect &middot; 2500 / 2000</p>
+                        </div>
+                        <div class="sdm-profile-body">
+                            <blockquote class="sdm-text"><span class="sdm-text-label">Card text</span>1 Tuner + 1+ non-Tuners<br>(This card is always treated as a "Speedroid" card.)<br>If this card is Special Summoned: You can destroy 1 Effect Monster your opponent controls, and if you do, this card gains ATK equal to that monster's original ATK. When your opponent activates a card or effect (Quick Effect): You can Special Summon 1 Level 4 or lower WIND Tuner from your hand or GY (but negate its effects), then immediately after this effect resolves, you can Synchro Summon 1 WIND Synchro Monster. You can only use each effect of "Clear Wing Synchro Dragon, Four Heavenly Dragons" once per turn.</blockquote>
+                            <ul class="sdm-points">
+                                <li><strong>Any Tuner and any non-Tuners.</strong> Its materials aren't limited to WIND or Speedroid monsters, but Speedroid lines usually reach it as Red-Eyed Dice plus a Speedroid set to Level 6, or a Level 2 Tuner Colonel Clackers plus Hi-Speedroid Chanbara.</li>
+                                <li><strong>The destruction has no target.</strong> Your opponent can't dodge it by making a monster untargetable, and it works off any Special Summon. It is once per turn, so a second copy, or a revived one, can't destroy again that turn. Tokens and Normal Monsters aren't Effect Monsters, so it can't hit them.</li>
+                                <li><strong>The Quick Effect answers your opponent, on either turn.</strong> A hand trap on your own turn sets it off too, so the dragon can keep a combo going after an Ash Blossom &amp; Joyous Spring. The Synchro Summon is optional, and it can use any monsters you control, not only the Tuner it just brought back.</li>
+                                <li><strong>It doesn't negate anything.</strong> The new Synchro Monster arrives while your opponent's card is still waiting on the chain, so it can't stop that card. Effects that trigger "if this card is Synchro Summoned", like Kitedrake's, activate once that chain has resolved.</li>
+                                <li><strong>One of four.</strong> The other Four Heavenly Dragons are Dark Rebellion (on the <a class="sdm-link" href="Phantom knights Deck Analysis.html#tab-mams">Phantom Knights page</a>), Starving Venom (<a class="sdm-link" href="Predaplant Deck Analysis.html">Predaplant</a>) and Odd-Eyes (<a class="sdm-link" href="Odd-Eyes Deck Analysis.html">Odd-Eyes</a>). Like the other two from this set, it joins its duelist's archetype by its own text.</li>
+                            </ul>
+                            <p class="sdm-ruling"><strong>Official rulings:</strong> being treated as a "Speedroid" card is not an effect, so it stays a Speedroid even with its effects negated, but not if another card changes its name. It also counts as a "Speedroid" monster for cards that ask for one. The destruction effect is a trigger that also works in the Damage Step. The destruction and the ATK gain happen at the same time, using the destroyed monster's printed ATK, so a monster with "?" ATK gives nothing. The Quick Effect must be chained directly to your opponent's activation and can't be used in the Damage Step. The Tuner's Special Summon and the Synchro Summon do not happen at the same time. Because the effect Special Summons from the GY, Ghost Belle &amp; Haunted Mansion can be chained to it. (Konami card notes, 19 Mar 2026; Konami Q&amp;A.)</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- The Pendulum pair -->
+            <section class="sdm-section" id="sdm-engine">
+                <h2 class="sdm-h2">The Pendulum Pair Behind the Clear Wing Lines</h2>
+                <p class="sdm-lede">The dragon is easiest to fit next to the two Pendulum Monsters from Supreme Darkness (TCG, January 2025): they produce the original Clear Wing Synchro Dragon and a Level 2 Tuner without using your Normal Summon. <a class="sdm-link" href="#sdm-line-2">Line 2</a> uses both.</p>
+                <div class="sdm-profiles sdm-profiles--pair">
+                    <article class="sdm-profile" id="sdm-card-clackers" aria-labelledby="sdm-card-clackers-name">
+                        <div class="sdm-profile-art"><div id="sdm-clackers-img-container" class="sdm-art">Speedroid Colonel Clackers</div></div>
+                        <div class="sdm-profile-head">
+                            <p class="sdm-kicker">Scale 8 &middot; the setup</p>
+                            <h3 id="sdm-card-clackers-name" class="sdm-card-name">Speedroid Colonel Clackers</h3>
+                            <p class="sdm-stats">Level 2 &middot; WIND &middot; Machine / Pendulum &middot; 200 / 1800</p>
+                        </div>
+                        <div class="sdm-profile-body">
+                            <blockquote class="sdm-text"><span class="sdm-text-label">Pendulum Effect</span>You can banish 1 "Speedroid" card from your GY; place 1 "Speedroid" Pendulum Monster from your Deck in your Pendulum Zone, also you cannot Special Summon for the rest of this turn, except WIND monsters. You can only use this effect of "Speedroid Colonel Clackers" once per turn.<br><span class="sdm-text-label" style="margin-top:0.5rem">Monster Effect</span>If this card on the field is destroyed by battle or card effect: You can Special Summon 1 "Speedroid Colonel Clackers" as a Tuner from your hand, Deck, or GY. During damage calculation, if your "Clear Wing" monster battles, while this card is face-up in your Extra Deck: You can banish this card, and if you do, that monster gains 700 ATK. You can only use each effect of "Speedroid Colonel Clackers" once per turn.</blockquote>
+                            <ul class="sdm-points">
+                                <li><strong>It needs a Speedroid card in the GY first.</strong> Taketomborg after its Tribute, the Red-Eyed Dice used for a Synchro, or whatever Darumaknocker sent all work.</li>
+                                <li><strong>Destroyed in the Pendulum Zone, it replaces itself</strong> with another copy as a Level 2 Tuner, the right size for Hi-Speedroid Glider #2 or, with Chanbara, for the Heavenly dragon.</li>
+                                <li><strong>Face-up in the Extra Deck</strong> it gives a "Clear Wing" monster 700 ATK in battle. The Heavenly dragon counts.</li>
+                            </ul>
+                        </div>
+                    </article>
+                    <article class="sdm-profile" id="sdm-card-wingsynchron" aria-labelledby="sdm-card-wingsynchron-name">
+                        <div class="sdm-profile-art"><div id="sdm-wingsynchron-img-container" class="sdm-art">Speedroid Wing Synchron</div></div>
+                        <div class="sdm-profile-head">
+                            <p class="sdm-kicker">Scale 4 &middot; the payoff</p>
+                            <h3 id="sdm-card-wingsynchron-name" class="sdm-card-name">Speedroid Wing Synchron</h3>
+                            <p class="sdm-stats">Level 5 &middot; WIND &middot; Machine / Pendulum / Tuner &middot; 1500 / 1000</p>
+                        </div>
+                        <div class="sdm-profile-body">
+                            <blockquote class="sdm-text"><span class="sdm-text-label">Pendulum Effect</span>Once per turn: You can destroy this card and 1 Level 2 WIND Pendulum Monster Card in your Pendulum Zone, and if you do, Special Summon 1 "Clear Wing Synchro Dragon" from your Extra Deck (this is treated as a Synchro Summon), also for the rest of this turn, cards in your Pendulum Zones cannot be destroyed by card effects, and you cannot Special Summon, except WIND monsters.<br><span class="sdm-text-label" style="margin-top:0.5rem">Monster Effect</span>If this card is added to your Extra Deck face-up, and you control 2 or more different Types of WIND Synchro Monsters: You can send 1 "Speedroid" Spell/Trap from your Deck to the GY. You can only use this effect of "Speedroid Wing Synchron" once per turn.</blockquote>
+                            <ul class="sdm-points">
+                                <li><strong>It summons only the card named Clear Wing Synchro Dragon,</strong> as a Synchro Summon, so that dragon counts as properly summoned for Over Synchro's recipe and for later revivals. It can't summon the Heavenly dragon.</li>
+                                <li><strong>The Type check happens when its effect activates,</strong> not earlier. Right after its Pendulum Effect you control the new Clear Wing, a Dragon. You need a WIND Synchro of another Type, usually a Machine such as Chanbara, already on the field for the dump.</li>
+                                <li><strong>The dump is the Speedroid Clear Wing Wonder plan.</strong> Wonder's GY effect banishes a WIND Synchro and returns it when your opponent Special Summons, which resets "once per turn" effects like Over Synchro's negate.</li>
+                            </ul>
+                        </div>
+                    </article>
+                </div>
+                <p class="sdm-ruling"><strong>Official rulings:</strong> both Pendulum Effects lock you into WIND Special Summons once they resolve, even if they place or summon nothing. Wing Synchron's Type count is checked when its Extra Deck effect activates, not when it arrives there, and it also triggers if it returns to the Extra Deck after being banished temporarily. Clackers' replacement effect activates wherever the destroyed card lands, so from the Extra Deck after it is destroyed in the Pendulum Zone. An Over Synchro that Clear Wing Wonder banishes and returns still counts as Synchro Summoned, so it keeps its float. (Konami card notes, 26 Oct 2024; Konami Q&amp;A.)</p>
+            </section>
+
+            <!-- What sees it -->
+            <section class="sdm-section" id="sdm-counts">
+                <h2 class="sdm-h2">Which Speedroid Cards See It?</h2>
+                <p class="sdm-lede">Speedroid and Clear Wing cards ask for an archetype, a name or a stat, and the answer changes from card to card. This is how each one treats the Heavenly dragon.</p>
+                <div class="sdm-table-wrap" tabindex="0" role="region" aria-labelledby="sdm-counts-caption">
+                    <table class="sdm-table sdm-table--stack">
+                        <caption id="sdm-counts-caption">Checked against each card's text and Konami's rulings.</caption>
+                        <thead>
+                            <tr><th scope="col">Card</th><th scope="col">Works with it?</th><th scope="col">Why</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Speedroid Red-Eyed Dice</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="Why">It targets a "Speedroid" monster you control and sets it to Level 1 to 6. Line 2 makes the dragon Level 4 for Glider #2.</td></tr>
+                            <tr><th scope="row">Hi-Speedroid Glider #2 (revival)</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="Why">It revives a Level 7 or lower WIND non-Tuner Synchro Monster from your GY. The dragon fits, and its destruction effect triggers on the way back.</td></tr>
+                            <tr><th scope="row">Glider #2's GY effect, Darumaknocker's destruction, Colonel Clackers' 700 ATK</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="Why">Each asks for a "Clear Wing" monster, and the name makes it one.</td></tr>
+                            <tr><th scope="row">Crystal Clear Wing Over Synchro Dragon (float)</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="Why">When your opponent removes it, it Special Summons a "Clear Wing" monster from your Extra Deck. A second Heavenly dragon arriving that way destroys one of their Effect Monsters, if that effect hasn't been used this turn.</td></tr>
+                            <tr><th scope="row">Hi-Speedroid Clear Wing Rider</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="Why">Its Quick Effect summons up to two Level 7 WIND Synchros with different names from the Extra Deck, so it can bring out the Heavenly dragon and the original together on your opponent's Main Phase.</td></tr>
+                            <tr><th scope="row">Crystal Clear Wing Synchro Dragon (material)</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="Why">It takes a Tuner Synchro Monster plus a non-Tuner "Clear Wing" monster, so Hi-Speedroid Cork Shooter (Level 3) and the dragon make it (Level 10).</td></tr>
+                            <tr><th scope="row">Speed Recovery</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--part">Half</span></td>
+                                <td data-label="Why">Its activation Special Summons a "Speedroid" monster from your GY, and the dragon qualifies once it has been Synchro Summoned. Its GY effect adds to the hand, and a card from the Extra Deck goes back to the Extra Deck instead.</td></tr>
+                            <tr><th scope="row">Speedroid Clear Wing Wonder</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--part">Half</span></td>
+                                <td data-label="Why">It counts as one Type (Dragon) for Wonder's destruction, the same Type as the original Clear Wing. Wonder can banish and return it, but no ruling says the return counts as a new Special Summon, so don't plan on a second destruction from it.</td></tr>
+                            <tr><th scope="row">Speedroid Wing Synchron</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="Why">Its Pendulum Effect names "Clear Wing Synchro Dragon", the original card.</td></tr>
+                            <tr><th scope="row">Crystal Clear Wing Over Synchro Dragon (material)</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="Why">It takes 2+ Tuners, or a Tuner Synchro Monster plus the card named "Clear Wing Synchro Dragon". The Heavenly dragon is neither a Tuner nor that card.</td></tr>
+                            <tr><th scope="row">Speedroid Terrortop, Marble Machine, Speedroid Scratch</th><td data-label="Works"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="Why">They add Speedroid monsters from the Main Deck. The dragon lives in the Extra Deck.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Quick Effect planner -->
+            <section class="sdm-section" id="sdm-planner">
+                <h2 class="sdm-h2">What Can Its Quick Effect Make?</h2>
+                <p class="sdm-lede">Pick the Tuner the dragon brings back and a non-Tuner you control. The planner adds up the Levels and lists the WIND Synchro Monsters a Speedroid Extra Deck usually runs at that Level, with what each one needs.</p>
+                <form class="sdm-box sdm-planner" data-sdm-planner aria-describedby="sdm-planner-help" onsubmit="return false">
+                    <div class="sdm-planner-controls">
+                        <div>
+                            <label for="sdm-planner-tuner">Tuner it brings back (hand or GY)</label>
+                            <select id="sdm-planner-tuner" name="tuner">
+                                <optgroup label="Level 4 or lower WIND Tuners">
+                                    <option value="dice" selected>Speedroid Red-Eyed Dice (Level 1)</option>
+                                    <option value="carturbo">Speedroid CarTurbo (Level 3)</option>
+                                    <option value="denden">Speedroid Den-Den Daiko Duke (Level 3)</option>
+                                    <option value="trieyed">Speedroid Tri-Eyed Dice (Level 3)</option>
+                                    <option value="cork">Hi-Speedroid Cork Shooter (Level 3, GY only)</option>
+                                    <option value="daruma">Speedroid Darumaknocker (Level 4)</option>
+                                    <option value="piper">Speedroid Fuki-Modoshi Piper (Level 4)</option>
+                                </optgroup>
+                                <optgroup label="Can't be picked">
+                                    <option value="clackers">Speedroid Colonel Clackers (Level 2)</option>
+                                    <option value="glider">Hi-Speedroid Glider #2 (Level 5)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="sdm-planner-partner">Non-Tuner you control</label>
+                            <select id="sdm-planner-partner" name="partner">
+                                <option value="fhd" selected>The Heavenly dragon itself (Level 7)</option>
+                                <option value="cwsd">Clear Wing Synchro Dragon (Level 7)</option>
+                                <option value="chanbara">Hi-Speedroid Chanbara (Level 5)</option>
+                                <option value="terrortop">Speedroid Terrortop (Level 3)</option>
+                                <option value="over">Crystal Clear Wing Over Synchro Dragon (Level 12)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="sdm-planner-result" data-sdm-planner-result data-verdict="yes" aria-live="polite">
+                        <p class="sdm-planner-sum">Speedroid Red-Eyed Dice (Level 1) + the dragon itself (Level 7) = Level 8</p>
+                        <p>Hi-Speedroid Kitedrake: negate every face-up card your opponent controls, or destroy every other card on the field, once that chain has resolved.</p>
+                    </div>
+                </form>
+                <p class="sdm-note" id="sdm-planner-help">The Tuner arrives with its effects negated, so its own summon effects (Red-Eyed Dice's Level change, Fuki-Modoshi Piper's excavation) don't happen. Speedroid Maliciousmagnet isn't listed: its text only lets it be Synchro Material for its own effect's Synchro Summon.</p>
+            </section>
+
+            <!-- Line 1 -->
+            <section class="sdm-section" id="sdm-line-1">
+                <h2 class="sdm-h2">Line 1: Terrortop Alone, Four Summons</h2>
+                <p class="sdm-lede">One card in hand and your Normal Summon still free. Four summons keep you under Nibiru, the Primal Being's five, and the line ends with Red-Eyed Dice in the GY, ready for the dragon's Quick Effect.</p>
+                <div class="sdm-flow">
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l1-1-img-container" class="card-placeholder sdm-step-art">Speedroid Terrortop</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 1</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">1</span>
+                                    <h3 class="sdm-step-title">Terrortop Finds Taketomborg</h3>
+                                </div>
+                                <p class="sdm-step-text">With only <strong class="text-accent">Speedroid Terrortop</strong> in your hand, Special Summon <strong class="text-accent">Speedroid Terrortop</strong> from your hand. Activate <strong class="text-accent">Speedroid Terrortop</strong>'s effect to add <strong class="text-accent">Speedroid Taketomborg</strong> from your Deck to your hand.</p>
+                                <p class="sdm-note">Terrortop summons itself only while you control no monsters, so it always comes first.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l1-2-img-container" class="card-placeholder sdm-step-art">Speedroid Taketomborg</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summons 2 and 3</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">2</span>
+                                    <h3 class="sdm-step-title">Taketomborg Calls the Dice</h3>
+                                </div>
+                                <p class="sdm-step-text">Special Summon <strong class="text-accent">Speedroid Taketomborg</strong> from your hand. Activate <strong class="text-accent">Speedroid Taketomborg</strong>'s effect, Tributing itself, to Special Summon <strong class="text-accent">Speedroid Red-Eyed Dice</strong> from your Deck.</p>
+                                <p class="sdm-note">Taketomborg summons itself while you control a WIND monster. Its Tribute locks you into WIND Special Summons for the turn, which costs this line nothing.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l1-3-img-container" class="card-placeholder sdm-step-art">Speedroid Red-Eyed Dice</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">No summon</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">3</span>
+                                    <h3 class="sdm-step-title">Terrortop Becomes Level 6</h3>
+                                </div>
+                                <p class="sdm-step-text">Activate <strong class="text-accent">Speedroid Red-Eyed Dice</strong>'s effect, targeting <strong class="text-accent">Speedroid Terrortop</strong> and declaring Level 6.</p>
+                                <p class="sdm-note">One plus six is seven. The new Level lasts until the end of the turn.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l1-4-img-container" class="card-placeholder sdm-step-art">Clear Wing Synchro Dragon, Four Heavenly Dragons</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 4</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">4</span>
+                                    <h3 class="sdm-step-title">The Heavenly Dragon Arrives</h3>
+                                </div>
+                                <p class="sdm-step-text">Synchro Summon <strong class="text-accent">Clear Wing Synchro Dragon, Four Heavenly Dragons</strong> using <strong class="text-accent">Speedroid Red-Eyed Dice</strong> and <strong class="text-accent">Speedroid Terrortop</strong>.</p>
+                                <p class="sdm-note">Going first, its destruction effect has nothing to hit. Going second, it destroys your opponent's best Effect Monster right here (see <a class="sdm-link" href="#sdm-second">going second</a>).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sdm-board">
+                    <h3 class="sdm-h4"><i class="fas fa-chess-board" aria-hidden="true"></i>End board</h3>
+                    <p>The Heavenly dragon on the field. Red-Eyed Dice, Terrortop and Taketomborg in the GY. Your Normal Summon is unused, for a second starter if you drew one.</p>
+                    <p>On your opponent's turn, the first time they activate a card or effect, the dragon's Quick Effect brings Red-Eyed Dice back from the GY. Synchro Summon Hi-Speedroid Kitedrake with the two (Level 8). Once the chain has resolved, Kitedrake negates every face-up card they control, or destroys every other card on the field.</p>
+                </div>
+            </section>
+
+            <!-- Line 2 -->
+            <section class="sdm-section" id="sdm-line-2">
+                <h2 class="sdm-h2">Line 2: Terrortop and Colonel Clackers</h2>
+                <p class="sdm-lede">Two cards. Chanbara is out before Wing Synchron fires, so its Clear Wing Wonder dump works. Red-Eyed Dice sets the Heavenly dragon to Level 4 for Glider #2, and Glider #2 brings it back. The line ends on Crystal Clear Wing Over Synchro Dragon next to the dragon.</p>
+                <div class="sdm-flow">
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-1-img-container" class="card-placeholder sdm-step-art">Speedroid Terrortop</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 1</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">1</span>
+                                    <h3 class="sdm-step-title">Terrortop Finds Taketomborg</h3>
+                                </div>
+                                <p class="sdm-step-text">With <strong class="text-accent">Speedroid Terrortop</strong> and <strong class="text-accent">Speedroid Colonel Clackers</strong> in your hand, Special Summon <strong class="text-accent">Speedroid Terrortop</strong> from your hand. Activate <strong class="text-accent">Speedroid Terrortop</strong>'s effect to add <strong class="text-accent">Speedroid Taketomborg</strong> from your Deck to your hand.</p>
+                                <p class="sdm-note">Colonel Clackers waits in the hand until the GY holds a Speedroid card to banish.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-2-img-container" class="card-placeholder sdm-step-art">Speedroid Taketomborg</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summons 2 and 3</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">2</span>
+                                    <h3 class="sdm-step-title">Taketomborg Calls the Dice</h3>
+                                </div>
+                                <p class="sdm-step-text">Special Summon <strong class="text-accent">Speedroid Taketomborg</strong> from your hand. Activate <strong class="text-accent">Speedroid Taketomborg</strong>'s effect, Tributing itself, to Special Summon <strong class="text-accent">Speedroid Red-Eyed Dice</strong> from your Deck. Activate <strong class="text-accent">Speedroid Red-Eyed Dice</strong>'s effect, targeting <strong class="text-accent">Speedroid Terrortop</strong> and declaring Level 4.</p>
+                                <p class="sdm-note">One plus four is five, the Level of Hi-Speedroid Chanbara.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-3-img-container" class="card-placeholder sdm-step-art">Hi-Speedroid Chanbara</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 4</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">3</span>
+                                    <h3 class="sdm-step-title">A Machine Synchro First</h3>
+                                </div>
+                                <p class="sdm-step-text">Synchro Summon <strong class="text-accent">Hi-Speedroid Chanbara</strong> using <strong class="text-accent">Speedroid Red-Eyed Dice</strong> and <strong class="text-accent">Speedroid Terrortop</strong>.</p>
+                                <p class="sdm-note">Chanbara does two jobs. It is a Machine WIND Synchro, which Wing Synchron needs next to a Dragon two steps from now. When it goes to the GY it adds one of your banished Speedroid cards to your hand.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-4-img-container" class="card-placeholder sdm-step-art">Speedroid Colonel Clackers</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">No summon</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">4</span>
+                                    <h3 class="sdm-step-title">Clackers Sets the Scale</h3>
+                                </div>
+                                <p class="sdm-step-text">Activate <strong class="text-accent">Speedroid Colonel Clackers</strong> in your Pendulum Zone. Activate <strong class="text-accent">Speedroid Colonel Clackers</strong>'s Pendulum Effect, banishing <strong class="text-accent">Speedroid Red-Eyed Dice</strong> from your GY, to place <strong class="text-accent">Speedroid Wing Synchron</strong> from your Deck in your Pendulum Zone.</p>
+                                <p class="sdm-note">Banishing Red-Eyed Dice is on purpose: Chanbara will return it to your hand in step 6.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-5-img-container" class="card-placeholder sdm-step-art">Speedroid Wing Synchron</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag sdm-tag--hot">Summons 5 and 6 &middot; Nibiru window opens</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">5</span>
+                                    <h3 class="sdm-step-title">Wing Synchron Brings Clear Wing</h3>
+                                </div>
+                                <p class="sdm-step-text">Activate <strong class="text-accent">Speedroid Wing Synchron</strong>'s Pendulum Effect, destroying itself and <strong class="text-accent">Speedroid Colonel Clackers</strong>, to Special Summon <strong class="text-accent">Clear Wing Synchro Dragon</strong> from your Extra Deck. <strong class="text-accent">Speedroid Colonel Clackers</strong>'s effect Special Summons a second <strong class="text-accent">Speedroid Colonel Clackers</strong> from your Deck. Activate <strong class="text-accent">Speedroid Wing Synchron</strong>'s effect to send <strong class="text-accent">Speedroid Clear Wing Wonder</strong> from your Deck to the GY.</p>
+                                <p class="sdm-note">The original Clear Wing arrives as a Synchro Summon. Both Pendulum Monsters go face-up to the Extra Deck and trigger there: Clackers brings a second copy as a Level 2 Tuner, and Wing Synchron sends Clear Wing Wonder, because you now control a Machine (Chanbara) and a Dragon (Clear Wing). This is the fifth summon, so Nibiru is live from here on.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-6-img-container" class="card-placeholder sdm-step-art">Clear Wing Synchro Dragon, Four Heavenly Dragons</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 7</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">6</span>
+                                    <h3 class="sdm-step-title">The Heavenly Dragon Arrives</h3>
+                                </div>
+                                <p class="sdm-step-text">Synchro Summon <strong class="text-accent">Clear Wing Synchro Dragon, Four Heavenly Dragons</strong> using <strong class="text-accent">Speedroid Colonel Clackers</strong> and <strong class="text-accent">Hi-Speedroid Chanbara</strong>. <strong class="text-accent">Hi-Speedroid Chanbara</strong>'s effect adds the banished <strong class="text-accent">Speedroid Red-Eyed Dice</strong> to your hand.</p>
+                                <p class="sdm-note">Two plus five is seven. Clackers is a Pendulum Monster, so as material it goes face-up to the Extra Deck instead of the GY.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-7-img-container" class="card-placeholder sdm-step-art">Speedroid Red-Eyed Dice</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 8 &middot; Normal Summon</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">7</span>
+                                    <h3 class="sdm-step-title">The Dice Shrinks the Dragon</h3>
+                                </div>
+                                <p class="sdm-step-text">Normal Summon <strong class="text-accent">Speedroid Red-Eyed Dice</strong>. Activate <strong class="text-accent">Speedroid Red-Eyed Dice</strong>'s effect, targeting <strong class="text-accent">Clear Wing Synchro Dragon, Four Heavenly Dragons</strong> and declaring Level 4.</p>
+                                <p class="sdm-note">The dragon is always treated as a Speedroid, so the Dice can target it.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-8-img-container" class="card-placeholder sdm-step-art">Hi-Speedroid Glider #2</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summons 9 and 10</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">8</span>
+                                    <h3 class="sdm-step-title">Glider #2 Brings the Dragon Back</h3>
+                                </div>
+                                <p class="sdm-step-text">Synchro Summon <strong class="text-accent">Hi-Speedroid Glider #2</strong> using <strong class="text-accent">Speedroid Red-Eyed Dice</strong> and <strong class="text-accent">Clear Wing Synchro Dragon, Four Heavenly Dragons</strong>. <strong class="text-accent">Hi-Speedroid Glider #2</strong>'s effect Special Summons <strong class="text-accent">Clear Wing Synchro Dragon, Four Heavenly Dragons</strong> from your GY.</p>
+                                <p class="sdm-note">Glider #2 needs a WIND Machine Tuner, which Red-Eyed Dice is: one plus four is five. The dragon comes back at Level 7, because the Dice's change ended when it left the field.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sdm-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+                    <div class="card p-6 combo-step-card w-full">
+                        <div class="sdm-step">
+                            <div id="sdm-l2-9-img-container" class="card-placeholder sdm-step-art">Crystal Clear Wing Over Synchro Dragon</div>
+                            <div class="combo-step-body sdm-step-body">
+                                <span class="sdm-tag">Summon 11</span>
+                                <div class="combo-step-header sdm-step-head">
+                                    <span class="sdm-step-num rounded-full h-8 w-8">9</span>
+                                    <h3 class="sdm-step-title">Over Synchro</h3>
+                                </div>
+                                <p class="sdm-step-text">Synchro Summon <strong class="text-accent">Crystal Clear Wing Over Synchro Dragon</strong> using <strong class="text-accent">Hi-Speedroid Glider #2</strong> and <strong class="text-accent">Clear Wing Synchro Dragon</strong>.</p>
+                                <p class="sdm-note">A Tuner Synchro Monster plus the card named Clear Wing Synchro Dragon: five plus seven is twelve. The Heavenly dragon can't stand in for the original here.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sdm-board">
+                    <h3 class="sdm-h4"><i class="fas fa-chess-board" aria-hidden="true"></i>End board</h3>
+                    <p><b>Field:</b> Crystal Clear Wing Over Synchro Dragon and the Heavenly dragon. <b>GY:</b> Clear Wing Wonder, Glider #2 and Red-Eyed Dice, with Chanbara, Clear Wing Synchro Dragon, Terrortop and Taketomborg. <b>Face-up Extra Deck:</b> two Colonel Clackers and Wing Synchron. Your hand is empty and the Normal Summon is used.</p>
+                    <ul>
+                        <li>Over Synchro can negate one card or effect your opponent activates and destroy it. If one of their cards removes Over Synchro, it summons a "Clear Wing" monster from your Extra Deck.</li>
+                        <li>The Heavenly dragon's Quick Effect brings Red-Eyed Dice back for a Kitedrake (dragon plus Dice).</li>
+                        <li>When your opponent Special Summons while you control a "Clear Wing" monster, Glider #2 banishes itself from the GY and raises the Levels of all their monsters by 5.</li>
+                        <li>When they Special Summon, Clear Wing Wonder banishes itself from the GY to banish Over Synchro and return it. It comes back with a fresh negate and, per Konami, still counts as Synchro Summoned.</li>
+                        <li>In battle, a Clackers in the Extra Deck gives a "Clear Wing" monster 700 ATK.</li>
+                    </ul>
+                    <p><b>Nibiru:</b> this line has eleven summons, and nothing on the field can stop Nibiru between summon 5 and summon 11. If you expect it, play Line 1, which stops at four.</p>
+                </div>
+            </section>
+
+            <!-- Going second + their turn -->
+            <section class="sdm-section" id="sdm-second">
+                <h2 class="sdm-h2">Going Second</h2>
+                <div class="sdm-two">
+                    <div class="sdm-box">
+                        <h3 class="sdm-h3">Line 1 as a board breaker</h3>
+                        <p>Play Line 1 into your opponent's board. When the dragon lands, its effect destroys their best Effect Monster without targeting it and adds that monster's original ATK to its own: a 3000 ATK monster leaves a 5500 ATK dragon. We replayed Line 1 going second in the duel engine with an Effect Monster on the opponent's field, and the dragon destroyed it on arrival.</p>
+                        <p>If they answer the combo with a hand trap or a Quick Effect, the dragon's own Quick Effect brings Red-Eyed Dice back and Synchro Summons Kitedrake, which negates every face-up card they control. That works only once the dragon is on the field, and Ghost Belle &amp; Haunted Mansion stops it.</p>
+                    </div>
+                    <div class="sdm-box">
+                        <h3 class="sdm-h3">More ways to set off the destruction</h3>
+                        <p>The destruction works on any Special Summon, once per turn. Besides its Synchro Summon:</p>
+                        <ul class="sdm-points">
+                            <li><strong>Hi-Speedroid Glider #2</strong> revives it from the GY, as in Line 2.</li>
+                            <li><strong>Speed Recovery</strong> revives it from the GY.</li>
+                            <li><strong>Crystal Clear Wing Over Synchro Dragon</strong> floats into it when your opponent removes Over Synchro.</li>
+                            <li><strong>Hi-Speedroid Clear Wing Rider</strong> Tributes itself on your opponent's Main Phase for it and another Level 7 WIND Synchro.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Claims -->
+            <section class="sdm-section" id="sdm-claims">
+                <h2 class="sdm-h2">Early Claims, Checked</h2>
+                <p class="sdm-lede">The first write-ups of this card got several details wrong. These are the claims we checked against the card text and Konami's rulings before building the lines above.</p>
+                <div class="sdm-table-wrap" tabindex="0" role="region" aria-labelledby="sdm-claims-caption">
+                    <table class="sdm-table sdm-table--stack">
+                        <caption id="sdm-claims-caption">Claims from an early analysis of the card, with what the cards say.</caption>
+                        <thead>
+                            <tr><th scope="col">Claim</th><th scope="col">Verdict</th><th scope="col">What the cards say</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">"On Special Summon it targets and destroys an Effect Monster."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--part">Half right</span></td>
+                                <td data-label="What the cards say">It destroys without targeting, and it also gains the destroyed monster's original ATK, which the claim left out.</td></tr>
+                            <tr><th scope="row">The analysis never mentions a second effect.</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">Missed</span></td>
+                                <td data-label="What the cards say">Its Quick Effect, a WIND Tuner and a Synchro Summon when the opponent activates something, is the card's main defensive effect.</td></tr>
+                            <tr><th scope="row">"It is conditionally treated as a Speedroid."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">Always, even while its effects are negated (Konami).</td></tr>
+                            <tr><th scope="row">"Speedroid Scratch can search it."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">Scratch adds a Speedroid monster from the Main Deck. The dragon is an Extra Deck monster.</td></tr>
+                            <tr><th scope="row">"Hi-Speedroid Chanbara or Speed Recovery can recover it."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--part">Half right</span></td>
+                                <td data-label="What the cards say">Speed Recovery's activation revives it from the GY. Chanbara and Speed Recovery's GY effect add to the hand, which sends an Extra Deck monster back to the Extra Deck.</td></tr>
+                            <tr><th scope="row">"Red-Eyed Dice can change its Level."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="What the cards say">It is a Speedroid monster you control. Line 2 makes it Level 4.</td></tr>
+                            <tr><th scope="row">"It is non-Tuner material for Crystal Clear Wing Over Synchro Dragon."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">Over Synchro takes 2+ Tuners, or a Tuner Synchro Monster plus the card named Clear Wing Synchro Dragon. It is material for Crystal Clear Wing Synchro Dragon, the Level 10.</td></tr>
+                            <tr><th scope="row">"Speedroid Wing Synchron can't summon it."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="What the cards say">Wing Synchron names the original Clear Wing Synchro Dragon.</td></tr>
+                            <tr><th scope="row">"In the Clackers line, Hi-Speedroid Glider #2 revives Clear Wing Synchro Dragon from the GY."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">In that line Clear Wing is still on the field, so Glider #2 has nothing to revive. Over Synchro still works, using Glider #2 and the Clear Wing on the field.</td></tr>
+                            <tr><th scope="row">"At the end of that line, Wing Synchron dumps Clear Wing Wonder because two Types are on the field."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">Wing Synchron triggers when it goes to the Extra Deck, and the two Types must be there when it activates (Konami). In that line you control only the new Clear Wing at that point. Line 2 has Chanbara out first.</td></tr>
+                            <tr><th scope="row">"Over Synchro in four summons, fully immune to Nibiru."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">That line has five summons (Clear Wing, Clackers, Taketomborg, Glider #2, Over Synchro), and it needs a Speedroid card already in the GY plus Taketomborg in hand. Nibiru becomes live as Over Synchro lands. Over Synchro can negate it, but that uses its only negate.</td></tr>
+                            <tr><th scope="row">"Going second: Terrortop, Taketomborg, Red-Eyed Dice, then the dragon (1 + 6) pops a monster."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--yes">Yes</span></td>
+                                <td data-label="What the cards say">Legal in four summons. It is Line 1, replayed in the engine with an Effect Monster to destroy.</td></tr>
+                            <tr><th scope="row">"Because it is a Speedroid, you can then go into Colonel Clackers."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--part">Wrong reason</span></td>
+                                <td data-label="What the cards say">Clackers needs a Speedroid card in the GY to banish. The dragon being a Speedroid doesn't matter, but after Line 1 the GY holds three, so Clackers works anyway.</td></tr>
+                            <tr><th scope="row">"Ends on Crystal Wing Synchro Dragon or Baronne de Fleur; Clear Wing Wonder resets Baronne."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">Both are Forbidden in the TCG.</td></tr>
+                            <tr><th scope="row">"Wind Pegasus @Ignister adds a Psychic to the Type count."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--no">No</span></td>
+                                <td data-label="What the cards say">It is a Cyberse.</td></tr>
+                            <tr><th scope="row">"Speedroid is now a Rogue or Tier 2 contender."</th><td data-label="Verdict"><span class="sdm-verdict sdm-verdict--part">No evidence</span></td>
+                                <td data-label="What the cards say">Its own sources don't show it. A TCGplayer rogue-deck article mentions Terrortop and Taketomborg only as an engine for R.B. An August 2026 budget tier list calls Speedroid a good-price deck that is less likely to win events. In the TCG the dragon isn't out until 12 November 2026.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Verdict -->
+            <section class="sdm-section" id="sdm-verdict">
+                <h2 class="sdm-h2">Verdict</h2>
+                <div class="sdm-two">
+                    <div class="sdm-box">
+                        <h3 class="sdm-h3">What it adds</h3>
+                        <ul class="sdm-list sdm-list--pro">
+                            <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>A one-card Terrortop line now ends on a monster that does something on your opponent's turn, in four summons.</span></li>
+                            <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>Removal that doesn't target, once per turn whenever it is Special Summoned. Glider #2, Over Synchro's float and Clear Wing Rider can set it off again on later turns.</span></li>
+                            <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>A way through hand traps: their activation becomes your Synchro Summon.</span></li>
+                            <li><i class="fas fa-check-circle" aria-hidden="true"></i><span>It is both a Speedroid and a Clear Wing, so the deck's existing cards see it without new slots.</span></li>
+                        </ul>
+                    </div>
+                    <div class="sdm-box">
+                        <h3 class="sdm-h3">What it doesn't fix</h3>
+                        <ul class="sdm-list sdm-list--con">
+                            <li><i class="fas fa-times-circle" aria-hidden="true"></i><span>Going first its destruction has nothing to hit, and its Quick Effect needs your opponent to activate something first, chained directly.</span></li>
+                            <li><i class="fas fa-times-circle" aria-hidden="true"></i><span>It negates nothing. Over Synchro is still the deck's only omni-negate, and it still needs the original Clear Wing.</span></li>
+                            <li><i class="fas fa-times-circle" aria-hidden="true"></i><span>Nibiru still punishes the long lines, and Colonel Clackers, Wing Synchron and Taketomborg lock you into WIND for the turn.</span></li>
+                            <li><i class="fas fa-times-circle" aria-hidden="true"></i><span>The Extra Deck gets tighter: Chanbara, Glider #2, Kitedrake, both Clear Wings and Over Synchro all want a slot.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="sdm-callout"><strong>Our suggestion:</strong> one copy in any Speedroid Extra Deck, since Terrortop reaches it alone. Add a second if you play Clear Wing Rider or Over Synchro, so their summons from the Extra Deck still have a copy to call after the first is used. This is our own recommendation; there are no TCG results with the card yet.</div>
+            </section>
+
+        </div>
+        <!-- END tab-mams -->
+
         <!-- Global Sections (Banlist & Resources) -->
         <section class="mb-10 md:mb-16 animate-fadeIn mt-12 pt-8 border-t border-emerald-900/50">
             <div id="banlist-status" class="card p-6">
@@ -981,6 +2058,11 @@
                     alternativeStrategy: 'Runick Speedroid hybrid via Hugin the Runick Wings, or a Windwitch splash for added consistency'
                 }
             }, { legacyCards: [
+                'Clear Wing Synchro Dragon, Four Heavenly Dragons',
+                'Speedroid Colonel Clackers',
+                'Speedroid Wing Synchron',
+                'Hi-Speedroid Chanbara',
+                'Hi-Speedroid Kitedrake',
                 'Speedroid Terrortop',
                 'Speedroid Taketomborg',
                 'Speedroid Double Yoyo',
@@ -1084,6 +2166,158 @@
                 initPageSections('Speedroid');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Magnificent Maestros tab.
+         The tab's art loads the first time the tab opens. The Quick Effect planner's controls are
+         static HTML (so page-sections.js still adds its suggest link); this script only fills the
+         aria-live result from the config below. -->
+    <script>
+        (function () {
+            'use strict';
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+            // ----- "What can its Quick Effect make?" planner -----
+            (function planner() {
+                const form = document.querySelector('[data-sdm-planner]');
+                if (!form) return;
+                const tunerSel = form.querySelector('#sdm-planner-tuner');
+                const partnerSel = form.querySelector('#sdm-planner-partner');
+                const out = form.querySelector('[data-sdm-planner-result]');
+                if (!tunerSel || !partnerSel || !out) return;
+
+                // Every Tuner listed is a WIND Machine Tuner, so Kitedrake's and Glider #2's Tuner clause always holds.
+                const TUNERS = {
+                    dice: { name: 'Speedroid Red-Eyed Dice', level: 1, from: 'Red-Eyed Dice is in the GY after Line 1 and Line 2.' },
+                    carturbo: { name: 'Speedroid CarTurbo', level: 3 },
+                    denden: { name: 'Speedroid Den-Den Daiko Duke', level: 3 },
+                    trieyed: { name: 'Speedroid Tri-Eyed Dice', level: 3 },
+                    cork: { name: 'Hi-Speedroid Cork Shooter', level: 3, synchro: true, from: 'Cork Shooter can only come from the GY, after it was Synchro Summoned earlier.' },
+                    daruma: { name: 'Speedroid Darumaknocker', level: 4 },
+                    piper: { name: 'Speedroid Fuki-Modoshi Piper', level: 4 },
+                    clackers: { name: 'Speedroid Colonel Clackers', level: 2, blocked: 'Colonel Clackers is not a Tuner in your hand or GY. It becomes one only when its own effect summons it, so the dragon can\'t pick it.' },
+                    glider: { name: 'Hi-Speedroid Glider #2', level: 5, blocked: 'Glider #2 is Level 5, and the dragon only brings back a Level 4 or lower Tuner.' }
+                };
+                const PARTNERS = {
+                    fhd: { name: 'the dragon itself', level: 7, synchro: true, clearWing: true, self: true },
+                    cwsd: { name: 'Clear Wing Synchro Dragon', level: 7, synchro: true, clearWing: true },
+                    chanbara: { name: 'Hi-Speedroid Chanbara', level: 5, synchro: true },
+                    terrortop: { name: 'Speedroid Terrortop', level: 3 },
+                    over: { name: 'Crystal Clear Wing Over Synchro Dragon', level: 12, synchro: true, clearWing: true }
+                };
+                const NEEDS = {
+                    ccwsd: { ok: (t, p) => Boolean(t.synchro && p.clearWing), why: 'needs a Tuner Synchro Monster (only Hi-Speedroid Cork Shooter here) plus a non-Tuner "Clear Wing" monster' },
+                    windSynchro: { ok: (t, p) => Boolean(p.synchro), why: 'needs the non-Tuner to be a WIND Synchro Monster' }
+                };
+                const TARGETS = [
+                    { name: 'Hi-Speedroid Puzzle', level: 4, note: 'Doubles its ATK when it battles a Special Summoned monster. Little else on your opponent\'s turn.' },
+                    { name: 'Hi-Speedroid Kendama', level: 6, note: 'Piercing damage and a 500-point burn: a body more than an answer.' },
+                    { name: 'Clear Wing Synchro Dragon', level: 7, note: 'Its two negates (an effect a Level 5 or higher monster activates on the field, or an effect that targets one) are live as soon as it lands.' },
+                    { name: 'Clear Wing Fast Dragon', level: 7, note: 'Its Quick Effect sets a monster your opponent Special Summoned from the Extra Deck to 0 ATK and negates its effects.' },
+                    { name: 'Clear Wing Synchro Dragon, Four Heavenly Dragons', level: 7, note: 'A second copy. Its destruction effect is once per turn by name, so it only fires if the first copy hasn\'t used it this turn.' },
+                    { name: 'Hi-Speedroid Kitedrake', level: 8, note: 'When Synchro Summoned: negate every face-up card your opponent controls, or destroy every other card on the field. It activates once the chain has resolved.' },
+                    { name: 'Crystal Wing Synchro Dragon', level: 8, forbidden: true },
+                    { name: 'Crystal Clear Wing Synchro Dragon', level: 10, needs: 'ccwsd', note: 'Once per turn it becomes unaffected by your opponent\'s monster effects, and it negates a Spell/Trap activation.' },
+                    { name: 'Baronne de Fleur', level: 10, forbidden: true },
+                    { name: 'Hi-Speedroid Clear Wing Rider', level: 11, needs: 'windSynchro', note: 'On your opponent\'s Main Phase it can Tribute itself for up to two Level 7 WIND Synchros with different names from your Extra Deck.' }
+                ];
+
+                function el(tag, className, text) {
+                    const node = document.createElement(tag);
+                    if (className) node.className = className;
+                    if (text != null) node.textContent = text;
+                    return node;
+                }
+                function pill(kind, text) { return el('span', 'sdm-verdict sdm-verdict--' + kind, text); }
+
+                function render() {
+                    const t = TUNERS[tunerSel.value] || TUNERS.dice;
+                    const p = PARTNERS[partnerSel.value] || PARTNERS.fhd;
+                    out.textContent = '';
+                    if (t.blocked) {
+                        out.dataset.verdict = 'no';
+                        const head = el('p', 'sdm-planner-sum');
+                        head.append(pill('no', 'Can\'t'), document.createTextNode(' ' + t.name));
+                        out.append(head, el('p', null, t.blocked));
+                        return;
+                    }
+                    const sum = t.level + p.level;
+                    out.append(el('p', 'sdm-planner-sum', t.name + ' (Level ' + t.level + ') + ' + p.name + ' (Level ' + p.level + ') = Level ' + sum));
+                    const atLevel = TARGETS.filter(x => x.level === sum);
+                    let works = 0;
+                    if (atLevel.length === 0) {
+                        out.append(el('p', null, sum > 12
+                            ? 'Nothing reaches Level ' + sum + '. Pick a smaller non-Tuner.'
+                            : 'No WIND Synchro Monster in a Speedroid Extra Deck sits at Level ' + sum + '. Try another Tuner or non-Tuner.'));
+                    } else {
+                        const list = el('ul', 'sdm-planner-list');
+                        atLevel.forEach(x => {
+                            const li = el('li');
+                            if (x.forbidden) {
+                                li.append(pill('no', 'Forbidden'), el('b', null, x.name), document.createTextNode(': Forbidden in the TCG.'));
+                            } else if (x.needs && !NEEDS[x.needs].ok(t, p)) {
+                                li.append(pill('part', 'Not with these'), el('b', null, x.name), document.createTextNode(': ' + NEEDS[x.needs].why + '.'));
+                            } else {
+                                works++;
+                                li.append(pill('yes', 'Works'), el('b', null, x.name), document.createTextNode('. ' + x.note));
+                            }
+                            list.append(li);
+                        });
+                        out.append(list);
+                    }
+                    out.dataset.verdict = works > 0 ? 'yes' : (atLevel.length > 0 ? 'part' : 'no');
+                    const foot = [];
+                    if (p.self) foot.push('The dragon itself becomes Synchro Material and leaves the field.');
+                    if (t.from) foot.push(t.from);
+                    if (works > 0) foot.push('The new monster arrives while your opponent\'s card is still on the chain, so it can\'t negate that card.');
+                    if (foot.length) out.append(el('p', 'sdm-planner-foot', foot.join(' ')));
+                }
+                tunerSel.addEventListener('change', render);
+                partnerSel.addEventListener('change', render);
+                render();
+            })();
+
+            if (typeof GuideTabs === 'undefined') return;
+
+            // Lazy art for the new tab: every art slot names its card in its own text.
+            const tabArt = {};
+            document.querySelectorAll('#tab-mams [id$="-img-container"]').forEach(node => {
+                const name = node.textContent.trim();
+                if (name) tabArt[node.id] = name;
+            });
+            GuideTabs.init({ panelArt: { 'tab-mams': [tabArt] } });
+
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'sdm-spot-img-container': 'Clear Wing Synchro Dragon, Four Heavenly Dragons' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser scrolls to it.
+            // guide-tabs.js reacts to hashchange, which doesn't fire when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('.sdm-panel');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (cta) {
+                cta.addEventListener('click', () => {
+                    const tab = tabFor(cta.dataset.openPanel);
+                    if (!tab) return;
+                    tab.click();
+                    tab.focus({ preventScroll: true });
+                    tablist.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                });
+            }
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

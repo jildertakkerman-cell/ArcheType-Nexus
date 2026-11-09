@@ -275,6 +275,642 @@
     <script src="../assets/js/lore-reel-data.js" defer></script>
     <script src="../assets/js/lore-reel-art.js" defer></script>
     <script src="../assets/js/lore-reel.js" defer></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <style>
+        /* ===== Guide tabs + Magnificent Maestros support =====
+           Added next to the original styles, which are left as they were. The
+           original guide sits unchanged in the "Classic Analysis" tab. Scoped
+           cdm-* classes rather than Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild.
+           Every colour below comes from the --cdm-* tokens. */
+        :root {
+            --cdm-primary: #22d3ee;             /* the classic guide's electric cyan */
+            --cdm-primary-soft: #a5f3fc;
+            --cdm-primary-line: rgba(34, 211, 238, 0.4);
+            --cdm-primary-wash: rgba(34, 211, 238, 0.12);
+            --cdm-limit: #fbbf24;               /* Limiter Removal amber */
+            --cdm-limit-soft: #fde68a;
+            --cdm-limit-wash: rgba(251, 191, 36, 0.1);
+            --cdm-ok: #4ade80;
+            --cdm-ok-wash: rgba(74, 222, 128, 0.12);
+            --cdm-no: #f87171;
+            --cdm-no-wash: rgba(248, 113, 113, 0.12);
+            --cdm-surface: #0f1a2c;
+            --cdm-surface-deep: #0a1322;
+            --cdm-inset: #050b16;
+            --cdm-border: #1f3b5c;
+            --cdm-text: #dbeafe;
+            --cdm-muted: #9fb3cc;
+            --cdm-heading: #ffffff;
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            max-width: 100%;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--cdm-border);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--cdm-muted);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #e5e7eb; background-color: var(--cdm-primary-wash); }
+        .tab-btn[aria-selected="true"] {
+            border-bottom-color: var(--cdm-primary);
+            color: var(--cdm-primary-soft);
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+        .tab-new-badge {
+            padding: 1px 6px;
+            border-radius: 9999px;
+            background: var(--cdm-limit);
+            color: #111;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .tab-panel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .cdm-spot-cta:focus-visible,
+        .cdm-tag:focus-visible,
+        .cdm-play:focus-visible,
+        .cdm-link:focus-visible,
+        .cdm-check select:focus-visible,
+        .cdm-table-wrap:focus-visible,
+        .cdm-details > summary:focus-visible {
+            outline: 2px solid var(--cdm-limit);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        /* Following a #tab-maestros link focuses the panel itself; skip the ring there. */
+        .tab-panel:target:focus-visible { outline: none; }
+        /* Deep-link targets land clear of the pinned tab bar and the home button. */
+        [id^="cdm-"], #tab-maestros { scroll-margin-top: 4.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.72rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+        .cdm-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Card art slot: keeps the 59:86 card shape until CardLoader
+           swaps the image in, then drops the empty-slot styling. ----- */
+        .cdm-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--cdm-primary-line);
+            border-radius: 0.35rem;
+            background: var(--cdm-inset);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+            color: var(--cdm-primary-soft);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .cdm-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        .cdm-art .card-placeholder {
+            min-height: 0;
+            aspect-ratio: auto;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+        }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .cdm-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--cdm-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, var(--cdm-limit-wash) 0%, transparent 55%),
+                linear-gradient(135deg, var(--cdm-surface) 0%, var(--cdm-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.12);
+        }
+        .cdm-spot-art { grid-area: art; }
+        .cdm-spot-head { grid-area: head; min-width: 0; }
+        .cdm-spot-body { grid-area: body; min-width: 0; }
+        .cdm-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--cdm-limit-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .cdm-spot-title {
+            color: var(--cdm-heading);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(34, 211, 238, 0.55);
+        }
+        .cdm-spot-stats {
+            margin-top: 0.35rem;
+            color: var(--cdm-primary-soft);
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .cdm-spot-hook { color: var(--cdm-text); font-size: 0.92rem; line-height: 1.6; }
+        .cdm-spot-hook strong { color: var(--cdm-heading); }
+        .cdm-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--cdm-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .cdm-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .cdm-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--cdm-border);
+            border-radius: 9999px;
+            background: var(--cdm-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .cdm-tag i { color: var(--cdm-primary); }
+        .cdm-tag:hover { border-color: var(--cdm-primary); background: var(--cdm-primary-wash); }
+        .cdm-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--cdm-primary);
+            border-radius: 9999px;
+            background: var(--cdm-primary-wash);
+            color: #fff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .cdm-spot-cta:hover { background: rgba(34, 211, 238, 0.24); box-shadow: 0 0 16px rgba(34, 211, 238, 0.35); }
+        @media (min-width: 640px) {
+            .cdm-spot {
+                grid-template-columns: 120px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+            }
+        }
+
+        /* ----- Tab intro ----- */
+        .cdm-h2 {
+            margin-bottom: 1rem;
+            color: var(--cdm-heading);
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-align: center;
+        }
+        .cdm-h3 {
+            margin-bottom: 0.6rem;
+            color: var(--cdm-heading);
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        @media (min-width: 768px) { .cdm-h2 { font-size: 2rem; } }
+        .cdm-release {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 0 0 1.25rem;
+            padding: 0;
+            list-style: none;
+        }
+        .cdm-chip {
+            /* inline-block, not flex: a flex row would turn the date into its own
+               column when the chip wraps on phones */
+            display: inline-block;
+            max-width: 100%;
+            padding: 0.3rem 0.8rem;
+            line-height: 1.5;
+            text-align: center;
+            border: 1px solid var(--cdm-border);
+            border-radius: 9999px;
+            background: var(--cdm-surface-deep);
+            color: var(--cdm-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .cdm-chip i { margin-right: 0.4rem; color: var(--cdm-primary-soft); }
+        .cdm-chip time { white-space: nowrap; }
+        .cdm-chip--tcg { border-color: rgba(251, 191, 36, 0.55); }
+        .cdm-chip--tcg i { color: var(--cdm-limit); }
+        .cdm-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--cdm-text);
+            line-height: 1.65;
+            text-align: center;
+        }
+        .cdm-lede strong { color: var(--cdm-heading); }
+        .cdm-section { margin-bottom: 3.5rem; }
+        .cdm-box {
+            padding: 1.25rem;
+            border: 1px solid var(--cdm-primary-line);
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, var(--cdm-surface), var(--cdm-surface-deep));
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+            color: var(--cdm-text);
+            line-height: 1.6;
+        }
+        .cdm-box p + p { margin-top: 0.75rem; }
+        .cdm-box strong { color: var(--cdm-heading); }
+        .cdm-pillars { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 768px) { .cdm-pillars { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .cdm-pillar-icon {
+            margin-bottom: 0.6rem;
+            color: var(--cdm-limit);
+            font-size: 1.4rem;
+            filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.4));
+        }
+        .cdm-callout {
+            margin-top: 1.25rem;
+            padding: 0.9rem 1.15rem;
+            border: 1px solid var(--cdm-border);
+            border-left: 4px solid var(--cdm-limit);
+            border-radius: 0.5rem;
+            background: var(--cdm-surface);
+            color: var(--cdm-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .cdm-callout strong { color: var(--cdm-limit-soft); }
+
+        /* ----- Card profiles ----- */
+        .cdm-profiles { display: grid; gap: 1.5rem; }
+        .cdm-profile {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.2rem;
+            align-items: start;
+            padding: 1.25rem;
+            border: 1px solid var(--cdm-primary-line);
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, var(--cdm-surface), var(--cdm-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(34, 211, 238, 0.08);
+        }
+        .cdm-profile-art { grid-area: art; }
+        .cdm-profile-head { grid-area: head; min-width: 0; }
+        .cdm-profile > .cms-section,
+        .cdm-profile-body { grid-area: body; min-width: 0; }
+        @media (min-width: 768px) {
+            .cdm-profile {
+                grid-template-columns: 170px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+            }
+        }
+        .cdm-kicker {
+            color: var(--cdm-limit-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .cdm-card-name {
+            margin-top: 0.2rem;
+            color: var(--cdm-heading);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
+        }
+        .cdm-stats { margin-top: 0.4rem; color: var(--cdm-primary-soft); font-size: 0.8rem; font-weight: 600; }
+        .cdm-text {
+            margin: 0.9rem 0 0;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--cdm-border);
+            border-left: 3px solid var(--cdm-primary);
+            border-radius: 0.5rem;
+            background: var(--cdm-inset);
+            color: #e2e8f0;
+            font-size: 0.86rem;
+            line-height: 1.6;
+        }
+        .cdm-text-label {
+            display: block;
+            margin-bottom: 0.3rem;
+            color: var(--cdm-muted);
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .cdm-points {
+            display: grid;
+            gap: 0.5rem;
+            margin: 0.9rem 0 0;
+            padding: 0;
+            list-style: none;
+        }
+        .cdm-points > li {
+            position: relative;
+            padding-left: 1.4rem;
+            color: var(--cdm-text);
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+        .cdm-points > li::before {
+            content: "";
+            position: absolute;
+            top: 0.55rem;
+            left: 0.2rem;
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 2px;
+            background: var(--cdm-primary);
+            transform: rotate(45deg);
+        }
+        .cdm-points strong { color: var(--cdm-heading); }
+        .cdm-ruling {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--cdm-limit);
+            border-radius: 0 0.5rem 0.5rem 0;
+            background: var(--cdm-limit-wash);
+            color: #e5e7eb;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+        .cdm-ruling strong { color: var(--cdm-limit-soft); }
+        .cdm-link {
+            color: var(--cdm-primary-soft);
+            text-decoration: underline;
+            text-decoration-color: var(--cdm-primary-line);
+            text-underline-offset: 2px;
+        }
+        .cdm-link:hover { color: #fff; text-decoration-color: var(--cdm-primary); }
+
+        /* ----- Tables ----- */
+        .cdm-table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--cdm-border);
+            border-radius: 0.75rem;
+            background: var(--cdm-surface-deep);
+        }
+        .cdm-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        .cdm-table caption {
+            padding: 0.75rem 1rem 0;
+            color: var(--cdm-muted);
+            font-size: 0.78rem;
+            text-align: left;
+        }
+        .cdm-table th,
+        .cdm-table td {
+            padding: 0.7rem 0.9rem;
+            border-bottom: 1px solid var(--cdm-border);
+            color: var(--cdm-text);
+            line-height: 1.5;
+            text-align: left;
+            vertical-align: top;
+        }
+        .cdm-table thead th {
+            color: var(--cdm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .cdm-table tbody tr:last-child > * { border-bottom: 0; }
+        .cdm-table th[scope="row"] { color: var(--cdm-heading); font-weight: 700; }
+        .cdm-verdict {
+            display: inline-block;
+            padding: 0.1rem 0.55rem;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .cdm-verdict--yes { background: var(--cdm-ok-wash); color: var(--cdm-ok); }
+        .cdm-verdict--no { background: var(--cdm-no-wash); color: var(--cdm-no); }
+        .cdm-verdict--part { background: var(--cdm-limit-wash); color: var(--cdm-limit); }
+        /* Below 640px each row stacks into a card instead of scrolling sideways. */
+        @media (max-width: 639px) {
+            .cdm-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .cdm-table--stack tr { display: block; padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--cdm-border); }
+            .cdm-table--stack tbody tr:last-child { border-bottom: 0; }
+            .cdm-table--stack th,
+            .cdm-table--stack td { display: block; padding: 0.2rem 0; border: 0; }
+            .cdm-table--stack td[data-label]::before {
+                content: attr(data-label) ": ";
+                color: var(--cdm-muted);
+                font-size: 0.72rem;
+                font-weight: 700;
+                text-transform: uppercase;
+            }
+        }
+
+        /* ----- "Does it count as Cyber Dragon?" checker ----- */
+        .cdm-check {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.25rem;
+        }
+        .cdm-check label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: var(--cdm-heading);
+            font-weight: 700;
+        }
+        .cdm-check select {
+            width: 100%;
+            min-height: 44px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--cdm-primary-line);
+            border-radius: 0.5rem;
+            background: var(--cdm-inset);
+            color: #f1f5f9;
+            font-size: 0.95rem;
+        }
+        .cdm-check-result {
+            min-height: 5rem;
+            padding: 1rem 1.15rem;
+            border: 1px solid var(--cdm-border);
+            border-radius: 0.6rem;
+            background: var(--cdm-inset);
+            color: var(--cdm-text);
+            line-height: 1.6;
+        }
+        .cdm-check-result[data-verdict="yes"] { border-color: rgba(74, 222, 128, 0.55); }
+        .cdm-check-result[data-verdict="no"] { border-color: rgba(248, 113, 113, 0.55); }
+        .cdm-check-result[data-verdict="part"] { border-color: rgba(251, 191, 36, 0.55); }
+        .cdm-check-title { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; color: var(--cdm-heading); font-weight: 700; }
+        .cdm-check-source { margin-top: 0.5rem; color: var(--cdm-muted); font-size: 0.78rem; }
+        .cdm-details {
+            margin-top: 1.25rem;
+            border: 1px solid var(--cdm-border);
+            border-radius: 0.6rem;
+            background: var(--cdm-surface-deep);
+        }
+        .cdm-details > summary {
+            min-height: 44px;
+            padding: 0.7rem 1rem;
+            color: var(--cdm-primary-soft);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .cdm-details[open] > summary { border-bottom: 1px solid var(--cdm-border); }
+        .cdm-details .cdm-table-wrap { border: 0; border-radius: 0 0 0.6rem 0.6rem; }
+
+        /* ----- Deck math meter ----- */
+        .cdm-odds { display: grid; gap: 0.6rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+        .cdm-odds li {
+            display: grid;
+            grid-template-columns: minmax(8.5rem, 11rem) minmax(0, 1fr) 3.5rem;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+        }
+        .cdm-odds-label { color: var(--cdm-text); font-weight: 600; }
+        .cdm-odds-bar { height: 0.7rem; overflow: hidden; border-radius: 9999px; background: var(--cdm-inset); border: 1px solid var(--cdm-border); }
+        .cdm-odds-bar > span { display: block; height: 100%; border-radius: 9999px; background: linear-gradient(90deg, var(--cdm-primary), var(--cdm-primary-soft)); }
+        .cdm-odds-bar--low > span { background: linear-gradient(90deg, var(--cdm-no), var(--cdm-limit)); }
+        .cdm-odds-value { color: var(--cdm-heading); font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+
+        /* ----- Combo lines + lab ----- */
+        .cdm-lines { display: grid; gap: 1rem; }
+        @media (min-width: 900px) { .cdm-lines { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .cdm-line {
+            display: flex;
+            flex-direction: column;
+            gap: 0.55rem;
+            padding: 1.1rem;
+            border: 1px solid var(--cdm-border);
+            border-top: 3px solid var(--cdm-primary);
+            border-radius: 0.75rem;
+            background: var(--cdm-surface);
+            color: var(--cdm-text);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+        .cdm-line h4 { color: var(--cdm-heading); font-size: 1rem; font-weight: 700; line-height: 1.35; }
+        .cdm-line dl { display: grid; gap: 0.35rem; margin: 0; }
+        .cdm-line dt { color: var(--cdm-muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .cdm-line dd { margin: 0; }
+        .cdm-play {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 44px;
+            margin-top: auto;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--cdm-primary);
+            border-radius: 9999px;
+            background: var(--cdm-primary-wash);
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .cdm-play:hover { background: rgba(34, 211, 238, 0.24); }
+        .cdm-lab-loading { color: var(--cdm-muted); text-align: center; }
+
+        /* ----- Lists of strengths / weak points ----- */
+        .cdm-two { display: grid; gap: 1rem; }
+        @media (min-width: 768px) { .cdm-two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .cdm-list { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+        .cdm-list > li { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); gap: 0.6rem; font-size: 0.9rem; line-height: 1.55; }
+        .cdm-list > li > i { margin-top: 0.25rem; }
+        .cdm-list--pro > li > i { color: var(--cdm-ok); }
+        .cdm-list--con > li > i { color: var(--cdm-no); }
+        .cdm-ratios { display: grid; gap: 0.4rem; margin: 0.75rem 0 0; padding: 0; list-style: none; }
+        .cdm-ratios li { display: flex; gap: 0.75rem; align-items: baseline; font-size: 0.9rem; }
+        .cdm-ratios b {
+            min-width: 2.25rem;
+            color: var(--cdm-limit);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            text-align: right;
+        }
+    </style>
 </head>
 <body class="p-4 md:p-8">
     <!-- Yu-Gi-Oh! Themed Home Button -->
@@ -324,6 +960,41 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== MAGNIFICENT MAESTROS SPOTLIGHT ====================
+             Always visible above the tabs; its chips and button open the new tab. -->
+        <aside class="cdm-spot" data-pcs-scope="spot" aria-labelledby="cdm-spot-title">
+            <div class="cdm-spot-art">
+                <div id="cdm-spot-img-container" class="cdm-art">Cyber Dragon, the Luminous Mech Dragon</div>
+            </div>
+            <div class="cdm-spot-head">
+                <p class="cdm-spot-kicker"><span class="tab-new-badge">New support</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="cdm-spot-title" class="cdm-spot-title">Three new cards: Luminous Mech Dragon, Future Fusion Nova, Final Strike Dragon</h2>
+            </div>
+            <div class="cdm-spot-body">
+                <p class="cdm-spot-hook"><strong>Cyber Dragon, the Luminous Mech Dragon</strong> summons itself onto an empty field and negates one of your opponent's monsters. <strong>Future Fusion Nova</strong> Fusion Summons straight from the Deck, and <strong>Cyber End Dragon, the Final Strike Dragon</strong> pays 4000 LP to add Limiter Removal: 8000 ATK, three attacks. Going second, Nova alone threatens 8000 damage. The new monster does <strong>not</strong> count as "Cyber Dragon", though, and that matters for half the deck's cards.</p>
+                <p id="cdm-spot-tags-label" class="cdm-label">Jump to</p>
+                <ul class="cdm-tags" aria-labelledby="cdm-spot-tags-label">
+                    <li><a class="cdm-tag" href="#cdm-card-luminous"><i class="fas fa-bolt" aria-hidden="true"></i> Luminous Mech Dragon</a></li>
+                    <li><a class="cdm-tag" href="#cdm-card-nova"><i class="fas fa-layer-group" aria-hidden="true"></i> Future Fusion Nova</a></li>
+                    <li><a class="cdm-tag" href="#cdm-card-final"><i class="fas fa-meteor" aria-hidden="true"></i> Final Strike Dragon</a></li>
+                    <li><a class="cdm-tag" href="#cdm-checker"><i class="fas fa-question-circle" aria-hidden="true"></i> Does it count as "Cyber Dragon"?</a></li>
+                    <li><a class="cdm-tag" href="#cdm-lines"><i class="fas fa-play-circle" aria-hidden="true"></i> Three tested lines</a></li>
+                </ul>
+                <button type="button" class="cdm-spot-cta" data-open-panel="tab-maestros">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Analysis panel;
+             the Magnificent Maestros cards get their own panel. The banlist,
+             deck resources and community combos stay below both. -->
+        <div class="tab-nav" role="tablist" aria-label="Cyber Dragon guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-maestros" aria-controls="tab-maestros" aria-selected="false" tabindex="-1">Magnificent Maestros <span class="tab-new-badge" aria-hidden="true">New</span><span class="cdm-sr-only">(new cards)</span></button>
+        </div>
+
+        <div id="tab-classic" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary Section -->
         <section class="mb-10 md:mb-16">
@@ -559,6 +1230,304 @@
             </div>
         </section>
         
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== MAGNIFICENT MAESTROS TAB ====================
+             Card text is the text listed for the TCG release; rulings are from
+             Konami's official Q&A. Every step of the three lines was checked against
+             the printed text, and each line replays move for move in the ocgcore
+             engine. Every card in them is legal in the TCG (banlist checked
+             3 Nov 2026). The step-by-step lines live in
+             assets/data/combos/cyber-dragon-maestros-combos.json. Their keys start at
+             combo3 so they can share the page with the classic simulator's combo1
+             (and a combo2 replay draft that may be adopted later). -->
+        <div id="tab-maestros" data-pcs-scope="maestros" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-maestros" tabindex="0" hidden>
+
+            <!-- Intro -->
+            <section class="cdm-section" id="cdm-intro">
+                <h2 class="cdm-h2">New Support: Magnificent Maestros</h2>
+                <ul class="cdm-release" aria-label="Release dates">
+                    <li class="cdm-chip cdm-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Magnificent Maestros &middot; <time datetime="2026-11-12">12 Nov 2026</time></li>
+                    <li class="cdm-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; Limit Over Collection: The Rivals &middot; <time datetime="2026-03-20">20 Mar 2026</time></li>
+                </ul>
+                <p class="cdm-lede">Magnificent Maestros gives Cyber Dragon three cards built around Zane Truesdale's signature finish, a Cyber End Dragon with doubled ATK. <strong>Cyber Dragon, the Luminous Mech Dragon</strong> is a free Special Summon that negates a monster. <strong>Future Fusion Nova</strong> makes a LIGHT Machine Fusion straight from the Deck. <strong>Cyber End Dragon, the Final Strike Dragon</strong> adds its own Limiter Removal. Going second, the deck can now threaten 8000 damage with one card. Going first, Luminous Mech Dragon is one more Level 5 body for the usual Infinity board.</p>
+                <div class="cdm-pillars">
+                    <div class="cdm-box">
+                        <div class="cdm-pillar-icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+                        <h3 class="cdm-h3">A start that skips the Normal Summon</h3>
+                        <p>The old going-second plan began with a Normal Summon of Cyber Dragon Core, and one hand trap on it ended the turn. Luminous Mech Dragon comes out from the hand onto an empty field and switches off a monster before you commit anything else.</p>
+                    </div>
+                    <div class="cdm-box">
+                        <div class="cdm-pillar-icon"><i class="fas fa-layer-group" aria-hidden="true"></i></div>
+                        <h3 class="cdm-h3">A Fusion Summon from the Deck</h3>
+                        <p>Future Fusion Nova uses monsters from your Deck as material, so it needs no other card in hand. The price: one of the materials must be the card named <strong>Cyber Dragon</strong>, and for the rest of the turn you can only Special Summon Machines and only attack with the monster it made.</p>
+                    </div>
+                    <div class="cdm-box">
+                        <div class="cdm-pillar-icon"><i class="fas fa-meteor" aria-hidden="true"></i></div>
+                        <h3 class="cdm-h3">A finisher that finds its own finisher</h3>
+                        <p>Final Strike Dragon takes any three Machines with 2100 or more ATK. Make it with only LIGHT monsters and it pays 4000 LP for Limiter Removal: 8000 ATK, up to three attacks, piercing damage.</p>
+                    </div>
+                </div>
+                <div class="cdm-callout"><strong>The catch:</strong> Luminous Mech Dragon has "Cyber Dragon" in its name, so it is a "Cyber Dragon" <em>monster</em>, but it is not treated as the card <em>named</em> "Cyber Dragon". Konami's official Q&amp;A says so directly. Future Fusion Nova, Cyber Dragon Sieger, Chimeratech Fortress Dragon, Cyber Dragon Herz's search and most of the deck's Spells and Traps need that name. <a class="cdm-link" href="#cdm-checker">Check any card</a>.</div>
+            </section>
+
+            <!-- Card profiles -->
+            <section class="cdm-section" id="cdm-cards">
+                <h2 class="cdm-h2">The Three Cards</h2>
+                <div class="cdm-profiles">
+                    <article class="cdm-profile" id="cdm-card-luminous" aria-labelledby="cdm-card-luminous-name">
+                        <div class="cdm-profile-art"><div id="cdm-luminous-img-container" class="cdm-art">Cyber Dragon, the Luminous Mech Dragon</div></div>
+                        <div class="cdm-profile-head">
+                            <p class="cdm-kicker">The opener</p>
+                            <h3 id="cdm-card-luminous-name" class="cdm-card-name">Cyber Dragon, the Luminous Mech Dragon</h3>
+                            <p class="cdm-stats">Level 5 &middot; LIGHT &middot; Machine / Effect &middot; 2100 / 1600</p>
+                        </div>
+                        <div class="cdm-profile-body">
+                            <blockquote class="cdm-text"><span class="cdm-text-label">Card text</span>If you control no monsters, you can Special Summon this card (from your hand). You can only use each of the following effects of "Cyber Dragon, the Luminous Mech Dragon" once per turn. If this card is Special Summoned: You can target 1 face-up monster your opponent controls; negate its effects until the end of this turn. During your Main Phase: You can Fusion Summon 1 Machine Fusion Monster from your Extra Deck, using this card you control and monsters from your hand or field.</blockquote>
+                            <ul class="cdm-points">
+                                <li><strong>Going second it goes first.</strong> Its summon needs an empty field, so it has to come out before anything else you summon. The negate triggers on any Special Summon, not only this one, so a revived Luminous Mech Dragon negates again (once per turn).</li>
+                                <li><strong>It forces the opponent's hand.</strong> They either answer the negate with their own negation, or the monster they were counting on is off for the turn. Either way, the cards you play next face one interruption fewer.</li>
+                                <li><strong>Its Fusion uses itself plus your hand or field.</strong> With one more "Cyber Dragon" monster it makes Chimeratech Rampage Dragon (2 materials destroy 2 Spells/Traps). With one more LIGHT Machine it makes Heosvarog the Mechanical Dawn. With two more Machines that have 2100+ ATK it makes Final Strike Dragon.</li>
+                                <li><strong>Going first it's an extender, not a starter.</strong> Chimeratech Rampage Dragon or Cyberdark Wurm can send it from the Deck, Cyber Dragon Nachster revives it (2100 ATK), and it fuses into Heosvarog. <a class="cdm-link" href="#cdm-lines">Line 5</a> does exactly that.</li>
+                                <li><strong>Searchable.</strong> Cyber Emergency adds it ("Cyber Dragon" monster), Cyber Repair Plant adds it (LIGHT Machine), and Cyber Dragon Core's GY effect Special Summons it from the Deck, which also triggers its negate.</li>
+                            </ul>
+                            <p class="cdm-ruling"><strong>Official rulings:</strong> its hand summon starts no chain. The negate can be activated in the Damage Step. If it has left your Monster Zone when its Fusion effect resolves, nothing happens. It is not treated as "Cyber Dragon" (Konami Q&amp;A, 8 May 2026).</p>
+                        </div>
+                    </article>
+
+                    <article class="cdm-profile" id="cdm-card-nova" aria-labelledby="cdm-card-nova-name">
+                        <div class="cdm-profile-art"><div id="cdm-nova-img-container" class="cdm-art">Future Fusion Nova</div></div>
+                        <div class="cdm-profile-head">
+                            <p class="cdm-kicker">The engine</p>
+                            <h3 id="cdm-card-nova-name" class="cdm-card-name">Future Fusion Nova</h3>
+                            <p class="cdm-stats">Continuous Spell</p>
+                        </div>
+                        <div class="cdm-profile-body">
+                            <blockquote class="cdm-text"><span class="cdm-text-label">Card text</span>When this card is activated: Fusion Summon 1 LIGHT Machine Fusion Monster from your Extra Deck, using monsters from your Deck, including "Cyber Dragon", also for the rest of this turn after this effect resolves, you cannot Special Summon, except Machine monsters, and you cannot declare attacks, except with the Summoned monster. When this card leaves the field, destroy that monster. When that monster is destroyed, destroy this card. You can only activate 1 "Future Fusion Nova" per turn.</blockquote>
+                            <ul class="cdm-points">
+                                <li><strong>LIGHT Machine Fusions only.</strong> It makes Final Strike Dragon, Cyber Eternity Dragon, Heosvarog the Mechanical Dawn, Cyber Twin Dragon and the original Cyber End Dragon. The deck's DARK Fusions (Chimeratech Rampage, Fortress, Megafleet and Overdragon) are out.</li>
+                                <li><strong>The card named Cyber Dragon must still be in the Deck.</strong> Luminous Mech Dragon can fill other slots, never that one. <a class="cdm-link" href="#cdm-math">The deck math</a> shows how many copies keep it live.</li>
+                                <li><strong>It is not a "Cyber" card.</strong> Cyber Dragon Core and Cyber Emergency can't add it. It is a "Fusion" Spell, so Cyberdark Inferno's floating effect can add it, and Heosvarog the Mechanical Dawn can return it from the GY because it has an effect that Fusion Summons.</li>
+                                <li><strong>The two cards are tied together.</strong> If Nova leaves the field, the monster it summoned is destroyed, and if that monster is destroyed, Nova goes too. Limiter Removal's End Phase destruction takes both.</li>
+                            </ul>
+                            <p class="cdm-ruling"><strong>Official rulings:</strong> the Fusion Summon is part of the activation, and Ash Blossom &amp; Joyous Spring can respond to it, because it sends cards from the Deck to the GY (Konami Q&amp;A, 26 Jun 2026). The Machine lock and the attack lock start once the effect resolves, even if no Fusion Summon happened, unless the activation or effect was negated. You can still activate it after you Special Summoned a non-Machine or attacked with another monster earlier in the turn. The destruction links start no chain and also apply in the Damage Step.</p>
+                        </div>
+                    </article>
+
+                    <article class="cdm-profile" id="cdm-card-final" aria-labelledby="cdm-card-final-name">
+                        <div class="cdm-profile-art"><div id="cdm-final-img-container" class="cdm-art">Cyber End Dragon, the Final Strike Dragon</div></div>
+                        <div class="cdm-profile-head">
+                            <p class="cdm-kicker">The finisher</p>
+                            <h3 id="cdm-card-final-name" class="cdm-card-name">Cyber End Dragon, the Final Strike Dragon</h3>
+                            <p class="cdm-stats">Level 10 &middot; LIGHT &middot; Machine / Fusion / Effect &middot; 4000 / 2800</p>
+                        </div>
+                        <div class="cdm-profile-body">
+                            <blockquote class="cdm-text"><span class="cdm-text-label">Card text</span>3 Machine monsters with 2100 or more ATK<br>Must be Fusion Summoned. If this card is Fusion Summoned using only LIGHT monsters: You can pay 4000 LP; add 1 "Limiter Removal" from your Deck to your hand. You can only use this effect of "Cyber End Dragon, the Final Strike Dragon" once per turn. If this card attacks a Defense Position monster, inflict piercing battle damage to your opponent. While its ATK is higher than its original ATK, this card can make up to 3 attacks during each Battle Phase.</blockquote>
+                            <ul class="cdm-points">
+                                <li><strong>Materials don't need the "Cyber Dragon" name.</strong> Cyber Dragon, Luminous Mech Dragon, Cyber Dragon Nova, Cyber Dragon Infinity and Cyber Dragon Sieger are all LIGHT with 2100 ATK. Chimeratech Rampage Dragon (DARK) and Therion "King" Regulus (EARTH) also qualify as material, but either one turns the Limiter Removal search off.</li>
+                                <li><strong>Four ways to make it:</strong> Future Fusion Nova from the Deck, Luminous Mech Dragon's own Fusion, Polymerization (the classic tab's replay line does this) or Power Bond. Power Bond already doubles it to 8000, so three attacks are on without Limiter Removal, and with only LIGHT materials the search still turns it into 16,000.</li>
+                                <li><strong>Damage:</strong> one direct hit at 8000 is lethal from full LP. The three attacks let it run over monsters first, and piercing punishes Defense Position walls.</li>
+                                <li><strong>Not with Cyber Dragon Sieger.</strong> Sieger's +2100 also turns the three attacks on, but neither player takes battle damage from attacks involving that monster for the turn. That's good for clearing monsters, useless for the kill.</li>
+                                <li><strong>Gone after one turn.</strong> Limiter Removal destroys it in the End Phase. "Must be Fusion Summoned" also means it can't be revived later.</li>
+                            </ul>
+                            <p class="cdm-ruling"><strong>Official rulings:</strong> the search is a trigger in the Monster Zone. The piercing and three-attack clauses are continuous effects, so anything that negates the monster's effects (Infinite Impermanence, Effect Veiler) turns both off for the turn.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- "Cyber Dragon" checker -->
+            <section class="cdm-section" id="cdm-checker">
+                <h2 class="cdm-h2">Does Luminous Mech Dragon Count as "Cyber Dragon"?</h2>
+                <p class="cdm-lede">Two kinds of wording show up on Cyber Dragon cards. <strong>"Cyber Dragon" monster</strong> means any monster with "Cyber Dragon" in its name, and Luminous Mech Dragon is one. <strong>"Cyber Dragon"</strong> on its own means the card with exactly that name, or a card that becomes it, like Core, Herz and Nachster on the field and in the GY. Luminous Mech Dragon has no such clause. Pick a card to see where it stands.</p>
+                <div class="cdm-box" data-cdm-checker>
+                    <div class="cdm-check" data-cdm-check-controls>
+                        <p class="cdm-lede" style="margin:0;text-align:left">The interactive checker needs JavaScript. The full list below covers every card.</p>
+                    </div>
+                    <details class="cdm-details" id="cdm-check-list">
+                        <summary>See the full list (26 cards)</summary>
+                        <div class="cdm-table-wrap" tabindex="0" role="region" aria-label="Which cards accept Luminous Mech Dragon as Cyber Dragon">
+                            <table class="cdm-table cdm-table--stack" data-cdm-check-table>
+                                <caption>"Needs the name" entries are from Konami's official Q&amp;A of 8 May 2026; the rest follow the card text.</caption>
+                                <thead>
+                                    <tr><th scope="col">Card</th><th scope="col">Luminous Mech Dragon</th><th scope="col">Why</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Chimeratech Rampage Dragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">"2+ 'Cyber Dragon' monsters" is archetype wording. Luminous Mech Dragon plus any other "Cyber Dragon" monster makes it, through its own Fusion effect too.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Chimeratech Megafleet Dragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">It's the "1 'Cyber Dragon' monster": send it with your opponent's Extra Monster Zone monster. Megafleet must be summoned by sending its materials, so Luminous Mech Dragon's own Fusion effect can't make it.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Cyber End Dragon, the Final Strike Dragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">It wants 3 Machines with 2100+ ATK, no name. Luminous Mech Dragon is LIGHT, so the Limiter Removal search stays on.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Heosvarog the Mechanical Dawn</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">2 LIGHT Machine monsters. Luminous Mech Dragon in the GY also pays Heosvarog's negate cost.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Cyber Eternity Dragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">As material, yes: it's the "1 'Cyber Dragon' monster". Eternity's own effect only Special Summons the card named "Cyber Dragon", so it can't call Luminous Mech Dragon.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Cyber Dragon Nova</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">It's a Level 5 Machine, so it's fine Xyz Material. Nova's revive and its banish-for-ATK effect need the name, so they can't use it.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Future Fusion Nova</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">It can be one of the other materials from the Deck, never the required "Cyber Dragon". A Deck with Luminous Mech Dragon but no Cyber Dragon can't activate Nova at all.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Chimeratech Fortress Dragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">Needs the real "Cyber Dragon". Luminous Mech Dragon can only be one of the "1+ Machine monsters".</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Chimeratech Overdragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">Same as Fortress: the "Cyber Dragon" slot needs the name; Luminous Mech Dragon can be an extra Machine.</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Cyber Dragon Sieger</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">"2 Machine monsters, including 'Cyber Dragon'": Luminous Mech Dragon can be the other Machine, not the "Cyber Dragon".</td></tr>
+                                    <tr data-group="Fusion Summons and materials"><th scope="row">Cyber End Dragon / Cyber Twin Dragon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Every material slot is the card named "Cyber Dragon".</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Emergency</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">Adds 1 "Cyber Dragon" monster, so it can add Luminous Mech Dragon.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Dragon Core</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">Its GY effect Special Summons 1 "Cyber Dragon" monster from the Deck while only your opponent controls a monster: Luminous Mech Dragon comes out and its negate triggers.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyberdark Wurm</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">Its cost sends 1 "Cyber Dragon" monster from your hand or Deck, so Luminous Mech Dragon is a legal send.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cybernetic Horizon</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">It's a Machine "Cyber" monster (LIGHT), so Horizon can send it or add it.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Dragon Nachster</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">Nachster revives a Machine with 2100 ATK or DEF; no name needed. Luminous Mech Dragon's negate triggers when it lands.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Repair Plant</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Partly</span></td><td data-label="Why">Its search adds any LIGHT Machine, Luminous Mech Dragon included, but Luminous Mech Dragon in the GY doesn't meet the "Cyber Dragon" condition that turns Repair Plant on.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Dragon Herz</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Herz adds "Cyber Dragon" from the Deck or GY: the named card only.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Jormungardr</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Both effects take or return "Cyber Dragon", the named card.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Dragon Vier</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Summoning Luminous Mech Dragon doesn't let Vier come out, and Vier's +500 doesn't apply to it.</td></tr>
+                                    <tr data-group="Searches, summons and costs"><th scope="row">Cyber Dragon Drei</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Neither the Level change nor the protection can choose Luminous Mech Dragon.</td></tr>
+                                    <tr data-group="Spells and Traps"><th scope="row">Limiter Removal</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--yes">Counts</span></td><td data-label="Why">It doubles every Machine you control, so Luminous Mech Dragon doubles too. Only Nova's summon can attack under Nova's lock, though.</td></tr>
+                                    <tr data-group="Spells and Traps"><th scope="row">Cybernetic Overflow</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">It banishes "Cyber Dragon(s)" with different Levels: named cards only.</td></tr>
+                                    <tr data-group="Spells and Traps"><th scope="row">Cyber Revsystem</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Special Summons "Cyber Dragon" from your hand or GY: not Luminous Mech Dragon.</td></tr>
+                                    <tr data-group="Spells and Traps"><th scope="row">Cybernetic Revolution</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Its cost Tributes a "Cyber Dragon"; Luminous Mech Dragon can't pay it.</td></tr>
+                                    <tr data-group="Spells and Traps"><th scope="row">Cyber Network / Cybernetic Hidden Technology</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Needs the name</span></td><td data-label="Why">Both check for or send a "Cyber Dragon"; Luminous Mech Dragon isn't one.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <!-- Nova deck math -->
+            <section class="cdm-section" id="cdm-math">
+                <h2 class="cdm-h2">Future Fusion Nova: What It Makes and What It Needs</h2>
+                <p class="cdm-lede">Nova uses only Deck monsters, so the Deck is your hand for it. For Final Strike Dragon, three Machines with 2100 or more ATK have to be left in the Deck, and one of them must be the card named Cyber Dragon. In a Cyber Dragon deck only two Main Deck cards fit: <strong>Cyber Dragon</strong> and <strong>Luminous Mech Dragon</strong>.</p>
+                <div class="cdm-table-wrap" tabindex="0" role="region" aria-label="Fusion Monsters Future Fusion Nova can summon">
+                    <table class="cdm-table cdm-table--stack">
+                        <caption>LIGHT Machine Fusions Nova can summon, with materials taken from the Deck</caption>
+                        <thead>
+                            <tr><th scope="col">Fusion Monster</th><th scope="col">Deck materials</th><th scope="col">What you get</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Cyber End Dragon, the Final Strike Dragon</th><td data-label="Deck materials">Cyber Dragon + 2 more Machines with 2100+ ATK (Cyber Dragon or Luminous Mech Dragon)</td><td data-label="What you get">All LIGHT, so pay 4000 LP for Limiter Removal: 8000 ATK, three attacks, piercing. The going-second kill.</td></tr>
+                            <tr><th scope="row">Cyber Eternity Dragon</th><td data-label="Deck materials">Cyber Dragon + any 2 Machines</td><td data-label="What you get">Sends two extra Machines to the GY. Cyber Dragon Herz as one of them adds the material Cyber Dragon back from the GY. Its revival effect needs your opponent's card to send it to the GY. If they destroy Nova instead, Nova's own effect destroys Eternity and the revival doesn't trigger.</td></tr>
+                            <tr><th scope="row">Heosvarog the Mechanical Dawn</th><td data-label="Deck materials">Cyber Dragon + 1 LIGHT Machine</td><td data-label="What you get">A Spell/Trap negate, paid by banishing 2 LIGHT Machines from the GY: its own materials cover that. Next Standby Phase it adds a card that Fusion Summons from the GY.</td></tr>
+                            <tr><th scope="row">Cyber Twin Dragon / Cyber End Dragon</th><td data-label="Deck materials">2 or 3 copies of Cyber Dragon</td><td data-label="What you get">Possible, but they eat the copies of Cyber Dragon that Final Strike Dragon needs.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cdm-box" style="margin-top:1.25rem">
+                    <h3 class="cdm-h3">How many copies keep Nova live?</h3>
+                    <p>Chance that, with Future Fusion Nova in your opening hand, the rest of the hand leaves enough in a 40-card Deck for Final Strike Dragon (at least one Cyber Dragon and three 2100-ATK LIGHT Machines in total). Going second, 5 other cards:</p>
+                    <ul class="cdm-odds" aria-label="Chance Future Fusion Nova can still summon Final Strike Dragon, going second">
+                        <li><span class="cdm-odds-label">1 Cyber Dragon + 2 Luminous</span><span class="cdm-odds-bar cdm-odds-bar--low" aria-hidden="true"><span style="width:65.5%"></span></span><span class="cdm-odds-value">65.5%</span></li>
+                        <li><span class="cdm-odds-label">1 Cyber Dragon + 3 Luminous</span><span class="cdm-odds-bar cdm-odds-bar--low" aria-hidden="true"><span style="width:83.7%"></span></span><span class="cdm-odds-value">83.7%</span></li>
+                        <li><span class="cdm-odds-label">2 Cyber Dragon + 2 Luminous</span><span class="cdm-odds-bar" aria-hidden="true"><span style="width:92.8%"></span></span><span class="cdm-odds-value">92.8%</span></li>
+                        <li><span class="cdm-odds-label">2 Cyber Dragon + 3 Luminous</span><span class="cdm-odds-bar" aria-hidden="true"><span style="width:98%"></span></span><span class="cdm-odds-value">98.0%</span></li>
+                        <li><span class="cdm-odds-label">3 Cyber Dragon + 2 Luminous</span><span class="cdm-odds-bar" aria-hidden="true"><span style="width:99%"></span></span><span class="cdm-odds-value">99.0%</span></li>
+                    </ul>
+                    <p style="margin-top:0.9rem">The one-Cyber-Dragon build loses Nova about one game in three. Any of your own plays that take a Cyber Dragon out of the Deck first (Cyber Dragon Herz's search, Cyber Jormungardr) count against you too, so play Nova before them.</p>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="cdm-section" id="cdm-lines">
+                <h2 class="cdm-h2">Three Tested Lines</h2>
+                <p class="cdm-lede">Each line was replayed move by move in the ocgcore duel engine (the rules engine behind EDOPro) and ends on the board shown. Every card in them is legal in the TCG as of 3 Nov 2026. The opponent's monster in lines 3 and 4 stands for whatever face-up monster they have; the board below only draws your side.</p>
+                <div class="cdm-lines">
+                    <article class="cdm-line">
+                        <h4>Line 3: Nova alone into Final Strike Dragon</h4>
+                        <dl>
+                            <div><dt>Going</dt><dd>Second</dd></div>
+                            <div><dt>Hand</dt><dd>Future Fusion Nova</dd></div>
+                            <div><dt>Deck needs</dt><dd>Cyber Dragon, two more 2100-ATK LIGHT Machines, Limiter Removal</dd></div>
+                            <div><dt>Result</dt><dd>Final Strike Dragon at 8000 ATK, three attacks, piercing. You're on 4000 LP.</dd></div>
+                        </dl>
+                        <button type="button" class="cdm-play" data-cdm-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play Line 3</button>
+                    </article>
+                    <article class="cdm-line">
+                        <h4>Line 4: Luminous Mech Dragon clears the way</h4>
+                        <dl>
+                            <div><dt>Going</dt><dd>Second</dd></div>
+                            <div><dt>Hand</dt><dd>Luminous Mech Dragon, Future Fusion Nova</dd></div>
+                            <div><dt>Deck needs</dt><dd>As line 3</dd></div>
+                            <div><dt>Result</dt><dd>Their best monster negated first, then the same Final Strike Dragon. Luminous Mech Dragon can't attack under Nova's lock.</dd></div>
+                        </dl>
+                        <button type="button" class="cdm-play" data-cdm-combo-open="4"><i class="fas fa-play" aria-hidden="true"></i> Play Line 4</button>
+                    </article>
+                    <article class="cdm-line">
+                        <h4>Line 5: Core into four interruptions</h4>
+                        <dl>
+                            <div><dt>Going</dt><dd>First</dd></div>
+                            <div><dt>Hand</dt><dd>Cyber Dragon Core</dd></div>
+                            <div><dt>Route</dt><dd>Realm, Chimera, Clockwork Knight and Night, S:P Little Knight, Wurm, Regulus, Power Bond into Rampage, Nova; Nachster revives Luminous Mech Dragon, which fuses into Heosvarog.</dd></div>
+                            <div><dt>Result</dt><dd>Cyber Dragon Infinity, Therion "King" Regulus, Heosvarog and S:P Little Knight, Cyberdark Realm in hand. Power Bond costs 2100 LP.</dd></div>
+                        </dl>
+                        <button type="button" class="cdm-play" data-cdm-combo-open="5"><i class="fas fa-play" aria-hidden="true"></i> Play Line 5</button>
+                    </article>
+                </div>
+                <p class="cdm-callout"><strong>Line 5 in practice:</strong> it builds on the <a class="cdm-link" href="Cyberdark%20Deck%20Analysis.html">Cyberdark</a> engine and a community line from the Master Duel subreddit. Herz's free Cyber Dragon pays for Clockwork Night, and Power Bond banishes Core and that Cyber Dragon through Chimera, which leaves Herz, Nachster and Luminous Mech Dragon in the GY for Heosvarog's cost. Nibiru, the Primal Being becomes live at the fifth summon, Cyberdark Wurm.</p>
+                <div id="cdm-combo-lab" style="margin-top:1.5rem">
+                    <p class="cdm-lab-loading">The combo simulator loads when this tab opens.</p>
+                </div>
+            </section>
+
+            <!-- Competitive impact -->
+            <section class="cdm-section" id="cdm-impact">
+                <h2 class="cdm-h2">Competitive Impact</h2>
+                <div class="cdm-two">
+                    <div class="cdm-box">
+                        <h3 class="cdm-h3">What it fixes</h3>
+                        <ul class="cdm-list cdm-list--pro">
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span><strong>One card is enough to threaten game.</strong> Nova into Final Strike Dragon needs nothing else in hand, which makes it a strong out when the rest of your hand gets stopped.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span><strong>The Normal Summon is no longer the only door.</strong> Luminous Mech Dragon and Nova both open without it, so a hand trap on Core doesn't end the turn on its own.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span><strong>Another Level 5 for Nova and Infinity.</strong> Going first, Luminous Mech Dragon turns Nachster into a Heosvarog, adding a Spell/Trap negate to the classic Infinity board.</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span><strong>Low Nibiru exposure going second.</strong> Lines 3 and 4 make only one or two summons.</span></li>
+                        </ul>
+                    </div>
+                    <div class="cdm-box">
+                        <h3 class="cdm-h3">Where it breaks</h3>
+                        <ul class="cdm-list cdm-list--con">
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span><strong>Ash Blossom &amp; Joyous Spring</strong> on Nova's activation: no Fusion Summon, and since the effect was negated, no lock either. Ash on Final Strike Dragon's search comes after the 4000 LP is paid.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span><strong>Infinite Impermanence or Effect Veiler</strong> on Final Strike Dragon: the search, the piercing and the three attacks are all off for the turn.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span><strong>Spell/Trap removal after Nova resolves</strong> (Cosmic Cyclone, Lightning Storm, Harpie's Feather Duster) destroys the Fusion Monster with it.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span><strong>Ghost Ogre &amp; Snow Rabbit</strong> can't touch Nova's activation, but it can destroy Luminous Mech Dragon when the negate activates, or Final Strike Dragon when its search does, which takes Nova down too.</span></li>
+                            <li><i class="fas fa-times" aria-hidden="true"></i><span><strong>Drawing your Cyber Dragons.</strong> Nova has no searcher in the deck and goes dead once the named card is out of the Deck. See <a class="cdm-link" href="#cdm-math">the deck math</a>.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="cdm-box" style="margin-top:1rem">
+                    <h3 class="cdm-h3">Outside Cyber Dragon</h3>
+                    <p>Nova plus Cyber Eternity Dragon needs one Cyber Dragon and any two Machines, so other Machine decks can use it to send two Machines from the Deck to the GY and get a Level 10 LIGHT Machine body. The Machine-only lock fits decks like <a class="cdm-link" href="Crystron%20Deck%20Analysis.html">Crystron</a>, <a class="cdm-link" href="Drytron%20Deck%20Analysis.html">Drytron</a> and <a class="cdm-link" href="Trains%20Deck%20Analysis.html">Trains</a>, where players have named it. They still have to run Cyber Dragon and keep it in the Deck.</p>
+                </div>
+                <div class="cdm-box" style="margin-top:1rem">
+                    <h3 class="cdm-h3">A starting point for the new cards</h3>
+                    <p>Our suggestion for a build that wants Nova live (not a tournament list):</p>
+                    <ul class="cdm-ratios">
+                        <li><b>3</b> Cyber Dragon (Nova needs one in the Deck; three copies keep it live in about 99% of hands)</li>
+                        <li><b>2</b> Cyber Dragon, the Luminous Mech Dragon (only one summons per turn from the hand, but every copy in the Deck is Nova material)</li>
+                        <li><b>2</b> Future Fusion Nova (one activation per turn; a second copy in hand does nothing)</li>
+                        <li><b>1</b> Limiter Removal (Final Strike Dragon fetches it)</li>
+                        <li><b>1&ndash;2</b> Cyber End Dragon, the Final Strike Dragon, plus 1 Heosvarog the Mechanical Dawn and 1 Cyber Eternity Dragon in the Extra Deck</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Claims checked -->
+            <section class="cdm-section" id="cdm-claims">
+                <h2 class="cdm-h2">Claims About the New Cards, Checked</h2>
+                <p class="cdm-lede">Early write-ups of these cards repeat a few mistakes. Here they are against the card text and Konami's rulings.</p>
+                <div class="cdm-table-wrap" tabindex="0" role="region" aria-label="Claims about the new Cyber Dragon cards">
+                    <table class="cdm-table cdm-table--stack">
+                        <thead>
+                            <tr><th scope="col">Claim</th><th scope="col">Verdict</th><th scope="col">What the cards say</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Luminous Mech Dragon can be Nova's "Cyber Dragon"</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">False</span></td><td data-label="What the cards say">Konami's Q&amp;A: it isn't treated as "Cyber Dragon", for Nova, Sieger or Fortress.</td></tr>
+                            <tr><th scope="row">Luminous Mech Dragon enables contact Fusions into Fortress or Megafleet</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Half true</span></td><td data-label="What the cards say">Megafleet, yes: it takes a "Cyber Dragon" monster. Fortress needs the real Cyber Dragon; Luminous Mech Dragon can only be an extra Machine.</td></tr>
+                            <tr><th scope="row">Ghost Ogre &amp; Snow Rabbit stops Nova</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">False</span></td><td data-label="What the cards say">Ghost Ogre answers a Spell/Trap that is already face-up when it activates an effect. Nova is being activated. Ash Blossom is the hand trap that stops it.</td></tr>
+                            <tr><th scope="row">Destroying Nova in response leaves you with nothing</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Unconfirmed</span></td><td data-label="What the cards say">Konami has published no ruling on Nova leaving the field before it resolves. What is confirmed: removing it after it resolves destroys the Fusion Monster.</td></tr>
+                            <tr><th scope="row">Cyberdark Chimera's Power Bond search also sends Cyberdark Wurm</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">False</span></td><td data-label="What the cards say">Wurm comes from Chimera's other effect, when Chimera itself is sent to the GY (as Link Material in line 5).</td></tr>
+                            <tr><th scope="row">Luminous Mech Dragon is the second Level 5 for Cyber Dragon Nova mid-combo</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--part">Only if revived</span></td><td data-label="What the cards say">Its hand summon needs an empty field. Mid-combo it arrives from the GY through Nachster.</td></tr>
+                            <tr><th scope="row">Nova fuses Heosvarog from Cyber Dragon and two other Machines</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">False</span></td><td data-label="What the cards say">Heosvarog takes exactly 2 LIGHT Machines. Three materials is Cyber Eternity Dragon or Final Strike Dragon.</td></tr>
+                            <tr><th scope="row">Nova only reaches Eternity, which can't OTK</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">False</span></td><td data-label="What the cards say">With three 2100-ATK LIGHT Machines in the Deck it makes Final Strike Dragon and the Limiter Removal kill.</td></tr>
+                            <tr><th scope="row">Dimension Shifter is a good answer to the deck</th><td data-label="Verdict"><span class="cdm-verdict cdm-verdict--no">Not legal</span></td><td data-label="What the cards say">Dimension Shifter is Forbidden in the TCG, and so is Called by the Grave.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <!-- END tab-maestros -->
+
     <!-- TCG Banlist Impact Section -->
     <section class="mb-10 md:mb-16">
         <div id="banlist-status"></div>
@@ -691,6 +1660,9 @@
                 // --- RENDER BANLIST SECTION ---
                 await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Cyber Dragon', {
                     relatedCards: [
+                        'Cyber Dragon, the Luminous Mech Dragon',
+                        'Future Fusion Nova',
+                        'Cyber End Dragon, the Final Strike Dragon',
                         'Cyber Dragon Infinity',
                         'Cyber Dragon Nova',
                         'Chimeratech Rampage Dragon',
@@ -742,6 +1714,179 @@
                 initPageSections('Cyber Dragon');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Magnificent Maestros tab.
+         The tab's art and its combo simulator load the first time the tab opens.
+         The classic simulator keeps the default container ids, so this one gets
+         its own. The "Cyber Dragon" checker is built from the rows of its own
+         table, which stays on the page as the no-JavaScript fallback. -->
+    <script>
+        (function () {
+            'use strict';
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const LAB_ID = 'cdm-combo-lab';
+            let labReady = null;
+
+            function mountLab() {
+                if (labReady) return labReady;
+                const mount = document.getElementById(LAB_ID);
+                // combo-system.js declares ComboLoader as a top-level class, which is
+                // a global binding but not a property of window.
+                if (!mount || typeof ComboLoader === 'undefined') {
+                    if (mount) mount.innerHTML = '<p class="cdm-lab-loading">The interactive combo lines could not load. The summaries above still list every hand, requirement and result.</p>';
+                    labReady = Promise.resolve(null);
+                    return labReady;
+                }
+                labReady = Promise.resolve(ComboLoader.renderComboSystem(LAB_ID, 'cyber-dragon-maestros', {
+                    selectorContainerId: 'cdm-combo-selector-container',
+                    guideContainerId: 'cdm-combo-guide-container',
+                    selectorOptions: {
+                        selectorId: 'cdm-combo-selector',
+                        labelText: 'Select a Magnificent Maestros line',
+                        defaultCombo: '3'
+                    }
+                })).catch(() => null);
+                return labReady;
+            }
+
+            // ----- "Does it count as Cyber Dragon?" checker, built from its table -----
+            (function buildChecker() {
+                const root = document.querySelector('[data-cdm-checker]');
+                const table = root && root.querySelector('[data-cdm-check-table]');
+                const controls = root && root.querySelector('[data-cdm-check-controls]');
+                if (!table || !controls) return;
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+                const entries = rows.map((tr, i) => {
+                    const pill = tr.querySelector('.cdm-verdict');
+                    const kind = pill.classList.contains('cdm-verdict--yes') ? 'yes'
+                        : pill.classList.contains('cdm-verdict--no') ? 'no' : 'part';
+                    return {
+                        id: String(i),
+                        group: tr.dataset.group || 'Cards',
+                        name: tr.querySelector('th').textContent.trim(),
+                        verdict: pill.textContent.trim(),
+                        kind,
+                        why: tr.querySelector('td[data-label="Why"]').textContent.trim()
+                    };
+                });
+
+                controls.textContent = '';
+                const wrap = document.createElement('div');
+                const label = document.createElement('label');
+                label.setAttribute('for', 'cdm-check-select');
+                label.textContent = 'Card that mentions "Cyber Dragon"';
+                const select = document.createElement('select');
+                select.id = 'cdm-check-select';
+                const groups = new Map();
+                entries.forEach(entry => {
+                    if (!groups.has(entry.group)) {
+                        const og = document.createElement('optgroup');
+                        og.label = entry.group;
+                        groups.set(entry.group, og);
+                        select.appendChild(og);
+                    }
+                    const opt = document.createElement('option');
+                    opt.value = entry.id;
+                    opt.textContent = entry.name;
+                    groups.get(entry.group).appendChild(opt);
+                });
+                wrap.append(label, select);
+
+                const result = document.createElement('div');
+                result.className = 'cdm-check-result';
+                result.setAttribute('aria-live', 'polite');
+
+                function render() {
+                    const entry = entries.find(e => e.id === select.value) || entries[0];
+                    result.dataset.verdict = entry.kind;
+                    result.textContent = '';
+                    const title = document.createElement('p');
+                    title.className = 'cdm-check-title';
+                    const pill = document.createElement('span');
+                    pill.className = 'cdm-verdict cdm-verdict--' + entry.kind;
+                    pill.textContent = entry.verdict;
+                    const name = document.createElement('span');
+                    name.textContent = entry.name;
+                    title.append(pill, name);
+                    const why = document.createElement('p');
+                    why.textContent = entry.why;
+                    const source = document.createElement('p');
+                    source.className = 'cdm-check-source';
+                    source.textContent = entry.kind === 'yes'
+                        ? 'From the card text: the wording is archetype-wide or asks for no name.'
+                        : 'Konami\'s official Q&A (8 May 2026) lists the cards whose "Cyber Dragon" means the card with that name.';
+                    result.append(title, why, source);
+                }
+                select.addEventListener('change', render);
+                const nova = entries.find(e => e.name === 'Future Fusion Nova');
+                if (nova) select.value = nova.id;
+                controls.append(wrap, result);
+                render();
+            })();
+
+            GuideTabs.init({
+                panelArt: {
+                    'tab-maestros': [
+                        {
+                            'cdm-luminous-img-container': 'Cyber Dragon, the Luminous Mech Dragon',
+                            'cdm-nova-img-container': 'Future Fusion Nova',
+                            'cdm-final-img-container': 'Cyber End Dragon, the Final Strike Dragon'
+                        }
+                    ]
+                },
+                panelInit: {
+                    'tab-maestros': function () { mountLab(); }
+                }
+            });
+
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'cdm-spot-img-container': 'Cyber Dragon, the Luminous Mech Dragon' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('.tab-panel');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+                const details = target && target.closest('details');
+                if (details) details.open = true;
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (cta) {
+                cta.addEventListener('click', () => {
+                    const tab = tabFor(cta.dataset.openPanel);
+                    if (!tab) return;
+                    tab.click();
+                    tab.focus({ preventScroll: true });
+                    tablist.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                });
+            }
+
+            // "Play Line N" selects that line in this tab's simulator (not the classic one).
+            document.querySelectorAll('[data-cdm-combo-open]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const num = btn.dataset.cdmComboOpen;
+                    mountLab().then(() => {
+                        const option = document.querySelector('#' + LAB_ID + ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        const mount = document.getElementById(LAB_ID);
+                        if (mount) mount.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    });
+                });
+            });
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

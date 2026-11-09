@@ -13,6 +13,7 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -193,6 +194,264 @@
         .card-popup .card-stats {
             color: #f59e0b;
         }
+
+        /* ===== White Phantom Beast spotlight + guide tabs (assets/js/guide-tabs.js) =====
+           Own class names (mpwb-*), so nothing here touches the classic guide. */
+        :root {
+            --mpwb-ice: #e0f2fe;
+            --mpwb-ice-soft: #bae6fd;
+            --mpwb-ice-line: rgba(186, 230, 253, 0.45);
+            --mpwb-ice-wash: rgba(186, 230, 253, 0.1);
+            --mpwb-amber: #f59e0b;
+            --mpwb-surface: #1a233a;
+            --mpwb-surface-deep: #121a2e;
+            --mpwb-inset: #0c1424;
+            --mpwb-border: #3b4c7c;
+            --mpwb-text: #d6def5;
+            --mpwb-muted: #9fb0d8;
+            --mpwb-heading: #ffffff;
+            --mpwb-ok: #4ade80;
+            --mpwb-no: #f87171;
+            --mpwb-part: #fbbf24;
+        }
+        .mpwb-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        [id^="mpwb-"] { scroll-margin-top: 1.5rem; }
+
+        /* ----- Tabs ----- */
+        .mpwb-tabs { display: flex; margin: 0 0 2rem; border-bottom: 2px solid var(--mpwb-border); }
+        .mpwb-tab {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: 0;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--mpwb-muted);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .mpwb-tab:hover { color: var(--mpwb-ice); background-color: var(--mpwb-ice-wash); }
+        .mpwb-tab[aria-selected="true"] { border-bottom-color: var(--mpwb-amber); color: #fde68a; }
+        .mpwb-new-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--mpwb-ice);
+            color: #0c1424;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .mpwb-panel[hidden] { display: none !important; }
+        .mpwb-tab:focus-visible,
+        .mpwb-panel:focus-visible,
+        .mpwb-spot-cta:focus-visible,
+        .mpwb-tag:focus-visible,
+        .mpwb-table-wrap:focus-visible,
+        .mpwb-checker select:focus-visible,
+        .mpwb-link:focus-visible {
+            outline: 2px solid var(--mpwb-ice);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .mpwb-panel:target:focus-visible { outline: none; }
+        @media (max-width: 639px) {
+            .mpwb-tab { flex: 1 1 0; padding: 0.75rem 0.5rem; font-size: 0.74rem; white-space: normal; text-align: center; }
+        }
+
+        /* ----- Card art slot (59:86 until CardLoader swaps the image in) ----- */
+        .mpwb-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.35rem;
+            overflow: hidden;
+            border: 2px dashed var(--mpwb-ice-line);
+            border-radius: 0.35rem;
+            background: var(--mpwb-inset);
+            color: var(--mpwb-ice-soft);
+            font-size: 0.55rem;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .mpwb-art:has(img) { display: block; aspect-ratio: auto; padding: 0; border-color: transparent; background: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6); }
+        .mpwb-art .card-placeholder { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; font-size: inherit; }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .mpwb-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--mpwb-ice-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, rgba(224, 242, 254, 0.1) 0%, transparent 55%),
+                linear-gradient(135deg, var(--mpwb-surface) 0%, var(--mpwb-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(186, 230, 253, 0.1);
+        }
+        .mpwb-spot-art { grid-area: art; }
+        .mpwb-spot-head { grid-area: head; min-width: 0; }
+        .mpwb-spot-body { grid-area: body; min-width: 0; }
+        .mpwb-spot-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; color: var(--mpwb-ice-soft); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; }
+        .mpwb-spot-title { color: var(--mpwb-heading); font-family: 'Roboto Mono', monospace; font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+        .mpwb-spot-stats { margin-top: 0.35rem; color: var(--mpwb-ice-soft); font-size: 0.78rem; font-weight: 700; }
+        .mpwb-spot-hook { color: var(--mpwb-text); font-size: 0.92rem; line-height: 1.65; }
+        .mpwb-spot-hook strong { color: var(--mpwb-heading); }
+        .mpwb-spot-label { margin: 1rem 0 0.5rem; color: var(--mpwb-muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .mpwb-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .mpwb-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--mpwb-border);
+            border-radius: 9999px;
+            background: var(--mpwb-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .mpwb-tag i { color: var(--mpwb-ok); }
+        .mpwb-tag:hover { border-color: var(--mpwb-ice-soft); background: var(--mpwb-ice-wash); }
+        .mpwb-tag-role { color: var(--mpwb-muted); font-size: 0.7rem; font-weight: 600; }
+        .mpwb-tag--no i { color: var(--mpwb-no); }
+        .mpwb-tag--warn i { color: var(--mpwb-part); }
+        .mpwb-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--mpwb-amber);
+            border-radius: 9999px;
+            background: rgba(245, 158, 11, 0.12);
+            color: #fff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .mpwb-spot-cta:hover { background: rgba(245, 158, 11, 0.25); box-shadow: 0 0 16px rgba(245, 158, 11, 0.3); }
+        @media (min-width: 768px) {
+            .mpwb-spot { grid-template-columns: 140px minmax(0, 1fr); grid-template-areas: "art head" "art body"; padding: 1.5rem; }
+            .mpwb-spot-title { font-size: 1.35rem; }
+        }
+
+        /* ----- Tab content ----- */
+        .mpwb-section { margin-bottom: 3.5rem; }
+        .mpwb-h2 { margin-bottom: 1rem; color: var(--mpwb-heading); font-family: 'Roboto Mono', monospace; font-size: 1.45rem; font-weight: 700; line-height: 1.3; text-align: center; }
+        @media (min-width: 768px) { .mpwb-h2 { font-size: 1.85rem; } }
+        .mpwb-lede { max-width: 46rem; margin: 0 auto 2rem; color: var(--mpwb-text); line-height: 1.7; text-align: center; }
+        .mpwb-lede strong { color: var(--mpwb-heading); }
+        .mpwb-release { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        .mpwb-chip { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.8rem; border: 1px solid var(--mpwb-border); border-radius: 9999px; background: var(--mpwb-surface-deep); color: var(--mpwb-text); font-size: 0.75rem; font-weight: 600; }
+        .mpwb-chip i { color: var(--mpwb-ice-soft); }
+        .mpwb-chip--tcg { border-color: var(--mpwb-ice-line); }
+        .mpwb-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        @media (min-width: 768px) {
+            .mpwb-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .mpwb-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        .mpwb-box { padding: 1.25rem; border: 1px solid var(--mpwb-border); border-radius: 0.75rem; background: linear-gradient(145deg, var(--mpwb-surface), var(--mpwb-surface-deep)); color: var(--mpwb-text); font-size: 0.92rem; line-height: 1.65; }
+        .mpwb-box h3 { margin-bottom: 0.5rem; color: var(--mpwb-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.35; }
+        .mpwb-box h3 i { margin-right: 0.4rem; color: var(--mpwb-amber); }
+        .mpwb-box p + p { margin-top: 0.6rem; }
+        .mpwb-box strong { color: var(--mpwb-heading); }
+        .mpwb-box--warn { border-left: 4px solid var(--mpwb-part); }
+        .mpwb-pillar-icon { margin-bottom: 0.6rem; color: var(--mpwb-ice); font-size: 1.4rem; }
+        .mpwb-link { color: var(--mpwb-ice-soft); text-decoration: underline; text-underline-offset: 2px; }
+        .mpwb-link:hover { color: var(--mpwb-ice); }
+
+        /* ----- Card write-up: art | name + stats on phones, text below ----- */
+        .mpwb-card { padding: 1.25rem; border: 1px solid var(--mpwb-ice-line); border-radius: 0.75rem; background: linear-gradient(145deg, var(--mpwb-surface), var(--mpwb-surface-deep)); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+        .mpwb-card-layout { display: grid; grid-template-columns: 96px minmax(0, 1fr); grid-template-areas: "art head" "body body"; gap: 1rem; align-items: start; }
+        .mpwb-card-art { grid-area: art; }
+        .mpwb-card-head { grid-area: head; min-width: 0; }
+        .mpwb-card-body { grid-area: body; min-width: 0; color: var(--mpwb-text); font-size: 0.92rem; line-height: 1.65; }
+        @media (min-width: 768px) { .mpwb-card-layout { grid-template-columns: 150px minmax(0, 1fr); grid-template-areas: "art head" "art body"; gap: 0.75rem 1.5rem; } }
+        .mpwb-kicker { color: var(--mpwb-amber); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+        .mpwb-card-name { margin-top: 0.2rem; color: var(--mpwb-heading); font-family: 'Roboto Mono', monospace; font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+        .mpwb-card-stats { margin-top: 0.3rem; color: var(--mpwb-ice-soft); font-size: 0.8rem; font-weight: 700; }
+        .mpwb-effects { margin: 0.25rem 0 0.9rem; padding: 0; list-style: none; counter-reset: mpwb-effect; }
+        .mpwb-effects li { position: relative; margin-bottom: 0.55rem; padding-left: 2rem; counter-increment: mpwb-effect; }
+        .mpwb-effects li::before { content: counter(mpwb-effect); position: absolute; top: 0.1rem; left: 0; width: 1.4rem; height: 1.4rem; border: 1px solid var(--mpwb-ice-soft); border-radius: 9999px; color: var(--mpwb-ice-soft); font-size: 0.72rem; font-weight: 700; line-height: 1.3rem; text-align: center; }
+        .mpwb-opt { color: var(--mpwb-muted); font-size: 0.8rem; }
+        .mpwb-card-body h4 { margin: 0.9rem 0 0.35rem; color: var(--mpwb-heading); font-size: 0.95rem; font-weight: 700; }
+        .mpwb-card-body strong { color: var(--mpwb-heading); }
+        .mpwb-card-body p + p { margin-top: 0.6rem; }
+
+        /* ----- "Does it count?" checker ----- */
+        .mpwb-checker { max-width: 46rem; margin: 0 auto; padding: 1.25rem; border: 1px solid var(--mpwb-ice-line); border-radius: 0.75rem; background: linear-gradient(145deg, var(--mpwb-surface), var(--mpwb-surface-deep)); }
+        .mpwb-checker label { display: block; margin-bottom: 0.35rem; color: var(--mpwb-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .mpwb-checker select { width: 100%; min-height: 44px; padding: 0.5rem 0.75rem; border: 1px solid var(--mpwb-border); border-radius: 0.5rem; background: var(--mpwb-inset); color: #f1f5f9; font-size: 0.9rem; }
+        .mpwb-checker optgroup { color: var(--mpwb-muted); }
+        .mpwb-checker-result { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px solid var(--mpwb-border); border-left: 4px solid var(--mpwb-muted); border-radius: 0.5rem; background: var(--mpwb-inset); color: var(--mpwb-text); font-size: 0.92rem; line-height: 1.6; }
+        .mpwb-checker-result[data-verdict="yes"] { border-left-color: var(--mpwb-ok); }
+        .mpwb-checker-result[data-verdict="no"] { border-left-color: var(--mpwb-no); }
+        .mpwb-checker-result[data-verdict="warn"] { border-left-color: var(--mpwb-part); }
+        .mpwb-checker-verdict { display: block; margin-bottom: 0.25rem; font-weight: 800; }
+        .mpwb-checker-result[data-verdict="yes"] .mpwb-checker-verdict { color: var(--mpwb-ok); }
+        .mpwb-checker-result[data-verdict="no"] .mpwb-checker-verdict { color: var(--mpwb-no); }
+        .mpwb-checker-result[data-verdict="warn"] .mpwb-checker-verdict { color: var(--mpwb-part); }
+
+        /* ----- Claims table (stacks into cards on phones) ----- */
+        .mpwb-table-wrap { overflow-x: auto; border: 1px solid var(--mpwb-border); border-radius: 0.75rem; }
+        .mpwb-table { width: 100%; border-collapse: collapse; color: var(--mpwb-text); font-size: 0.88rem; line-height: 1.55; }
+        .mpwb-table th, .mpwb-table td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--mpwb-border); text-align: left; vertical-align: top; }
+        .mpwb-table thead th { background: var(--mpwb-surface); color: var(--mpwb-ice-soft); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .mpwb-table tbody th { color: var(--mpwb-heading); font-weight: 600; }
+        .mpwb-table tbody tr:nth-child(even) { background: rgba(26, 35, 58, 0.55); }
+        .mpwb-table tbody tr:last-child th, .mpwb-table tbody tr:last-child td { border-bottom: 0; }
+        .mpwb-verdict { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; font-weight: 700; }
+        .mpwb-verdict--no { color: var(--mpwb-no); }
+        .mpwb-verdict--part { color: var(--mpwb-part); }
+        .mpwb-verdict--ok { color: var(--mpwb-ok); }
+        @media (max-width: 639px) {
+            .mpwb-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .mpwb-table--stack tr { display: block; padding: 0.4rem 0; border-bottom: 1px solid var(--mpwb-border); }
+            .mpwb-table--stack tbody tr:last-child { border-bottom: 0; }
+            .mpwb-table--stack th, .mpwb-table--stack td { display: block; padding: 0.3rem 0.9rem; border: 0; }
+        }
+
+        @media print {
+            .mpwb-panel[hidden] { display: block !important; }
+            .mpwb-tabs, .mpwb-spot-cta { display: none !important; }
+        }
     </style>
     <link rel="stylesheet" href="../assets/css/combo-steps.css">
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
@@ -232,6 +491,42 @@
                 </p>
             </div>
         </section>
+
+        <!-- ==================== NEW CARD SPOTLIGHT (Magnificent Maestros) ====================
+             Always visible, above the guide tabs. Each chip opens the White Phantom Beast
+             tab at the matching note; the full write-up lives there. -->
+        <aside class="mpwb-spot" data-pcs-scope="spot" aria-labelledby="mpwb-spot-title">
+            <div class="mpwb-spot-art">
+                <div id="mpwb-spot-img-container" class="mpwb-art">Blue-Eyes White Dragon, the White Phantom Beast</div>
+            </div>
+            <div class="mpwb-spot-head">
+                <p class="mpwb-spot-kicker"><span class="mpwb-new-badge">New card</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="mpwb-spot-title" class="mpwb-spot-title">Blue-Eyes White Dragon, the White Phantom Beast</h2>
+                <p class="mpwb-spot-stats">Level 8 &middot; LIGHT &middot; Dragon &middot; 3000 / 2500 &middot; a "Phantom Beast" card</p>
+            </div>
+            <div class="mpwb-spot-body">
+                <p class="mpwb-spot-hook">The newest "Phantom Beast" card is a Blue-Eyes. "Phantom Beast" is in its name, as it is in every Mecha Phantom Beast's, so the old Phantom Beast support counts it. It isn't a <strong>"Mecha Phantom Beast"</strong>, though, and the squadron's own cards can't search it, summon it or use it. What it does share with this deck is Tokens that lose battles. When one of your monsters is destroyed by battle, it can summon itself from your hand and <strong>destroy every monster your opponent controls</strong>.</p>
+                <p id="mpwb-spot-tags-label" class="mpwb-spot-label">What it means here</p>
+                <ul class="mpwb-tags" aria-labelledby="mpwb-spot-tags-label">
+                    <li><a class="mpwb-tag" href="#mpwb-checker"><i class="fas fa-check" aria-hidden="true"></i> "Phantom Beast" support <span class="mpwb-tag-role">counts it</span></a></li>
+                    <li><a class="mpwb-tag mpwb-tag--no" href="#mpwb-checker"><i class="fas fa-times" aria-hidden="true"></i> "Mecha Phantom Beast" support <span class="mpwb-tag-role">doesn't</span></a></li>
+                    <li><a class="mpwb-tag" href="#mpwb-bait"><i class="fas fa-bolt" aria-hidden="true"></i> Token destroyed by battle <span class="mpwb-tag-role">board wipe</span></a></li>
+                    <li><a class="mpwb-tag mpwb-tag--warn" href="#mpwb-conflicts"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i> Concoruda, Warbluran <span class="mpwb-tag-role">work against it</span></a></li>
+                </ul>
+                <button type="button" class="mpwb-spot-cta" data-open-panel="tab-wpb">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is the Classic Analysis panel; Blue-Eyes White Dragon,
+             the White Phantom Beast (Magnificent Maestros) gets its own panel. The
+             banlist, deck resources and community combos stay below both. -->
+        <div class="mpwb-tabs" role="tablist" aria-label="Mecha Phantom Beast guide" data-guide-tabs>
+            <button type="button" class="mpwb-tab" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="mpwb-tab" role="tab" id="tab-btn-wpb" aria-controls="tab-wpb" aria-selected="false" tabindex="-1">White Phantom Beast <span class="mpwb-new-badge" aria-hidden="true">New</span><span class="mpwb-sr-only">(new card)</span></button>
+        </div>
+
+        <div id="tab-classic" class="mpwb-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
                 <!-- Executive Summary -->
         <section class="mb-10 md:mb-16 animate-fadeIn">
@@ -425,6 +720,210 @@
             </div>
         </section>
         
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== WHITE PHANTOM BEAST (MAGNIFICENT MAESTROS) TAB ====================
+             Built 2026-11-04 from the NotebookLM White Phantom Beast analysis, checked against the
+             printed TCG text (YGOProDeck), the ocgcore card database (setcode 0x1b "Phantom Beast",
+             0x101b "Mecha Phantom Beast") and Konami's Q&A. The notebook doesn't mention Mecha
+             Phantom Beasts; the Mecha interactions come from the card texts. The plays here depend
+             on battle, which the combo simulator doesn't run, so this tab has no combo lab. -->
+        <div id="tab-wpb" data-pcs-scope="wpb" class="mpwb-panel" role="tabpanel" aria-labelledby="tab-btn-wpb" tabindex="0" hidden>
+
+            <!-- Intro -->
+            <section class="mpwb-section" id="mpwb-intro">
+                <h2 class="mpwb-h2">Magnificent Maestros: A Blue-Eyes Among the Phantom Beasts</h2>
+                <ul class="mpwb-release" aria-label="Release dates">
+                    <li class="mpwb-chip mpwb-chip--tcg"><i class="fas fa-globe-americas" aria-hidden="true"></i> TCG &middot; Magnificent Maestros &middot; <time datetime="2026-11-12">12 Nov 2026</time></li>
+                    <li class="mpwb-chip"><i class="fas fa-torii-gate" aria-hidden="true"></i> OCG &middot; LIMIT OVER COLLECTION -THE RIVALS- &middot; <time datetime="2026-03-20">20 Mar 2026</time></li>
+                </ul>
+                <p class="mpwb-lede">The name decides the archetype. "Phantom Beast" goes back to 2006 and four Beast-Warriors: Cross-Wing, Thunder-Pegasus, Rock-Lizard and Wild-Horn. Every Mecha Phantom Beast and every Mecha Phantom Beast Token has the same words in its name, so all of them are "Phantom Beast" cards too. <strong>Blue-Eyes White Dragon, the White Phantom Beast</strong> joins them the same way. This tab covers which cards count it, what it does next to a Mecha Phantom Beast board, and which squadron cards get in its way. Its home deck is covered on the <a class="mpwb-link" href="Blue-Eyes%20Deck%20Analysis.html#tab-maestros">Blue-Eyes page</a>.</p>
+                <div class="mpwb-grid mpwb-grid--3">
+                    <div class="mpwb-box">
+                        <div class="mpwb-pillar-icon"><i class="fas fa-tag" aria-hidden="true"></i></div>
+                        <h3>"Phantom Beast", Not "Mecha"</h3>
+                        <p>Cross-Wing, Thunder-Pegasus and Rock-Lizard read "Phantom Beast", so they count it. The squadron's cards read "Mecha Phantom Beast", so none of them do.</p>
+                    </div>
+                    <div class="mpwb-box">
+                        <div class="mpwb-pillar-icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+                        <h3>Tokens as Bait</h3>
+                        <p>Mecha Phantom Beasts can't be destroyed by battle while you control a Token, so attacks go into the Tokens. A Token destroyed by battle lets White Phantom Beast summon itself from your hand, and the wipe follows.</p>
+                    </div>
+                    <div class="mpwb-box">
+                        <div class="mpwb-pillar-icon"><i class="fas fa-search" aria-hidden="true"></i></div>
+                        <h3>Nothing Here Finds It</h3>
+                        <p>Megaraptor and Scramble!! Scramble!! only fetch "Mecha Phantom Beast" monsters. It reaches your hand by a draw, or through cards any deck can play, like Bystial Magnamhut and The Melody of Awakening Dragon.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The card -->
+            <section class="mpwb-section" id="mpwb-card">
+                <h2 class="mpwb-h2">The Card</h2>
+                <article class="mpwb-card" aria-labelledby="mpwb-wpb-name">
+                    <div class="mpwb-card-layout">
+                        <div class="mpwb-card-art"><div id="mpwb-wpb-img-container" class="mpwb-art">Blue-Eyes White Dragon, the White Phantom Beast</div></div>
+                        <div class="mpwb-card-head">
+                            <p class="mpwb-kicker">"Blue-Eyes" and "Phantom Beast"</p>
+                            <h3 id="mpwb-wpb-name" class="mpwb-card-name">Blue-Eyes White Dragon, the White Phantom Beast</h3>
+                            <p class="mpwb-card-stats">Level 8 &middot; LIGHT &middot; Dragon &middot; 3000 / 2500</p>
+                        </div>
+                        <div class="mpwb-card-body">
+                            <ol class="mpwb-effects">
+                                <li>When it's added from the Deck to your hand, or a monster you control is destroyed by battle: reveal it and Special Summon it.</li>
+                                <li>When it's Special Summoned from the hand or Deck: destroy every monster your opponent controls. For the rest of the turn, only "Blue-Eyes" monsters can attack directly.</li>
+                                <li>When a card or effect that targets it on the field is activated: discard 1 card to negate that effect. <span class="mpwb-opt">No once-per-turn limit.</span></li>
+                            </ol>
+                            <p>The first two effects are each once per turn.</p>
+                            <h4>Konami's rulings</h4>
+                            <p>A normal draw in your Draw Phase counts as adding it from the Deck. The five cards you start the Duel with don't. The summon has to come right after the add. If the add happens at Chain Link 2 or later, or anything else happens after it, the moment has passed. After a draw from an effect like Mulcharmy Fuwalos, you can still chain the summon to your opponent's next summon effect. The negate can't be used in the Damage Step.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Does it count? -->
+            <section class="mpwb-section" id="mpwb-checker">
+                <h2 class="mpwb-h2">Does It Count?</h2>
+                <p class="mpwb-lede">Pick a card or a situation to see whether it works with White Phantom Beast. The answers follow the printed card text.</p>
+                <div class="mpwb-checker" data-count-checker>
+                    <label for="mpwb-check-case">Card or situation</label>
+                    <select id="mpwb-check-case" data-count-case></select>
+                    <div class="mpwb-checker-result" data-count-result aria-live="polite">
+                        <span class="mpwb-checker-verdict">Pick a card</span>
+                        The answer appears here.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Next to a Mecha board -->
+            <section class="mpwb-section" id="mpwb-board">
+                <h2 class="mpwb-h2">Next to a Mecha Phantom Beast Board</h2>
+                <p class="mpwb-lede">The squadron's Tokens are made to be attacked. That gives White Phantom Beast's battle condition more chances than it gets in most decks.</p>
+                <div class="mpwb-grid mpwb-grid--2">
+                    <div class="mpwb-box" id="mpwb-bait">
+                        <h3><i class="fas fa-shield-alt" aria-hidden="true"></i> On your opponent's turn</h3>
+                        <p>Most Mecha Phantom Beasts can't be destroyed by battle while you control a Token, so the Tokens are what your opponent can actually destroy in battle. When they destroy one, White Phantom Beast can summon itself from your hand, even in the Damage Step. Its wipe then clears their monsters in the middle of their Battle Phase. A Token in Defense Position costs you no LP.</p>
+                        <p>The summon is once per turn, so a second Token lost that turn does nothing.</p>
+                    </div>
+                    <div class="mpwb-box" id="mpwb-own-turn">
+                        <h3><i class="fas fa-fist-raised" aria-hidden="true"></i> On your turn</h3>
+                        <p>You can start the battle yourself. Attack a stronger monster with a Token in Attack Position. The Token is destroyed and you take the difference as damage. Then White Phantom Beast comes out, wipes, and can still attack directly for 3000.</p>
+                        <p>After the wipe your Mecha Phantom Beasts can't attack directly, because they aren't "Blue-Eyes" monsters. Make any attacks you want from them before the Token's battle.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Conflicts -->
+            <section class="mpwb-section" id="mpwb-conflicts">
+                <h2 class="mpwb-h2">Cards That Work Against It</h2>
+                <div class="mpwb-grid mpwb-grid--2">
+                    <div class="mpwb-box mpwb-box--warn">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> Mecha Phantom Beast Concoruda</h3>
+                        <p>While it's on the field, your Tokens can't be destroyed by battle or card effects. That makes the wall tougher, but a Token that can't lose a battle never triggers White Phantom Beast.</p>
+                    </div>
+                    <div class="mpwb-box mpwb-box--warn">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> Mecha Phantom Beast Turtletracer</h3>
+                        <p>The first Mecha Phantom Beast Token that would be destroyed by battle each turn isn't. A second Token has to lose a battle before White Phantom Beast can come out.</p>
+                    </div>
+                    <div class="mpwb-box mpwb-box--warn">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> Mecha Phantom Beast Warbluran</h3>
+                        <p>Used for a Machine Synchro Summon, it makes a Token and locks you into WIND monsters for the rest of the turn. White Phantom Beast is LIGHT, so it can't be Special Summoned that turn.</p>
+                    </div>
+                    <div class="mpwb-box mpwb-box--warn">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> The Blue-Eyes routes</h3>
+                        <p>The Guiding Flute of Summoning Dragons needs a Spellcaster on the field. After it, you can only Special Summon Dragons and Spellcasters, and Mecha Phantom Beast Tokens are Machines. Hieratic Seal of the Heavenly Spheres needs two Dragons as Link Material. Sage with Eyes of Blue and Roar of the Blue-Eyed Dragons need a Blue-Eyes engine.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Access -->
+            <section class="mpwb-section" id="mpwb-access">
+                <h2 class="mpwb-h2">Getting It Into Your Hand</h2>
+                <p class="mpwb-lede">The squadron has no way to find a Dragon. These routes work in any deck.</p>
+                <div class="mpwb-grid mpwb-grid--2">
+                    <div class="mpwb-box">
+                        <h3><i class="fas fa-hand-paper" aria-hidden="true"></i> Draw it</h3>
+                        <p>A normal draw in your Draw Phase lets it summon itself right away (Konami FAQ). Going second, that's a wipe before your Main Phase starts. From your opening hand it has to wait for one of your monsters to lose a battle.</p>
+                    </div>
+                    <div class="mpwb-box">
+                        <h3><i class="fas fa-moon" aria-hidden="true"></i> Bystial Magnamhut (Limited)</h3>
+                        <p>Going second, it summons itself on your opponent's turn by banishing a LIGHT or DARK monster from either GY. Mecha Phantom Beasts are WIND, so you rely on their GY. In that End Phase it adds a Dragon from your Deck. White Phantom Beast then summons itself and wipes before your turn, as long as the add resolves at Chain Link 1. If White Phantom Beast is already in your GY, Magnamhut can add it from there, but then it can't summon itself.</p>
+                    </div>
+                    <div class="mpwb-box">
+                        <h3><i class="fas fa-music" aria-hidden="true"></i> The Melody of Awakening Dragon</h3>
+                        <p>Discard 1 card to add up to 2 Dragons with 3000 or more ATK and 2500 or less DEF. White Phantom Beast fits exactly. The add is the last thing Melody does, so the summon and the wipe follow on your turn.</p>
+                    </div>
+                    <div class="mpwb-box">
+                        <h3><i class="fas fa-feather-alt" aria-hidden="true"></i> Mulcharmy Fuwalos and Purulia</h3>
+                        <p>With no cards on your field, they draw when your opponent summons: Fuwalos from the Deck or Extra Deck, Purulia from the hand. A drawn White Phantom Beast summons itself only if the draw was the last thing to happen. A draw while a chain is still resolving is too late.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Claims checked -->
+            <section class="mpwb-section" id="mpwb-claims">
+                <h2 class="mpwb-h2">Claims Checked Against the Cards</h2>
+                <p class="mpwb-lede">Most early writing about White Phantom Beast is about Blue-Eyes. These are the claims that matter for a deck outside it. The Blue-Eyes ones are checked on the <a class="mpwb-link" href="Blue-Eyes%20Deck%20Analysis.html#bemm-claims">Blue-Eyes page</a>.</p>
+                <div class="mpwb-table-wrap" role="region" aria-labelledby="mpwb-claims-caption" tabindex="0">
+                    <table class="mpwb-table mpwb-table--stack">
+                        <caption id="mpwb-claims-caption" class="mpwb-sr-only">Common claims about Blue-Eyes White Dragon, the White Phantom Beast and whether the card text supports them</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Claim</th>
+                                <th scope="col">Verdict</th>
+                                <th scope="col">What the cards say</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Any search or draw lets it summon itself</th>
+                                <td><span class="mpwb-verdict mpwb-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>Only if the add is the last thing that happens. At Chain Link 2 or later it's too late, and so is a draw in the middle of a resolving chain. Your opening hand never counts (Konami FAQ).</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">It works with generic Dragon cards like Hieratic Seal of the Heavenly Spheres and The Guiding Flute</th>
+                                <td><span class="mpwb-verdict mpwb-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>In a Dragon deck, yes. The Seal needs two Dragons as Link Material. The Flute needs a Spellcaster, and afterwards it allows only Dragon and Spellcaster summons. Neither fits a Mecha Phantom Beast deck.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Its negate beats Effect Veiler, Infinite Impermanence, S:P Little Knight and Fiendish Chain</th>
+                                <td><span class="mpwb-verdict mpwb-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>All four target it on the field. Each one costs you a discard, and the negate can't be used in the Damage Step.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Forbidden Droplet, Dark Ruler No More, Super Polymerization and TY-PHON get past it</th>
+                                <td><span class="mpwb-verdict mpwb-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>None of them target. While Super Starslayer TY-PHON - Sky Crisis is on the field, monsters with 3000 or more ATK can't activate effects at all.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Silver's Cry can bring it back, just without the wipe</th>
+                                <td><span class="mpwb-verdict mpwb-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Silver's Cry only revives Dragon Normal Monsters. Monster Reborn can, and from the GY the wipe doesn't trigger.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Tournament lists play exactly one copy</th>
+                                <td><span class="mpwb-verdict mpwb-verdict--part"><i class="fas fa-question" aria-hidden="true"></i> Unproven</span></td>
+                                <td>The TCG release is 12 Nov 2026, so there are no TCG results yet. The claim rests on a few OCG and online deck lists.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Verdict -->
+            <section class="mpwb-section" id="mpwb-verdict">
+                <h2 class="mpwb-h2">Should a Mecha Phantom Beast Deck Play It?</h2>
+                <div class="mpwb-box">
+                    <p><strong>Our take: one copy at most, for going second, and only without Concoruda or Warbluran.</strong> The "Phantom Beast" name doesn't help here. The three cards that read it are 2006 Beast-Warriors that Mecha Phantom Beast decks don't play, and the squadron's own support reads "Mecha Phantom Beast". No Mecha Phantom Beast is ever Level 8: with Tokens a Level 4 goes to 7, 10 or 13, and a Level 3 to 6, 9 or 12. So it never shares an Xyz Summon with them.</p>
+                    <p>What carries over is the battle condition. A Token wall gets attacked, and each lost Token is a chance to wipe your opponent's monsters. That gives the squadron a board breaker it didn't have. The rest of the time it's a 3000 ATK Dragon you can't search.</p>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-wpb -->
+
         <!-- TCG Banlist Impact -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
             <div id="banlist-section" class="card p-6">
@@ -581,17 +1080,18 @@
             checkBanlist();
         
 
+            
             // Render banlist section
-            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Mega Phantom Beast', {
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Phantom Beast', {
                 relatedCards: []
             });
 
             // Render compact deck resources in header
-            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Mega Phantom Beast');
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Phantom Beast');
 
             // --- Render Deck Search Section ---
             // Render archetype cards browser (compact mode at top)
-            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Mega Phantom Beast', { 
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Phantom Beast', { 
                 compact: true, 
                 buttonColor: 'from-purple-600 to-indigo-600',
                 buttonHoverColor: 'from-purple-700 to-indigo-700'
@@ -605,11 +1105,131 @@
         </section>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                initCommunityCombos('community-combos-wrapper', 'Mega Phantom Beast');
-                initSynergyTags('Mega Phantom Beast');
-                initPageSections('Mega Phantom Beast');
+                initCommunityCombos('community-combos-wrapper', 'Phantom Beast');
+                initSynergyTags('Phantom Beast');
+                initPageSections('Phantom Beast');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + White Phantom Beast spotlight.
+         The tab's card art only loads the first time that tab opens. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-wpb': [{ 'mpwb-wpb-img-container': 'Blue-Eyes White Dragon, the White Phantom Beast' }]
+            }
+        });
+
+        (function () {
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) CardLoader.loadCards({ 'mpwb-spot-img-container': 'Blue-Eyes White Dragon, the White Phantom Beast' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('[role="tabpanel"]');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (!cta) return;
+            cta.addEventListener('click', () => {
+                const tab = tabFor(cta.dataset.openPanel);
+                if (!tab) return;
+                tab.click();
+                tab.focus({ preventScroll: true });
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+            });
+        })();
+    </script>
+
+    <!-- "Does it count?" checker. Everything it knows is in GROUPS: one entry per card
+         or situation, each with a verdict (yes / no / warn) and the reason, from the
+         printed card text. -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-count-checker]');
+            if (!root) return;
+            const select = root.querySelector('[data-count-case]');
+            const result = root.querySelector('[data-count-result]');
+
+            const VERDICTS = { yes: 'Yes', no: 'No', warn: 'Works against it' };
+
+            const GROUPS = [
+                {
+                    label: '"Phantom Beast" cards',
+                    items: [
+                        { label: 'Phantom Beast Cross-Wing (in your GY)', verdict: 'yes', text: 'While Cross-Wing is in the GY, every "Phantom Beast" monster on the field gains 300 ATK. White Phantom Beast goes to 3300, and every Mecha Phantom Beast and Mecha Phantom Beast Token gains 300 too. It boosts your opponent\'s Phantom Beasts as well. Cross-Wing isn\'t a Mecha Phantom Beast, so in your GY it stops Sabre Hawk from attacking.' },
+                        { label: 'Phantom Beast Thunder-Pegasus', verdict: 'yes', text: 'When your opponent\'s monster declares an attack, banish it from your GY to keep a "Phantom Beast" monster from being destroyed by battle. It can cover White Phantom Beast. Used on a Token, the Token survives, so White Phantom Beast\'s summon doesn\'t trigger.' },
+                        { label: 'Phantom Beast Rock-Lizard', verdict: 'yes', text: 'It can be Normal Summoned with 1 Tribute instead of 2 if you Tribute a "Phantom Beast" monster. White Phantom Beast counts, and so does a Mecha Phantom Beast Token. Rock-Lizard is Level 7, the same as a Level 4 Mecha Phantom Beast next to one Token, so the two can make Mecha Phantom Beast Dracossack.' }
+                    ]
+                },
+                {
+                    label: '"Mecha Phantom Beast" cards',
+                    items: [
+                        { label: 'Mecha Phantom Beast Megaraptor\'s search', verdict: 'no', text: 'It Tributes a Token to add a "Mecha Phantom Beast" monster from the Deck. White Phantom Beast isn\'t one.' },
+                        { label: 'Scramble!! Scramble!!', verdict: 'no', text: 'It Special Summons "Mecha Phantom Beast" monsters from the Deck.' },
+                        { label: 'Mecha Phantom Beast Harrliard or Hamstrat', verdict: 'no', text: 'Harrliard Special Summons a "Mecha Phantom Beast" monster from your hand, and Hamstrat revives one from your GY.' },
+                        { label: 'Mecha Phantom Beast Dracossack\'s destroy', verdict: 'no', text: 'Its cost is Tributing a "Mecha Phantom Beast" monster. A Token works and White Phantom Beast doesn\'t. Tributing a Token isn\'t destruction by battle, so it doesn\'t trigger White Phantom Beast either.' },
+                        { label: 'The Token Level boost', verdict: 'no', text: 'Only Mecha Phantom Beasts with that text add the Tokens\' Levels. White Phantom Beast stays Level 8, and no Mecha Phantom Beast lands on 8: a Level 4 goes to 7, 10 or 13, a Level 3 to 6, 9 or 12. So it never shares an Xyz Summon with them.' },
+                        { label: 'Mecha Phantom Beast Raiten\'s material lock', verdict: 'no', text: 'After Raiten\'s effect, only "Mecha Phantom Beast" monsters can be Fusion, Synchro, Xyz or Link Material that turn. White Phantom Beast can\'t.' },
+                        { label: 'Mecha Phantom Beast Sabre Hawk', verdict: 'warn', text: 'Sabre Hawk can\'t attack while you have a monster in your GY that isn\'t a "Mecha Phantom Beast". A White Phantom Beast in your GY switches it off.' },
+                        { label: 'Mecha Phantom Beast Concoruda', verdict: 'warn', text: 'While it\'s on the field, your Tokens can\'t be destroyed by battle, so none of them can trigger White Phantom Beast.' },
+                        { label: 'Mecha Phantom Beast Turtletracer', verdict: 'warn', text: 'The first Mecha Phantom Beast Token that would be destroyed by battle each turn isn\'t, so the first lost battle doesn\'t trigger White Phantom Beast.' },
+                        { label: 'Mecha Phantom Beast Warbluran\'s Token', verdict: 'warn', text: 'After it, you can only Special Summon WIND monsters for the rest of the turn. White Phantom Beast is LIGHT.' }
+                    ]
+                },
+                {
+                    label: 'White Phantom Beast\'s own effects',
+                    items: [
+                        { label: 'A Mecha Phantom Beast Token is destroyed by battle', verdict: 'yes', text: 'That\'s its second summon condition: any monster you control, on either player\'s turn, even in the Damage Step. It came from the hand, so the wipe follows.' },
+                        { label: 'A Token is Tributed for a cost', verdict: 'no', text: 'Megaraptor, Dracossack, Harrliard, Aerial Recharge and Do a Barrel Roll Tribute Tokens. Tributing isn\'t destruction by battle.' },
+                        { label: 'A Token is destroyed by a card effect', verdict: 'no', text: 'Only destruction by battle counts.' },
+                        { label: 'Your Mecha Phantom Beasts attack directly after the wipe', verdict: 'no', text: 'For the rest of that turn only "Blue-Eyes" monsters can attack directly. White Phantom Beast can; your Mecha Phantom Beasts can\'t.' }
+                    ]
+                }
+            ];
+
+            const items = [];
+            GROUPS.forEach(group => {
+                const og = document.createElement('optgroup');
+                og.label = group.label;
+                group.items.forEach(item => {
+                    const o = document.createElement('option');
+                    o.value = String(items.length);
+                    o.textContent = item.label;
+                    og.appendChild(o);
+                    items.push(item);
+                });
+                select.appendChild(og);
+            });
+
+            function render() {
+                const item = items[Number(select.value)] || items[0];
+                result.dataset.verdict = item.verdict;
+                const head = document.createElement('span');
+                head.className = 'mpwb-checker-verdict';
+                head.textContent = VERDICTS[item.verdict];
+                result.replaceChildren(head, document.createTextNode(item.text));
+            }
+
+            select.addEventListener('change', render);
+            render();
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

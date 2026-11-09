@@ -471,7 +471,10 @@ export async function resolveCardAsync(nameOrCode) {
                 // "Maliss Dormouse" is "Maliss <P> Dormouse" in cards.cdb: keep that ProjectIgnis row, since overwriting
                 // it dropped the Link Rating, arrows, setcodes and effect strings the engine needs
                 const local = getCardByCode(rows[0].passcode);
-                if (local && !isSupabaseCached(rows[0].passcode)) return local;
+                // ...but under the site's (TCG) name: cards.cdb files new cards under OCG translations, and a TCG name
+                // that contains an older card's name ("Dark Rebellion Xyz Dragon, Four Heavenly Dragons", filed as
+                // "...Dragon of the Four Heavenly Dragons") was matched to that older card (Dark Rebellion Xyz Dragon)
+                if (local && !isSupabaseCached(rows[0].passcode)) return rows[0].cardname ? { ...local, name: rows[0].cardname } : local;
                 return parseSupabaseRow(rows[0], /link/i.test(rows[0].cardtype || '') ? await fetchLinkMarkers(rows[0].passcode) : 0);
             }
         }

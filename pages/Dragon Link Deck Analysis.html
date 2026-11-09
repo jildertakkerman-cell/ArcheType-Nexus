@@ -25,6 +25,7 @@
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/card-loader.js"></script>
     <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
 
     <style>
         :root {
@@ -258,6 +259,119 @@
             }
         }
     </style>
+    <style>
+        /* ===== Rokket wave (Magnificent Maestros) spotlight + guide tabs (assets/js/guide-tabs.js) =====
+           Own dlr-* classes, so the classic analysis keeps its look. */
+        :root {
+            --dlr-red: #ef4444;
+            --dlr-gold: #f59e0b;
+            --dlr-cyan: #22d3ee;
+            --dlr-surface: #141419;
+            --dlr-surface-deep: #0e0e12;
+            --dlr-inset: #0a0a0c;
+            --dlr-border: #33333b;
+            --dlr-text: #e5e7eb;
+            --dlr-muted: #a1a1aa;
+            --dlr-heading: #ffffff;
+            --dlr-ok: #4ade80;
+            --dlr-no: #f87171;
+            --dlr-part: #fbbf24;
+        }
+        .dlr-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        [id^="dlr-"] { scroll-margin-top: 4.5rem; }
+
+        .dlr-tabs { display: flex; margin: 0 0 2rem; border-bottom: 2px solid var(--dlr-border); }
+        .dlr-tab { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.45rem; min-height: 44px; margin-bottom: -2px; padding: 0.75rem 1.5rem; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--dlr-muted); font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: color 0.2s, border-color 0.2s, background-color 0.2s; }
+        .dlr-tab:hover { color: #fff; background-color: rgba(239, 68, 68, 0.08); }
+        .dlr-tab[aria-selected="true"] { border-bottom-color: var(--dlr-red); color: #fff; }
+        .dlr-new { padding: 1px 7px; border-radius: 9999px; background: var(--dlr-gold); color: #1c1003; font-family: 'Inter', sans-serif; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; }
+        .dlr-panel[hidden] { display: none !important; }
+        .dlr-tab:focus-visible, .dlr-panel:focus-visible, .dlr-spot-cta:focus-visible, .dlr-chipnav a:focus-visible, .dlr-link:focus-visible, .dlr-table-wrap:focus-visible, .dlr-checker select:focus-visible, .dlr-checker input:focus-visible { outline: 2px solid var(--dlr-cyan); outline-offset: 3px; border-radius: 0.375rem; }
+        .dlr-panel:target:focus-visible { outline: none; }
+        @media (max-width: 639px) { .dlr-tab { flex: 1 1 0; padding: 0.75rem 0.5rem; font-size: 0.68rem; white-space: normal; text-align: center; } }
+
+        .dlr-art { display: flex; align-items: center; justify-content: center; width: 100%; aspect-ratio: 59 / 86; padding: 0.35rem; overflow: hidden; border: 2px dashed rgba(239, 68, 68, 0.45); border-radius: 0.35rem; background: var(--dlr-inset); color: #fca5a5; font-size: 0.55rem; line-height: 1.3; text-align: center; cursor: pointer; }
+        .dlr-art:has(img) { display: block; aspect-ratio: auto; padding: 0; border-color: transparent; background: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6); }
+        .dlr-art .card-placeholder { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; font-size: inherit; }
+
+        .dlr-spot { display: grid; grid-template-columns: 88px minmax(0, 1fr); grid-template-areas: "art head" "body body"; gap: 1rem 1.1rem; align-items: start; max-width: 56rem; margin: 0 auto 2.5rem; padding: 1.25rem; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 0.75rem; background: radial-gradient(ellipse at 8% 0%, rgba(239, 68, 68, 0.12) 0%, transparent 55%), linear-gradient(135deg, var(--dlr-surface) 0%, var(--dlr-surface-deep) 100%); box-shadow: 0 8px 30px rgba(239, 68, 68, 0.12); }
+        .dlr-spot-art { grid-area: art; }
+        .dlr-spot-head { grid-area: head; min-width: 0; }
+        .dlr-spot-body { grid-area: body; min-width: 0; }
+        .dlr-spot-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; color: var(--dlr-gold); font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; }
+        .dlr-spot-title { color: var(--dlr-heading); font-family: 'Orbitron', sans-serif; font-size: 1.1rem; font-weight: 700; line-height: 1.3; letter-spacing: 0.04em; }
+        .dlr-spot-stats { margin-top: 0.35rem; color: #fca5a5; font-size: 0.85rem; font-weight: 700; }
+        .dlr-spot-hook { color: var(--dlr-text); font-family: 'Inter', sans-serif; font-size: 0.92rem; line-height: 1.65; }
+        .dlr-spot-hook strong { color: var(--dlr-heading); }
+        .dlr-spot-label { margin: 1rem 0 0.5rem; color: var(--dlr-muted); font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+        .dlr-chipnav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .dlr-chipnav a { display: inline-flex; align-items: center; gap: 0.45rem; min-height: 36px; padding: 0.35rem 0.8rem; border: 1px solid var(--dlr-border); border-radius: 9999px; background: var(--dlr-inset); color: #f4f4f5; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; text-decoration: none; transition: border-color 0.15s, background-color 0.15s; }
+        .dlr-chipnav a i { color: var(--dlr-cyan); }
+        .dlr-chipnav a:hover { border-color: var(--dlr-red); background: rgba(239, 68, 68, 0.1); }
+        .dlr-spot-cta { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-top: 1.1rem; padding: 0.6rem 1.2rem; border: 1px solid var(--dlr-red); border-radius: 9999px; background: rgba(239, 68, 68, 0.12); color: #fff; font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; cursor: pointer; transition: background-color 0.15s, box-shadow 0.15s; }
+        .dlr-spot-cta:hover { background: rgba(239, 68, 68, 0.25); box-shadow: 0 0 16px rgba(239, 68, 68, 0.3); }
+        @media (min-width: 768px) { .dlr-spot { grid-template-columns: 130px minmax(0, 1fr); grid-template-areas: "art head" "art body"; padding: 1.5rem; } .dlr-spot-title { font-size: 1.3rem; } }
+
+        .dlr-section { margin-bottom: 3.5rem; }
+        .dlr-h2 { margin-bottom: 1rem; color: var(--dlr-heading); font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 700; line-height: 1.35; letter-spacing: 0.05em; text-align: center; }
+        @media (min-width: 768px) { .dlr-h2 { font-size: 1.65rem; } }
+        .dlr-lede { max-width: 48rem; margin: 0 auto 1.75rem; color: var(--dlr-text); font-family: 'Inter', sans-serif; font-size: 0.95rem; line-height: 1.7; text-align: center; }
+        .dlr-lede strong, .dlr-box strong { color: var(--dlr-heading); }
+        .dlr-release { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        .dlr-chip { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.8rem; border: 1px solid var(--dlr-border); border-radius: 9999px; background: var(--dlr-surface-deep); color: var(--dlr-text); font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 600; }
+        .dlr-chip i { color: var(--dlr-gold); }
+        .dlr-link { color: var(--dlr-cyan); text-decoration: underline; text-underline-offset: 2px; }
+        .dlr-link:hover { color: #fff; }
+        .dlr-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        @media (min-width: 768px) { .dlr-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .dlr-box { padding: 1.25rem; border: 1px solid var(--dlr-border); border-top: 3px solid var(--dlr-red); border-radius: 0.5rem; background: var(--dlr-surface); color: var(--dlr-text); font-family: 'Inter', sans-serif; font-size: 0.9rem; line-height: 1.65; }
+        .dlr-box h3 { margin-bottom: 0.5rem; color: var(--dlr-heading); font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+        .dlr-box h3 i { margin-right: 0.4rem; color: var(--dlr-cyan); }
+        .dlr-box p + p { margin-top: 0.6rem; }
+        .dlr-box--gold { border-top-color: var(--dlr-gold); }
+        .dlr-box--muted { border-top-color: var(--dlr-muted); }
+        .dlr-after { max-width: 48rem; margin: 1.25rem auto 0; color: var(--dlr-muted); font-family: 'Inter', sans-serif; font-size: 0.88rem; line-height: 1.65; text-align: center; }
+
+        .dlr-table-wrap { overflow-x: auto; border: 1px solid var(--dlr-border); border-radius: 0.5rem; }
+        .dlr-table { width: 100%; border-collapse: collapse; color: var(--dlr-text); font-family: 'Inter', sans-serif; font-size: 0.86rem; line-height: 1.55; }
+        .dlr-table th, .dlr-table td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--dlr-border); text-align: left; vertical-align: top; }
+        .dlr-table thead th { background: var(--dlr-surface); color: #fca5a5; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .dlr-table tbody th { color: var(--dlr-heading); font-weight: 600; }
+        .dlr-table tbody tr:nth-child(even) { background: rgba(20, 20, 25, 0.7); }
+        .dlr-table tbody tr:last-child th, .dlr-table tbody tr:last-child td { border-bottom: 0; }
+        .dlr-verdict { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; font-weight: 700; }
+        .dlr-verdict--no { color: var(--dlr-no); }
+        .dlr-verdict--part { color: var(--dlr-part); }
+        .dlr-verdict--ok { color: var(--dlr-ok); }
+        @media (max-width: 639px) {
+            .dlr-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .dlr-table--stack tr { display: block; padding: 0.4rem 0; border-bottom: 1px solid var(--dlr-border); }
+            .dlr-table--stack tbody tr:last-child { border-bottom: 0; }
+            .dlr-table--stack th, .dlr-table--stack td { display: block; padding: 0.3rem 0.9rem; border: 0; }
+        }
+
+        .dlr-checker { max-width: 46rem; margin: 0 auto; padding: 1.25rem; border: 1px solid rgba(34, 211, 238, 0.4); border-radius: 0.5rem; background: var(--dlr-surface); font-family: 'Inter', sans-serif; }
+        .dlr-checker fieldset { margin: 0 0 1rem; padding: 0; border: 0; }
+        .dlr-checker legend, .dlr-checker label.dlr-label { display: block; margin-bottom: 0.45rem; color: var(--dlr-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .dlr-checks { display: grid; grid-template-columns: 1fr; gap: 0.35rem; }
+        @media (min-width: 640px) { .dlr-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .dlr-checks label { display: flex; align-items: center; gap: 0.55rem; min-height: 40px; padding: 0.35rem 0.6rem; border: 1px solid var(--dlr-border); border-radius: 0.375rem; background: var(--dlr-inset); color: var(--dlr-text); font-size: 0.88rem; cursor: pointer; }
+        .dlr-checks input { width: 1.05rem; height: 1.05rem; accent-color: var(--dlr-red); }
+        .dlr-checker select { width: 100%; min-height: 44px; padding: 0.5rem 0.75rem; border: 1px solid var(--dlr-border); border-radius: 0.375rem; background: var(--dlr-inset); color: #f4f4f5; font-size: 0.9rem; }
+        .dlr-checker-result { margin-top: 1rem; padding: 1rem 1.1rem; border: 1px solid var(--dlr-border); border-left: 4px solid var(--dlr-muted); border-radius: 0.375rem; background: var(--dlr-inset); color: var(--dlr-text); font-size: 0.92rem; line-height: 1.6; }
+        .dlr-checker-result[data-verdict="yes"] { border-left-color: var(--dlr-ok); }
+        .dlr-checker-result[data-verdict="no"] { border-left-color: var(--dlr-no); }
+        .dlr-checker-result[data-verdict="warn"] { border-left-color: var(--dlr-part); }
+        .dlr-checker-verdict { display: block; margin-bottom: 0.25rem; font-weight: 800; }
+        .dlr-checker-result[data-verdict="yes"] .dlr-checker-verdict { color: var(--dlr-ok); }
+        .dlr-checker-result[data-verdict="no"] .dlr-checker-verdict { color: var(--dlr-no); }
+        .dlr-checker-result[data-verdict="warn"] .dlr-checker-verdict { color: var(--dlr-part); }
+
+        @media print {
+            .dlr-panel[hidden] { display: block !important; }
+            .dlr-tabs, .dlr-spot-cta { display: none !important; }
+        }
+    </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
@@ -303,6 +417,39 @@
             </div>
         </section>
     <div class="container mx-auto px-4 max-w-7xl">
+
+        <!-- ==================== NEW SUPPORT SPOTLIGHT (Magnificent Maestros) ====================
+             Always visible, above the guide tabs. Each chip opens the Rokket Wave tab at the matching
+             section; the full card analysis and the engine-checked lines are on the Rokket page. -->
+        <aside class="dlr-spot" data-pcs-scope="spot" aria-labelledby="dlr-spot-title">
+            <div class="dlr-spot-art">
+                <div id="dlr-spot-img-container" class="dlr-art">Rokket Barrage</div>
+            </div>
+            <div class="dlr-spot-head">
+                <p class="dlr-spot-kicker"><span class="dlr-new">NEW</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="dlr-spot-title" class="dlr-spot-title">Rokket Barrage in Dragon Link</h2>
+                <p class="dlr-spot-stats">Level 5 &middot; DARK &middot; Dragon &middot; with Triple Borrel Launch and Borreload Liberator Dragon</p>
+            </div>
+            <div class="dlr-spot-body">
+                <p class="dlr-spot-hook">The Rokket core gets a starter that needs no Normal Summon and turns one Link Monster's target into several Rokkets. In Dragon Link, the catch is <strong>when</strong> its DARK lock lands: Dragunity Knight - Romulus is WIND and Hieratic Seal of the Heavenly Spheres is LIGHT.</p>
+                <p id="dlr-spot-tags-label" class="dlr-spot-label">What it means here</p>
+                <ul class="dlr-chipnav" aria-labelledby="dlr-spot-tags-label">
+                    <li><a href="#dlr-search"><i class="fas fa-search" aria-hidden="true"></i> Finding Barrage</a></li>
+                    <li><a href="#dlr-routes"><i class="fas fa-route" aria-hidden="true"></i> Onto the field without the lock</a></li>
+                    <li><a href="#dlr-extra"><i class="fas fa-lock" aria-hidden="true"></i> What the lock costs</a></li>
+                    <li><a href="#dlr-checker"><i class="fas fa-check-double" aria-hidden="true"></i> Can you still summon it?</a></li>
+                </ul>
+                <button type="button" class="dlr-spot-cta" data-open-panel="tab-rokket">Read the Rokket wave tab <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ==================== -->
+        <div class="dlr-tabs" role="tablist" aria-label="Dragon Link guide" data-guide-tabs>
+            <button type="button" class="dlr-tab" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="dlr-tab" role="tab" id="tab-btn-rokket" aria-controls="tab-rokket" aria-selected="false" tabindex="-1">Rokket Wave <span class="dlr-new" aria-hidden="true">NEW</span></button>
+        </div>
+
+        <div id="tab-classic" class="dlr-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
 
         <!-- Executive Summary -->
         <section class="mb-16 animate-fadeIn">
@@ -599,6 +746,137 @@
             </div>
         </section>
 
+        </div>
+
+        <!-- ==================== ROKKET WAVE TAB (Magnificent Maestros, TCG 12 Nov 2026) ====================
+             Added 2026-11-08. Attributes from cards.cdb; Extra Deck list from assets/data/decklists/dragon-link.json.
+             Konami's note on Rokket Barrage (cid 22732): its DARK lock starts when its first effect resolves
+             unnegated, and it can still be used after a non-DARK Extra Deck summon that turn. -->
+        <div id="tab-rokket" data-pcs-scope="mams" class="dlr-panel" role="tabpanel" aria-labelledby="tab-btn-rokket" tabindex="0" hidden>
+
+            <section class="dlr-section" id="dlr-intro">
+                <h2 class="dlr-h2">The Rokket Wave in a Dragon Link Deck</h2>
+                <ul class="dlr-release" aria-label="Release">
+                    <li class="dlr-chip"><i class="fas fa-box-open" aria-hidden="true"></i> Magnificent Maestros &middot; TCG 12 Nov 2026</li>
+                    <li class="dlr-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG: LIMIT OVER COLLECTION -THE RIVALS- &middot; 20 Mar 2026</li>
+                </ul>
+                <p class="dlr-lede">Magnificent Maestros brings three Rokket cards: <strong>Rokket Barrage</strong>, <strong>Triple Borrel Launch</strong> and <strong>Borreload Liberator Dragon</strong>. The <a class="dlr-link" href="Rokket%20Deck%20Analysis.html#mams">Rokket page</a> covers them in full, with Konami's rulings, two engine-checked lines and a hand-trap table. This tab is about the mixed build. A Dragon Link deck runs Dragunity Knight - Romulus and Hieratic Seal of the Heavenly Spheres, and neither is DARK, so the order you play in decides what Barrage costs you.</p>
+            </section>
+
+            <section class="dlr-section" id="dlr-search">
+                <h2 class="dlr-h2">Finding Barrage</h2>
+                <div class="dlr-grid dlr-grid--2">
+                    <div class="dlr-box">
+                        <h3><i class="fas fa-search" aria-hidden="true"></i> Absorouter Dragon</h3>
+                        <p>When it's sent to the GY, it adds any Rokket monster from your Deck, Barrage included. Dragon Ravine's send is the usual way it gets there.</p>
+                    </div>
+                    <div class="dlr-box">
+                        <h3><i class="fas fa-star" aria-hidden="true"></i> Starliege Seyfert</h3>
+                        <p>Seyfert sends Dragons from your hand or field and adds a Dragon whose Level equals their total original Levels. Seyfert (4) plus Black Metal Dragon (1) is 5, which is Barrage. Seyfert on its own is 4: Rokket Tracer, for example.</p>
+                    </div>
+                    <div class="dlr-box">
+                        <h3><i class="fas fa-fire" aria-hidden="true"></i> Borreload Fatalflare Dragon</h3>
+                        <p>When it's Fusion Summoned, it adds any Rokket monster from your Deck.</p>
+                    </div>
+                    <div class="dlr-box dlr-box--muted">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> Not these</h3>
+                        <p>Chaos Space only adds monsters that can't be Normal Summoned, and Barrage can be, with a Tribute. Rokket Loader only adds a Level 7. Dragon Ravine only adds Dragunity monsters, but its send can put Barrage straight into the GY for Red-Eyes Darkness Metal Dragon or Guardragon Pisty.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dlr-section" id="dlr-routes">
+                <h2 class="dlr-h2">Onto the Field Without the Lock</h2>
+                <p class="dlr-lede">Barrage's second effect only needs Barrage on the field when a Link Monster targets it. Only its own first effect locks you to DARK; most other ways to summon it don't.</p>
+                <div class="dlr-table-wrap" role="region" aria-labelledby="dlr-routes-caption" tabindex="0">
+                    <table class="dlr-table dlr-table--stack">
+                        <caption id="dlr-routes-caption" class="dlr-sr-only">Ways to put Rokket Barrage on the field and whether each locks your Extra Deck to DARK monsters</caption>
+                        <thead>
+                            <tr><th scope="col">How</th><th scope="col">DARK lock?</th><th scope="col">Notes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Rokket Barrage's first effect</th><td><span class="dlr-verdict dlr-verdict--no">Yes</span></td><td>Send a DARK Dragon that isn't Level 5 from your Deck. The lock starts once the effect resolves, unless it's negated.</td></tr>
+                            <tr><th scope="row">Rokket Tracer</th><td><span class="dlr-verdict dlr-verdict--no">Yes</span></td><td>Tracer's own effect locks you, whichever Rokket it summons.</td></tr>
+                            <tr><th scope="row">Red-Eyes Darkness Metal Dragon</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>In your Main Phase it summons a Dragon from your hand or GY.</td></tr>
+                            <tr><th scope="row">Boot Sector Launch</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>Up to 2 Rokkets with different names from your hand, in Defense Position.</td></tr>
+                            <tr><th scope="row">Quick Launch</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>From your Deck, but it can't attack and is destroyed in the End Phase.</td></tr>
+                            <tr><th scope="row">Triple Borrel Launch, first mode</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>From your Deck, after you return a Dragon from your GY.</td></tr>
+                            <tr><th scope="row">Breachborrel Dragon</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>Once its target has left the field, it summons any Rokket from your Deck, Barrage included.</td></tr>
+                            <tr><th scope="row">Guardragon Pisty</th><td><span class="dlr-verdict dlr-verdict--part">No, but</span></td><td>From the GY or banishment, into a zone two Link Monsters point to. While Pisty is face-up you can only Special Summon Dragons.</td></tr>
+                            <tr><th scope="row">Borrel Regenerator</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>From the GY, equipped. It's banished when Regenerator leaves the field.</td></tr>
+                            <tr><th scope="row">Hieratic Seal of the Heavenly Spheres, Tributed</th><td><span class="dlr-verdict dlr-verdict--ok">No</span></td><td>From your hand or Deck, with 0 ATK/DEF.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="dlr-section" id="dlr-extra">
+                <h2 class="dlr-h2">What the Lock Costs This Deck</h2>
+                <p class="dlr-lede">Once a DARK lock is on, only DARK monsters can come from your Extra Deck for the rest of that turn. Here's the Extra Deck from the site's Dragon Link test list, plus the Rokket Link Monsters you'd add.</p>
+                <div class="dlr-table-wrap" role="region" aria-labelledby="dlr-extra-caption" tabindex="0">
+                    <table class="dlr-table dlr-table--stack">
+                        <caption id="dlr-extra-caption" class="dlr-sr-only">Dragon Link Extra Deck monsters and whether a DARK-only lock still allows them</caption>
+                        <thead>
+                            <tr><th scope="col">Extra Deck monster</th><th scope="col">Attribute</th><th scope="col">After the lock</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Borrelend Dragon, Borrelsword Dragon, Quadborrel Dragon</th><td>DARK</td><td><span class="dlr-verdict dlr-verdict--ok">Fine</span></td></tr>
+                            <tr><th scope="row">Breachborrel Dragon, Trisborrel Dragon, Borrelshroud Dragon, Borreload Liberator Dragon</th><td>DARK</td><td><span class="dlr-verdict dlr-verdict--ok">Fine</span></td></tr>
+                            <tr><th scope="row">Striker Dragon, Guardragon Pisty, Dillingerous Dragon</th><td>DARK</td><td><span class="dlr-verdict dlr-verdict--ok">Fine</span></td></tr>
+                            <tr><th scope="row">Bystial Dis Pater</th><td>DARK</td><td><span class="dlr-verdict dlr-verdict--ok">Fine</span></td></tr>
+                            <tr><th scope="row">Dragunity Knight - Romulus</th><td>WIND</td><td><span class="dlr-verdict dlr-verdict--no">Blocked</span> Make it before the lock.</td></tr>
+                            <tr><th scope="row">Hieratic Seal of the Heavenly Spheres</th><td>LIGHT</td><td><span class="dlr-verdict dlr-verdict--no">Blocked</span> Make it before the lock.</td></tr>
+                            <tr><th scope="row">Light and Darkness Dragonlord</th><td>LIGHT in the Extra Deck</td><td><span class="dlr-verdict dlr-verdict--part">Not that turn</span> The Branded Banishment summon in Script C happens on your opponent's turn, after the lock has ended.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dlr-grid dlr-grid--2" style="margin-top: 1.25rem;">
+                    <div class="dlr-box dlr-box--gold">
+                        <h3><i class="fas fa-sort-amount-down" aria-hidden="true"></i> Order of play</h3>
+                        <p>The lock only works forward. Konami confirms Barrage's first effect can still be used after a non-DARK Extra Deck summon that turn. So make Romulus and Spheres first, then let Barrage, Tracer or Rokket Loader lock the rest of the turn.</p>
+                    </div>
+                    <div class="dlr-box dlr-box--gold">
+                        <h3><i class="fas fa-random" aria-hidden="true"></i> Or skip the lock</h3>
+                        <p>If Barrage arrives through Red-Eyes Darkness Metal Dragon, Boot Sector Launch, Quick Launch or Triple Borrel Launch, its second effect works just the same and nothing locks you. You give up the free Deck-to-GY send that its first effect pays with.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dlr-section" id="dlr-checker">
+                <h2 class="dlr-h2">Can You Still Summon It?</h2>
+                <p class="dlr-lede">Tick what has already resolved this turn, then pick the Extra Deck monster you want.</p>
+                <form class="dlr-checker" data-dlr-checker onsubmit="return false;">
+                    <fieldset>
+                        <legend>Already resolved this turn</legend>
+                        <div class="dlr-checks">
+                            <label><input type="checkbox" value="barrage" data-dlr-lock> Rokket Barrage's first effect</label>
+                            <label><input type="checkbox" value="tracer" data-dlr-lock> Rokket Tracer's effect</label>
+                            <label><input type="checkbox" value="loader" data-dlr-lock> Rokket Loader's search</label>
+                            <label><input type="checkbox" value="detonator" data-dlr-lock> Rokket Detonator's effect</label>
+                            <label><input type="checkbox" value="synchron" data-dlr-lock> Rokket Synchron's effect</label>
+                            <label><input type="checkbox" value="pisty" data-dlr-pisty> Guardragon Pisty is face-up</label>
+                        </div>
+                    </fieldset>
+                    <label class="dlr-label" for="dlr-checker-select">Extra Deck monster</label>
+                    <select id="dlr-checker-select" data-dlr-case>
+                        <option value="romulus" selected>Dragunity Knight - Romulus (WIND Dragon)</option>
+                        <option value="spheres">Hieratic Seal of the Heavenly Spheres (LIGHT Dragon)</option>
+                        <option value="dragonlord">Light and Darkness Dragonlord (LIGHT Dragon)</option>
+                        <option value="borrelend">Borrelend Dragon (DARK Dragon)</option>
+                        <option value="breachborrel">Breachborrel Dragon (DARK Dragon)</option>
+                        <option value="liberator">Borreload Liberator Dragon (DARK Dragon)</option>
+                        <option value="dispater">Bystial Dis Pater (DARK Dragon)</option>
+                        <option value="striker">Striker Dragon (DARK Dragon)</option>
+                        <option value="littleknight">S:P Little Knight (DARK Warrior)</option>
+                        <option value="masquerena">I:P Masquerena (DARK Cyberse)</option>
+                    </select>
+                    <div class="dlr-checker-result" data-dlr-result aria-live="polite"></div>
+                </form>
+            </section>
+
+            <p class="dlr-after">Full card text, Konami's notes, the two engine-checked lines (Rokket Barrage alone; Rokket Loader alone, going second) and what each hand trap stops are on the <a class="dlr-link" href="Rokket%20Deck%20Analysis.html#mams">Rokket page's Magnificent Maestros tab</a>.</p>
+        </div>
+
         <!-- Banlist Status -->
         <section class="mb-16">
              <div class="flex items-center justify-between mb-8">
@@ -772,6 +1050,105 @@
                 initPageSections('Dragon Link');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Rokket wave spotlight. The tab's own art loads the
+         first time it opens. Then the "Can you still summon it?" checker: card data in CARDS, lock sources
+         in LOCKS (each one's printed text says "except DARK monsters"). -->
+    <script>
+        GuideTabs.init({
+            panelArt: {}
+        });
+
+        (function () {
+            if (window.CardLoader) CardLoader.loadCards({ 'dlr-spot-img-container': 'Rokket Barrage' });
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser scrolls to it.
+            // guide-tabs.js reacts to hashchange, which doesn't fire when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; }
+                const panel = target && target.closest('.dlr-panel');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (!cta) return;
+            cta.addEventListener('click', () => {
+                const tab = tabFor(cta.dataset.openPanel);
+                if (!tab) return;
+                tab.click();
+                tab.focus({ preventScroll: true });
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+            });
+        })();
+
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-dlr-checker]');
+            if (!root) return;
+            const select = root.querySelector('[data-dlr-case]');
+            const result = root.querySelector('[data-dlr-result]');
+            const LOCKS = {
+                barrage: "Rokket Barrage's first effect",
+                tracer: "Rokket Tracer's effect",
+                loader: "Rokket Loader's search",
+                detonator: "Rokket Detonator's effect",
+                synchron: "Rokket Synchron's effect"
+            };
+            const CARDS = {
+                romulus: { name: 'Dragunity Knight - Romulus', attr: 'WIND', dragon: true },
+                spheres: { name: 'Hieratic Seal of the Heavenly Spheres', attr: 'LIGHT', dragon: true },
+                dragonlord: { name: 'Light and Darkness Dragonlord', attr: 'LIGHT', dragon: true,
+                    note: ' It is LIGHT in the Extra Deck. The lock ends with your turn, so Branded Banishment can still Fusion Summon it on your opponent\'s turn.' },
+                borrelend: { name: 'Borrelend Dragon', attr: 'DARK', dragon: true },
+                breachborrel: { name: 'Breachborrel Dragon', attr: 'DARK', dragon: true },
+                liberator: { name: 'Borreload Liberator Dragon', attr: 'DARK', dragon: true, note: ' It can only be Special Summoned once per turn.' },
+                dispater: { name: 'Bystial Dis Pater', attr: 'DARK', dragon: true },
+                striker: { name: 'Striker Dragon', attr: 'DARK', dragon: true },
+                littleknight: { name: 'S:P Little Knight', attr: 'DARK', dragon: false },
+                masquerena: { name: 'I:P Masquerena', attr: 'DARK', dragon: false }
+            };
+            function render() {
+                const card = CARDS[select.value];
+                if (!card) return;
+                const locks = [...root.querySelectorAll('[data-dlr-lock]:checked')].map(i => LOCKS[i.value]);
+                const pisty = root.querySelector('[data-dlr-pisty]').checked;
+                let verdict, head, body;
+                if (pisty && !card.dragon) {
+                    verdict = 'no'; head = 'No';
+                    body = 'While Guardragon Pisty is face-up you can only Special Summon Dragons, and ' + card.name + ' isn\'t one. Use Pisty as material first.';
+                } else if (card.attr !== 'DARK' && locks.length) {
+                    verdict = 'no'; head = 'Not this turn';
+                    body = card.name + ' is ' + card.attr + ', and ' + locks.join(', ') + (locks.length > 1 ? ' have' : ' has') + ' locked you to DARK monsters from the Extra Deck for the rest of the turn.' + (card.note || '');
+                } else if (card.attr !== 'DARK') {
+                    verdict = 'warn'; head = 'Yes, before the lock';
+                    body = card.name + ' is ' + card.attr + '. Nothing has locked you yet, so summon it now, before Barrage, Tracer, Loader, Detonator or Synchron resolve.' + (card.note || '');
+                } else {
+                    verdict = 'yes'; head = 'Yes';
+                    body = card.name + ' is DARK, so the Rokket locks never stop it.' + (card.note || '');
+                }
+                result.dataset.verdict = verdict;
+                result.innerHTML = '';
+                const h = document.createElement('span');
+                h.className = 'dlr-checker-verdict';
+                h.textContent = head;
+                const b = document.createElement('span');
+                b.textContent = body;
+                result.append(h, b);
+            }
+            root.addEventListener('change', render);
+            render();
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

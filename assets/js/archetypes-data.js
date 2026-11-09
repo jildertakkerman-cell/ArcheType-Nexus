@@ -25619,47 +25619,100 @@ const archetypes = [
         latestReleaseDate: '2026-02-28'
     },
     {
-        name: 'Mega Phantom Beast',
-        description: 'A Machine archetype focused on summoning and equipping phantom beasts for powerful attacks.',
+        name: 'Phantom Beast',
+        description: 'Every card with "Phantom Beast" in its name: the original Beast-Warriors, the WIND Machine Mecha Phantom Beasts and their Tokens, and now Blue-Eyes White Dragon, the White Phantom Beast, which turns a battle loss into a board wipe.',
         filepath: 'pages/Mega Phantom Beast Deck Analysis.html',
         icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                            <radialGradient id="megaAura" cx="50%" cy="50%" r="60%">
-                                <stop offset="0%" stop-color="#1f2937" stop-opacity="0.7"/>
-                                <stop offset="50%" stop-color="#374151" stop-opacity="0.4"/>
-                                <stop offset="100%" stop-color="#111827" stop-opacity="0.8"/>
+                            <radialGradient id="phbstBg" cx="50%" cy="42%" r="65%">
+                                <stop offset="0%" stop-color="#312e81"/>
+                                <stop offset="100%" stop-color="#0b0a1f"/>
                             </radialGradient>
-                            <linearGradient id="megaGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#1f2937"/>
-                                <stop offset="100%" stop-color="#111827"/>
+                            <radialGradient id="phbstAura" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.7"/>
+                                <stop offset="60%" stop-color="#818cf8" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+                            </radialGradient>
+                            <linearGradient id="phbstWing" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#e0e7ff" stop-opacity="0.9"/>
+                                <stop offset="100%" stop-color="#818cf8" stop-opacity="0.2"/>
                             </linearGradient>
-                            <filter id="megaShadow">
-                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <!-- Left half steel (Mecha), right half spectral -->
+                            <linearGradient id="phbstHead" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#475569"/>
+                                <stop offset="50%" stop-color="#94a3b8"/>
+                                <stop offset="50%" stop-color="#e0e7ff" stop-opacity="0.8"/>
+                                <stop offset="100%" stop-color="#a5b4fc" stop-opacity="0.3"/>
+                            </linearGradient>
+                            <linearGradient id="phbstWisp" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#c7d2fe" stop-opacity="0.85"/>
+                                <stop offset="100%" stop-color="#c7d2fe" stop-opacity="0"/>
+                            </linearGradient>
+                            <filter id="phbstGlow" x="-60%" y="-60%" width="220%" height="220%">
+                                <feGaussianBlur stdDeviation="1.4" result="blur"/>
                                 <feMerge>
-                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="blur"/>
                                     <feMergeNode in="SourceGraphic"/>
                                 </feMerge>
                             </filter>
                         </defs>
-                        <ellipse cx="50" cy="55" rx="40" ry="30" fill="url(#megaAura)" opacity="0.7">
-                            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite"/>
-                        </ellipse>
-                        <g filter="url(#megaShadow)">
-                            <ellipse cx="50" cy="60" rx="18" ry="10" fill="url(#megaGlow)" stroke="#111827" stroke-width="2"/>
-                            <ellipse cx="50" cy="50" rx="10" ry="6" fill="#1f2937" stroke="#374151" stroke-width="2"/>
-                            <ellipse cx="50" cy="70" rx="6" ry="3" fill="#374151" stroke="#111827" stroke-width="2"/>
+                        <circle cx="50" cy="50" r="45" fill="url(#phbstBg)" stroke="#a5b4fc" stroke-width="3"/>
+                        <!-- White phantom aura -->
+                        <circle cx="50" cy="48" r="27" fill="url(#phbstAura)">
+                            <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <!-- Spectral wings -->
+                        <g>
+                            <animateTransform attributeName="transform" type="rotate" values="0 38 55;-7 38 55;0 38 55" dur="2.4s" repeatCount="indefinite"/>
+                            <path d="M38 54 Q28 36 14 30 Q10 42 18 45 Q16 54 25 52 Q25 61 33 58 Z" fill="url(#phbstWing)" stroke="#c7d2fe" stroke-width="1" stroke-linejoin="round"/>
+                            <path d="M36 53 L18 45 M36 55 L25 52" stroke="#4338ca" stroke-width="0.8" opacity="0.5"/>
                         </g>
-                        <circle cx="35" cy="75" r="2" fill="#374151">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+                        <g>
+                            <animateTransform attributeName="transform" type="rotate" values="0 62 55;7 62 55;0 62 55" dur="2.4s" repeatCount="indefinite"/>
+                            <path d="M62 54 Q72 36 86 30 Q90 42 82 45 Q84 54 75 52 Q75 61 67 58 Z" fill="url(#phbstWing)" stroke="#c7d2fe" stroke-width="1" stroke-linejoin="round"/>
+                            <path d="M64 53 L82 45 M64 55 L75 52" stroke="#4338ca" stroke-width="0.8" opacity="0.5"/>
+                        </g>
+                        <!-- Horns -->
+                        <path d="M41 35 Q32 29 30 17 Q37 25 45 31 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+                        <path d="M59 35 Q68 29 70 17 Q63 25 55 31 Z" fill="#eef2ff" fill-opacity="0.75" stroke="#c7d2fe" stroke-width="1"/>
+                        <!-- Phantom tail wisps -->
+                        <path d="M44 69 Q39 77 45 83 Q49 88 44 92" stroke="url(#phbstWisp)" stroke-width="2.5" stroke-linecap="round" fill="none">
+                            <animate attributeName="opacity" values="0.9;0.35;0.9" dur="2.6s" repeatCount="indefinite"/>
+                        </path>
+                        <path d="M56 69 Q61 76 56 82 Q52 87 57 90" stroke="url(#phbstWisp)" stroke-width="2.5" stroke-linecap="round" fill="none">
+                            <animate attributeName="opacity" values="0.35;0.9;0.35" dur="2.6s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Beast head: half machine, half phantom -->
+                        <path d="M50 30 C58 30 64 35 65 43 L68 52 L62 57 L58 67 Q50 74 42 67 L38 57 L32 52 L35 43 C36 35 42 30 50 30 Z" fill="url(#phbstHead)" stroke="#c7d2fe" stroke-width="1.5" stroke-linejoin="round"/>
+                        <path d="M50 31 L50 71" stroke="#1e293b" stroke-width="1" opacity="0.6"/>
+                        <path d="M36 44 L46 44 L48 50 M38.5 57 L43 61 L43.5 67" stroke="#1e293b" stroke-width="1" fill="none"/>
+                        <circle cx="37.5" cy="49" r="0.9" fill="#e2e8f0"/>
+                        <circle cx="40.5" cy="62" r="0.9" fill="#e2e8f0"/>
+                        <path d="M53 36 Q61 38 62.5 46 M61.5 57 L57 61 L56.5 67" stroke="#ffffff" stroke-width="1" stroke-dasharray="2 2" fill="none" opacity="0.7"/>
+                        <path d="M44.5 59 Q50 56.5 55.5 59" stroke="#1e293b" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.7"/>
+                        <ellipse cx="47.2" cy="65.5" rx="1.1" ry="1.6" fill="#1e293b" transform="rotate(-20 47.2 65.5)"/>
+                        <ellipse cx="52.8" cy="65.5" rx="1.1" ry="1.6" fill="#312e81" transform="rotate(20 52.8 65.5)"/>
+                        <!-- Eyes: cyan visor, white phantom eye -->
+                        <path d="M38.5 47 L47 48.5 L46 51.5 L40 50 Z" fill="#22d3ee" filter="url(#phbstGlow)"/>
+                        <path d="M61.5 47 L53 48.5 L54 51.5 L60 50 Z" fill="#f8fafc" filter="url(#phbstGlow)">
+                            <animate attributeName="opacity" values="1;0.5;1" dur="2.2s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Thunder crest -->
+                        <path d="M52.5 18 L46.5 27 L50.5 27 L48 34 L54.5 24.5 L50.5 24.5 Z" fill="#fde047" stroke="#ca8a04" stroke-width="0.6" stroke-linejoin="round" filter="url(#phbstGlow)">
+                            <animate attributeName="opacity" values="1;0.45;1;1" dur="1.8s" repeatCount="indefinite"/>
+                        </path>
+                        <!-- Rising phantom motes -->
+                        <circle cx="29" cy="76" r="1.4" fill="#e0e7ff">
+                            <animate attributeName="cy" values="78;62" dur="2.6s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.9;0" dur="2.6s" repeatCount="indefinite"/>
                         </circle>
-                        <circle cx="65" cy="75" r="2" fill="#111827">
-                            <animate attributeName="r" values="2;4;2" dur="1.5s" begin="0.7s" repeatCount="indefinite"/>
+                        <circle cx="71" cy="76" r="1.4" fill="#e0e7ff">
+                            <animate attributeName="cy" values="78;62" dur="2.6s" begin="1.3s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.9;0" dur="2.6s" begin="1.3s" repeatCount="indefinite"/>
                         </circle>
-                        <text x="50" y="95" text-anchor="middle" font-size="12" fill="#111827" font-weight="bold">Mega Phantom Beast</text>
                     </svg>`,
-        firstReleaseDate: null,
-        latestReleaseDate: null,
-
+        firstReleaseDate: '2006-11-16',
+        latestReleaseDate: '2026-11-12'
     },
     {
         name: 'Phantom Knights',

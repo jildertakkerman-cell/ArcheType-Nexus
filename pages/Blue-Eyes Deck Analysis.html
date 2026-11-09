@@ -16,6 +16,7 @@
     <script src="../assets/js/page-sections.js"></script>
     <script src="../assets/js/combo-system.js"></script>
     <script src="../assets/js/combo-sounds.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
     <!-- Supabase CDN for gameplay tags (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../assets/js/supabase-config.js"></script>
@@ -493,6 +494,457 @@
     <script src="../assets/js/lore-reel-data.js" defer></script>
     <script src="../assets/js/lore-reel-art.js" defer></script>
     <script src="../assets/js/lore-reel.js" defer></script>
+    <style>
+        /* ===== Magnificent Maestros spotlight + guide tabs (assets/js/guide-tabs.js) =====
+           Own class names (bemm-*): the page's .tab-btn styles belong to the
+           Chronicle Sorceress toggle in the classic panel. */
+        :root {
+            --bemm-primary: #38bdf8;
+            --bemm-primary-soft: #7dd3fc;
+            --bemm-primary-line: rgba(56, 189, 248, 0.45);
+            --bemm-primary-wash: rgba(56, 189, 248, 0.12);
+            --bemm-ice: #e0f2fe;
+            --bemm-surface: #111c2e;
+            --bemm-surface-deep: #0b1322;
+            --bemm-inset: #081020;
+            --bemm-border: #1e3a5f;
+            --bemm-text: #cbd5e1;
+            --bemm-muted: #94a3b8;
+            --bemm-heading: #ffffff;
+            --bemm-ok: #34d399;
+            --bemm-no: #f87171;
+            --bemm-part: #fbbf24;
+        }
+        .bemm-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        [id^="bemm-"] { scroll-margin-top: 1.5rem; }
+
+        /* ----- Tabs ----- */
+        .bemm-tabs {
+            display: flex;
+            margin: 0 0 2rem;
+            border-bottom: 2px solid var(--bemm-border);
+        }
+        .bemm-tab {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 44px;
+            margin-bottom: -2px;
+            padding: 0.75rem 1.5rem;
+            border: 0;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--bemm-muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .bemm-tab:hover { color: var(--bemm-ice); background-color: var(--bemm-primary-wash); }
+        .bemm-tab[aria-selected="true"] {
+            border-bottom-color: var(--bemm-primary);
+            color: var(--bemm-primary-soft);
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+        .bemm-new-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--bemm-ice);
+            color: #0c1524;
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-shadow: none;
+        }
+        .bemm-panel[hidden] { display: none !important; }
+        .bemm-tab:focus-visible,
+        .bemm-panel:focus-visible,
+        .bemm-spot-cta:focus-visible,
+        .bemm-tag:focus-visible,
+        .bemm-table-wrap:focus-visible,
+        .bemm-checker select:focus-visible,
+        .bemm-link:focus-visible {
+            outline: 2px solid var(--bemm-ice);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .bemm-panel:target:focus-visible { outline: none; }
+        @media (max-width: 639px) {
+            .bemm-tab {
+                flex: 1 1 0;
+                padding: 0.75rem 0.5rem;
+                font-size: 0.75rem;
+                white-space: normal;
+                text-align: center;
+            }
+        }
+
+        /* ----- Card art slot (59:86 until CardLoader swaps the image in) ----- */
+        .bemm-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.35rem;
+            overflow: hidden;
+            border: 2px dashed var(--bemm-primary-line);
+            border-radius: 0.35rem;
+            background: var(--bemm-inset);
+            color: var(--bemm-primary-soft);
+            font-size: 0.55rem;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .bemm-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        .bemm-art .card-placeholder { aspect-ratio: auto; padding: 0; border: 0; background: none; font-size: inherit; }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .bemm-spot {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas: "arts" "head" "body";
+            gap: 1rem 1.25rem;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--bemm-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 6% 0%, rgba(224, 242, 254, 0.1) 0%, transparent 55%),
+                linear-gradient(135deg, var(--bemm-surface) 0%, var(--bemm-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(56, 189, 248, 0.14);
+        }
+        .bemm-spot-arts {
+            grid-area: arts;
+            display: grid;
+            grid-template-columns: repeat(3, 72px);
+            gap: 0.6rem;
+        }
+        .bemm-spot-head { grid-area: head; min-width: 0; }
+        .bemm-spot-body { grid-area: body; min-width: 0; }
+        .bemm-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--bemm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .bemm-spot-title {
+            color: var(--bemm-heading);
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.55);
+        }
+        .bemm-spot-stats { margin-top: 0.35rem; color: var(--bemm-primary-soft); font-size: 0.78rem; font-weight: 700; }
+        .bemm-spot-hook { color: var(--bemm-text); font-size: 0.92rem; line-height: 1.65; }
+        .bemm-spot-hook strong { color: var(--bemm-heading); }
+        .bemm-spot-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--bemm-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .bemm-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .bemm-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--bemm-border);
+            border-radius: 9999px;
+            background: var(--bemm-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .bemm-tag i { color: var(--bemm-primary-soft); }
+        .bemm-tag:hover { border-color: var(--bemm-primary); background: var(--bemm-primary-wash); }
+        .bemm-tag-role { color: var(--bemm-muted); font-size: 0.7rem; font-weight: 600; }
+        .bemm-tag--warn i { color: var(--bemm-part); }
+        .bemm-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--bemm-primary);
+            border-radius: 9999px;
+            background: var(--bemm-primary-wash);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .bemm-spot-cta:hover { background: rgba(56, 189, 248, 0.28); box-shadow: 0 0 16px rgba(56, 189, 248, 0.35); }
+        @media (min-width: 768px) {
+            .bemm-spot {
+                grid-template-columns: 252px minmax(0, 1fr);
+                grid-template-areas: "arts head" "arts body";
+                padding: 1.5rem;
+            }
+            .bemm-spot-arts { grid-template-columns: repeat(3, 1fr); align-self: start; }
+            .bemm-spot-title { font-size: 1.5rem; }
+        }
+
+        /* ----- Tab content ----- */
+        .bemm-section { margin-bottom: 3.5rem; }
+        .bemm-h2 {
+            margin-bottom: 1rem;
+            color: var(--bemm-heading);
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(125, 211, 252, 0.45);
+        }
+        @media (min-width: 768px) { .bemm-h2 { font-size: 2rem; } }
+        .bemm-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--bemm-text);
+            line-height: 1.7;
+            text-align: center;
+        }
+        .bemm-lede strong { color: var(--bemm-heading); }
+        .bemm-release { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        .bemm-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--bemm-border);
+            border-radius: 9999px;
+            background: var(--bemm-surface-deep);
+            color: var(--bemm-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .bemm-chip i { color: var(--bemm-primary-soft); }
+        .bemm-chip--tcg { border-color: rgba(224, 242, 254, 0.55); }
+        .bemm-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        @media (min-width: 768px) {
+            .bemm-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .bemm-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        .bemm-box {
+            padding: 1.25rem;
+            border: 1px solid var(--bemm-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--bemm-surface), var(--bemm-surface-deep));
+            color: var(--bemm-text);
+            font-size: 0.92rem;
+            line-height: 1.65;
+        }
+        .bemm-box h3 { margin-bottom: 0.5rem; color: var(--bemm-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.35; }
+        .bemm-box h3 i { margin-right: 0.4rem; color: var(--bemm-primary-soft); }
+        .bemm-box p + p { margin-top: 0.6rem; }
+        .bemm-box strong { color: var(--bemm-heading); }
+        .bemm-pillar-icon { margin-bottom: 0.6rem; color: var(--bemm-ice); font-size: 1.4rem; filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6)); }
+        .bemm-callout {
+            margin-top: 1.25rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--bemm-border);
+            border-left: 4px solid var(--bemm-primary);
+            border-radius: 0.5rem;
+            background: var(--bemm-surface);
+            color: var(--bemm-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .bemm-callout-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; color: var(--bemm-primary-soft); font-weight: 700; }
+        .bemm-link { color: var(--bemm-primary-soft); text-decoration: underline; text-underline-offset: 2px; }
+        .bemm-link:hover { color: var(--bemm-ice); }
+
+        /* ----- New card write-ups: art | name + stats on phones, text below ----- */
+        .bemm-card {
+            padding: 1.25rem;
+            border: 1px solid var(--bemm-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--bemm-surface), var(--bemm-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(56, 189, 248, 0.08);
+        }
+        .bemm-card + .bemm-card { margin-top: 1.5rem; }
+        .bemm-card-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .bemm-card-art { grid-area: art; }
+        .bemm-card-head { grid-area: head; min-width: 0; }
+        .bemm-card-body { grid-area: body; min-width: 0; color: var(--bemm-text); font-size: 0.92rem; line-height: 1.65; }
+        @media (min-width: 768px) {
+            .bemm-card-layout { grid-template-columns: 150px minmax(0, 1fr); grid-template-areas: "art head" "art body"; gap: 0.75rem 1.5rem; }
+        }
+        .bemm-kicker { color: var(--bemm-primary-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+        .bemm-card-name {
+            margin-top: 0.2rem;
+            color: var(--bemm-heading);
+            font-family: 'Cinzel', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+        }
+        .bemm-card-stats { margin-top: 0.3rem; color: var(--bemm-primary-soft); font-size: 0.8rem; font-weight: 700; }
+        .bemm-effects { margin: 0.25rem 0 0.9rem; padding: 0; list-style: none; counter-reset: bemm-effect; }
+        .bemm-effects li {
+            position: relative;
+            margin-bottom: 0.55rem;
+            padding-left: 2rem;
+            counter-increment: bemm-effect;
+        }
+        .bemm-effects li::before {
+            content: counter(bemm-effect);
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            width: 1.4rem;
+            height: 1.4rem;
+            border: 1px solid var(--bemm-primary);
+            border-radius: 9999px;
+            color: var(--bemm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.3rem;
+            text-align: center;
+        }
+        .bemm-effects .bemm-opt { color: var(--bemm-muted); font-size: 0.8rem; }
+        .bemm-card-body h4 { margin: 0.9rem 0 0.35rem; color: var(--bemm-heading); font-size: 0.95rem; font-weight: 700; }
+        .bemm-card-body strong { color: var(--bemm-heading); }
+
+        /* ----- Claims table (stacks into cards on phones) ----- */
+        .bemm-table-wrap { overflow-x: auto; border: 1px solid var(--bemm-border); border-radius: 0.75rem; }
+        .bemm-table { width: 100%; border-collapse: collapse; color: var(--bemm-text); font-size: 0.88rem; line-height: 1.55; }
+        .bemm-table caption { text-align: left; }
+        .bemm-table th, .bemm-table td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--bemm-border); text-align: left; vertical-align: top; }
+        .bemm-table thead th { background: var(--bemm-surface); color: var(--bemm-primary-soft); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .bemm-table tbody th { color: var(--bemm-heading); font-weight: 600; }
+        .bemm-table tbody tr:nth-child(even) { background: rgba(17, 28, 46, 0.55); }
+        .bemm-table tbody tr:last-child th, .bemm-table tbody tr:last-child td { border-bottom: 0; }
+        .bemm-verdict { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; font-weight: 700; }
+        .bemm-verdict--no { color: var(--bemm-no); }
+        .bemm-verdict--part { color: var(--bemm-part); }
+        .bemm-verdict--ok { color: var(--bemm-ok); }
+        @media (max-width: 639px) {
+            .bemm-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .bemm-table--stack tr { display: block; padding: 0.4rem 0; border-bottom: 1px solid var(--bemm-border); }
+            .bemm-table--stack tbody tr:last-child { border-bottom: 0; }
+            .bemm-table--stack th, .bemm-table--stack td { display: block; padding: 0.3rem 0.9rem; border: 0; }
+        }
+
+        /* ----- "Will it trigger?" checker ----- */
+        .bemm-checker {
+            max-width: 46rem;
+            margin: 0 auto;
+            padding: 1.25rem;
+            border: 1px solid var(--bemm-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--bemm-surface), var(--bemm-surface-deep));
+        }
+        .bemm-checker-controls { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+        @media (min-width: 768px) { .bemm-checker-controls { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); } }
+        .bemm-checker label { display: block; margin-bottom: 0.35rem; color: var(--bemm-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .bemm-checker select {
+            width: 100%;
+            min-height: 44px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--bemm-border);
+            border-radius: 0.5rem;
+            background: var(--bemm-inset);
+            color: #f1f5f9;
+            font-size: 0.9rem;
+        }
+        .bemm-checker-result {
+            margin-top: 1rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--bemm-border);
+            border-left: 4px solid var(--bemm-muted);
+            border-radius: 0.5rem;
+            background: var(--bemm-inset);
+            color: var(--bemm-text);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .bemm-checker-result[data-verdict="yes"] { border-left-color: var(--bemm-ok); }
+        .bemm-checker-result[data-verdict="no"] { border-left-color: var(--bemm-no); }
+        .bemm-checker-result[data-verdict="maybe"] { border-left-color: var(--bemm-part); }
+        .bemm-checker-result[data-verdict="info"] { border-left-color: var(--bemm-primary); }
+        .bemm-checker-verdict { display: block; margin-bottom: 0.25rem; font-weight: 800; }
+        .bemm-checker-result[data-verdict="yes"] .bemm-checker-verdict { color: var(--bemm-ok); }
+        .bemm-checker-result[data-verdict="no"] .bemm-checker-verdict { color: var(--bemm-no); }
+        .bemm-checker-result[data-verdict="maybe"] .bemm-checker-verdict { color: var(--bemm-part); }
+        .bemm-checker-result[data-verdict="info"] .bemm-checker-verdict { color: var(--bemm-primary-soft); }
+
+        /* ----- Combo line summaries + lab ----- */
+        .bemm-lines { display: grid; grid-template-columns: 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+        @media (min-width: 1024px) { .bemm-lines { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .bemm-line {
+            display: flex;
+            flex-direction: column;
+            padding: 1.25rem;
+            border: 1px solid var(--bemm-border);
+            border-top: 3px solid var(--bemm-primary);
+            border-radius: 0.75rem;
+            background: linear-gradient(160deg, var(--bemm-surface), var(--bemm-surface-deep));
+            color: var(--bemm-text);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+        .bemm-line h3 { margin: 0.2rem 0 0.75rem; color: var(--bemm-heading); font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+        .bemm-line-facts { margin: 0 0 0.8rem; }
+        .bemm-line-facts div { padding: 0.4rem 0; border-bottom: 1px dashed var(--bemm-border); }
+        .bemm-line-facts dt { color: var(--bemm-primary-soft); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .bemm-line-facts dd { margin: 0.1rem 0 0; }
+        .bemm-line-rule strong { color: var(--bemm-heading); }
+        .bemm-lab { padding-top: 0.5rem; }
+        .bemm-lab-loading { padding: 1.5rem; color: var(--bemm-muted); text-align: center; }
+
+        @media print {
+            .bemm-panel[hidden] { display: block !important; }
+            .bemm-tabs, .bemm-spot-cta { display: none !important; }
+        }
+    </style>
 </head>
 
 <body class="p-4 md:p-8">
@@ -551,6 +1003,46 @@
                 </div>
             </div>
         </section>
+
+        <!-- ==================== NEW CARD SPOTLIGHT (Magnificent Maestros) ====================
+             Always visible, above the guide tabs. Each chip opens the Magnificent
+             Maestros tab at the matching section; the full write-up lives there. -->
+        <aside class="bemm-spot" data-pcs-scope="spot" aria-labelledby="bemm-spot-title">
+            <div class="bemm-spot-arts">
+                <div id="bemm-spot-deep-img-container" class="bemm-art">Deep-Eyes White Dragon, the Blue Abyss</div>
+                <div id="bemm-spot-wpb-img-container" class="bemm-art">Blue-Eyes White Dragon, the White Phantom Beast</div>
+                <div id="bemm-spot-flute-img-container" class="bemm-art">The Guiding Flute of Summoning Dragons</div>
+            </div>
+            <div class="bemm-spot-head">
+                <p class="bemm-spot-kicker"><span class="bemm-new-badge">New cards</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="bemm-spot-title" class="bemm-spot-title">Three New Dragons for Kaiba's Deck</h2>
+                <p class="bemm-spot-stats">2 monsters &middot; 1 Normal Spell</p>
+            </div>
+            <div class="bemm-spot-body">
+                <p class="bemm-spot-hook"><strong>Deep-Eyes White Dragon, the Blue Abyss</strong> discards itself for any Level 1 LIGHT Tuner, then comes back as a Level 10 "Blue-Eyes" monster when Blue-Eyes White Dragon reaches your GY. <strong>Blue-Eyes White Dragon, the White Phantom Beast</strong> destroys every monster your opponent controls when it's Special Summoned from the hand or Deck, and it summons itself when it's added from the Deck to your hand. <strong>The Guiding Flute of Summoning Dragons</strong> turns any Spellcaster on the field into a Level 5 or higher Dragon from your Deck.</p>
+                <p id="bemm-spot-tags-label" class="bemm-spot-label">Jump to</p>
+                <ul class="bemm-tags" aria-labelledby="bemm-spot-tags-label">
+                    <li><a class="bemm-tag" href="#bemm-line-7"><i class="fas fa-dragon" aria-hidden="true"></i> Ultimate Spirit Dragon <span class="bemm-tag-role">from 2 cards</span></a></li>
+                    <li><a class="bemm-tag" href="#bemm-line-8"><i class="fas fa-bolt" aria-hidden="true"></i> Board wipe <span class="bemm-tag-role">going second</span></a></li>
+                    <li><a class="bemm-tag" href="#bemm-checker"><i class="fas fa-question-circle" aria-hidden="true"></i> Will it trigger? <span class="bemm-tag-role">checker</span></a></li>
+                    <li><a class="bemm-tag" href="#bemm-their-turn"><i class="fas fa-hourglass-half" aria-hidden="true"></i> Their turn <span class="bemm-tag-role">surprise wipes</span></a></li>
+                    <li><a class="bemm-tag bemm-tag--warn" href="#bemm-claims"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Claims checked <span class="bemm-tag-role">what's wrong</span></a></li>
+                </ul>
+                <button type="button" class="bemm-spot-cta" data-open-panel="tab-maestros">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The original guide is kept unchanged in the Classic Analysis panel; the
+             Magnificent Maestros cards get their own panel. The banlist and deck
+             resources stay below both. -->
+        <div class="bemm-tabs" role="tablist" aria-label="Blue-Eyes guide" data-guide-tabs>
+            <button type="button" class="bemm-tab" role="tab" id="tab-btn-classic" aria-controls="tab-classic" aria-selected="true">Classic Analysis</button>
+            <button type="button" class="bemm-tab" role="tab" id="tab-btn-maestros" aria-controls="tab-maestros" aria-selected="false" tabindex="-1">Magnificent Maestros <span class="bemm-new-badge" aria-hidden="true">New</span><span class="bemm-sr-only">(new cards)</span></button>
+        </div>
+
+        <div id="tab-classic" class="bemm-panel" role="tabpanel" aria-labelledby="tab-btn-classic" tabindex="0">
+
         <section class="mb-12">
             <div class="card p-6">
                 <p class="text-sky-200 text-lg leading-relaxed">
@@ -936,6 +1428,475 @@
             </div>
         </section>
 
+        </div>
+        <!-- END tab-classic -->
+
+        <!-- ==================== MAGNIFICENT MAESTROS TAB ====================
+             Card text, stats and set dates checked against the official TCG text
+             (YGOProDeck) and Konami's OCG FAQ; every combo line passes the ocgcore
+             check (assets/data/combos/blue-eyes-maestros-combos.json). Art and the
+             combo simulator load the first time this tab opens.
+             2026-11-04: added from the NotebookLM White Phantom Beast analysis after
+             checking it against the card text and Konami's Q&A: Line 4 (combo10, two
+             White Phantom Beasts off the Flute), five more rows in the claims table,
+             Mulcharmy Purulia and Trade-In in the checker, and non-targeting answers
+             under Weak Points. The rest of the tab is as it was. -->
+        <div id="tab-maestros" data-pcs-scope="mams" class="bemm-panel" role="tabpanel" aria-labelledby="tab-btn-maestros" tabindex="0" hidden>
+
+            <!-- Intro -->
+            <section class="bemm-section" id="bemm-intro">
+                <h2 class="bemm-h2">Magnificent Maestros: Kaiba's New Dragons</h2>
+                <ul class="bemm-release">
+                    <li class="bemm-chip bemm-chip--tcg"><i class="fas fa-globe-americas" aria-hidden="true"></i> TCG &middot; Magnificent Maestros &middot; 12 Nov 2026</li>
+                    <li class="bemm-chip"><i class="fas fa-torii-gate" aria-hidden="true"></i> OCG &middot; LIMIT OVER COLLECTION -THE RIVALS- &middot; 20 Mar 2026</li>
+                </ul>
+                <p class="bemm-lede">Three retrains from Japan's LIMIT OVER COLLECTION -THE RIVALS- reach the TCG in <strong>Magnificent Maestros</strong>. They fix three old problems. The deck had too few starters. Going second, it had little to do against a full board. And it needed a pile of Tuners to reach its Level 12 boss.</p>
+                <div class="bemm-grid bemm-grid--3">
+                    <div class="bemm-box">
+                        <div class="bemm-pillar-icon"><i class="fas fa-redo-alt" aria-hidden="true"></i></div>
+                        <h3>A Starter That Comes Back</h3>
+                        <p><strong>Deep-Eyes</strong> discards itself for Sage, Maiden or any other Level 1 LIGHT Tuner. Then it waits in the GY for the next Blue-Eyes White Dragon and returns as a Level 10 body.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <div class="bemm-pillar-icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+                        <h3>A Wipe Hiding in the Deck</h3>
+                        <p><strong>White Phantom Beast</strong> clears your opponent's monsters whenever it's Special Summoned from the hand or Deck. Cards that already summon or add "Blue-Eyes" monsters from the Deck now double as board breakers.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <div class="bemm-pillar-icon"><i class="fas fa-music" aria-hidden="true"></i></div>
+                        <h3>A Spellcaster Becomes a Dragon</h3>
+                        <p><strong>The Guiding Flute</strong> needs only a Spellcaster on the field. Sage, Maiden and Dictator of D. are all Spellcasters, and the deck has Level 5 or higher Dragons to call from the Deck.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The new cards -->
+            <section class="bemm-section" id="bemm-cards">
+                <h2 class="bemm-h2">The New Cards</h2>
+                <p class="bemm-lede">Each effect in plain words, then what it means for a Blue-Eyes deck. Every effect listed is once per turn unless it says otherwise.</p>
+
+                <article class="bemm-card" id="bemm-card-deep" aria-labelledby="bemm-deep-name">
+                    <div class="bemm-card-layout">
+                        <div class="bemm-card-art"><div id="bemm-deep-img-container" class="bemm-art">Deep-Eyes White Dragon, the Blue Abyss</div></div>
+                        <div class="bemm-card-head">
+                            <p class="bemm-kicker">The starter</p>
+                            <h3 id="bemm-deep-name" class="bemm-card-name">Deep-Eyes White Dragon, the Blue Abyss</h3>
+                            <p class="bemm-card-stats">Level 10 &middot; LIGHT &middot; Dragon &middot; 0 / 0 &middot; always a "Blue-Eyes" card</p>
+                        </div>
+                        <div class="bemm-card-body">
+                            <ol class="bemm-effects">
+                                <li>Discard it: add 1 Level 1 LIGHT Tuner from your Deck to your hand.</li>
+                                <li>When a "Blue-Eyes" Ritual Monster or Blue-Eyes White Dragon is sent to your GY: target 1 of them. Special Summon Deep-Eyes from your GY (if it was already there) or your hand. Its ATK becomes that monster's, and it's banished when it leaves the field.</li>
+                            </ol>
+                            <h4>In this deck</h4>
+                            <p>Its search reaches Sage with Eyes of Blue, Maiden of White, both White Stones, Kaibaman the Legend and Effect Veiler. Its revival goes off whenever the deck already sends Blue-Eyes White Dragon to the GY. That includes Dictator of D.'s cost, Mausoleum of White, Neo Kaiser Sea Horse, Dragon Shrine, Primite Dragon Ether Beryl, and the dragon used as Synchro or Link Material. Off a Blue-Eyes Chaos MAX Dragon it comes back with 4000 ATK.</p>
+                            <p>The big change is the Level. Deep-Eyes is a non-Tuner "Blue-Eyes" monster, so Deep-Eyes and two Level 1 Tuners make exactly <strong>Blue-Eyes Ultimate Spirit Dragon</strong> (Level 12). Its text also mentions Blue-Eyes White Dragon, so it can pay Dictator of D.'s discard cost.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="bemm-card" id="bemm-card-wpb" aria-labelledby="bemm-wpb-name">
+                    <div class="bemm-card-layout">
+                        <div class="bemm-card-art"><div id="bemm-wpb-img-container" class="bemm-art">Blue-Eyes White Dragon, the White Phantom Beast</div></div>
+                        <div class="bemm-card-head">
+                            <p class="bemm-kicker">The board breaker</p>
+                            <h3 id="bemm-wpb-name" class="bemm-card-name">Blue-Eyes White Dragon, the White Phantom Beast</h3>
+                            <p class="bemm-card-stats">Level 8 &middot; LIGHT &middot; Dragon &middot; 3000 / 2500</p>
+                        </div>
+                        <div class="bemm-card-body">
+                            <ol class="bemm-effects">
+                                <li>When it's added from the Deck to your hand, or a monster you control is destroyed by battle: reveal it and Special Summon it.</li>
+                                <li>When it's Special Summoned from the hand or Deck: destroy every monster your opponent controls. For the rest of the turn, only "Blue-Eyes" monsters can attack directly.</li>
+                                <li>When a card or effect that targets it on the field is activated: discard 1 card to negate that effect. <span class="bemm-opt">No once-per-turn limit.</span></li>
+                            </ol>
+                            <h4>In this deck</h4>
+                            <p>Anything that summons a "Blue-Eyes" monster from the Deck now wipes the board. That covers Sage with Eyes of Blue's discard effect and The White Stone of Ancients in the End Phase. It covers Hieratic Seal of the Heavenly Spheres on your opponent's turn, and Roar of the Blue-Eyed Dragons once you control Blue-Eyes White Dragon. The Guiding Flute works too, and so does Spirit with Eyes of Blue, because summoning it from the hand counts. Cards that add it from the Deck work if the add is the last thing that happens: The Melody of Awakening Dragon (it has 3000 ATK and 2500 DEF), Kaibaman the Legend's GY effect, and Bystial Magnamhut in the End Phase.</p>
+                            <p>It's a "Blue-Eyes" monster, but it isn't Blue-Eyes White Dragon, and its text doesn't mention that card. So Maiden of White, True Light, Dictator of D., Neo Kaiser Sea Horse and Deep-Eyes don't count it.</p>
+                            <p>Its name also makes it a "Phantom Beast" card, like every Mecha Phantom Beast. Nothing in a Blue-Eyes deck reads that. What it means for the Phantom Beasts is on the <a class="bemm-link" href="Mega%20Phantom%20Beast%20Deck%20Analysis.html#tab-wpb">Mecha Phantom Beast page</a>.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="bemm-card" id="bemm-card-flute" aria-labelledby="bemm-flute-name">
+                    <div class="bemm-card-layout">
+                        <div class="bemm-card-art"><div id="bemm-flute-img-container" class="bemm-art">The Guiding Flute of Summoning Dragons</div></div>
+                        <div class="bemm-card-head">
+                            <p class="bemm-kicker">The bridge</p>
+                            <h3 id="bemm-flute-name" class="bemm-card-name">The Guiding Flute of Summoning Dragons</h3>
+                            <p class="bemm-card-stats">Normal Spell</p>
+                        </div>
+                        <div class="bemm-card-body">
+                            <ol class="bemm-effects">
+                                <li>If a Spellcaster is on the field (either side): Special Summon 1 Level 5 or higher Dragon from your Deck. Then, if your opponent controls 2 or more monsters, you can Special Summon 1 monster with the same name from your Deck. For the rest of the turn you can only Special Summon Dragon or Spellcaster monsters.</li>
+                                <li>During your Main Phase 2, if it was sent to the GY this turn: banish it and draw 1 card.</li>
+                            </ol>
+                            <h4>In this deck</h4>
+                            <p>Going first, call <strong>Deep-Eyes</strong>, a Level 10 Dragon, for Ultimate Spirit Dragon. White Phantom Beast's wipe would have nothing to hit. Going second, call <strong>White Phantom Beast</strong> and clear their monsters. Into 2 or more monsters it can call two Blue-Eyes White Dragon instead, and either one brings Maiden of White back from the GY. Both locks in the deck fit it. The Flute allows Dragons and Spellcasters, and Roar allows only Dragons from the Extra Deck.</p>
+                            <p>Nothing in the Blue-Eyes engine searches it. It doesn't list Blue-Eyes White Dragon, so Bingo Machine, Go!!!, Wishes for Eyes of Blue and True Light can't find it.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Rulings -->
+            <section class="bemm-section" id="bemm-rulings">
+                <h2 class="bemm-h2">Rulings That Matter</h2>
+                <p class="bemm-lede">From Konami's official FAQ for the OCG release, which the TCG follows unless it publishes otherwise.</p>
+                <div class="bemm-grid bemm-grid--2">
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-stopwatch" aria-hidden="true"></i> White Phantom Beast: only straight after the add</h3>
+                        <p>It can summon itself only right after it's added from the Deck. If an effect adds it at Chain Link 2 or later, or anything else happens after the add, the moment is gone. A normal draw in your Draw Phase counts. The five cards you start the Duel with don't.</p>
+                        <p>The engine our combo checker runs is more lenient here, so none of our lines rely on this effect.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> The attack limit is on you</h3>
+                        <p>Once the wipe resolves, only "Blue-Eyes" monsters can attack directly for the rest of the turn, even if nothing was destroyed. It applies to you as a player, so monsters that are unaffected by effects can't get around it. Direct attacks you made earlier that turn still count.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-shield-alt" aria-hidden="true"></i> The negate has no limit</h3>
+                        <p>Discard 1 card for each effect that targets White Phantom Beast. You can do it several times in one chain, but not in the Damage Step. Chain it to Infinite Impermanence or Effect Veiler, and the wipe goes through.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-history" aria-hidden="true"></i> Deep-Eyes has to be in the GY first</h3>
+                        <p>To come back from the GY, Deep-Eyes has to be there before the dragon arrives. If both go to the GY at the same time, it can't. That includes using both as material for the same summon. From the hand it always works. It can't be used in the Damage Step, so a Blue-Eyes White Dragon destroyed by battle doesn't count.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-clone" aria-hidden="true"></i> Alternative White Dragon counts</h3>
+                        <p>Blue-Eyes Alternative White Dragon is treated as Blue-Eyes White Dragon in the GY, so sending it there also brings Deep-Eyes back. Deep-Eyes counts as a "Blue-Eyes" card by rule, not by an effect, so it still counts while its effects are negated.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-link" aria-hidden="true"></i> One self-summon per chain</h3>
+                        <p>Deep-Eyes, White Phantom Beast and Blue-Eyes Jet Dragon each have a trigger that Special Summons the card itself from the hand (or GY). Konami lets each player activate only one of this kind per chain, even if several have their condition met.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-tag" aria-hidden="true"></i> The Flute reads the name on the field</h3>
+                        <p>The second summon copies the first monster's name as it is on the field. Albion the Shrouded Dragon is "Fallen of Albaz" there, so the second monster can be Fallen of Albaz. The two summons don't happen at the same time.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-lock" aria-hidden="true"></i> The Flute's lock always applies</h3>
+                        <p>After the Flute resolves, you can only Special Summon Dragons and Spellcasters for the rest of the turn, even if its summon failed. Only negating the Flute avoids it. It doesn't stop summons you made before the Flute.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-hourglass-start" aria-hidden="true"></i> No Main Phase 2 on turn one</h3>
+                        <p>The player who goes first has no Battle Phase on the first turn, so there's no Main Phase 2 and no Flute draw. The draw only works when you go second, or in later turns.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Claims checked -->
+            <section class="bemm-section" id="bemm-claims">
+                <h2 class="bemm-h2">Claims Checked Against the Cards</h2>
+                <p class="bemm-lede">A lot of early writing about these cards came from before their English text was out. Here's what holds up against the printed text and Konami's rulings.</p>
+                <div class="bemm-table-wrap" role="region" aria-labelledby="bemm-claims-caption" tabindex="0">
+                    <table class="bemm-table bemm-table--stack">
+                        <caption id="bemm-claims-caption" class="bemm-sr-only">Common claims about the Magnificent Maestros Blue-Eyes cards and whether the card text supports them</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Claim</th>
+                                <th scope="col">Verdict</th>
+                                <th scope="col">What the cards say</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">The Melody of Awakening Dragon can search Deep-Eyes</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Melody needs 3000 or more ATK, and Deep-Eyes has 0. It can add White Phantom Beast (3000 ATK, 2500 DEF), which then summons itself and wipes the board.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Deep-Eyes and one Level 1 Tuner make Blue-Eyes Ultimate Spirit Dragon</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Ultimate Spirit Dragon is Level 12 and needs 2 or more Tuners. Deep-Eyes and two Level 1 Tuners add up to exactly 12.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Maiden of White sends Blue-Eyes White Dragon from the Deck to the GY</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Maiden sends herself from the hand or field to place True Light, so she doesn't need a Normal Summon. True Light summons Blue-Eyes White Dragon or Sets a Spell/Trap. To send the dragon, use Dictator of D., Mausoleum of White, Neo Kaiser Sea Horse or Dragon Shrine.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Droll &amp; Lock Bird stops Maiden of White</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Placing True Light isn't adding a card to the hand. Once Droll is used after one of your searches, it stops the adds that come after it: Deep-Eyes's and Sage's searches, Bingo Machine, Go!!!, and a Melody for White Phantom Beast.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Banishing Deep-Eyes's target makes it fail</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>The summon doesn't depend on the target. Deep-Eyes still comes out, but it stays at 0 ATK. It's still a Level 10 for Ultimate Spirit Dragon.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The Flute's draw pays back a turn-one combo</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>It needs a Main Phase 2, and the first turn of the Duel has none.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Branded decks turn the Flute into two Fusion Materials with "Albion the Blackclad Dragon"</th>
+                                <td><span class="bemm-verdict bemm-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>The TCG card is Albion the Shrouded Dragon. Into 2 or more monsters, a second summon of Fallen of Albaz works (Konami's FAQ). The lock then rules out Mirrorjade the Iceblade Dragon, a Wyrm. Albion the Branded Dragon is Forbidden in the TCG.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Primite cards can fetch White Phantom Beast</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Primite Lordly Lode and Primite Roar only summon Normal Monsters, and White Phantom Beast is an Effect Monster. After Lordly Lode's summon, Special Summoned monsters can't activate effects on the field that turn, so the wipe is off.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">White Phantom Beast can't summon itself from your opening hand</th>
+                                <td><span class="bemm-verdict bemm-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>Konami's FAQ. A normal Draw Phase draw does count.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">An add at Chain Link 2 or later is too late for White Phantom Beast</th>
+                                <td><span class="bemm-verdict bemm-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>Konami's FAQ. It also misses if anything else happens after the add.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Its negate has no once-per-turn limit</th>
+                                <td><span class="bemm-verdict bemm-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>Only its first two effects are once per turn. The negate costs a discard each time and can't be used in the Damage Step.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Bingo Machine, Go!!! can find Deep-Eyes</th>
+                                <td><span class="bemm-verdict bemm-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>It's always treated as a "Blue-Eyes" card, so you can reveal it. Your opponent still picks 1 of the 3 cards at random.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Into 2 or more monsters, the Flute calls two White Phantom Beasts for two wipes</th>
+                                <td><span class="bemm-verdict bemm-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>The second summon can be another White Phantom Beast, so you need two in the Deck. The wipe is once per turn, though: only one of them destroys. <a class="bemm-link" href="#bemm-line-10">Line 4</a> plays it for 8500.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Sage with Eyes of Blue searches White Phantom Beast</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Sage's search only finds Level 1 LIGHT Tuners. Its discard effect Special Summons White Phantom Beast from the Deck instead, and that triggers the wipe too.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Dragon Master Magia can still attack directly after the wipe</th>
+                                <td><span class="bemm-verdict bemm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>Only "Blue-Eyes" monsters can attack directly after the wipe, and Dragon Master Magia isn't one: its name doesn't include "Blue-Eyes". Blue-Eyes Ultimate Spirit Dragon and Blue-Eyes Jet Dragon are, so they still can.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Silver's Cry or Monster Reborn bring it back, just without the wipe</th>
+                                <td><span class="bemm-verdict bemm-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>Monster Reborn can, and from the GY the wipe doesn't trigger. Silver's Cry only revives Dragon Normal Monsters, and White Phantom Beast is an Effect Monster.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Tournament lists play exactly one copy</th>
+                                <td><span class="bemm-verdict bemm-verdict--part"><i class="fas fa-question" aria-hidden="true"></i> Unproven</span></td>
+                                <td>The TCG release is 12 Nov 2026, so there are no TCG results yet. The claim rests on a few OCG and online deck lists. Our own count is under <a class="bemm-link" href="#bemm-build">Deck Building Notes</a>.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Will it trigger? -->
+            <section class="bemm-section" id="bemm-checker">
+                <h2 class="bemm-h2">Will It Trigger?</h2>
+                <p class="bemm-lede">Both new monsters summon themselves, but only in the right situations. Pick one and a situation to see whether it works.</p>
+                <div class="bemm-checker" data-trigger-checker>
+                    <div class="bemm-checker-controls">
+                        <div>
+                            <label for="bemm-check-card">Card</label>
+                            <select id="bemm-check-card" data-trigger-card></select>
+                        </div>
+                        <div>
+                            <label for="bemm-check-case">What happened</label>
+                            <select id="bemm-check-case" data-trigger-case></select>
+                        </div>
+                    </div>
+                    <div class="bemm-checker-result" data-trigger-result aria-live="polite">
+                        <span class="bemm-checker-verdict">Pick a situation</span>
+                        The answer follows the card text and Konami's FAQ.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="bemm-section" id="bemm-combos">
+                <h2 class="bemm-h2">Combo Lines</h2>
+                <p class="bemm-lede">Four two-card lines, each checked move by move in the ocgcore duel engine. Play them step by step in the combo simulator below the summaries. The classic tab's lab keeps the older lines, including two replays that open with Deep-Eyes.</p>
+                <div class="bemm-lines">
+                    <article class="bemm-line" id="bemm-line-7" aria-labelledby="bemm-line-7-title">
+                        <p class="bemm-kicker">Line 1 &middot; Going first</p>
+                        <h3 id="bemm-line-7-title">Deep-Eyes + Dictator of D.</h3>
+                        <dl class="bemm-line-facts">
+                            <div><dt>Hand</dt><dd>Deep-Eyes White Dragon, the Blue Abyss, Dictator of D.</dd></div>
+                            <div><dt>Needs</dt><dd>Sage with Eyes of Blue, Maiden of White, Blue-Eyes White Dragon and Mausoleum of White in the Deck; Spirit with Eyes of Blue, Ultimate Spirit Dragon and Blue-Eyes Spirit Dragon in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Blue-Eyes Ultimate Spirit Dragon and Blue-Eyes Spirit Dragon, on Mausoleum of White</dd></div>
+                        </dl>
+                        <p class="bemm-line-rule"><strong>Why it works:</strong> Deep-Eyes is already in the GY from its own search when Dictator's cost sends Blue-Eyes White Dragon there. Spirit's Dragon-only lock leaves with Spirit, so Maiden can come back after the Tribute. <strong>Watch for:</strong> Ash Blossom on any of the three searches. If your opponent banishes the dragon in response to Deep-Eyes, Deep-Eyes still makes Ultimate Spirit Dragon, but Spirit has nothing to revive at the end.</p>
+                    </article>
+                    <article class="bemm-line" id="bemm-line-8" aria-labelledby="bemm-line-8-title">
+                        <p class="bemm-kicker">Line 2 &middot; Going second</p>
+                        <h3 id="bemm-line-8-title">Sage + Deep-Eyes: Wipe and 8500 Damage</h3>
+                        <dl class="bemm-line-facts">
+                            <div><dt>Hand</dt><dd>Sage with Eyes of Blue, Deep-Eyes White Dragon, the Blue Abyss</dd></div>
+                            <div><dt>Needs</dt><dd>A second Sage, Maiden of White, White Phantom Beast, True Light, Roar of the Blue-Eyed Dragons and Blue-Eyes White Dragon in the Deck; Blue-Eyes Spirit Dragon in the Extra Deck; your opponent controls a monster</dd></div>
+                            <div><dt>End board</dt><dd>White Phantom Beast (3000), Deep-Eyes (3000) and Blue-Eyes Spirit Dragon (2500), with True Light; your opponent's monsters are gone</dd></div>
+                        </dl>
+                        <p class="bemm-line-rule"><strong>Why it works:</strong> The second Sage summons White Phantom Beast straight from the Deck, so no hand-trigger timing is involved. Blue-Eyes White Dragon going to the GY as Synchro Material brings Deep-Eyes back. All three attackers are "Blue-Eyes" monsters, so the attack limit doesn't apply. <strong>Watch for:</strong> Ash Blossom on Sage's summon from the Deck. The wipe only hits monsters, so Set cards can still stop the attacks. If True Light leaves the field, it destroys all your monsters.</p>
+                    </article>
+                    <article class="bemm-line" id="bemm-line-9" aria-labelledby="bemm-line-9-title">
+                        <p class="bemm-kicker">Line 3 &middot; Going first</p>
+                        <h3 id="bemm-line-9-title">Sage + The Guiding Flute</h3>
+                        <dl class="bemm-line-facts">
+                            <div><dt>Hand</dt><dd>Sage with Eyes of Blue, The Guiding Flute of Summoning Dragons</dd></div>
+                            <div><dt>Needs</dt><dd>Maiden of White, Deep-Eyes, True Light, Roar of the Blue-Eyed Dragons and Blue-Eyes White Dragon in the Deck; Ultimate Spirit Dragon in the Extra Deck</dd></div>
+                            <div><dt>End board</dt><dd>Blue-Eyes Ultimate Spirit Dragon and Blue-Eyes White Dragon, with True Light; Deep-Eyes waits in the GY</dd></div>
+                        </dl>
+                        <p class="bemm-line-rule"><strong>Why it works:</strong> Sage is the Spellcaster the Flute needs, and Deep-Eyes is its Dragon. The Flute summoned Deep-Eyes, so Deep-Eyes's own banish clause never applies: as material it goes to the GY, with its revival still unused for your opponent's turn. <strong>Watch for:</strong> Ash Blossom on the Flute stops the line, and on Sage's search or Roar it leaves you a Tuner short.</p>
+                    </article>
+                    <article class="bemm-line" id="bemm-line-10" aria-labelledby="bemm-line-10-title">
+                        <p class="bemm-kicker">Line 4 &middot; Going second</p>
+                        <h3 id="bemm-line-10-title">Sage + The Guiding Flute: Two White Phantom Beasts</h3>
+                        <dl class="bemm-line-facts">
+                            <div><dt>Hand</dt><dd>Sage with Eyes of Blue, The Guiding Flute of Summoning Dragons</dd></div>
+                            <div><dt>Needs</dt><dd>Two White Phantom Beasts, Maiden of White, True Light, Roar of the Blue-Eyed Dragons and Blue-Eyes White Dragon in the Deck; Blue-Eyes Spirit Dragon in the Extra Deck; your opponent controls 2 or more monsters</dd></div>
+                            <div><dt>End board</dt><dd>Two White Phantom Beasts (3000 each), Blue-Eyes Spirit Dragon (2500) and Sage, with True Light; your opponent's monsters are gone</dd></div>
+                        </dl>
+                        <p class="bemm-line-rule"><strong>Why it works:</strong> Into 2 or more monsters, the Flute's second summon can be a second White Phantom Beast. The wipe is once per turn, so one copy destroys and the other is just a 3000 attacker. Maiden, True Light and Roar then add Blue-Eyes Spirit Dragon. All three are "Blue-Eyes" monsters, so 8500 can attack directly. Sage can't. Everything fits the Flute's Dragon-or-Spellcaster lock. In Main Phase 2, the Flute banishes itself from the GY to draw a card. <strong>Watch for:</strong> Ash Blossom on the Flute stops the line. On Sage's search or Roar, it costs you Spirit Dragon's 2500. Against exactly one monster you get one White Phantom Beast, and the line comes to 5500.</p>
+                    </article>
+                </div>
+                <section class="bemm-lab" id="bemm-lab" data-pcs-scope="lab" aria-label="Interactive Magnificent Maestros combo lines">
+                    <div id="bemm-combo-lab">
+                        <p class="bemm-lab-loading">Loading the interactive combo lines&hellip;</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Opponent's turn -->
+            <section class="bemm-section" id="bemm-their-turn">
+                <h2 class="bemm-h2">Wipes on Your Opponent's Turn</h2>
+                <p class="bemm-lede">White Phantom Beast's wipe has no turn restriction. These plays clear your opponent's monsters after they've committed to them.</p>
+                <div class="bemm-grid bemm-grid--2">
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-gem" aria-hidden="true"></i> Hieratic Seal of the Heavenly Spheres</h3>
+                        <p>Once per your opponent's turn, from the Extra Monster Zone, Tribute the Seal itself to return a face-up card to the hand. Because it was Tributed, it then Special Summons a Dragon from your hand or Deck at 0 ATK/DEF. Pick White Phantom Beast from the Deck: at 0 ATK it still destroys all their monsters.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-fist-raised" aria-hidden="true"></i> Losing a battle</h3>
+                        <p>If your opponent destroys one of your monsters by battle, White Phantom Beast in your hand can summon itself, even in the Damage Step. It came from the hand, so the wipe follows in the middle of their Battle Phase.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-moon" aria-hidden="true"></i> Bystial Magnamhut (Limited)</h3>
+                        <p>Going second, Magnamhut summons itself on your opponent's turn by banishing a LIGHT or DARK monster from either GY. In that End Phase it adds a Dragon from your Deck: White Phantom Beast summons itself and wipes before your turn. Their own End Phase triggers go on the chain first, though. If Magnamhut ends up at Chain Link 2 or later, the add comes too late.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-gem" aria-hidden="true"></i> The White Stone of Ancients</h3>
+                        <p>If it goes to the GY during your opponent's turn, destroyed in battle or by their effect, its End Phase effect Special Summons a "Blue-Eyes" monster from your Deck. White Phantom Beast arrives and wipes their End Phase board.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-feather-alt" aria-hidden="true"></i> Mulcharmy Fuwalos and Purulia</h3>
+                        <p>With no cards on your field, Fuwalos draws a card each time your opponent Special Summons from the Deck or Extra Deck. Purulia draws each time they Normal or Special Summon from the hand. A drawn White Phantom Beast can summon itself only if that draw was the last thing to happen. A draw in the middle of a longer chain is too late. If their new monster's own summon effect goes on the chain first, you can still chain the summon to it (Konami FAQ).</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-history" aria-hidden="true"></i> Deep-Eyes as a follow-up</h3>
+                        <p>A Deep-Eyes left in the GY, as in Line 3, comes back on either player's turn when a Blue-Eyes White Dragon is sent there by an effect, such as one your opponent uses to destroy it. It can't be battle destruction, since that happens in the Damage Step.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Deck building -->
+            <section class="bemm-section" id="bemm-build">
+                <h2 class="bemm-h2">Deck Building Notes</h2>
+                <p class="bemm-lede">These counts are our recommendation for a pure Blue-Eyes deck, not a tournament statistic.</p>
+                <div class="bemm-grid bemm-grid--3">
+                    <div class="bemm-box">
+                        <h3>Deep-Eyes &times;3</h3>
+                        <p>Every copy is a starter. A second copy still searches; you just get one revival per turn.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3>White Phantom Beast &times;1&ndash;2</h3>
+                        <p>One is enough if you only fetch it from the Deck with Sage, Hieratic Seal or the Flute. Play two if you lean on The Melody of Awakening Dragon or Kaibaman the Legend. From the opening hand it needs Spirit with Eyes of Blue's Tribute, a battle, or a discard cost.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3>The Guiding Flute &times;1</h3>
+                        <p>Its best case is going second, with a wipe and a draw. Going first it's another way to reach Deep-Eyes, but nothing searches it. Count your Spellcasters: Sage, Maiden, Dictator of D. and Effect Veiler all turn it on.</p>
+                    </div>
+                </div>
+                <div class="bemm-table-wrap" role="region" aria-labelledby="bemm-synergy-caption" tabindex="0" style="margin-top: 1.5rem;">
+                    <table class="bemm-table bemm-table--stack">
+                        <caption id="bemm-synergy-caption" class="bemm-sr-only">How the new cards work with the deck's existing cards</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Works with the new cards</th>
+                                <th scope="col">Watch out for</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Spirit with Eyes of Blue</th>
+                                <td>Tributing it summons White Phantom Beast from the hand, which counts for the wipe. Its Mausoleum of White gives the extra Normal Summon that puts a second Tuner beside Deep-Eyes.</td>
+                                <td>While it's on the field you can only Special Summon Dragons, so Maiden and Sage wait until it's Tributed.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Dictator of D.</th>
+                                <td>Its cost sends Blue-Eyes White Dragon to the GY, which starts Deep-Eyes's revival. It's also a Spellcaster for the Flute.</td>
+                                <td>Its discard effect takes Blue-Eyes White Dragon or a card that mentions it. Deep-Eyes qualifies; White Phantom Beast doesn't.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Roar of the Blue-Eyed Dragons</th>
+                                <td>With Blue-Eyes White Dragon on your field, it can summon White Phantom Beast from the Deck. Without one, its Blue-Eyes White Dragon brings Maiden back.</td>
+                                <td>For the rest of the turn, only Dragons from the Extra Deck. That rules out the classic tab's Rank 8 Dingirsu, the Orcust of the Evening Star, a Machine; Number 38: Hope Harbinger Dragon Titanic Galaxy still fits.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Majesty of the White Dragons / Chaos Form</th>
+                                <td>Tributing Blue-Eyes White Dragon from the hand or field sends it to the GY. A Blue-Eyes Chaos MAX Dragon sent there later gives Deep-Eyes 4000 ATK.</td>
+                                <td>Chaos Form banishing Blue-Eyes White Dragon from the GY doesn't count: that isn't sending it.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Primite engine</th>
+                                <td>Primite Dragon Ether Beryl's Tribute sends Blue-Eyes White Dragon from the Deck to the GY, which revives Deep-Eyes.</td>
+                                <td>After Primite Lordly Lode's summon, Special Summoned monsters can't activate effects on the field that turn: no White Phantom Beast wipe, no Ultimate Spirit Dragon negate. Deep-Eyes's revival still works.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">True Light</th>
+                                <td>Maiden places it, and it Sets Roar of the Blue-Eyed Dragons for the summon chain in Lines 2 and 3.</td>
+                                <td>If it leaves the field, all your monsters are destroyed, the new ones too. It can't revive White Phantom Beast, which isn't Blue-Eyes White Dragon.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Weak points -->
+            <section class="bemm-section" id="bemm-risks">
+                <h2 class="bemm-h2">Weak Points to Play Around</h2>
+                <div class="bemm-grid bemm-grid--2">
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-fire" aria-hidden="true"></i> Ash Blossom &amp; Joyous Spring</h3>
+                        <p>It hits Deep-Eyes's search, Sage's search and its summon from the Deck, The Guiding Flute, Roar, and Spirit's Mausoleum search. It can't touch Deep-Eyes's revival, White Phantom Beast's self-summon or its wipe, Maiden placing True Light, or True Light Setting a card.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-dove" aria-hidden="true"></i> Droll &amp; Lock Bird (Limited)</h3>
+                        <p>After your first search, nothing else comes from the Deck to the hand that turn, and that includes White Phantom Beast off Melody or Kaibaman. Deck summons still work, so Sage's discard effect and the Flute are your way around it.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-skull" aria-hidden="true"></i> GY banishing</h3>
+                        <p>Bystial Druiswurm, Bystial Magnamhut or D.D. Crow on Deep-Eyes's target only costs it the copied ATK. Banishing the Blue-Eyes White Dragon that Spirit or True Light wanted to revive hurts more. Called by the Grave, listed in the classic tab, is Forbidden in the TCG now.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-eye-slash" aria-hidden="true"></i> Targeted negation</h3>
+                        <p>Infinite Impermanence or Effect Veiler on White Phantom Beast loses to its discard negate, so keep a card in hand. On Sage or Spirit with Eyes of Blue they still stop the line, because neither can protect itself.</p>
+                    </div>
+                    <div class="bemm-box">
+                        <h3><i class="fas fa-crosshairs" aria-hidden="true"></i> Answers that don't target</h3>
+                        <p>The discard negate only stops effects that target White Phantom Beast. Forbidden Droplet, Dark Ruler No More and Super Polymerization don't target, so they get past it. While Super Starslayer TY-PHON - Sky Crisis is on the field, monsters with 3000 or more ATK can't activate effects at all. A White Phantom Beast at 3000 can't negate there, and it can't wipe.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Outside Blue-Eyes -->
+            <section class="bemm-section" id="bemm-outside">
+                <h2 class="bemm-h2">The Flute Outside Blue-Eyes</h2>
+                <div class="bemm-box">
+                    <p><strong>Branded.</strong> Blazing Cartesia, the Virtuous and Guiding Quem, the Virtuous are Level 4 LIGHT Spellcasters, so either one turns on the Flute. It calls Albion the Shrouded Dragon (Level 8) from the Deck. Into 2 or more monsters, Albion is "Fallen of Albaz" on the field, so the second summon can be Fallen of Albaz. After that, the lock allows only Dragons and Spellcasters. Lubellion the Searing Dragon (Dragon) and Granguignol the Dusk Dragon (Spellcaster) fit. Mirrorjade the Iceblade Dragon is a Wyrm, so it doesn't. More on the engine: <a class="bemm-link" href="Branded%20Deck%20Analysis.html">Branded</a> and <a class="bemm-link" href="Fallen%20of%20Albaz%20Deck%20Analysis.html">Fallen of Albaz</a>.</p>
+                </div>
+            </section>
+
+        </div>
+        <!-- END tab-maestros -->
+
         <!-- TCG Banlist Status Section -->
         <section class="mb-10 md:mb-16">
             <h2 class="text-2xl md:text-3xl font-bold text-white mb-6 text-center heading-underline">Live TCG Banlist
@@ -1109,6 +2070,168 @@
                 initPageSections('Blue-Eyes');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Magnificent Maestros spotlight.
+         The new tab's art and its combo simulator only load the first time that
+         tab opens. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-maestros': [{
+                    'bemm-deep-img-container': 'Deep-Eyes White Dragon, the Blue Abyss',
+                    'bemm-wpb-img-container': 'Blue-Eyes White Dragon, the White Phantom Beast',
+                    'bemm-flute-img-container': 'The Guiding Flute of Summoning Dragons'
+                }]
+            },
+            panelInit: {
+                'tab-maestros': function () {
+                    const mount = document.getElementById('bemm-combo-lab');
+                    if (!mount) return;
+                    // combo-system.js declares ComboLoader as a top-level class, which
+                    // is a global binding but not a property of window.
+                    if (typeof ComboLoader === 'undefined') {
+                        mount.innerHTML = '<p class="bemm-lab-loading">The interactive combo lines could not load. The line summaries above still list every hand, requirement and end board.</p>';
+                        return;
+                    }
+                    // Keys combo7-9 follow the classic lab's combo1-6, so the two labs' ids never clash.
+                    ComboLoader.renderComboSystem('bemm-combo-lab', 'blue-eyes-maestros', {
+                        selectorContainerId: 'bemm-combo-selector-container',
+                        guideContainerId: 'bemm-combo-guide-container',
+                        selectorOptions: {
+                            selectorId: 'bemm-combo-selector',
+                            labelText: 'Select a Magnificent Maestros line',
+                            defaultCombo: '7'
+                        }
+                    });
+                }
+            }
+        });
+
+        (function () {
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) {
+                CardLoader.loadCards({
+                    'bemm-spot-deep-img-container': 'Deep-Eyes White Dragon, the Blue Abyss',
+                    'bemm-spot-wpb-img-container': 'Blue-Eyes White Dragon, the White Phantom Beast',
+                    'bemm-spot-flute-img-container': 'The Guiding Flute of Summoning Dragons'
+                });
+            }
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('[role="tabpanel"]');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (!cta) return;
+            cta.addEventListener('click', () => {
+                const tab = tabFor(cta.dataset.openPanel);
+                if (!tab) return;
+                tab.click();
+                tab.focus({ preventScroll: true });
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+            });
+        })();
+    </script>
+
+    <!-- "Will it trigger?" checker. Everything it knows is in CHECKS: one entry per
+         self-summon effect, one case per situation, each with a verdict (yes / no /
+         maybe / info) and the reason, from the card text and Konami's OCG FAQ. -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-trigger-checker]');
+            if (!root) return;
+            const cardSelect = root.querySelector('[data-trigger-card]');
+            const caseSelect = root.querySelector('[data-trigger-case]');
+            const result = root.querySelector('[data-trigger-result]');
+
+            const VERDICTS = { yes: 'Yes', no: 'No', maybe: 'Only sometimes', info: 'Not needed' };
+
+            const CHECKS = [
+                {
+                    value: 'wpb',
+                    label: 'White Phantom Beast: summon itself from the hand',
+                    cases: [
+                        { label: 'Drawn for your normal draw in the Draw Phase', verdict: 'yes', text: 'A normal draw adds it from the Deck to your hand, so it can summon itself right away (Konami FAQ).' },
+                        { label: 'In your opening hand', verdict: 'no', text: 'The five cards you start the Duel with were never added from the Deck during the Duel. From the hand it can still come out through Spirit with Eyes of Blue\'s Tribute, which counts for the wipe, or when one of your monsters is destroyed by battle.' },
+                        { label: 'Added by The Melody of Awakening Dragon', verdict: 'yes', text: 'Melody adds Dragons with 3000 or more ATK and 2500 or less DEF, and White Phantom Beast fits. Melody starts its own chain, and the add is the last thing it does, so the summon is open.' },
+                        { label: 'Added by Kaibaman the Legend\'s GY effect', verdict: 'maybe', text: 'Kaibaman\'s add is the last thing it does, so it works when Kaibaman resolves last, at Chain Link 1. If another trigger from the same summon (Maiden of White, say) is Chain Link 1 instead, Kaibaman resolves first and the add comes too early.' },
+                        { label: 'Added by Bystial Magnamhut in the End Phase', verdict: 'maybe', text: 'It works if Magnamhut\'s add is Chain Link 1. On your opponent\'s turn their own End Phase triggers go on the chain first, which can push Magnamhut to Chain Link 2 or later, and then it\'s too late.' },
+                        { label: 'Drawn by Mulcharmy Fuwalos', verdict: 'maybe', text: 'Only if that draw was the last thing to happen, for example after a summon that starts no chain. A draw while a longer chain is still resolving is too late. If the summoned monster\'s own effect is activated first, you can still chain White Phantom Beast to it (Konami FAQ).' },
+                        { label: 'Drawn by Mulcharmy Purulia', verdict: 'maybe', text: 'Purulia draws when your opponent Normal or Special Summons from the hand. A Normal Summon starts no chain, so a draw off one leaves the summon open, and the wipe follows on their turn. As with Fuwalos, a draw in the middle of a resolving chain is too late.' },
+                        { label: 'Drawn by Trade-In', verdict: 'yes', text: 'Discarding a Level 8 is the cost, and drawing 2 is the last thing Trade-In does, so a White Phantom Beast drawn by it can summon itself. Trade-In can also discard it, since it\'s Level 8.' },
+                        { label: 'Added by an effect at Chain Link 2 or later', verdict: 'no', text: 'Chain Link 1 still resolves after the add, so the moment has passed (Konami FAQ).' },
+                        { label: 'Added by an effect that does something else afterwards', verdict: 'no', text: 'Anything that happens after the add, like a discard or a shuffle in the same effect, closes the window (Konami FAQ).' },
+                        { label: 'Added to your hand from the GY', verdict: 'no', text: 'It has to come from the Deck. The White Stone of Ancients\' GY effect adds a "Blue-Eyes" monster from the GY, so it doesn\'t count.' },
+                        { label: 'One of your monsters is destroyed by battle', verdict: 'yes', text: 'That\'s its other condition. It works on either player\'s turn and even in the Damage Step, and since it came from the hand, the wipe follows.' },
+                        { label: 'Special Summoned straight from the Deck', verdict: 'info', text: 'Sage with Eyes of Blue, Hieratic Seal, Roar, The White Stone of Ancients and the Flute put it on the field directly. The wipe triggers because it came from the Deck.' }
+                    ]
+                },
+                {
+                    value: 'deep',
+                    label: 'Deep-Eyes: come back from the GY or hand',
+                    cases: [
+                        { label: 'Dictator of D. sends Blue-Eyes White Dragon as its cost', verdict: 'yes', text: 'Paying a cost still sends the dragon to your GY. From the GY, Deep-Eyes has to be there already; from the hand it always works.' },
+                        { label: 'Mausoleum of White sends Blue-Eyes White Dragon', verdict: 'yes', text: 'Mausoleum sends a Normal Monster from your hand or Deck to the GY, and Blue-Eyes White Dragon is one.' },
+                        { label: 'Neo Kaiser Sea Horse sends Blue-Eyes White Dragon from the Deck', verdict: 'yes', text: 'Its send is a "Blue-Eyes" monster from the Deck, so pick Blue-Eyes White Dragon.' },
+                        { label: 'Blue-Eyes White Dragon is used as Synchro or Link Material', verdict: 'yes', text: 'Materials go to the GY. Xyz Material only counts when it\'s detached, since attaching it doesn\'t send it anywhere.' },
+                        { label: 'Deep-Eyes and the dragon go to the GY at the same time', verdict: 'no', text: 'From the GY, Deep-Eyes has to be there first (Konami FAQ). That includes using both as material for the same summon.' },
+                        { label: 'Blue-Eyes Alternative White Dragon goes to the GY', verdict: 'yes', text: 'It\'s treated as Blue-Eyes White Dragon in the GY, so it counts (Konami FAQ). Deep-Eyes copies its 3000 ATK.' },
+                        { label: 'Blue-Eyes Chaos MAX Dragon goes to the GY', verdict: 'yes', text: 'It\'s a "Blue-Eyes" Ritual Monster, so Deep-Eyes comes back with 4000 ATK.' },
+                        { label: 'Chaos Form banishes Blue-Eyes White Dragon from the GY', verdict: 'no', text: 'Banishing isn\'t sending to the GY. Tributing the dragon from your hand or field for Chaos Form does count.' },
+                        { label: 'White Phantom Beast goes to the GY', verdict: 'no', text: 'It\'s a "Blue-Eyes" monster but not Blue-Eyes White Dragon, and not a Ritual Monster.' },
+                        { label: 'Blue-Eyes White Dragon is destroyed by battle', verdict: 'no', text: 'Battle destruction sends it to the GY in the Damage Step, and this effect can\'t be activated then.' },
+                        { label: 'Your opponent banishes the target in response', verdict: 'maybe', text: 'Deep-Eyes still comes out, but without the copied ATK it stays at 0. Its Level 10 still counts for Ultimate Spirit Dragon.' },
+                        { label: 'You already used another self-summon trigger in this chain', verdict: 'no', text: 'Deep-Eyes, White Phantom Beast and Blue-Eyes Jet Dragon all summon themselves, and you can activate only one effect of that kind per chain (Konami FAQ).' }
+                    ]
+                }
+            ];
+
+            const option = (value, label) => {
+                const o = document.createElement('option');
+                o.value = value;
+                o.textContent = label;
+                return o;
+            };
+
+            CHECKS.forEach(c => cardSelect.appendChild(option(c.value, c.label)));
+
+            function fillCases() {
+                const check = CHECKS.find(c => c.value === cardSelect.value) || CHECKS[0];
+                caseSelect.replaceChildren(...check.cases.map((c, i) => option(String(i), c.label)));
+                render();
+            }
+
+            function render() {
+                const check = CHECKS.find(c => c.value === cardSelect.value) || CHECKS[0];
+                const item = check.cases[Number(caseSelect.value)] || check.cases[0];
+                result.dataset.verdict = item.verdict;
+                const head = document.createElement('span');
+                head.className = 'bemm-checker-verdict';
+                head.textContent = VERDICTS[item.verdict];
+                result.replaceChildren(head, document.createTextNode(item.text));
+            }
+
+            cardSelect.addEventListener('change', fillCases);
+            caseSelect.addEventListener('change', render);
+            fillCases();
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>

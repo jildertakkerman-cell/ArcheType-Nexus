@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Infernity: A paradoxical archetype that achieves victory through deliberate destitution, transforming an empty hand into overwhelming advantage through the most powerful handless effects in the game.">
     <link rel="canonical" href="https://archetypesnexus.com/pages/Infernity%20Deck%20Analysis.html">
+    <!-- Every combo line on this page (the classic Core Combo and the three Doom Slinger lines)
+         passes the ocgcore harness in search, first-attempt and blank-filler modes. -->
+    <meta name="combos-verified" content="true">
     <title>Infernity Deck Guide: Power of the Empty Hand</title>
     <script src="../assets/js/google-analytics.js"></script>
         <!-- Supabase CDN for gameplay tags (optional) -->
@@ -358,6 +361,439 @@
     <script src="../assets/js/lore-reel-data.js" defer></script>
     <script src="../assets/js/lore-reel-art.js" defer></script>
     <script src="../assets/js/lore-reel.js" defer></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <style>
+        /* ===== Magnificent Maestros (Infernity Doom Slinger): spotlight + guide tabs (assets/js/guide-tabs.js) =====
+           The three guide tabs replace the era toggle (switchEra) whose buttons went missing; the
+           .era-btn look is kept and keyed off aria-selected. New classes are infm-*. */
+        :root {
+            --infm-primary: #ff6600;
+            --infm-primary-soft: #ffa060;
+            --infm-primary-line: rgba(255, 102, 0, 0.45);
+            --infm-primary-wash: rgba(255, 102, 0, 0.12);
+            --infm-violet: #c4b5fd;
+            --infm-surface: #1a120c;
+            --infm-surface-deep: #120c08;
+            --infm-inset: #0d0906;
+            --infm-border: #4d382a;
+            --infm-text: #e3dcd2;
+            --infm-muted: #b8a898;
+            --infm-heading: #ffffff;
+            --infm-ok: #34d399;
+            --infm-no: #f87171;
+            --infm-part: #fbbf24;
+        }
+        .infm-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        [id^="infm-"] { scroll-margin-top: 4.5rem; }
+
+        /* ----- Tabs (the old era toggle, now a tablist) ----- */
+        .infm-tabs { flex-wrap: wrap; }
+        .infm-tab {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 44px;
+        }
+        .infm-tab[aria-selected="true"] {
+            background-color: #4d382a;
+            border-color: #ff6600;
+            color: #ff6600;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.3);
+        }
+        .infm-new-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--infm-primary);
+            color: #1a0d04;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .infm-panel[hidden] { display: none !important; }
+        .infm-tab:focus-visible,
+        .infm-panel:focus-visible,
+        .infm-spot-cta:focus-visible,
+        .infm-tag:focus-visible,
+        .infm-table-wrap:focus-visible,
+        .infm-checker select:focus-visible {
+            outline: 2px solid var(--infm-primary-soft);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .infm-panel:target:focus-visible { outline: none; }
+        @media (max-width: 639px) {
+            .infm-tabs { gap: 0.5rem; }
+            .infm-tab {
+                flex: 1 1 0;
+                flex-direction: column;
+                padding: 0.6rem 0.4rem;
+                font-size: 0.72rem;
+                letter-spacing: 0;
+                text-align: center;
+            }
+        }
+
+        /* ----- Card art slot (59:86 until CardLoader swaps the image in) ----- */
+        .infm-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.35rem;
+            overflow: hidden;
+            border: 2px dashed var(--infm-primary-line);
+            border-radius: 0.35rem;
+            background: var(--infm-inset);
+            color: var(--infm-primary-soft);
+            font-size: 0.6rem;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .infm-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        .infm-art .card-placeholder { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; font-size: inherit; }
+
+        /* ----- Spotlight strip: always visible above the tabs ----- */
+        .infm-spot {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.25rem;
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--infm-primary-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 6% 0%, rgba(255, 102, 0, 0.14) 0%, transparent 55%),
+                linear-gradient(135deg, var(--infm-surface) 0%, var(--infm-surface-deep) 100%);
+            box-shadow: 0 8px 30px rgba(255, 102, 0, 0.12);
+        }
+        .infm-spot-art { grid-area: art; }
+        .infm-spot-head { grid-area: head; min-width: 0; align-self: center; }
+        .infm-spot-body { grid-area: body; min-width: 0; }
+        .infm-spot-kicker {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            color: var(--infm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .infm-spot-title {
+            color: var(--infm-heading);
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(255, 102, 0, 0.5);
+        }
+        .infm-spot-stats { margin-top: 0.35rem; color: var(--infm-primary-soft); font-size: 0.78rem; font-weight: 700; }
+        .infm-spot-hook { color: var(--infm-text); font-size: 0.92rem; line-height: 1.65; }
+        .infm-spot-hook strong { color: var(--infm-heading); }
+        .infm-spot-label {
+            margin: 1rem 0 0.5rem;
+            color: var(--infm-muted);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .infm-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .infm-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--infm-border);
+            border-radius: 9999px;
+            background: var(--infm-inset);
+            color: #f5efe8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .infm-tag i { color: var(--infm-primary-soft); }
+        .infm-tag:hover { border-color: var(--infm-primary); background: var(--infm-primary-wash); }
+        .infm-tag-role { color: var(--infm-muted); font-size: 0.7rem; font-weight: 600; }
+        .infm-tag--warn i { color: var(--infm-part); }
+        .infm-spot-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            margin-top: 1.1rem;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--infm-primary);
+            border-radius: 9999px;
+            background: var(--infm-primary-wash);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .infm-spot-cta:hover { background: rgba(255, 102, 0, 0.26); box-shadow: 0 0 16px rgba(255, 102, 0, 0.35); }
+        @media (min-width: 768px) {
+            .infm-spot {
+                grid-template-columns: 150px minmax(0, 1fr);
+                grid-template-areas: "art head" "art body";
+                padding: 1.5rem;
+            }
+            .infm-spot-head { align-self: start; }
+            .infm-spot-title { font-size: 1.45rem; }
+        }
+
+        /* ----- Tab content ----- */
+        .infm-section { margin-bottom: 3.5rem; }
+        .infm-h2 {
+            margin-bottom: 1rem;
+            color: var(--infm-heading);
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.25;
+            text-align: center;
+        }
+        @media (min-width: 768px) { .infm-h2 { font-size: 2rem; } }
+        .infm-lede {
+            max-width: 46rem;
+            margin: 0 auto 2rem;
+            color: var(--infm-muted);
+            line-height: 1.7;
+            text-align: center;
+        }
+        .infm-lede strong { color: var(--infm-heading); }
+        .infm-release { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        .infm-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--infm-border);
+            border-radius: 9999px;
+            background: var(--infm-surface-deep);
+            color: var(--infm-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .infm-chip i { color: var(--infm-primary-soft); }
+        .infm-chip--tcg { border-color: var(--infm-primary-line); }
+        .infm-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        @media (min-width: 768px) {
+            .infm-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .infm-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+        .infm-box {
+            padding: 1.25rem;
+            border: 1px solid var(--infm-border);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--infm-surface), var(--infm-surface-deep));
+            color: var(--infm-text);
+            font-size: 0.92rem;
+            line-height: 1.65;
+        }
+        .infm-box h3 { margin-bottom: 0.5rem; color: var(--infm-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.35; }
+        .infm-box h3 i { margin-right: 0.4rem; color: var(--infm-primary-soft); }
+        .infm-box p + p { margin-top: 0.6rem; }
+        .infm-box strong { color: var(--infm-heading); }
+        .infm-box ul { margin: 0.4rem 0 0; padding-left: 1.1rem; list-style: disc; }
+        .infm-box li + li { margin-top: 0.3rem; }
+        .infm-pillar-icon { margin-bottom: 0.6rem; color: var(--infm-primary); font-size: 1.4rem; filter: drop-shadow(0 0 6px rgba(255, 102, 0, 0.5)); }
+
+        /* ----- New card write-up ----- */
+        .infm-card {
+            padding: 1.25rem;
+            border: 1px solid var(--infm-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--infm-surface), var(--infm-surface-deep));
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(255, 102, 0, 0.08);
+        }
+        .infm-card-layout {
+            display: grid;
+            grid-template-columns: 96px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem;
+            align-items: start;
+        }
+        .infm-card-art { grid-area: art; }
+        .infm-card-head { grid-area: head; min-width: 0; }
+        .infm-card-body { grid-area: body; min-width: 0; color: var(--infm-text); font-size: 0.92rem; line-height: 1.65; }
+        @media (min-width: 768px) {
+            .infm-card-layout { grid-template-columns: 170px minmax(0, 1fr); grid-template-areas: "art head" "art body"; gap: 0.75rem 1.5rem; }
+        }
+        .infm-kicker { color: var(--infm-primary-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+        .infm-card-name {
+            margin-top: 0.2rem;
+            color: var(--infm-heading);
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-shadow: 0 0 12px rgba(255, 102, 0, 0.45);
+        }
+        .infm-card-stats { margin-top: 0.3rem; color: var(--infm-primary-soft); font-size: 0.8rem; font-weight: 700; }
+        .infm-effects { margin: 0.25rem 0 0.9rem; padding: 0; list-style: none; counter-reset: infm-effect; }
+        .infm-effects > li {
+            position: relative;
+            margin-bottom: 0.55rem;
+            padding-left: 2rem;
+            counter-increment: infm-effect;
+        }
+        .infm-effects > li::before {
+            content: counter(infm-effect);
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            width: 1.4rem;
+            height: 1.4rem;
+            border: 1px solid var(--infm-primary);
+            border-radius: 9999px;
+            color: var(--infm-primary-soft);
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.3rem;
+            text-align: center;
+        }
+        .infm-effects ul { margin: 0.35rem 0 0; padding-left: 1.1rem; list-style: disc; }
+        .infm-opt { color: var(--infm-muted); font-size: 0.8rem; }
+        .infm-card-body h4 { margin: 0.9rem 0 0.35rem; color: var(--infm-heading); font-size: 0.95rem; font-weight: 700; }
+        .infm-card-body p + p { margin-top: 0.6rem; }
+        .infm-card-body strong { color: var(--infm-heading); }
+
+        /* ----- Claims and build tables (stack into cards on phones) ----- */
+        .infm-table-wrap { overflow-x: auto; border: 1px solid var(--infm-border); border-radius: 0.75rem; }
+        .infm-table { width: 100%; border-collapse: collapse; color: var(--infm-text); font-size: 0.88rem; line-height: 1.55; }
+        .infm-table th, .infm-table td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--infm-border); text-align: left; vertical-align: top; }
+        .infm-table thead th { background: var(--infm-surface); color: var(--infm-primary-soft); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+        .infm-table tbody th { color: var(--infm-heading); font-weight: 600; }
+        .infm-table tbody tr:nth-child(even) { background: rgba(36, 26, 20, 0.55); }
+        .infm-table tbody tr:last-child th, .infm-table tbody tr:last-child td { border-bottom: 0; }
+        .infm-verdict { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; font-weight: 700; }
+        .infm-verdict--no { color: var(--infm-no); }
+        .infm-verdict--part { color: var(--infm-part); }
+        .infm-verdict--ok { color: var(--infm-ok); }
+        .infm-verdict--unk { color: var(--infm-violet); }
+        @media (max-width: 639px) {
+            .infm-table--stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .infm-table--stack tr { display: block; padding: 0.4rem 0; border-bottom: 1px solid var(--infm-border); }
+            .infm-table--stack tbody tr:last-child { border-bottom: 0; }
+            .infm-table--stack th, .infm-table--stack td { display: block; padding: 0.3rem 0.9rem; border: 0; }
+        }
+
+        /* ----- "Who picks?" checker ----- */
+        .infm-checker {
+            max-width: 46rem;
+            margin: 0 auto;
+            padding: 1.25rem;
+            border: 1px solid var(--infm-primary-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(145deg, var(--infm-surface), var(--infm-surface-deep));
+        }
+        .infm-checker-controls { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+        @media (min-width: 768px) { .infm-checker-controls { grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) minmax(0, 1fr); } }
+        .infm-checker label { display: block; margin-bottom: 0.35rem; color: var(--infm-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .infm-checker select {
+            width: 100%;
+            min-height: 44px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--infm-border);
+            border-radius: 0.5rem;
+            background: var(--infm-inset);
+            color: #f5efe8;
+            font-size: 0.9rem;
+        }
+        .infm-checker-result {
+            margin-top: 1rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid var(--infm-border);
+            border-left: 4px solid var(--infm-muted);
+            border-radius: 0.5rem;
+            background: var(--infm-inset);
+            color: var(--infm-text);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .infm-checker-result[data-verdict="yes"] { border-left-color: var(--infm-ok); }
+        .infm-checker-result[data-verdict="no"] { border-left-color: var(--infm-no); }
+        .infm-checker-result[data-verdict="maybe"] { border-left-color: var(--infm-part); }
+        .infm-checker-result[data-verdict="info"] { border-left-color: var(--infm-primary); }
+        .infm-checker-verdict { display: block; margin-bottom: 0.25rem; font-weight: 800; }
+        .infm-checker-result[data-verdict="yes"] .infm-checker-verdict { color: var(--infm-ok); }
+        .infm-checker-result[data-verdict="no"] .infm-checker-verdict { color: var(--infm-no); }
+        .infm-checker-result[data-verdict="maybe"] .infm-checker-verdict { color: var(--infm-part); }
+        .infm-checker-result[data-verdict="info"] .infm-checker-verdict { color: var(--infm-primary-soft); }
+        .infm-outcomes { margin: 0.6rem 0 0; padding: 0; list-style: none; }
+        .infm-outcomes li { margin-top: 0.35rem; color: var(--infm-muted); font-size: 0.86rem; }
+        .infm-outcomes li strong { color: var(--infm-text); }
+
+        /* ----- Combo lines ----- */
+        .infm-line {
+            max-width: 46rem;
+            margin: 0 auto 1.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--infm-border);
+            border-top: 3px solid var(--infm-primary);
+            border-radius: 0.75rem;
+            background: linear-gradient(160deg, var(--infm-surface), var(--infm-surface-deep));
+            color: var(--infm-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .infm-line h3 { margin: 0.2rem 0 0.75rem; color: var(--infm-heading); font-size: 1.15rem; font-weight: 700; line-height: 1.3; }
+        .infm-line-facts { margin: 0; }
+        .infm-line-facts div { padding: 0.4rem 0; border-bottom: 1px dashed var(--infm-border); }
+        .infm-line-facts div:last-child { border-bottom: 0; }
+        .infm-line-facts dt { color: var(--infm-primary-soft); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .infm-line-facts dd { margin: 0.1rem 0 0; }
+        .infm-steps { margin-bottom: 1.5rem; }
+        .infm-why {
+            max-width: 46rem;
+            margin: 0 auto 3rem;
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--infm-border);
+            border-left: 4px solid var(--infm-primary);
+            border-radius: 0.5rem;
+            background: var(--infm-surface);
+            color: var(--infm-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .infm-why p + p { margin-top: 0.5rem; }
+        .infm-why strong { color: var(--infm-heading); }
+
+        @media print {
+            .infm-panel[hidden] { display: block !important; }
+            .infm-tabs, .infm-spot-cta { display: none !important; }
+        }
+    </style>
 </head>
 
 <body class="p-4 md:p-8">
@@ -426,10 +862,47 @@
             </div>
         </section>
 
+        <!-- ==================== MAGNIFICENT MAESTROS SPOTLIGHT ====================
+             Always visible, above the guide tabs. Each chip opens the Magnificent
+             Maestros tab at the matching section; the full write-up lives there. -->
+        <aside class="infm-spot" data-pcs-scope="spot" aria-labelledby="infm-spot-title">
+            <div class="infm-spot-art">
+                <div id="infm-spot-img-container" class="infm-art">Infernity Doom Slinger</div>
+            </div>
+            <div class="infm-spot-head">
+                <p class="infm-spot-kicker"><span class="infm-new-badge">New card</span> Magnificent Maestros &middot; TCG 12 Nov 2026</p>
+                <h2 id="infm-spot-title" class="infm-spot-title">Infernity Doom Slinger</h2>
+                <p class="infm-spot-stats">Level 1 &middot; DARK &middot; Fiend &middot; 100 / 100</p>
+            </div>
+            <div class="infm-spot-body">
+                <p class="infm-spot-hook">Kalin Kessler's gunslinger Special Summons a Fiend from your hand once it's on the field. Your last card leaves your hand as a monster, not a discard, and that empty hand is what <strong>Infernity Archfiend</strong> needs to search. From the GY it shields you from effect damage, but your opponent picks how, and one of the two options costs you 4000 LP.</p>
+                <p id="infm-spot-tags-label" class="infm-spot-label">Jump to</p>
+                <ul class="infm-tags" aria-labelledby="infm-spot-tags-label">
+                    <li><a class="infm-tag" href="#infm-line-1"><i class="fas fa-crosshairs" aria-hidden="true"></i> Usurpation line <span class="infm-tag-role">from 2 cards</span></a></li>
+                    <li><a class="infm-tag" href="#infm-line-3"><i class="fas fa-hand-paper" aria-hidden="true"></i> With Archfiend <span class="infm-tag-role">from 2 cards</span></a></li>
+                    <li><a class="infm-tag" href="#infm-gamble"><i class="fas fa-dice" aria-hidden="true"></i> Who picks? <span class="infm-tag-role">checker</span></a></li>
+                    <li><a class="infm-tag infm-tag--warn" href="#infm-claims"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Claims checked <span class="infm-tag-role">what's wrong</span></a></li>
+                </ul>
+                <button type="button" class="infm-spot-cta" data-open-panel="tab-mams">Read the full breakdown <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             The two era panels below used to be switched by switchEra() buttons that
+             were lost in an earlier edit; they are tabs again here. The classic panel is
+             unchanged; the 2026 panel's card names and rulings were corrected on 2026-11-04.
+             The Magnificent Maestros card gets its own panel. The banlist and community
+             sections stay below all three. -->
+        <div class="era-toggle-container infm-tabs" role="tablist" aria-label="Infernity guide" data-guide-tabs>
+            <button type="button" class="era-btn infm-tab" role="tab" id="tab-btn-legacy" aria-controls="legacy-content" aria-selected="true">Classic &amp; Legacy</button>
+            <button type="button" class="era-btn infm-tab" role="tab" id="tab-btn-modern" aria-controls="modern-content" aria-selected="false" tabindex="-1">2026 Support</button>
+            <button type="button" class="era-btn infm-tab" role="tab" id="tab-btn-mams" aria-controls="tab-mams" aria-selected="false" tabindex="-1">Magnificent Maestros <span class="infm-new-badge" aria-hidden="true">New</span><span class="infm-sr-only">(new card)</span></button>
+        </div>
+
         <!-- ============================================== -->
         <!-- LEGACY CONTENT WRAPPER -->
         <!-- ============================================== -->
-        <div id="legacy-content" class="animate-fadeIn">
+        <div id="legacy-content" class="animate-fadeIn infm-panel" role="tabpanel" aria-labelledby="tab-btn-legacy" tabindex="0">
             <!-- Core Engine Section -->
             <section class="mb-10 md:mb-16">
                 <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">Anatomy of the Handless Loop</h2>
@@ -699,16 +1172,20 @@
         <!-- ============================================== -->
         <!-- MODERN 2026 CONTENT WRAPPER -->
         <!-- ============================================== -->
-        <div id="modern-content" class="animate-fadeIn" style="display: none;">
+        <div id="modern-content" class="animate-fadeIn infm-panel" role="tabpanel" aria-labelledby="tab-btn-modern" tabindex="0" hidden>
+            <!-- Corrected 2026-11-04 against the printed text: official names (Archfiend's Usurpation,
+                 Archfiend Matriarch), release sets, Archfiend's Roar reviving from the GY, Matriarch's
+                 wipe, Mutiny in the Sky, and the Forbidden Aerial Eater and Cross-Sheep. -->
             <section class="mb-10 md:mb-16">
                 <div class="card p-6 bg-gradient-to-r from-[#241a14] to-[#3a2012]">
-                    <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">The Maze of Muertos Paradigm
-                        (2026)</h2>
+                    <h2 class="text-xl md:text-3xl font-bold text-white mb-4 text-center">The 2026 Support: Maze of
+                        Muertos and Blazing Dominion</h2>
                     <p class="text-gray-300 text-center max-w-3xl mx-auto">
-                        The "Maze of Muertos" expansion (Feb 2026) fundamentally modernizes Infernity. The integration
-                        of <strong>Infernity Queen</strong>, the game-breaking <strong>Archfiend Usurpation</strong>,
-                        and the <strong>Fiendsmith</strong> engine transforms the deck from a fragile "glass cannon"
-                        into a recursive, resilient midrange threat.
+                        Two 2026 sets gave Infernity new tools. <strong>Maze of Muertos</strong> (February 2026)
+                        brought <strong>Infernity Queen</strong>. <strong>Blazing Dominion</strong> (May 2026) brought
+                        <strong>Archfiend's Usurpation</strong>, which works with Infernity Archfiend because it has
+                        "Archfiend" in its name. With the <strong>Fiendsmith</strong> cards from The Infinite
+                        Forbidden (2024), they give the deck more ways to start a turn and to recover after one.
                     </p>
                 </div>
             </section>
@@ -718,21 +1195,25 @@
                 <h2 class="text-xl md:text-3xl font-bold text-white mb-6 text-center">The 2026 Arsenal: Key Additions
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Archfiend Usurpation -->
+                    <!-- Archfiend's Usurpation -->
                     <div class="card p-6 border-l-4 border-orange-500">
                         <div class="flex flex-col md:flex-row gap-4 items-center">
                             <div id="usurpation-img-container"
-                                class="card-image-container flex-shrink-0 card-placeholder">Archfiend Usurpation</div>
+                                class="card-image-container flex-shrink-0 card-placeholder">Archfiend's Usurpation</div>
                             <div>
-                                <h3 class="text-xl font-bold text-accent mb-2">Archfiend Usurpation</h3>
+                                <h3 class="text-xl font-bold text-accent mb-2">Archfiend's Usurpation</h3>
                                 <p class="text-sm text-gray-300 mb-2"><strong>The Bridge.</strong> A Quick-Play Spell
-                                    that serves two critical functions:</p>
+                                    from Blazing Dominion with two options. You can only activate one per turn.</p>
                                 <ul class="list-disc list-inside text-sm text-gray-400 space-y-1">
-                                    <li><strong>Trap Setting:</strong> Set <em class="text-white">Archfiend's Roar</em>
-                                        from Deck to revive an Infernity Archfiend immediately, bypassing the Normal
-                                        Summon bottleneck.</li>
-                                    <li><strong>Board Breaking:</strong> Ritual Summon <em class="text-white">Doom
-                                            Regina Archfiend</em> to wipe backrow before committing to combos.</li>
+                                    <li><strong>Trap Setting:</strong> Set an "Archfiend" Trap from your Deck or GY,
+                                        and activate it this turn. <em class="text-white">Archfiend Playtime</em>
+                                        Special Summons Infernity Archfiend straight from the Deck. <em
+                                            class="text-white">Archfiend's Roar</em> revives it from the GY for 500 LP,
+                                        but destroys it in the End Phase. Either way you keep your Normal Summon.</li>
+                                    <li><strong>Board Breaking:</strong> Ritual Summon <em class="text-white">Archfiend
+                                            Matriarch</em> (Level 7) by Tributing monsters from your hand or field
+                                        whose Levels add up to 7 or more. It destroys the Spells and Traps your
+                                        opponent controls.</li>
                                 </ul>
                             </div>
                         </div>
@@ -745,9 +1226,10 @@
                                 Infernity Queen</div>
                             <div>
                                 <h3 class="text-xl font-bold text-purple-400 mb-2">Infernity Queen</h3>
-                                <p class="text-sm text-gray-300 mb-2"><strong>The Tech Choice.</strong> While criticized
-                                    for its steep cost (banishing a DARK monster from GY), high-level play has found
-                                    specific synergy:</p>
+                                <p class="text-sm text-gray-300 mb-2"><strong>The Tech Choice.</strong> From Maze of
+                                    Muertos. While it's in your GY and your hand is empty, banish a DARK monster from
+                                    your GY to let one of your DARK monsters attack directly that turn. Two ways to
+                                    make that cost cheap:</p>
                                 <ul class="list-disc list-inside text-sm text-gray-400 space-y-1">
                                     <li><strong>Mirage Loop:</strong> Banish a spent <em class="text-white">Infernity
                                             Mirage</em> to fuel Queen's effect.</li>
@@ -767,21 +1249,24 @@
                             <div class="flex-1">
                                 <h3 class="text-xl font-bold text-blue-400 mb-2">The Fiendsmith Engine</h3>
                                 <p class="text-gray-300 mb-3">
-                                    The true catalyst for the 2026 resurgence. The Fiendsmith suite (<em
-                                        class="text-white">Engraver</em>, <em class="text-white">Aerial Eater</em>)
-                                    solves the archetype's two oldest problems:
+                                    The Fiendsmith cards aren't Infernity cards, but <em
+                                        class="text-white">Fiendsmith Engraver</em> and <em class="text-white">Fiendsmith's
+                                        Tract</em> help with the archetype's two oldest problems:
                                 </p>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="bg-[#241a14] p-3 rounded border border-gray-700">
                                         <h4 class="font-bold text-white text-sm">Graveyard Loading</h4>
-                                        <p class="text-xs text-gray-400">Reliably sends <em
-                                                class="text-accent">Infernity Necromancer</em> to GY without using a
-                                            Normal Summon.</p>
+                                        <p class="text-xs text-gray-400">Engraver discards itself to add Fiendsmith's
+                                            Tract. Tract adds a LIGHT Fiend and then discards a card, which can send <em
+                                                class="text-accent">Infernity Necromancer</em> to the GY without using
+                                            your Normal Summon.</p>
                                     </div>
                                     <div class="bg-[#241a14] p-3 rounded border border-gray-700">
                                         <h4 class="font-bold text-white text-sm">Hand Emptying</h4>
-                                        <p class="text-xs text-gray-400">Naturally clears cards from hand while
-                                            establishing Link bodies like <em class="text-accent">Cross-Sheep</em>.</p>
+                                        <p class="text-xs text-gray-400">Engraver and Tract both leave your hand on the
+                                            way. Engraver, a LIGHT Fiend, can become <em class="text-accent">Fiendsmith's
+                                                Requiem</em>. Aerial Eater and Cross-Sheep are Forbidden in the
+                                            TCG.</p>
                                     </div>
                                 </div>
                             </div>
@@ -796,14 +1281,15 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="card p-6 bg-[#1e1b2e] border-indigo-900">
                         <div class="flex justify-center mb-4">
-                            <div id="regina-img-container" class="card-image-container card-placeholder">Doom Regina
-                                Archfiend</div>
+                            <div id="regina-img-container" class="card-image-container card-placeholder">Archfiend
+                                Matriarch</div>
                         </div>
                         <h3 class="text-lg font-bold text-indigo-300 text-center mb-2">The "Going Second" Nuke</h3>
                         <p class="text-sm text-gray-400 text-center">
-                            Summon <strong>Doom Regina Archfiend</strong> via <em>Archfiend Usurpation</em>. If placed
-                            in the Extra Monster Zone, it <strong>banishes all Spells/Traps</strong> in the opponent's
-                            GY and destroys their backrow, clearing the way for your loop.
+                            Ritual Summon <strong>Archfiend Matriarch</strong> with <em>Archfiend's Usurpation</em>. It
+                            <strong>destroys every Spell and Trap</strong> your opponent controls, and if it's in the
+                            Extra Monster Zone, it also banishes all Spells and Traps from their GY. That clears the
+                            way for your loop.
                         </p>
                     </div>
 
@@ -822,11 +1308,13 @@
 
                     <div class="card p-6 bg-[#1a2e24] border-green-900">
                         <div class="text-center mb-4 text-4xl text-green-500"><i class="fas fa-recycle"></i></div>
-                        <h3 class="text-lg font-bold text-green-300 text-center mb-2">Infinite Grind Game</h3>
+                        <h3 class="text-lg font-bold text-green-300 text-center mb-2">The Grind Game</h3>
                         <p class="text-sm text-gray-400 text-center">
-                            <strong>Mutiny in the Sky</strong> allows you to shuffle exhausted Extra Deck monsters (like
-                            Fiendsmiths) back into the deck. This solves the "Turn 3 Empty Tank" issue, allowing you to
-                            restart the engine endlessly.
+                            <strong>Mutiny in the Sky</strong> Fusion Summons a Fiend or Fairy Fusion Monster by
+                            shuffling Fiends and Fairies from your GY back into the Deck as its material, for example
+                            two Fiendsmith Engravers for Fiendsmith's Lacrima. Those cards can be used again in later
+                            turns. Once per turn, it comes back from the GY to your hand when you send a Fiend from
+                            your hand or field to the GY.
                         </p>
                     </div>
                 </div>
@@ -851,9 +1339,10 @@
                                 <td class="p-3">Primary Searcher. Essential for looping.</td>
                             </tr>
                             <tr class="border-b border-gray-800">
-                                <td class="p-3 font-bold">Archfiend Usurpation</td>
+                                <td class="p-3 font-bold">Archfiend's Usurpation</td>
                                 <td class="p-3">3x</td>
-                                <td class="p-3">The new Starter. Bypasses Normal Summon limits.</td>
+                                <td class="p-3">The new Starter. Sets Archfiend Playtime or Archfiend's Roar for
+                                    Infernity Archfiend without using the Normal Summon. One activation per turn.</td>
                             </tr>
                             <tr class="border-b border-gray-800">
                                 <td class="p-3 font-bold">Fiendsmith Engraver</td>
@@ -882,6 +1371,603 @@
             </section>
         </div>
         <!-- END MODERN CONTENT WRAPPER -->
+
+        <!-- ============================================== -->
+        <!-- MAGNIFICENT MAESTROS: INFERNITY DOOM SLINGER -->
+        <!-- Card text, set and dates from YGOProDeck and Konami's database (cid 22740).
+             The three combo lines were checked in the ocgcore harness (search, first-attempt
+             and blank-filler modes) with their end boards. -->
+        <!-- ============================================== -->
+        <div id="tab-mams" data-pcs-scope="mams" class="infm-panel" role="tabpanel" aria-labelledby="tab-btn-mams" tabindex="0" hidden>
+
+            <!-- Intro -->
+            <section class="infm-section" id="infm-intro">
+                <h2 class="infm-h2">Magnificent Maestros: Infernity Doom Slinger</h2>
+                <ul class="infm-release">
+                    <li class="infm-chip infm-chip--tcg"><i class="fas fa-globe-americas" aria-hidden="true"></i> TCG &middot; Magnificent Maestros &middot; 12 Nov 2026</li>
+                    <li class="infm-chip"><i class="fas fa-torii-gate" aria-hidden="true"></i> OCG &middot; LIMIT OVER COLLECTION -THE RIVALS- &middot; 20 Mar 2026</li>
+                </ul>
+                <p class="infm-lede">Kalin Kessler's gunslinger from the Crash Town arc is the only new Infernity card in Japan's LIMIT OVER COLLECTION -THE RIVALS-, and it reaches the TCG in <strong>Magnificent Maestros</strong>. It solves a small problem the deck has always had: getting a monster out of your hand without discarding it. It doesn't solve the big one, hand traps.</p>
+                <div class="infm-grid infm-grid--3">
+                    <div class="infm-box">
+                        <div class="infm-pillar-icon"><i class="fas fa-hand-paper" aria-hidden="true"></i></div>
+                        <h3>Two Monsters, One Normal Summon</h3>
+                        <p>Normal Summon <strong>Doom Slinger</strong> and it puts a Fiend from your hand next to it. When that Fiend is your last card, your hand is empty at once, and Infernity Archfiend, Necromancer and Barrier all switch on.</p>
+                    </div>
+                    <div class="infm-box">
+                        <div class="infm-pillar-icon"><i class="fas fa-search" aria-hidden="true"></i></div>
+                        <h3>Easy to Find, Easy to Revive</h3>
+                        <p>It's an "Infernity" card, so <strong>Infernity Archfiend</strong> can search it. It's Level 1, so One for One can summon it from the Deck. Necromancer, Launcher, Mirage and This Creepy Little Punk can all bring it back.</p>
+                    </div>
+                    <div class="infm-box">
+                        <div class="infm-pillar-icon"><i class="fas fa-dice" aria-hidden="true"></i></div>
+                        <h3>A Gamble Your Opponent Picks</h3>
+                        <p>Banished from the GY while your hand is empty, it stops effect damage to you for the turn. Or, if your opponent prefers, it reveals your top card. A monster turns their burn back on them. Anything else costs you 4000 LP.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- The new card -->
+            <section class="infm-section" id="infm-card">
+                <h2 class="infm-h2">The New Card</h2>
+                <p class="infm-lede">Each effect in plain words, then what it means for an Infernity deck.</p>
+                <article class="infm-card" id="infm-card-slinger" aria-labelledby="infm-slinger-name">
+                    <div class="infm-card-layout">
+                        <div class="infm-card-art"><div id="infm-card-img-container" class="infm-art">Infernity Doom Slinger</div></div>
+                        <div class="infm-card-head">
+                            <p class="infm-kicker">The gunslinger</p>
+                            <h3 id="infm-slinger-name" class="infm-card-name">Infernity Doom Slinger</h3>
+                            <p class="infm-card-stats">Level 1 &middot; DARK &middot; Fiend &middot; 100 / 100</p>
+                        </div>
+                        <div class="infm-card-body">
+                            <ol class="infm-effects">
+                                <li>During your Main Phase, while it's in your Monster Zone: Special Summon 1 Fiend monster from your hand.</li>
+                                <li>If you have no cards in your hand, on either player's turn: banish it from your GY. Your opponent chooses which of these you apply:
+                                    <ul>
+                                        <li>Reveal the top card of your Deck. If it's a monster, your opponent takes any effect damage you would take this turn instead. If it isn't, you take 4000 damage.</li>
+                                        <li>You take no effect damage this turn.</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                            <p class="infm-opt">Each effect can be used once per turn.</p>
+                            <h4>In this deck</h4>
+                            <p>The Fiend can be any Level, in either position. The main target is <strong>Infernity Archfiend</strong>: summoned as your last card, it searches straight away. <strong>Infernity Necromancer</strong> comes out without needing the Normal Summon, which Doom Slinger has already used, and <strong>Infernity Mirage</strong> can Tribute itself at once to revive two Infernity monsters. It also puts out the Level 6 and 7 Infernity monsters that are otherwise hard to summon: Infernity Destroyer, Infernity Archer and Infernity General.</p>
+                            <p>It can't summon Infernity Beast, Infernity Beetle, Infernity Dwarf or Infernity Randomizer, because they're a Beast, an Insect and two Warriors. Any other Fiend works, including <strong>Gatling Ogre</strong> from the same set and the Level 6 Fiendsmith Engraver.</p>
+                            <p>The GY effect only covers effect damage, and your opponent makes the choice. Infernity rarely damages itself, so this is a shield against burn decks. It has a cost: whenever nothing is burning you, it hands your opponent a free shot at 4000 of your LP. Try the checker below before you banish it.</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Rulings -->
+            <section class="infm-section" id="infm-rulings">
+                <h2 class="infm-h2">Rulings That Matter</h2>
+                <p class="infm-lede">From Konami's notes on the card for its OCG release (19 March 2026), plus the general damage rules. The TCG follows Konami's OCG rulings unless it publishes its own.</p>
+                <div class="infm-grid infm-grid--2">
+                    <div class="infm-box">
+                        <h3><i class="fas fa-map-marker-alt" aria-hidden="true"></i> It works from the field, not the hand</h3>
+                        <p>The summoning effect is an Ignition Effect you activate in the Monster Zone. Normal Summon it first, or bring it out with Necromancer, Launcher, Mirage or One for One. Infernity Paranoia can summon it from the Deck, but with its effects negated, so that copy can't summon anything.</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-user-tie" aria-hidden="true"></i> Your opponent picks as it resolves</h3>
+                        <p>When the GY effect resolves, your opponent chooses one of the two options and you apply it. You only reveal your top card if they pick the reveal.</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-layer-group" aria-hidden="true"></i> An empty Deck means no gamble</h3>
+                        <p>If you have no cards left in your Deck, your opponent can only pick "you take no effect damage this turn".</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-fist-raised" aria-hidden="true"></i> Effect damage only</h3>
+                        <p>Battle damage isn't affected, and paying LP as a cost isn't damage. Against an attack, it does nothing.</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-link" aria-hidden="true"></i> Chain it to the burn</h3>
+                        <p>It's a Quick Effect, so you can chain it to the burn effect itself and it applies first. Your hand must be empty when you activate it, which is the normal state for Infernity on your opponent's turn.</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-redo-alt" aria-hidden="true"></i> Once per turn, by name</h3>
+                        <p>Each effect works once per turn for all copies together. A second copy can't summon another Fiend that turn, though the first copy can summon it from your hand as a Fiend.</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-tag" aria-hidden="true"></i> It isn't an "Archfiend" monster</h3>
+                        <p>Archfiend's Usurpation, Archfiend Playtime and Archfiend's Roar only see cards with "Archfiend" in their name. Infernity Archfiend counts; Infernity Doom Slinger doesn't.</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-ban" aria-hidden="true"></i> Negated means no summon</h3>
+                        <p>Infinite Impermanence or Effect Veiler on Doom Slinger in response to its summoning effect stops the summon, and the Fiend stays in your hand. With a card in your hand, Archfiend, Necromancer and Launcher all stop working.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Who picks? checker -->
+            <section class="infm-section" id="infm-gamble">
+                <h2 class="infm-h2">Who Picks? Doom Slinger's Gamble</h2>
+                <p class="infm-lede">Your opponent decides what the GY effect does. Pick the situation to see both options and whether banishing it is worth it.</p>
+                <div class="infm-checker" data-ds-checker>
+                    <div class="infm-checker-controls">
+                        <div>
+                            <label for="infm-check-when">What's happening</label>
+                            <select id="infm-check-when" data-ds-when>
+                                <option value="burn">Your opponent activates a burn effect</option>
+                                <option value="attack">Your opponent attacks</option>
+                                <option value="quiet">Nothing is dealing damage</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="infm-check-lp">Your LP</label>
+                            <select id="infm-check-lp" data-ds-lp>
+                                <option value="high">More than 4000</option>
+                                <option value="low">4000 or less</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="infm-check-top">Top card of your Deck</label>
+                            <select id="infm-check-top" data-ds-top>
+                                <option value="unknown">Unknown</option>
+                                <option value="monster">A monster you know is there</option>
+                                <option value="other">A Spell or Trap you know is there</option>
+                                <option value="empty">Your Deck is empty</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="infm-checker-result" data-ds-result aria-live="polite">
+                        <span class="infm-checker-verdict">Pick a situation</span>
+                        The answer follows the card text and Konami's notes on it.
+                    </div>
+                </div>
+            </section>
+
+            <!-- Combo lines -->
+            <section class="infm-section" id="infm-combos">
+                <h2 class="infm-h2">Combo Lines</h2>
+                <p class="infm-lede">Three lines, each checked move by move in the ocgcore duel engine, with their end boards. Every Infernity line needs an empty hand. "With only" means the rest of your hand is already Set or used. The classic tab's five-card walkthrough is still there; Line 2 is the same hand with Doom Slinger in it.</p>
+
+                <!-- Line 1 -->
+                <article class="infm-line" id="infm-line-1" aria-labelledby="infm-line-1-title">
+                    <p class="infm-kicker">Line 1 &middot; Going first &middot; 2 cards</p>
+                    <h3 id="infm-line-1-title">Doom Slinger + Archfiend's Usurpation</h3>
+                    <dl class="infm-line-facts">
+                        <div><dt>Hand</dt><dd>Infernity Doom Slinger, Archfiend's Usurpation</dd></div>
+                        <div><dt>Needs</dt><dd>Archfiend Playtime, Infernity Archfiend, Infernity Necromancer and Infernity Barrier in the Deck; I:P Masquerena in the Extra Deck</dd></div>
+                        <div><dt>End board</dt><dd>I:P Masquerena, Infernity Archfiend in Attack Position, Infernity Necromancer and a Set Infernity Barrier; Doom Slinger waits in the GY</dd></div>
+                    </dl>
+                </article>
+                <section class="infm-steps" aria-label="Line 1 steps">
+                    <div class="combo-flow flex flex-col items-center gap-6">
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l1s1-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Doom Slinger</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Summon and Set Up</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">With only <strong class="text-accent font-bold">Infernity Doom Slinger</strong> and <strong class="text-accent font-bold">Archfiend's Usurpation</strong> in your hand, Normal Summon <strong class="text-accent font-bold">Infernity Doom Slinger</strong>.</span> <span class="combo-action">Activate <strong class="text-accent font-bold">Archfiend's Usurpation</strong> to Set <strong class="text-accent font-bold">Archfiend Playtime</strong> from your Deck.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Usurpation Sets the Trap instead of adding it, and lets you activate it this turn. Your hand is now empty.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l1s2-img-container" class="card-image-container flex-shrink-0 card-placeholder">Archfiend Playtime</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Archfiend from the Deck</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Archfiend Playtime</strong> to Special Summon <strong class="text-accent font-bold">Infernity Archfiend</strong> from your Deck.</span> <span class="combo-action"><strong class="text-accent font-bold">Infernity Archfiend</strong>'s effect adds <strong class="text-accent font-bold">Infernity Necromancer</strong> from your Deck to your hand.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Infernity Archfiend has "Archfiend" in its name, so Playtime can summon it. Your hand is empty when it lands, so it searches.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l1s3-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Necromancer</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Empty the Hand Again</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Doom Slinger</strong>'s effect to Special Summon <strong class="text-accent font-bold">Infernity Necromancer</strong> from your hand in Defense Position.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Doom Slinger already took the Normal Summon, and Necromancer still reaches the field.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l1s4-img-container" class="card-image-container flex-shrink-0 card-placeholder">I:P Masquerena</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Link Away</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Link Summon <strong class="text-accent font-bold">I:P Masquerena</strong> to your Extra Monster Zone using <strong class="text-accent font-bold">Infernity Doom Slinger</strong> and <strong class="text-accent font-bold">Infernity Archfiend</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Archfiend goes to the GY for Necromancer to revive. Doom Slinger goes there too, where its second effect waits for your opponent's turn.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l1s5-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Barrier</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span>
+                                        <h3 class="text-lg font-bold">Second Search</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Necromancer</strong>'s effect to Special Summon <strong class="text-accent font-bold">Infernity Archfiend</strong> from your GY in Attack Position.</span> <span class="combo-action"><strong class="text-accent font-bold">Infernity Archfiend</strong>'s effect adds <strong class="text-accent font-bold">Infernity Barrier</strong> from your Deck to your hand.</span> <span class="combo-action">Set <strong class="text-accent font-bold">Infernity Barrier</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Barrier needs a face-up Attack Position Infernity monster and an empty hand, and you have both.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="infm-why">
+                    <p><strong>Why it works:</strong> Usurpation Sets Archfiend Playtime from the Deck rather than searching it, and Playtime takes Infernity Archfiend straight from the Deck, so Archfiend never has to be drawn. Doom Slinger turns the Necromancer that Archfiend searched into a monster. That empties your hand again for the second search.</p>
+                    <p><strong>Watch for:</strong> Ash Blossom &amp; Joyous Spring on Playtime (it summons from the Deck) or on either search. Ash can't stop Usurpation, because Setting a card isn't one of the things Ash negates. Droll &amp; Lock Bird after the first search stops the second. Infinite Impermanence on Doom Slinger leaves Necromancer stuck in your hand. D.D. Crow on Archfiend in the GY ends the line before step 5.</p>
+                </div>
+
+                <!-- Line 2 -->
+                <article class="infm-line" id="infm-line-2" aria-labelledby="infm-line-2-title">
+                    <p class="infm-kicker">Line 2 &middot; Going first &middot; 5 cards</p>
+                    <h3 id="infm-line-2-title">The Classic Hand, with Doom Slinger</h3>
+                    <dl class="infm-line-facts">
+                        <div><dt>Hand</dt><dd>Infernity Doom Slinger, Infernity Archfiend, Infernity Necromancer, Infernity Launcher, Infernity Suppression</dd></div>
+                        <div><dt>Needs</dt><dd>Infernity Barrier and Infernity Break in the Deck; I:P Masquerena in the Extra Deck</dd></div>
+                        <div><dt>End board</dt><dd>I:P Masquerena, Infernity Archfiend in Attack Position, Infernity Necromancer and Infernity Doom Slinger, with Infernity Barrier, Infernity Suppression and Infernity Break Set</dd></div>
+                    </dl>
+                </article>
+                <section class="infm-steps" aria-label="Line 2 steps">
+                    <div class="combo-flow flex flex-col items-center gap-6">
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l2s1-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Launcher</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Set Up</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">With only <strong class="text-accent font-bold">Infernity Doom Slinger</strong>, <strong class="text-accent font-bold">Infernity Archfiend</strong>, <strong class="text-accent font-bold">Infernity Necromancer</strong>, <strong class="text-accent font-bold">Infernity Launcher</strong> and <strong class="text-accent font-bold">Infernity Suppression</strong> in your hand, activate <strong class="text-accent font-bold">Infernity Launcher</strong>.</span> <span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Launcher</strong>'s effect to send <strong class="text-accent font-bold">Infernity Archfiend</strong> from your hand to the GY.</span> <span class="combo-action">Set <strong class="text-accent font-bold">Infernity Suppression</strong>.</span> <span class="combo-action">Normal Summon <strong class="text-accent font-bold">Infernity Doom Slinger</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">This is the classic tab's opening hand, with Doom Slinger in place of Infernity Break.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l2s2-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Doom Slinger</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">Empty the Hand</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Doom Slinger</strong>'s effect to Special Summon <strong class="text-accent font-bold">Infernity Necromancer</strong> from your hand in Defense Position.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Your hand is empty. From now on, Suppression can be activated the turn it was Set, so it can negate a hand trap's monster effect.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l2s3-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Archfiend</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">First Search</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Necromancer</strong>'s effect to Special Summon <strong class="text-accent font-bold">Infernity Archfiend</strong> from your GY.</span> <span class="combo-action"><strong class="text-accent font-bold">Infernity Archfiend</strong>'s effect adds <strong class="text-accent font-bold">Infernity Barrier</strong> from your Deck to your hand.</span> <span class="combo-action">Set <strong class="text-accent font-bold">Infernity Barrier</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">This is where the classic line ends. Here you still have Doom Slinger on the field.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l2s4-img-container" class="card-image-container flex-shrink-0 card-placeholder">I:P Masquerena</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Link Away</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Link Summon <strong class="text-accent font-bold">I:P Masquerena</strong> to your Extra Monster Zone using <strong class="text-accent font-bold">Infernity Doom Slinger</strong> and <strong class="text-accent font-bold">Infernity Archfiend</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Both materials go to the GY, ready for Launcher.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l2s5-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Launcher</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">5</span>
+                                        <h3 class="text-lg font-bold">Second Search</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Launcher</strong>'s effect, sending it to the GY, to Special Summon <strong class="text-accent font-bold">Infernity Archfiend</strong> and <strong class="text-accent font-bold">Infernity Doom Slinger</strong> from your GY in Attack Position.</span> <span class="combo-action"><strong class="text-accent font-bold">Infernity Archfiend</strong>'s effect adds <strong class="text-accent font-bold">Infernity Break</strong> from your Deck to your hand.</span> <span class="combo-action">Set <strong class="text-accent font-bold">Infernity Break</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Doom Slinger's summoning effect is spent for the turn, but it's back as a body for I:P Masquerena on your opponent's turn.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="infm-why">
+                    <p><strong>Why it works:</strong> In the classic line, Necromancer takes the Normal Summon. Here Doom Slinger takes it and puts Necromancer out as well. That extra body lets you Link Summon I:P Masquerena, which puts Archfiend and Doom Slinger in the GY for Launcher to bring back, and the revived Archfiend searches the Break you no longer hold. Suppression goes down before your hand is empty. Once it is, Suppression can be activated the turn it was Set.</p>
+                    <p><strong>Watch for:</strong> Infinite Impermanence on Doom Slinger leaves Necromancer in your hand, which switches off Necromancer, Archfiend and Launcher. Suppression can't help there, because Impermanence is a Trap. Ghost Belle &amp; Haunted Mansion stops Necromancer's or Launcher's revival. Suppression does answer one Ash Blossom on either search, as long as you control an Infernity monster. You can only activate one Suppression per turn.</p>
+                </div>
+
+                <!-- Line 3 -->
+                <article class="infm-line" id="infm-line-3" aria-labelledby="infm-line-3-title">
+                    <p class="infm-kicker">Line 3 &middot; Going first &middot; 2 cards</p>
+                    <h3 id="infm-line-3-title">Doom Slinger + Infernity Archfiend</h3>
+                    <dl class="infm-line-facts">
+                        <div><dt>Hand</dt><dd>Infernity Doom Slinger, Infernity Archfiend</dd></div>
+                        <div><dt>Needs</dt><dd>Infernity Launcher and Infernity Barrier in the Deck; I:P Masquerena in the Extra Deck</dd></div>
+                        <div><dt>End board</dt><dd>I:P Masquerena, Infernity Archfiend in Attack Position and Infernity Doom Slinger, with a Set Infernity Barrier</dd></div>
+                    </dl>
+                </article>
+                <section class="infm-steps" aria-label="Line 3 steps">
+                    <div class="combo-flow flex flex-col items-center gap-6">
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l3s1-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Doom Slinger</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">1</span>
+                                        <h3 class="text-lg font-bold">Summon Archfiend</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">With only <strong class="text-accent font-bold">Infernity Doom Slinger</strong> and <strong class="text-accent font-bold">Infernity Archfiend</strong> in your hand, Normal Summon <strong class="text-accent font-bold">Infernity Doom Slinger</strong>.</span> <span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Doom Slinger</strong>'s effect to Special Summon <strong class="text-accent font-bold">Infernity Archfiend</strong> from your hand.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Archfiend was your last card, so your hand is empty the moment it lands.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l3s2-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Launcher</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">2</span>
+                                        <h3 class="text-lg font-bold">First Search</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action"><strong class="text-accent font-bold">Infernity Archfiend</strong>'s effect adds <strong class="text-accent font-bold">Infernity Launcher</strong> from your Deck to your hand.</span> <span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Launcher</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Launcher is Limited, so this is your only copy.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l3s3-img-container" class="card-image-container flex-shrink-0 card-placeholder">I:P Masquerena</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">3</span>
+                                        <h3 class="text-lg font-bold">Link Away</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Link Summon <strong class="text-accent font-bold">I:P Masquerena</strong> to your Extra Monster Zone using <strong class="text-accent font-bold">Infernity Doom Slinger</strong> and <strong class="text-accent font-bold">Infernity Archfiend</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Both Infernity monsters are now in the GY, which Launcher needs.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex justify-center">
+                            <svg class="h-10 w-10 arrow-color" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            </svg>
+                        </div>
+                        <div class="card p-6 combo-step-card w-full">
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-4">
+                                <div id="infm-l3s4-img-container" class="card-image-container flex-shrink-0 card-placeholder">Infernity Barrier</div>
+                                <div class="combo-step-body">
+                                    <div class="combo-step-header flex items-center mb-2">
+                                        <span class="bg-[#1a120c] text-white rounded-full h-8 w-8 flex items-center justify-center font-bold mr-3">4</span>
+                                        <h3 class="text-lg font-bold">Second Search</h3>
+                                    </div>
+                                    <p class="combo-actions text-gray-300"><span class="combo-action">Activate <strong class="text-accent font-bold">Infernity Launcher</strong>'s effect, sending it to the GY, to Special Summon <strong class="text-accent font-bold">Infernity Archfiend</strong> and <strong class="text-accent font-bold">Infernity Doom Slinger</strong> from your GY in Attack Position.</span> <span class="combo-action"><strong class="text-accent font-bold">Infernity Archfiend</strong>'s effect adds <strong class="text-accent font-bold">Infernity Barrier</strong> from your Deck to your hand.</span> <span class="combo-action">Set <strong class="text-accent font-bold">Infernity Barrier</strong>.</span></p>
+                                    <p class="combo-note text-gray-400 text-sm mt-2">Archfiend in Attack Position and an empty hand keep Barrier live on your opponent's turn.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <div class="infm-why">
+                    <p><strong>Why it works:</strong> Archfiend is your last card, so it searches as soon as Doom Slinger summons it. It fetches Infernity Launcher. Once both monsters have become I:P Masquerena, Launcher brings both back, and Archfiend searches again.</p>
+                    <p><strong>Watch for:</strong> Ash Blossom &amp; Joyous Spring on either search. Ghost Belle &amp; Haunted Mansion on Launcher's revival. Infinite Impermanence on Doom Slinger in step 1 leaves Archfiend in your hand. Nibiru, the Primal Being becomes live at the fifth summon, the Launcher revival. It can't stop the search, but it Tributes your monsters and leaves Barrier with no Infernity monster to work with.</p>
+                </div>
+            </section>
+
+            <!-- Opponent's turn -->
+            <section class="infm-section" id="infm-their-turn">
+                <h2 class="infm-h2">On Your Opponent's Turn</h2>
+                <p class="infm-lede">All three lines end with I:P Masquerena and an empty hand. These are the follow-ups.</p>
+                <div class="infm-grid infm-grid--2">
+                    <div class="infm-box">
+                        <h3><i class="fas fa-chess-knight" aria-hidden="true"></i> I:P Masquerena into a Link Monster</h3>
+                        <p>In your opponent's Main Phase, Masquerena can Link Summon using monsters you control, including itself. The new Link Monster can't be destroyed by your opponent's card effects. Keep Infernity Archfiend in Attack Position for Barrier, and use the others.</p>
+                        <ul>
+                            <li><strong>S:P Little Knight</strong> (2 Effect Monsters): Masquerena plus Doom Slinger or Necromancer. Masquerena is a Link Monster, so Little Knight banishes 1 card on the field or in either GY when it arrives.</li>
+                            <li><strong>Accesscode Talker</strong> (2+ Effect Monsters): Masquerena plus Doom Slinger and Necromancer after Line 2. It gains 2000 ATK from Masquerena's Link Rating, and it can banish a Link Monster from your field or GY to destroy a card.</li>
+                        </ul>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-shield-alt" aria-hidden="true"></i> Barrier, Suppression, Break</h3>
+                        <p>Infernity Barrier negates and destroys a Spell, Trap or monster effect while you control a face-up Attack Position Infernity monster and have no cards in hand. Infernity Suppression negates a monster effect. Infernity Break banishes an Infernity card from your GY (Launcher counts after Line 2) to destroy a card.</p>
+                        <p>After Line 1, Doom Slinger is in the GY. If your opponent plays a burn deck, it can stop their damage for that turn. Check the gamble above first.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Claims checked -->
+            <section class="infm-section" id="infm-claims">
+                <h2 class="infm-h2">Claims Checked Against the Card</h2>
+                <p class="infm-lede">Most early writing on Doom Slinger came from the Japanese reveal and from players' first reactions. Here's what holds up against the printed text and Konami's notes.</p>
+                <div class="infm-table-wrap" role="region" aria-labelledby="infm-claims-caption" tabindex="0">
+                    <table class="infm-table infm-table--stack">
+                        <caption id="infm-claims-caption" class="infm-sr-only">Common claims about Infernity Doom Slinger and whether the card text supports them</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Claim</th>
+                                <th scope="col">Verdict</th>
+                                <th scope="col">What the cards say</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Doom Slinger can summon a Fiend while it's still in your hand</th>
+                                <td><span class="infm-verdict infm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Wrong</span></td>
+                                <td>The text only says "during your Main Phase", but Konami's notes call it an Ignition Effect used in the Monster Zone. Summon Doom Slinger first.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">It can Special Summon any Level 5 or higher Infernity monster from the hand</th>
+                                <td><span class="infm-verdict infm-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>It takes any Fiend, so Infernity Destroyer, Infernity Archer and Infernity General all qualify. The target that matters most is the Level 4 Infernity Archfiend, which searches when it's your last card.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">One for One, Infernity Paranoia and Crimson Call can search it</th>
+                                <td><span class="infm-verdict infm-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>Infernity Archfiend searches it. One for One and Stygian Security summon it from the Deck instead. Infernity Paranoia also summons it from the Deck, but with its effects negated. Crimson Call adds a Level 4 or lower Fiend from the GY, not the Deck.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Use the GY effect before your LP drop below 4000, to set up Hope for Escape or Life Equalizer</th>
+                                <td><span class="infm-verdict infm-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Partly</span></td>
+                                <td>Keeping more than 4000 LP is right, because the reveal can cost you 4000. But your opponent decides whether you take that damage, so you can't plan Hope for Escape (they need 1000 more LP than you) or Life Equalizer (an 8000 LP gap) around it.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The new Infernity card is so weak you can pretend it doesn't exist</th>
+                                <td><span class="infm-verdict infm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Too harsh</span></td>
+                                <td>The GY effect is weak. The summoning effect gives the deck two monsters for one Normal Summon and empties the hand without a discard. Lines 1 and 3 above reach a Set Barrier and I:P Masquerena from two cards.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">The GY effect barely helps, since your opponent can just attack</th>
+                                <td><span class="infm-verdict infm-verdict--ok"><i class="fas fa-check" aria-hidden="true"></i> Right</span></td>
+                                <td>It only covers effect damage. Battle damage still hits, and Infernity hardly damages itself.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Archfiend's Usurpation can Set "Archfiend Jeist" to summon Infernity Archfiend from the Deck</th>
+                                <td><span class="infm-verdict infm-verdict--part"><i class="fas fa-adjust" aria-hidden="true"></i> Right idea, wrong name</span></td>
+                                <td>The Trap is Archfiend Playtime; no card is called "Archfiend Jeist". Usurpation Sets it from the Deck, it can be activated that turn, and it summons a Level 7 or lower "Archfiend" monster from the hand or Deck. Line 1 is built on this.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Doom Slinger combos with Infernity Climber</th>
+                                <td><span class="infm-verdict infm-verdict--unk"><i class="fas fa-question" aria-hidden="true"></i> Anime only</span></td>
+                                <td>No card called Infernity Climber has been printed, so there's nothing to combo with in the TCG.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">It isn't out in the TCG</th>
+                                <td><span class="infm-verdict infm-verdict--no"><i class="fas fa-times" aria-hidden="true"></i> Out of date</span></td>
+                                <td>Card databases said this before the TCG list was announced. It's in Magnificent Maestros, released 12 November 2026.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Build -->
+            <section class="infm-section" id="infm-build">
+                <h2 class="infm-h2">Fitting It In</h2>
+                <p class="infm-lede">These counts are our suggestion for a deck built around Archfiend, not figures from tournament lists. The card isn't legal in the TCG yet.</p>
+                <div class="infm-table-wrap" role="region" aria-labelledby="infm-build-caption" tabindex="0">
+                    <table class="infm-table infm-table--stack">
+                        <caption id="infm-build-caption" class="infm-sr-only">Suggested copies of Doom Slinger and the cards its lines use</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Card</th>
+                                <th scope="col">Copies</th>
+                                <th scope="col">Why</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Infernity Doom Slinger</th>
+                                <td>2</td>
+                                <td>A Normal Summon that brings a second monster. Archfiend can search the copy you didn't draw, and a second copy in hand is still a Fiend the first can summon.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Archfiend Playtime</th>
+                                <td>1</td>
+                                <td>Archfiend's Usurpation's best Set target while Infernity Archfiend is still in the Deck. You can only activate one per turn, so one copy is enough. Archfiend's Roar is for when Archfiend is already in the GY: it costs 500 LP, and the monster is destroyed in the End Phase.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">I:P Masquerena</th>
+                                <td>1 (Extra Deck)</td>
+                                <td>The Link-2 all three lines use. It sends both monsters to the GY, and it can Link again on your opponent's turn.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Infernity Launcher</th>
+                                <td>1 (Limited)</td>
+                                <td>Archfiend's first search in Line 3, and the revival that powers the second search in Lines 2 and 3.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- From the anime -->
+            <section class="infm-section" id="infm-anime">
+                <h2 class="infm-h2">From the Anime</h2>
+                <div class="infm-grid infm-grid--2">
+                    <div class="infm-box">
+                        <h3><i class="fas fa-hat-cowboy" aria-hidden="true"></i> Crash Town</h3>
+                        <p>Doom Slinger and Gatling Ogre first appear in the same Duel: Yu-Gi-Oh! 5D's episode 91, "Clash at Crash Town, Part 1", a Tag Duel of Kalin Kessler and Yusei Fudo against Lawton. Lawton Set cards and fired them off with Gatling Ogre for 800 damage each. Kalin banished Doom Slinger from his GY and gave Lawton the choice. Lawton played it safe and took "no effect damage".</p>
+                    </div>
+                    <div class="infm-box">
+                        <h3><i class="fas fa-random" aria-hidden="true"></i> What changed in print</h3>
+                        <p>In the anime, a Spell or Trap on top made Kalin take again all the effect damage he'd taken that turn, which was 4000 at the time. The card makes it a flat 4000. Both cards come to the TCG together in Magnificent Maestros, and Doom Slinger can summon Gatling Ogre, a Fiend, from your hand.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Verdict -->
+            <section class="infm-section" id="infm-verdict">
+                <h2 class="infm-h2">Verdict</h2>
+                <div class="infm-box" style="max-width: 46rem; margin: 0 auto;">
+                    <p><strong>A real upgrade, not a new deck.</strong> Doom Slinger makes two-card hands better. With Archfiend's Usurpation or Infernity Archfiend, it reaches a Set Barrier and I:P Masquerena, and it turns the classic five-card hand into one more search. It's also one more card Archfiend can search, which helps the deck's consistency.</p>
+                    <p>It does nothing about what holds Infernity back: Ash Blossom, Infinite Impermanence, Droll &amp; Lock Bird and Ghost Belle still stop the empty-hand engine, and the deck still struggles going second. The GY effect is a sideboard-level answer to burn, and against anything else it gives your opponent a free 4000-LP gamble. Expect Infernity to stay a rogue deck, with Doom Slinger as a solid one- or two-of.</p>
+                </div>
+            </section>
+        </div>
+        <!-- END MAGNIFICENT MAESTROS CONTENT -->
 
         <!-- TCG Banlist Status Section (Shared) -->
         <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 1.0s;">
@@ -1040,8 +2126,8 @@
                 'barrier-img-container': 'Infernity Barrier',
                 // New Cards for 2026 Section
                 'queen-img-container': 'Infernity Queen',
-                'usurpation-img-container': 'Archfiend Usurpation', // Assuming API recognition
-                'regina-img-container': 'Doom Regina Archfiend', // Assuming API recognition
+                'usurpation-img-container': "Archfiend's Usurpation",
+                'regina-img-container': 'Archfiend Matriarch',
                 'fiendsmith-img-container': 'Fiendsmith Engraver',
                 'punk-img-container': 'This Creepy Little Punk'
             });
@@ -1074,6 +2160,159 @@
                 initPageSections('Infernity');
             });
         </script>
+    <!-- Guide tabs (shared assets/js/guide-tabs.js) + Magnificent Maestros spotlight.
+         The new tab's art only loads the first time that tab opens. The two era panels
+         keep their own art loading in the page script above. -->
+    <script>
+        GuideTabs.init({
+            panelArt: {
+                'tab-mams': [{
+                    'infm-card-img-container': 'Infernity Doom Slinger',
+                    'infm-l1s1-img-container': 'Infernity Doom Slinger',
+                    'infm-l1s2-img-container': 'Archfiend Playtime',
+                    'infm-l1s3-img-container': 'Infernity Necromancer',
+                    'infm-l1s4-img-container': 'I:P Masquerena',
+                    'infm-l1s5-img-container': 'Infernity Barrier',
+                    'infm-l2s1-img-container': 'Infernity Launcher',
+                    'infm-l2s2-img-container': 'Infernity Doom Slinger',
+                    'infm-l2s3-img-container': 'Infernity Archfiend',
+                    'infm-l2s4-img-container': 'I:P Masquerena',
+                    'infm-l2s5-img-container': 'Infernity Launcher',
+                    'infm-l3s1-img-container': 'Infernity Doom Slinger',
+                    'infm-l3s2-img-container': 'Infernity Launcher',
+                    'infm-l3s3-img-container': 'I:P Masquerena',
+                    'infm-l3s4-img-container': 'Infernity Barrier'
+                }]
+            }
+        });
+
+        (function () {
+            // The spotlight is always on screen, so its art loads with the page.
+            if (window.CardLoader) {
+                CardLoader.loadCards({ 'infm-spot-img-container': 'Infernity Doom Slinger' });
+            }
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel holding an in-page link's target before the browser
+            // scrolls to it. guide-tabs.js reacts to hashchange, which doesn't fire
+            // when the same chip is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('[role="tabpanel"]');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+            });
+
+            const cta = document.querySelector('[data-open-panel]');
+            if (!cta) return;
+            cta.addEventListener('click', () => {
+                const tab = tabFor(cta.dataset.openPanel);
+                if (!tab) return;
+                tab.click();
+                tab.focus({ preventScroll: true });
+                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                tablist.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+            });
+        })();
+    </script>
+
+    <!-- "Who picks?" checker for Doom Slinger's GY effect. judge() holds every rule it
+         uses: the card text (the opponent chooses; a non-monster on top costs 4000; effect
+         damage only) and Konami's note that an empty Deck leaves only "no effect damage". -->
+    <script>
+        (function () {
+            'use strict';
+            const root = document.querySelector('[data-ds-checker]');
+            if (!root) return;
+            const whenSelect = root.querySelector('[data-ds-when]');
+            const lpSelect = root.querySelector('[data-ds-lp]');
+            const topSelect = root.querySelector('[data-ds-top]');
+            const result = root.querySelector('[data-ds-result]');
+
+            const VERDICTS = { yes: 'Safe to use', no: 'Don\'t use it', maybe: 'Risky', info: 'Safe, but wait' };
+
+            function revealOutcome(when, low, top) {
+                if (top === 'empty') return 'Not allowed. With no cards in your Deck, they can\'t pick it.';
+                if (top === 'monster') {
+                    return when === 'burn'
+                        ? 'The burn goes to your opponent instead, and so does any other effect damage you\'d take this turn.'
+                        : 'Any effect damage you\'d take this turn goes to your opponent instead. Battle damage doesn\'t.';
+                }
+                const extra = when === 'burn' ? ', and the burn still hits you' : (when === 'attack' ? ', and the attack still hits you' : '');
+                const lethal = low ? ' At 4000 LP or less, that ends the Duel.' : '';
+                if (top === 'other') return 'You take 4000 damage' + extra + '.' + lethal;
+                return 'A monster on top sends your effect damage to your opponent. Anything else costs you 4000' + extra + '.' + lethal;
+            }
+
+            function noneOutcome(when) {
+                if (when === 'burn') return 'The burn, and any other effect damage this turn, does nothing to you.';
+                if (when === 'attack') return 'You take no effect damage this turn, but the battle damage still hits.';
+                return 'You take no effect damage this turn, which changes nothing unless they burn you later.';
+            }
+
+            function judge(when, low, top) {
+                if (when === 'attack') {
+                    return { verdict: 'no', text: 'Not against an attack. Both options only deal with effect damage, so the battle damage hits you whichever one they pick.' + (top === 'other' || top === 'unknown' ? ' The reveal could also cost you 4000 on top.' : '') };
+                }
+                if (top === 'empty') {
+                    return when === 'burn'
+                        ? { verdict: 'yes', text: 'Your opponent has only one option, so the burn does nothing to you.' }
+                        : { verdict: 'info', text: 'Safe, since they can only pick "no effect damage", but nothing is burning you. Keep it in the GY until something does.' };
+                }
+                if (top === 'monster') {
+                    return when === 'burn'
+                        ? { verdict: 'yes', text: 'Either option protects you, and the reveal even turns the burn back on them. Expect them to pick "no effect damage".' }
+                        : { verdict: 'info', text: 'Safe either way, but there\'s nothing to stop yet. Keep it for a burn effect.' };
+                }
+                if (top === 'other') {
+                    return { verdict: 'no', text: 'Your opponent will pick the reveal, and you take 4000 damage' + (low ? ', which ends the Duel.' : '.') };
+                }
+                if (low) {
+                    return { verdict: 'no', text: 'Too risky. Your opponent can pick the reveal, and any Spell or Trap on top ends the Duel. Infernity decks run plenty of Traps.' };
+                }
+                return when === 'burn'
+                    ? { verdict: 'maybe', text: 'A gamble your opponent controls. If they pick "no effect damage", the burn does nothing. If they pick the reveal, a monster turns the burn back on them and anything else adds 4000 to it. Only do it if you would survive both.' }
+                    : { verdict: 'no', text: 'Wait. Nothing is burning you, so "no effect damage" gains you nothing, and your opponent can pick the reveal for a free shot at 4000 of your LP.' };
+            }
+
+            function outcomeItem(label, text) {
+                const li = document.createElement('li');
+                const strong = document.createElement('strong');
+                strong.textContent = label;
+                li.append(strong, ' ' + text);
+                return li;
+            }
+
+            function render() {
+                const when = whenSelect.value;
+                const low = lpSelect.value === 'low';
+                const top = topSelect.value;
+                const item = judge(when, low, top);
+                result.dataset.verdict = item.verdict;
+                const head = document.createElement('span');
+                head.className = 'infm-checker-verdict';
+                head.textContent = VERDICTS[item.verdict];
+                const list = document.createElement('ul');
+                list.className = 'infm-outcomes';
+                list.append(
+                    outcomeItem('If they pick the reveal:', revealOutcome(when, low, top)),
+                    outcomeItem('If they pick "no effect damage":', noneOutcome(when))
+                );
+                result.replaceChildren(head, document.createTextNode(item.text), list);
+            }
+
+            [whenSelect, lpSelect, topSelect].forEach(s => s.addEventListener('change', render));
+            render();
+        })();
+    </script>
     <!-- Cookie Consent Banner -->
     <script src="../assets/js/cookie-consent.js"></script>
     <script src="../assets/js/cookie-consent-config.js"></script>
