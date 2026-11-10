@@ -977,14 +977,6 @@
         </div>
         <!-- END tab-wpb -->
 
-        <!-- TCG Banlist Impact -->
-        <section class="mb-10 md:mb-16 animate-fadeIn" style="animation-delay: 0.5s;">
-            <div id="banlist-section" class="card p-6">
-                <p class="text-center text-blue-200 mb-4">The competitive history of Mecha Phantom Beasts is defined by the banlist. While the core archetype remains untouched, its most powerful enabler is forbidden.</p>
-                <!-- Banlist content will be generated here by JS -->
-            </div>
-        
-
         <!-- TCG Banlist Impact Section -->
         <section>
             <div id="banlist-status">
@@ -997,7 +989,7 @@
             <div id="deck-resources-container">
                 <!-- Deck search content will be dynamically generated here -->
             </div>
-        </section></section>
+        </section>
 
     </div>
 
@@ -1062,67 +1054,6 @@
                 window.addEventListener('resize', setCanvasSize);
             }
 
-            // Card Image and Banlist Fetching
-            async function checkBanlist() {
-                const banlistContainer = document.getElementById('banlist-section');
-                let banlistHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">';
-                
-                try {
-                    const response = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?banlist=tcg&archetype=Mecha%20Phantom%20Beast');
-                    const data = await response.json();
-                    
-                    // Add Auroradon specifically to ensure it is shown
-                    if (!data.data.find(c => c.name === 'Mecha Phantom Beast Auroradon')) {
-                         const auroradonResponse = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php?name=Mecha%20Phantom%20Beast%20Auroradon');
-                         const auroradonData = await auroradonResponse.json();
-                         if (auroradonData.data) {
-                            data.data.push(auroradonData.data[0]);
-                         }
-                    }
-
-                    const relevantCards = data.data.filter(card => cardsToCheck.includes(card.name));
-
-                    // Sort to have banned cards first
-                    relevantCards.sort((a, b) => {
-                        const aStatus = a.banlist_info?.ban_tcg || 'Unlimited';
-                        const bStatus = b.banlist_info?.ban_tcg || 'Unlimited';
-                        if (aStatus === 'Banned' && bStatus !== 'Banned') return -1;
-                        if (bStatus === 'Banned' && aStatus !== 'Banned') return 1;
-                        return 0;
-                    });
-                    
-                    relevantCards.forEach(card => {
-                        const status = card.banlist_info?.ban_tcg || 'Unlimited';
-                        let statusColor = 'text-green-400';
-                        let copies = '3 Copies';
-                        if (status === 'Banned' || status === 'Forbidden') {
-                             statusColor = 'text-red-400';
-                             copies = '0 Copies (Forbidden)';
-                        } else if (status === 'Limited') {
-                             statusColor = 'text-yellow-400';
-                             copies = '1 Copy (Limited)';
-                        } else if (status === 'Semi-Limited') {
-                             statusColor = 'text-yellow-400';
-                            copies = '2 Copies (Semi-Limited)';
-                        }
-
-                        banlistHtml += `
-                            <div class="combo-step-card p-4 rounded-lg text-center ${status === 'Banned' || status === 'Forbidden' ? 'bg-red-900/30 border-red-500/50' : ''}">
-                                <h4 class="font-bold text-white">${card.name}</h4>
-                                <p class="text-sm ${statusColor}">${copies}</p>
-                            </div>
-                        `;
-                    });
-
-                    banlistHtml += '</div>';
-                    banlistContainer.innerHTML += banlistHtml;
-
-                } catch (error) {
-                    console.error('Failed to fetch banlist data:', error);
-                    banlistContainer.innerHTML += '<p class="text-red-400 text-center">Could not load banlist information.</p>';
-                }
-            }
-
             CardLoader.loadCards({
                 'tetherwolf-img-container': 'Mecha Phantom Beast Raiten',
                 'harrliard-img-container': 'Mecha Phantom Beast Harrliard',
@@ -1130,7 +1061,6 @@
                 'dracossack-img-container': 'Mecha Phantom Beast Dracossack'
             });
 
-            checkBanlist();
         
 
             
