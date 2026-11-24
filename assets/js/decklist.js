@@ -33,6 +33,9 @@
  *              { package, max } caps how many cards one package may add;
  *              "auto" picks from packages.generated.json what the list's
  *              profile (profiles.json) can reach: see autoSpecs()
+ *   smallWorld { starters: { add: [...], remove: [...], addMatching: [...] }, note } corrects the
+ *              starters that scripts/build-small-world-scores.js finds from the card database
+ *              (optional; addMatching takes name fragments, any case: "lswarm" counts every Evilswarm)
  * After adding or editing one, run: node scripts/check-decklists.js
  *
  * card-loader.js loads this file on demand: for archetypes in index.json the

@@ -155,6 +155,7 @@ window.CardBrowser = (function () {
     let quickRoles = [];
     let banMaps = null;
     let guideFile = '';
+    let smallWorld = null; // the archetype's test deck in assets/data/small-world-scores/
     let order = [];
     let detailSignature = '';
     let detailLayoutKey = '';
@@ -225,6 +226,7 @@ window.CardBrowser = (function () {
         bindEvents(container);
         rendered = true;
         renderHero();
+        loadSmallWorld();
         // A shared link with ?card= scrolls to that card and opens it.
         update({ reveal: !!state.card });
         initFollow();
@@ -662,7 +664,8 @@ window.CardBrowser = (function () {
     }
 
     function renderPage(container) {
-        container.innerHTML = newestHtml() + toolbarHtml() + bodyHtml();
+        // #cb-sw is filled by loadSmallWorld() when the archetype has a test deck
+        container.innerHTML = newestHtml() + '<section class="cb-wrap cb-sw" id="cb-sw" hidden></section>' + toolbarHtml() + bodyHtml();
     }
 
     function renderHero() {
@@ -1498,6 +1501,7 @@ window.CardBrowser = (function () {
                         <p class="cb-detail-none">No gameplay tags have been recorded for this card yet.</p>
                     </div>`}
                     ${actions}
+                    ${smallWorldCardHtml(c)}
                     ${namedByHtml(c)}
                 </div>
             </div>
@@ -1920,6 +1924,242 @@ window.CardBrowser = (function () {
                 ${state.names === c.id
             ? '<p class="cb-namedby-breakdown">They are the cards shown in the grid now.</p>'
             : `<button type="button" class="cb-link-btn cb-namedby-all" data-action="filter-names" data-value="${c.id}" data-focus="namedby-all">${more}</button>`}
+            </div>`;
+    }
+
+    // ---------- Small World score ----------
+    // assets/data/small-world-scores/<test deck file>, rebuilt weekly by scripts/build-small-world-scores.js:
+    // how much three Small World add to the test deck's chance of opening a starter, plus "pool", the
+    // deck's monsters with the five stats Small World compares, so each card's own reach is worked out here.
+
+    const SW_LABELS = { Core: 'Core', Strong: 'Strong', Useful: 'Useful', Minor: 'Minor', None: 'No monster starters' };
+    const SW_PROPS = ['race', 'attribute', 'level', 'atk', 'def'];
+    const swKey = text => String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    // "?" ATK/DEF arrives as null or a negative number and never matches
+    const swStat = v => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) || Number(v) < 0) ? null : Number(v);
+    const swShared = (a, b) => SW_PROPS.filter(p => a[p] !== null && a[p] !== undefined && a[p] === b[p]).length;
+    const swBridges = (pool, a, t) => pool.filter(b => b.name !== a.name && b.name !== t.name && swShared(a, b) === 1 && swShared(b, t) === 1);
+    const swPct = v => `${Math.round(v * 100)}%`;
+    const swPoints = v => `${v > 0 ? '+' : ''}${Number(v).toFixed(1)} points`;
+
+    async function loadSmallWorld() {
+        try {
+            const resp = await fetch('../assets/data/decklists/index.json');
+            if (!resp.ok) return;
+            const index = await resp.json();
+            const want = swKey(archetype);
+            const key = Object.keys(index).find(k => k === archetype) || Object.keys(index).find(k => swKey(k) === want);
+            if (!key) return;
+            const data = await fetch(`../assets/data/small-world-scores/${encodeURIComponent(index[key])}`);
+            if (!data.ok) return;
+            smallWorld = Object.assign(await data.json(), { deckKey: key });
+        } catch (err) {
+            console.warn('[CardBrowser] No Small World score for this archetype:', err);
+            return;
+        }
+        renderSmallWorld();
+        if (state.card) {
+            detailSignature = '';
+            renderDetail({});
+        }
+    }
+
+    // The deck card a browser card is: by passcode first (new sets sit under their OCG names in Supabase)
+    function swDeckCard(c) {
+        if (!smallWorld) return null;
+        const names = [c.name].concat(c.altNames || []).map(n => n.toLowerCase());
+        return smallWorld.pool.find(m => m.passcode && String(m.passcode) === String(c.id))
+            || smallWorld.pool.find(m => names.includes(m.name.toLowerCase())) || null;
+    }
+
+    function swBrowserCard(entry) {
+        return (entry.passcode && cardById.get(String(entry.passcode))) || cardByName.get(entry.name.toLowerCase()) || null;
+    }
+
+    function renderSmallWorld() {
+        const box = $('cb-sw');
+        const sw = smallWorld;
+        if (!box || !sw) return;
+        const none = sw.label === 'None';
+        const monsters = sw.starters.filter(s => s.kind === 'monster');
+        const others = sw.starters.filter(s => s.kind !== 'monster');
+        const chip = s => {
+            const card = swBrowserCard(s);
+            const text = `${esc(s.name)}${s.count > 1 ? ` <span class="cb-sw-x">×${s.count}</span>` : ''}`;
+            return card
+                ? `<button type="button" class="cb-chip cb-sw-chip" data-action="open-card" data-id="${esc(card.id)}">${text}</button>`
+                : `<span class="cb-chip cb-sw-chip is-static">${text}</span>`;
+        };
+        const cost = sw.cost || {};
+        const line = none
+            ? 'None of the test deck\'s starters is a monster, so Small World can\'t fetch one'
+            : !sw.starterReach
+                ? 'No monster in the pure test deck can reach a starter through Small World'
+                : `${swPoints(sw.uplift)}: the pure test deck opens a starter in ${swPct(sw.open.with)} of hands instead of ${swPct(sw.open.without)}`
+                + (cost.rescued && cost.handTrap >= 0.5
+                    ? `. It costs a hand trap in ${cost.handTrap >= 0.95 ? 'every hand' : `${swPct(cost.handTrap)} of the hands`} it saves` : '');
+        const finder = sw.finder
+            ? `<a class="cb-btn" href="${esc(encodeURIComponent(sw.finder.page))}${sw.finder.anchor ? `#${esc(sw.finder.anchor)}` : ''}">Open the bridge finder</a>` : '';
+        box.innerHTML = `
+            <details class="cb-sw-box">
+                <summary class="cb-sw-summary">
+                    <span class="cb-label">Small World</span>
+                    <span class="cb-sw-badge cb-sw-badge--${esc(sw.label.toLowerCase())}">${esc(SW_LABELS[sw.label] || sw.label)}</span>
+                    <span class="cb-sw-line">${line}</span>
+                    <span class="cb-sw-toggle">${icon('down')}<span class="cb-visually-hidden">Show how this is worked out</span></span>
+                </summary>
+                <div class="cb-sw-body">
+                    ${swScopeHtml(sw)}
+                    <dl class="cb-sw-stats">
+                        <div><dt>Hands that open a starter</dt><dd>${swPct(sw.open.without)} <span aria-hidden="true">→</span><span class="cb-visually-hidden">without Small World,</span> ${swPct(sw.open.with)}<span class="cb-visually-hidden"> with three</span> <span class="cb-sw-sub">${none ? 'no change' : swPoints(sw.uplift)}</span></dd></div>
+                        <div><dt>Monster pairs it connects</dt><dd>${swPct(sw.connectivity.pairs)} <span class="cb-sw-sub">${swPct(sw.connectivity.robust)} through 2 or more bridges</span></dd></div>
+                        <div><dt>Monsters in the test deck</dt><dd>${sw.pool.length} <span class="cb-sw-sub">${sw.monsters} cards with copies · ${monsters.length === 1 ? '1 of them a starter' : monsters.length ? `${monsters.length} of them starters` : 'none of them a starter'}</span></dd></div>
+                    </dl>
+                    ${swWhyLow(sw)}
+                    ${swCostHtml(sw)}
+                    ${none ? '<p class="cb-sw-text">It can still swap a monster you can\'t use for one you need. Select a monster below to see which cards reach it.</p>'
+                : '<p class="cb-sw-text">Select a monster below to see which cards reach it through Small World.</p>'}
+                    ${monsters.length ? `<p class="cb-sw-head">Monster starters</p><div class="cb-chip-list">${monsters.map(chip).join('')}</div>` : ''}
+                    ${others.length ? `<p class="cb-sw-head">Spell starters <span class="cb-label-note">· they count for opening hands, but Small World only fetches monsters</span></p><div class="cb-chip-list">${others.map(chip).join('')}</div>` : ''}
+                    ${sw.note ? `<p class="cb-sw-text cb-sw-note"><strong>Corrected by hand:</strong> ${esc(sw.note)}</p>` : ''}
+                    <p class="cb-sw-text cb-sw-how"><strong>How it's worked out:</strong> ${Number(sw.hands).toLocaleString('en')} opening hands of five from this archetype's test deck, once as it is and once with three Small World in place of three Spells or Traps that aren't starters. A hand counts when it holds a starter, or Small World and a monster that reaches a monster starter through a bridge still in the Deck. A starter is a card that takes something from the Deck and can do it on its own, going by the card database's effect actions; hand traps don't count. Core is 12 points or more, Strong 7, Useful 3, Minor less. The costs come from the same hands: a save costs a hand trap when the only monsters you could reveal are the staple hand traps the test deck adds, such as Ash Blossom, Nibiru or Effect Veiler.</p>
+                    ${sw.missing && sw.missing.length ? `<p class="cb-sw-text">${sw.missing.length} card${sw.missing.length === 1 ? ' isn\'t' : 's aren\'t'} in the card database yet and count${sw.missing.length === 1 ? 's' : ''} as blank: ${sw.missing.map(esc).join(', ')}.</p>` : ''}
+                    <div class="cb-sw-actions">
+                        ${finder}
+                        <button type="button" class="cb-btn" data-decklist-open="${esc(sw.deckKey)}">See the test deck</button>
+                    </div>
+                </div>
+            </details>`;
+        box.hidden = false;
+    }
+
+    // Every number comes from the pure test deck; a mixed build has other monsters to reveal and other
+    // bridges. Archetypes with few monsters of their own (cards this browser lists) get a stronger warning.
+    function swScopeHtml(sw) {
+        const own = (sw.pool || []).filter(m => swBrowserCard(m));
+        const few = own.length && own.length <= 3
+            ? ` That matters most here: the pure list has only ${own.length} monster${own.length === 1 ? '' : 's'} of its own (${own.map(m => `<em>${esc(m.name)}</em>`).join(', ')}), so the rest of its monsters are staples.`
+            : '';
+        return `<p class="cb-sw-text cb-sw-scope"><strong>Based on the pure test deck:</strong> this archetype's own cards plus generic staples such as hand traps. A build that mixes in another engine has other monsters to reveal and other bridges, so its numbers will differ.${few}</p>`;
+    }
+
+    // What Small World costs: always -1 in hand; how a drawn copy plays out; what a save costs you
+    function swCostHtml(sw) {
+        const cost = sw.cost;
+        if (!cost || cost.rescued === null || cost.rescued === undefined) return '';
+        const parts = [
+            { key: 'rescued', share: cost.rescued, text: 'Saves a hand with no starter' },
+            {
+                key: 'started', share: cost.started, text: 'You already had a starter',
+                // A second piece only if the deck's monsters connect at all (Rokket's barely do)
+                note: sw.connectivity && sw.connectivity.pairs >= 0.3
+                    ? 'it can still fetch a second piece, which the score doesn\'t count'
+                    : 'it takes the place of another card'
+            },
+            { key: 'dead', share: cost.dead, text: 'Nothing to do', note: 'no starter, and no monster in hand that reaches one' }
+        ];
+        const bar = parts.filter(p => p.share > 0)
+            .map(p => `<span class="cb-sw-seg cb-sw-seg--${p.key}" style="width: ${(p.share * 100).toFixed(1)}%"></span>`).join('');
+        const legend = parts.map(p => `
+            <li><span class="cb-sw-key cb-sw-seg--${p.key}" aria-hidden="true"></span><span>${p.text} <strong>${swPct(p.share)}</strong>${p.note ? ` <span class="cb-sw-legend-note">· ${p.note}</span>` : ''}</span></li>`).join('');
+        let save = '';
+        if (cost.rescued > 0 && cost.handTrap !== null && cost.handTrap !== undefined) {
+            save = cost.handTrap <= 0.05
+                ? 'When it saves a hand, there is almost always a monster you couldn\'t use anyway to reveal, so the −1 costs little.'
+                : cost.handTrap >= 0.95
+                    ? `When it saves a hand, the only monsters you can reveal are hand traps, so you give one up every time.${
+                        (sw.pool || []).filter(m => !m.starter).every(m => !swBrowserCard(m))
+                            ? ' Besides its starters, the pure list\'s only monsters are staple hand traps.' : ''}`
+                    : `When it saves a hand, the only monsters you can reveal are hand traps ${swPct(cost.handTrap)} of the time, so you give one up; otherwise you reveal a monster you couldn't use anyway.`;
+        }
+        return `
+            <div class="cb-sw-cost">
+                <p class="cb-sw-head">What it costs</p>
+                <p class="cb-sw-text">Small World and the monster you reveal both leave your hand for the one card you add, so every use is −1 in hand. When you draw it:</p>
+                <div class="cb-sw-bar" aria-hidden="true">${bar}</div>
+                <ul class="cb-sw-legend">${legend}</ul>
+                ${save ? `<p class="cb-sw-text">${save}</p>` : ''}
+            </div>`;
+    }
+
+    // "a DARK Dragon", "a Level 4 EARTH monster": what every starter has in common
+    function swDescribe(props, m) {
+        const parts = [];
+        if (props.includes('level')) parts.push(`Level ${m.level}`);
+        if (props.includes('attribute')) parts.push(m.attribute);
+        parts.push(props.includes('race') ? m.race : 'monster');
+        const stats = [props.includes('atk') ? `${m.atk} ATK` : '', props.includes('def') ? `${m.def} DEF` : ''].filter(Boolean);
+        const phrase = parts.join(' ') + (stats.length ? ` with ${stats.join(' and ')}` : '');
+        return `${/^[AEIOU]/i.test(phrase) ? 'an' : 'a'} ${phrase}`;
+    }
+
+    // Why a score is low, from the deck's own monsters: no monster reaches a starter, or the deck
+    // opens a starter in almost every hand anyway
+    function swWhyLow(sw) {
+        if (sw.label === 'None') return '';
+        if (sw.starterReach > 0) {
+            return sw.open.without >= 0.9 && sw.uplift < 3
+                ? `<p class="cb-sw-text cb-sw-why"><strong>Why it's low:</strong> the pure test deck already opens a starter in ${swPct(sw.open.without)} of hands, so Small World has little left to add.</p>` : '';
+        }
+        const pool = sw.pool || [];
+        const starters = pool.filter(m => m.starter);
+        if (!starters.length) return '';
+        const names = list => {
+            const items = list.map(m => `<em>${esc(m.name)}</em>`);
+            return items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+        };
+        const common = SW_PROPS.filter(p => starters.every(m => m[p] !== null && m[p] !== undefined && m[p] === starters[0][p]));
+        let why;
+        if (starters.length > 1 && common.length >= 2) {
+            const alike = pool.filter(m => common.every(p => m[p] === starters[0][p]));
+            const others = pool.filter(m => !alike.includes(m));
+            why = `every starter is ${swDescribe(common, starters[0])}, and so ${alike.length === starters.length ? 'are no other monsters' : `are ${alike.length} of the deck's ${pool.length} monsters`}. Monsters that share two or more properties can't be each other's bridge.`;
+            // The rest: two or more in common with every starter, nothing in common, or a bridge nothing reaches
+            const many = others.filter(o => starters.every(t => swShared(o, t) >= 2));
+            const zero = others.filter(o => starters.every(t => swShared(o, t) === 0));
+            const near = others.filter(o => starters.some(t => swShared(o, t) === 1));
+            const verb = (list, word) => `${word}${list.length === 1 ? 's' : ''}`;
+            if (many.length) why += ` ${names(many)} ${verb(many, 'share')} two or more with every starter too.`;
+            if (zero.length) why += zero.length === others.length
+                ? ` The other ${zero.length}, ${names(zero)}, ${verb(zero, 'share')} nothing with them.`
+                : ` ${names(zero)} ${verb(zero, 'share')} nothing with them.`;
+            if (near.length) why += ` ${names(near)} ${verb(near, 'share')} exactly one property with a starter, but no monster in the deck can be revealed to reach ${near.length === 1 ? 'it' : 'them'}.`;
+        } else {
+            const bridges = pool.filter(b => starters.some(t => b.name !== t.name && swShared(b, t) === 1));
+            why = bridges.length
+                ? `only ${names(bridges)} share${bridges.length === 1 ? 's' : ''} exactly one property with a starter, and no monster in the deck can be revealed to reach ${bridges.length === 1 ? 'it' : 'them'}.`
+                : `no monster in the deck shares exactly one property with ${names(starters)}: each shares two or more, or none.`;
+        }
+        return `<p class="cb-sw-text cb-sw-why"><strong>Why it's ${sw.uplift <= 0.5 ? 'zero' : 'low'}:</strong> ${why}</p>`;
+    }
+
+    // A Main Deck monster's own reach through Small World, against the test deck's monsters
+    function smallWorldCardHtml(c) {
+        const sw = smallWorld;
+        if (!sw || c.zone !== 'main' || !c.isMonster || !sw.pool || !sw.pool.length) return '';
+        const own = swDeckCard(c);
+        const card = own || { name: c.name, count: 0, starter: false, race: c.race || null, attribute: c.attr || null, level: swStat(c.levelRaw), atk: swStat(c.atkRaw), def: swStat(c.defRaw) };
+        const pool = sw.pool;
+        const allowed = (a, t) => a.name !== t.name || (own && own.count > 1);
+        const from = pool.filter(m => allowed(m, card) && swBridges(pool, m, card).length);
+        const robust = from.filter(m => swBridges(pool, m, card).length > 1);
+        const into = pool.filter(t => allowed(card, t) && swBridges(pool, card, t).length);
+        const starters = into.filter(t => t.starter);
+        const total = pool.length;
+        const status = own
+            ? `In the test deck${own.count > 1 ? ` (×${own.count})` : ''}${own.starter ? ', counted as a starter' : ''}.`
+            : 'Not in the test deck. If you ran it:';
+        const fetched = from.length
+            ? `<li><strong>${from.length} of the deck's ${total} monsters</strong> can be revealed to fetch it${robust.length ? `, ${robust.length} of them through 2 or more bridges` : ''}.</li>`
+            : `<li><strong>Nothing in the deck can fetch it:</strong> no monster has a bridge to it.</li>`;
+        const reveals = into.length
+            ? `<li>Revealed, it fetches <strong>${into.length} of them</strong>${starters.length ? `, including ${starters.length === 1 ? 'the starter' : `${starters.length} starters:`} ${starters.map(t => esc(t.name)).join(', ')}` : ''}.</li>`
+            : '<li>Revealed, it reaches nothing in the deck.</li>';
+        return `
+            <div class="cb-detail-block cb-detail-block--flow cb-sw-card">
+                <p class="cb-label">Small World <span class="cb-label-note">· against the pure test deck's monsters</span></p>
+                <p class="cb-sw-status">${status}</p>
+                <ul class="cb-sw-reach">${fetched}${reveals}</ul>
             </div>`;
     }
 
