@@ -1,0 +1,201 @@
+/* Small World bridge finder (assets/js/small-world-finder.js).
+   A page sets its palette with the --swf-* properties on the [data-small-world-finder] element. */
+.swf {
+    --swf-surface: #0e0c17;
+    --swf-inset: #07060c;
+    --swf-border: #2f2849;
+    --swf-text: #e6e4f0;
+    --swf-muted: #a9a3c0;
+    --swf-heading: #ffffff;
+    --swf-accent: #22d3ee;
+    --swf-accent-soft: #a5f3fc;
+    --swf-accent-wash: rgba(34, 211, 238, 0.12);
+    --swf-hand: #c4b5fd;
+    --swf-add: #a5f3fc;
+    --swf-no: #f87171;
+    --swf-chip: rgba(255, 255, 255, 0.06);
+    margin: 1rem 0 0;
+    padding: 1rem;
+    border: 1px solid var(--swf-border);
+    border-radius: 0.6rem;
+    background: var(--swf-surface);
+    color: var(--swf-text);
+    font-size: 0.9rem;
+}
+.swf-title { margin: 0 0 0.35rem; color: var(--swf-heading); font-size: 1.05rem; font-weight: 700; }
+.swf-rule, .swf-note { margin: 0 0 0.6rem; color: var(--swf-muted); line-height: 1.6; }
+.swf-rule strong { color: var(--swf-heading); }
+.swf-note { color: var(--swf-text); }
+.swf-loading { margin: 0.5rem 0 0; color: var(--swf-muted); font-style: italic; }
+
+/* Pickers: card art as radio buttons */
+.swf-pick { margin: 0.9rem 0 0; }
+.swf-step {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.45rem;
+    color: var(--swf-accent-soft);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.swf-step-n {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 9999px;
+    background: var(--swf-accent-wash);
+    color: var(--swf-accent-soft);
+    font-size: 0.72rem;
+}
+.swf-cards { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.swf-card, .swf-tile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.25rem;
+    border: 2px solid transparent;
+    border-radius: 0.45rem;
+    background: var(--swf-inset);
+    color: var(--swf-muted);
+    font: inherit;
+    font-size: 0.64rem;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+}
+.swf-card { width: 62px; }
+.swf-img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 59 / 86;
+    object-fit: cover;
+    border-radius: 0.2rem;
+    background: #000;
+}
+.swf-card .swf-img { opacity: 0.55; transition: opacity 0.15s; }
+.swf-card:hover .swf-img { opacity: 0.85; }
+.swf-card[aria-checked="true"] {
+    border-color: var(--swf-accent);
+    background: var(--swf-accent-wash);
+    color: var(--swf-heading);
+}
+.swf-card[aria-checked="true"] .swf-img { opacity: 1; }
+/* Long one-word names ("Petingcessoeur") hyphenate rather than break mid-word without a hyphen */
+.swf-name { display: block; max-width: 100%; overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
+/* Long names ("Gizmek Orochi, the Serpentron Sky Slasher") stop at three lines; the button's title has the rest */
+.swf-card .swf-name {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+.swf-count {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    padding: 0 0.25rem;
+    border-radius: 0.25rem;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+.swf-any {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 59 / 86;
+    border: 1px dashed var(--swf-border);
+    border-radius: 0.2rem;
+    color: var(--swf-accent-soft);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+@media (min-width: 640px) {
+    .swf-card { width: 70px; }
+}
+
+/* Result */
+.swf-result {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border: 1px solid var(--swf-border);
+    border-radius: 0.5rem;
+    background: var(--swf-inset);
+}
+.swf-msg, .swf-sub { margin: 0 0 0.6rem; line-height: 1.55; }
+.swf-msg:last-child, .swf-sub:last-child { margin-bottom: 0; }
+.swf-msg strong, .swf-sub strong { color: var(--swf-heading); }
+.swf-msg--no strong { color: var(--swf-no); }
+.swf-sub { color: var(--swf-muted); }
+
+.swf-path {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0 0 0.9rem;
+}
+.swf-path-card { width: 74px; text-align: center; font-size: 0.66rem; color: var(--swf-text); }
+.swf-path-card .swf-name { margin-top: 0.2rem; }
+.swf-arrow { color: var(--swf-muted); font-size: 1.1rem; }
+.swf-path-mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    aspect-ratio: 59 / 86;
+    border: 2px dashed var(--swf-accent);
+    border-radius: 0.35rem;
+    background: var(--swf-accent-wash);
+    color: var(--swf-accent-soft);
+    font-size: 0.66rem;
+}
+.swf-path-mid b { font-size: 1.4rem; line-height: 1; color: var(--swf-heading); }
+.swf-path-mid--none { border-color: var(--swf-no); background: rgba(248, 113, 113, 0.08); }
+
+.swf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 0.45rem;
+}
+@media (min-width: 640px) {
+    .swf-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 0.5rem; }
+}
+.swf-tile { width: 100%; padding: 0.3rem; border-color: var(--swf-border); color: var(--swf-text); font-size: 0.68rem; }
+.swf-tile:hover { border-color: var(--swf-accent); }
+.swf-tile .swf-img { max-width: 72px; }
+@media (min-width: 640px) {
+    .swf-tile .swf-img { max-width: 84px; }
+}
+.swf-chips { display: flex; flex-direction: column; gap: 0.2rem; width: 100%; margin-top: 0.15rem; }
+.swf-chip {
+    display: block;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.3rem;
+    background: var(--swf-chip);
+    color: var(--swf-text);
+    font-size: 0.62rem;
+}
+.swf-chip-side { font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.56rem; }
+.swf-chip:first-child .swf-chip-side { color: var(--swf-hand); }
+.swf-chip:last-child .swf-chip-side { color: var(--swf-add); }
+.swf-via { display: block; color: var(--swf-muted); font-size: 0.6rem; }
+
+.swf-card:focus-visible, .swf-tile:focus-visible {
+    outline: 2px solid var(--swf-accent);
+    outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .swf-card .swf-img { transition: none; }
+}

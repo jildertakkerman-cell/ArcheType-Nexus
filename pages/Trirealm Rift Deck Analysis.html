@@ -443,40 +443,22 @@
         }
         .trr-steps b { display: block; margin-bottom: 0.2rem; color: var(--trr-glow-soft); font-size: 1.15rem; }
 
-        /* Small World bridge finder */
-        .trr-finder {
-            margin: 1rem 0 0;
-            padding: 1rem;
-            border: 1px solid var(--trr-glow-line);
-            border-radius: 0.6rem;
-            background: var(--trr-surface-deep);
+        /* Small World bridge finder (shared small-world-finder.css) in this page's palette */
+        #trr-bridge {
+            --swf-surface: var(--trr-surface-deep);
+            --swf-inset: var(--trr-inset);
+            --swf-border: var(--trr-border-strong);
+            --swf-text: var(--trr-text);
+            --swf-muted: var(--trr-muted);
+            --swf-heading: var(--trr-heading);
+            --swf-accent: var(--trr-glow);
+            --swf-accent-soft: var(--trr-glow-soft);
+            --swf-accent-wash: var(--trr-glow-wash);
+            --swf-hand: var(--trr-rift-soft);
+            --swf-add: var(--trr-glow-soft);
+            --swf-no: var(--trr-danger);
+            border-color: var(--trr-glow-line);
         }
-        .trr-finder h3 { margin: 0 0 0.25rem; color: var(--trr-heading); font-size: 1rem; }
-        .trr-finder-grid { display: grid; gap: 0.9rem; margin-top: 0.75rem; }
-        @media (min-width: 768px) { .trr-finder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        .trr-field label, .trr-field .trr-field-label { display: block; margin-bottom: 0.35rem; color: var(--trr-glow-soft); font-size: 0.8rem; font-weight: 700; }
-        .trr-field select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid var(--trr-border-strong);
-            border-radius: 0.4rem;
-            background: var(--trr-inset);
-            color: var(--trr-text);
-            font: inherit;
-        }
-        .trr-finder .chips { --chip-accent: var(--trr-glow); }
-        .trr-result {
-            margin-top: 0.9rem;
-            padding: 0.85rem;
-            border-radius: 0.5rem;
-            background: var(--trr-inset);
-            border: 1px solid var(--trr-border);
-            font-size: 0.9rem;
-        }
-        .trr-result p { margin: 0 0 0.5rem; }
-        .trr-result ul { margin: 0; padding-left: 1.1rem; list-style: disc; }
-        .trr-result li { margin-bottom: 0.25rem; }
-        .trr-result--none { border-color: var(--trr-danger); }
 
         /* ----- Card picker (The Cards tab) ----- */
         .trr-picker {
@@ -689,7 +671,7 @@
         }
     </style>
     <link rel="stylesheet" href="../assets/css/synergy-tags.css">
-    <link rel="stylesheet" href="../assets/css/chip-select.css">
+    <link rel="stylesheet" href="../assets/css/small-world-finder.css">
     <link rel="stylesheet" href="../assets/css/cookie-consent.css">
     <script src="../assets/js/text-utils.js"></script>
     <script src="../assets/js/deck-dock.js" defer></script>
@@ -853,21 +835,16 @@
                 </ul>
                 <p>The Attributes matter too. Havocs, Savage Storms and Verdict all match a face-down monster's Attribute to your opponent's monster, and the eight cover six of them: DARK (Hollows, Darkness), LIGHT (Heavens, Havocs), WATER, FIRE, EARTH and WIND. Only DIVINE is missing.</p>
 
-                <div class="trr-finder" id="trr-bridge" data-pcs-skip>
-                    <h3>Small World bridge finder</h3>
-                    <p class="trr-muted">Pick the monster you reveal from your hand and the one you want from your Deck. The finder lists every bridge in the test deck that shares exactly one property with each, which is what Small World requires.</p>
-                    <div class="trr-finder-grid">
-                        <div class="trr-field">
-                            <label for="trr-sw-from">Reveal from your hand</label>
-                            <select id="trr-sw-from" data-chips></select>
-                        </div>
-                        <div class="trr-field">
-                            <label for="trr-sw-to">Add from your Deck</label>
-                            <select id="trr-sw-to" data-chips></select>
-                        </div>
-                    </div>
-                    <div class="trr-result" id="trr-sw-result" aria-live="polite"></div>
-                </div>
+                <!-- Shared Small World bridge finder (assets/js/small-world-finder.js): the pool is the
+                     test deck's Main Deck monsters plus the Ash Blossom its staples fill adds. -->
+                <div id="trr-bridge" data-pcs-skip
+                     data-small-world-finder
+                     data-deck="Trirealm Rift"
+                     data-cards='[["Ash Blossom &amp; Joyous Spring", 2]]'
+                     data-short-prefix="Trirealm Rift "
+                     data-reveal="Trirealm Rift Darkness"
+                     data-add="Trirealm Rift Blizzards"
+                     data-note="Here both banished cards stay useful: Blizzards, Gorging Gorge and Delectation summon them from the banishment, and Hollows and Havocs add them back. Pick a card on only one side to see everything it reaches."></div>
             </section>
         </div>
         <!-- END tab-how -->
@@ -1458,66 +1435,8 @@
         })();
     </script>
 
-    <!-- Small World bridge finder. Card data from the card text: every
-         Trirealm Rift monster is a Psychic, and no two share a Level, ATK or DEF.
-         Eater of Millions' ATK/DEF are "?", which never match a number. -->
-    <script>
-        (function () {
-            'use strict';
-            const MONSTERS = [
-                { name: 'Trirealm Rift Hollows', lv: 1, attr: 'DARK', type: 'Psychic', atk: 100, def: 1000 },
-                { name: 'Trirealm Rift Heavens', lv: 2, attr: 'LIGHT', type: 'Psychic', atk: 1200, def: 200 },
-                { name: 'Trirealm Rift Blizzards', lv: 3, attr: 'WATER', type: 'Psychic', atk: 300, def: 2000 },
-                { name: 'Trirealm Rift Blaze', lv: 4, attr: 'FIRE', type: 'Psychic', atk: 1700, def: 400 },
-                { name: 'Trirealm Rift Havocs', lv: 5, attr: 'LIGHT', type: 'Psychic', atk: 1000, def: 2500 },
-                { name: 'Trirealm Rift Gorging Gorge', lv: 6, attr: 'EARTH', type: 'Psychic', atk: 2400, def: 1200 },
-                { name: 'Trirealm Rift Savage Storms', lv: 7, attr: 'WIND', type: 'Psychic', atk: 2100, def: 2800 },
-                { name: 'Trirealm Rift Darkness', lv: 8, attr: 'DARK', type: 'Psychic', atk: 3000, def: 2400 },
-                { name: 'Gizmek Orochi, the Serpentron Sky Slasher', lv: 8, attr: 'DARK', type: 'Machine', atk: 2450, def: 2450 },
-                { name: 'Eater of Millions', lv: 1, attr: 'DARK', type: 'Fiend', atk: null, def: null }
-            ];
-            const from = document.getElementById('trr-sw-from');
-            const to = document.getElementById('trr-sw-to');
-            const out = document.getElementById('trr-sw-result');
-            if (!from || !to || !out) return;
-            const short = n => n.replace(/^Trirealm Rift /, '');
-            MONSTERS.forEach((m, i) => {
-                from.add(new Option(short(m.name), String(i)));
-                to.add(new Option(short(m.name), String(i)));
-            });
-            from.value = '7';   // Darkness, a card you'd rather not draw
-            to.value = '2';     // Blizzards
-            // The properties two monsters share (Small World needs exactly one)
-            function shared(a, b) {
-                const s = [];
-                if (a.type === b.type) s.push(a.type);
-                if (a.attr === b.attr) s.push(a.attr);
-                if (a.lv === b.lv) s.push('Level ' + a.lv);
-                if (a.atk !== null && a.atk === b.atk) s.push(a.atk + ' ATK');
-                if (a.def !== null && a.def === b.def) s.push(b.def + ' DEF');
-                return s;
-            }
-            const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-            function render() {
-                const a = MONSTERS[Number(from.value)];
-                const c = MONSTERS[Number(to.value)];
-                const bridges = MONSTERS.filter(b => b !== a && b !== c && shared(a, b).length === 1 && shared(b, c).length === 1);
-                const copy = a === c ? '<p>You add another copy of the card you revealed, so you need one left in your Deck.</p>' : '';
-                if (!bridges.length) {
-                    out.className = 'trr-result trr-result--none';
-                    out.innerHTML = '<p><strong>No bridge.</strong> No monster in the test deck shares exactly one property with both ' + esc(short(a.name)) + ' and ' + esc(short(c.name)) + '.</p>';
-                    return;
-                }
-                out.className = 'trr-result';
-                out.innerHTML = '<p><strong>' + bridges.length + ' bridge' + (bridges.length === 1 ? '' : 's') + '.</strong> Reveal ' + esc(short(a.name)) + ', choose one of these in your Deck, add ' + esc(short(c.name)) + '. The revealed card and the bridge are banished face-down.</p>' + copy +
-                    '<ul>' + bridges.map(b => '<li>' + esc(short(b.name)) + ' <span class="trr-muted">(shares ' + esc(shared(a, b)[0]) + ' with the revealed card, ' + esc(shared(b, c)[0]) + ' with the added one)</span></li>').join('') + '</ul>';
-            }
-            from.addEventListener('change', render);
-            to.addEventListener('change', render);
-            render();
-        })();
-    </script>
-    <script src="../assets/js/chip-select.js"></script>
+    <!-- Shared Small World bridge finder: fills #trr-bridge from the test deck -->
+    <script src="../assets/js/small-world-finder.js"></script>
 
     <!-- Card art, banlist, deck resources, synergy tags, page sections -->
     <script>
