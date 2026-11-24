@@ -53,6 +53,149 @@ function storedRowMatches(passcode, dataValues, name, desc) {
 const SUPABASE_URL = 'https://pdvrdrmmykbznmojacwp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_ia1JW1tEjKQgUFe2ni5WQA_qgBU45JZ';
 
+// ---------------------------------------------------------------------------------------------------------------
+// TCG names of cards the databases still file under another name (assets/data/tcg-card-names.json, shared with
+// assets/js/card-loader.js). A new set's cards are in cards.cdb under nothing (Glorious Victors' "Zenet", "Raise
+// Moon" and "Trirealm Rift" cards), in Supabase and BabelCDB under their OCG translations ("Zenet Prophet -
+// Nefertari"), and ProjectIgnis scripts them under a pre-release code only (pre-release/c100458001.lua). A page's TCG
+// name ("Zenet Revelator Nefertari") used to resolve to nothing, or to a Supabase row whose passcode has no script:
+// a card with no effects. Each entry with a pre-release code is copied into cards.cdb under that code and the TCG
+// name, from BabelCDB's pre-release database (type, setcodes, and the effect strings the runner reads), so
+// getScript() loads pre-release/c<prerelease>.lua and the script's GetID() is that code. The entry's other name and
+// its passcode resolve to the same row. Once ProjectIgnis files the card under its passcode (a cards.cdb row with
+// effect strings), the pre-release copy is dropped and the name and passcode lead to that row instead.
+// ---------------------------------------------------------------------------------------------------------------
+const TCG_NAMES_PATH = path.resolve(__dirname, '../../assets/data/tcg-card-names.json');
+const PRERELEASE_DIR = path.join(SCRIPT_DIR, 'babel-prerelease');
+const tcgNameEntries = (() => {
+    try {
+        return (JSON.parse(fs.readFileSync(TCG_NAMES_PATH, 'utf8')).cards || [])
+            .filter(e => e && e.name && (e.prerelease || e.passcode));
+    } catch (err) {
+        if (fs.existsSync(TCG_NAMES_PATH)) console.warn('[card-engine] Could not read tcg-card-names.json:', err.message);
+        return [];
+    }
+})();
+const tcgNameIndex = new Map(); // lowercase TCG name or other name -> entry
+const tcgCodeIndex = new Map(); // passcode or pre-release code -> entry
+for (const entry of tcgNameEntries) {
+    for (const n of [entry.name, entry.ocgName]) {
+        if (n && !tcgNameIndex.has(n.toLowerCase())) tcgNameIndex.set(n.toLowerCase(), entry);
+    }
+    for (const c of [entry.passcode, entry.prerelease]) {
+        if (c && !tcgCodeIndex.has(Number(c))) tcgCodeIndex.set(Number(c), entry);
+    }
+}
+
+/**
+ * The tcg-card-names.json entry ({ name, ocgName, passcode, prerelease }) for a TCG name, the other name the databases
+ * use, a passcode or a pre-release code; null if the card isn't listed. A runner can compare a resolved card's code
+ * with entry.prerelease to check that the pre-release script is the one in play.
+ */
+export function tcgNameEntry(nameOrCode) {
+    if (nameOrCode == null || nameOrCode === '') return null;
+    if (typeof nameOrCode === 'number' || /^\d{5,9}$/.test(String(nameOrCode).trim())) {
+        return tcgCodeIndex.get(Number(nameOrCode)) || null;
+    }
+    return tcgNameIndex.get(String(nameOrCode).trim().toLowerCase()) || null;
+}
+
+const TEXT_STR_COLUMNS = db.prepare('PRAGMA table_info(texts)').all().map(c => c.name).filter(n => /^str\d+$/.test(n));
+const stmtInsertFullText = db.prepare(`INSERT OR REPLACE INTO texts (id, name, desc${TEXT_STR_COLUMNS.map(c => `, ${c}`).join('')}) VALUES (?, ?, ?${TEXT_STR_COLUMNS.map(() => ', ?').join('')})`);
+const stmtFullStoredRow = db.prepare(`SELECT d.ot, d.alias, d.setcode, d.type, d.atk, d.def, d.level, d.race, d.attribute, d.category, t.name, t.desc${TEXT_STR_COLUMNS.map(c => `, t.${c}`).join('')} FROM datas d JOIN texts t ON t.id = d.id WHERE d.id = ?`);
+stmtFullStoredRow.setReadBigInts(true);
+const stmtDeleteData = db.prepare('DELETE FROM datas WHERE id = ?');
+const stmtDeleteText = db.prepare('DELETE FROM texts WHERE id = ?');
+// A row ProjectIgnis (BabelCDB) wrote has its effect strings; a row cached from Supabase has str1 NULL
+const stmtIsProjectIgnisRow = db.prepare('SELECT 1 AS ok FROM datas JOIN texts ON texts.id = datas.id WHERE datas.id = ? AND texts.str1 IS NOT NULL');
+
+// The engine code a tcg-card-names.json entry is played under: the passcode once ProjectIgnis has filed the card
+// there, else the pre-release code (null when neither row is in cards.cdb)
+function tcgEngineCode(entry) {
+    if (!entry) return null;
+    if (entry.passcode && stmtIsProjectIgnisRow.get(Number(entry.passcode))) return Number(entry.passcode);
+    if (entry.prerelease && stmtByCode.get(Number(entry.prerelease))) return Number(entry.prerelease);
+    return null;
+}
+
+// Pre-release rows from the BabelCDB databases in assets/data/cardscripts/babel-prerelease (tracked in git, so the
+// weekly CI run has them; loadPrereleaseNames() refreshes them from GitHub)
+function readPrereleaseRows(codes) {
+    const rows = new Map();
+    let files = [];
+    try { files = fs.readdirSync(PRERELEASE_DIR).filter(f => /^prerelease-.*\.cdb$/.test(f)); } catch { return rows; }
+    const placeholders = codes.map(() => '?').join(', ');
+    for (const f of files) {
+        let cdb = null;
+        try {
+            cdb = new DatabaseSync(path.join(PRERELEASE_DIR, f), { readOnly: true });
+            const stmt = cdb.prepare(`SELECT d.id, d.ot, d.alias, d.setcode, d.type, d.atk, d.def, d.level, d.race, d.attribute, d.category, t.* FROM datas d JOIN texts t ON t.id = d.id WHERE d.id IN (${placeholders})`);
+            stmt.setReadBigInts(true);
+            for (const r of stmt.all(...codes)) {
+                if (!rows.has(Number(r.id))) rows.set(Number(r.id), r);
+            }
+        } catch {
+            // Not a card database: the other files may still have the card
+        } finally {
+            try { cdb?.close(); } catch { /* already closed */ }
+        }
+    }
+    return rows;
+}
+
+// The pre-release text quotes OCG names ("except \"Zenetnakht Sphinx\""): use the TCG names, which the step text
+// uses, so the runner's quoted-name matching between effect strings and steps works. Longest names first.
+const OCG_TO_TCG_NAMES = tcgNameEntries
+    .filter(e => e.ocgName && e.ocgName !== e.name && e.ocgName.length >= 6)
+    .sort((a, b) => b.ocgName.length - a.ocgName.length);
+function withTcgNames(text) {
+    if (!text) return text;
+    let out = String(text);
+    for (const e of OCG_TO_TCG_NAMES) out = out.split(e.ocgName).join(e.name);
+    return out;
+}
+
+const ROW_DATA_KEYS = ['ot', 'alias', 'setcode', 'type', 'atk', 'def', 'level', 'race', 'attribute', 'category'];
+function syncTcgNamedPrereleaseCards() {
+    const pending = tcgNameEntries.filter(e => e.prerelease);
+    if (!pending.length) return;
+    const source = readPrereleaseRows(pending.map(e => Number(e.prerelease)));
+    for (const entry of pending) {
+        const code = Number(entry.prerelease);
+        try {
+            // ProjectIgnis has filed the card under its passcode: that row is the card, the pre-release copy goes
+            if (entry.passcode && stmtIsProjectIgnisRow.get(Number(entry.passcode))) {
+                if (stmtByCode.get(code)) { stmtDeleteData.run(code); stmtDeleteText.run(code); }
+                continue;
+            }
+            // A Supabase-cached row for the passcode has no script and the same name: it would compete with this one
+            if (entry.passcode && stmtByCode.get(Number(entry.passcode))) {
+                stmtDeleteData.run(Number(entry.passcode));
+                stmtDeleteText.run(Number(entry.passcode));
+            }
+            const row = source.get(code);
+            if (!row) {
+                if (!stmtByCode.get(code)) console.warn(`[card-engine] ${entry.name}: pre-release code ${code} is in none of the BabelCDB databases in ${PRERELEASE_DIR}`);
+                continue;
+            }
+            const dataValues = ROW_DATA_KEYS.map(k => row[k] ?? 0n);
+            const strValues = TEXT_STR_COLUMNS.map(c => withTcgNames(row[c] ?? ''));
+            const desc = withTcgNames(row.desc || '');
+            const stored = stmtFullStoredRow.get(code);
+            const unchanged = stored && stored.name === entry.name && stored.desc === desc &&
+                ROW_DATA_KEYS.every((k, i) => BigInt(stored[k] ?? 0) === BigInt(dataValues[i])) &&
+                TEXT_STR_COLUMNS.every((c, i) => (stored[c] ?? '') === strValues[i]);
+            // Rewriting an unchanged row still changes the tracked cards.cdb file
+            if (unchanged) continue;
+            stmtInsertData.run(code, ...dataValues);
+            // str1 is never NULL here: refreshSupabaseCachedRows() would take a NULL for a Supabase cache
+            stmtInsertFullText.run(code, entry.name, desc, ...strValues);
+        } catch (err) {
+            console.warn(`[card-engine] Could not store ${entry.name} (${code}):`, err.message);
+        }
+    }
+}
+
 export function cleanCardName(name) {
     if (!name) return '';
     return String(name)
@@ -149,7 +292,13 @@ export function getCardText(code) {
 
 export function getCardByName(name) {
     const row = stmtByName.get(name.trim());
-    return formatCardData(row);
+    if (row) return formatCardData(row);
+    // A TCG name the databases file under another name, or that other name: the card the entry is played as
+    const entry = tcgNameEntry(name);
+    const code = tcgEngineCode(entry);
+    if (!code) return null;
+    const card = formatCardData(stmtByCode.get(code));
+    return card ? { ...card, name: entry.name } : null;
 }
 
 // Local cards.cdb only (exact name, then shortest name containing it): no network fallback, for speculative lookups
@@ -430,6 +579,15 @@ const GENERIC_NON_CARD_RE = /^(?:this|that|it|its|her|his|their|your|my|our|any|
 export async function resolveCardAsync(nameOrCode) {
     if (!nameOrCode) return null;
 
+    // 0. A card listed in tcg-card-names.json (its TCG name, other name, passcode or pre-release code): the row it is
+    // played under, before Supabase can answer with a script-less row under the passcode
+    const tcgEntry = tcgNameEntry(typeof nameOrCode === 'number' ? nameOrCode : cleanCardName(nameOrCode).replace(/^["']+|["']+$/g, '').trim());
+    const tcgCode = tcgEngineCode(tcgEntry);
+    if (tcgCode) {
+        const card = getCardByCode(tcgCode);
+        if (card) return { ...card, name: tcgEntry.name };
+    }
+
     // 1. Try local SQLite cards.cdb
     if (typeof nameOrCode === 'number' || /^\d{5,8}$/.test(String(nameOrCode).trim())) {
         const found = getCardByCode(nameOrCode);
@@ -512,6 +670,9 @@ const missingScripts = new Set();
 let prereleaseNames = null;
 async function prereleaseCodeFor(name) {
     if (!name) return null;
+    // tcg-card-names.json lists the code for TCG names BabelCDB doesn't use
+    const listed = tcgNameEntry(name)?.prerelease;
+    if (listed) return Number(listed);
     if (!prereleaseNames) prereleaseNames = loadPrereleaseNames();
     return (await prereleaseNames).get(name.toLowerCase()) || null;
 }
@@ -591,7 +752,7 @@ export async function getScript(scriptName) {
             // A card whose passcode came out after its script was written can still be filed under its pre-release
             // code (Chaospawn Bishop: 24780790 in cards.cdb, its script pre-release/c101402089.lua). The script
             // reads its own code through GetID(), so it runs under the passcode as it is.
-            const preCode = card && await prereleaseCodeFor(card.name);
+            const preCode = card && (Number(tcgNameEntry(card.code)?.prerelease) || await prereleaseCodeFor(card.name));
             if (preCode && preCode !== card.code) {
                 const res = await fetch(`${base}/pre-release/c${preCode}.lua`);
                 if (res.ok) {
@@ -654,6 +815,8 @@ async function refreshSupabaseCachedRows() {
         // Offline: keep the cached rows
     }
 }
+syncTcgNamedPrereleaseCards();
+supabaseCachedIds = null; // the sync may have removed Supabase-cached rows
 await refreshSupabaseCachedRows();
 
 const wasmModule = await loadWasmModule();

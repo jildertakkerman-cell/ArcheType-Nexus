@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Trirealm Rift deck guide: the eight Psychic monsters that banish your Deck face-down and play from the banishment, the Level 1-8 ladder, Small World bridges, four engine-tested combo lines, the test deck and the deck's counters. New to the TCG in Glorious Victors.">
+    <link rel="canonical" href="https://archetypesnexus.com/pages/Trirealm%20Rift%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
+    <title>Trirealm Rift Deck Guide: Playing from the Face-Down Banishment</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;600;700&family=Silkscreen&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="../output.css" rel="stylesheet">
+    <style>
+        /* ===== Trirealm Rift (2026-11-24) =====
+           Built on the Light and Darkness Ritual page's shell: guide tabs
+           (assets/js/guide-tabs.js), "Play Line" buttons and a combo simulator
+           below the tabs. Scoped trr-* classes rather than Tailwind utilities,
+           because output.css is precompiled. Every colour comes from the
+           --trr-* tokens; the six Attribute colours mark the Level ladder. */
+        :root {
+            --trr-void: #07060d;
+            --trr-surface: #13101f;
+            --trr-surface-deep: #0c0a16;
+            --trr-inset: #07060c;
+            --trr-border: #2f2849;
+            --trr-border-strong: #4a3f73;
+            --trr-text: #e6e4f0;
+            --trr-muted: #a9a3c0;
+            --trr-heading: #ffffff;
+            --trr-rift: #8b5cf6;                /* the rift's violet */
+            --trr-rift-soft: #c4b5fd;
+            --trr-rift-line: rgba(139, 92, 246, 0.5);
+            --trr-rift-wash: rgba(139, 92, 246, 0.12);
+            --trr-glow: #22d3ee;                /* face-down banishment */
+            --trr-glow-soft: #a5f3fc;
+            --trr-glow-line: rgba(34, 211, 238, 0.45);
+            --trr-glow-wash: rgba(34, 211, 238, 0.1);
+            --trr-ok: #4ade80;
+            --trr-ok-wash: rgba(74, 222, 128, 0.12);
+            --trr-warn: #fbbf24;
+            --trr-warn-wash: rgba(251, 191, 36, 0.12);
+            --trr-danger: #f87171;
+            --trr-danger-wash: rgba(248, 113, 113, 0.12);
+            /* Attributes on the ladder */
+            --trr-dark: #c084fc;
+            --trr-light: #fde047;
+            --trr-water: #60a5fa;
+            --trr-fire: #fb923c;
+            --trr-earth: #d6a35c;
+            --trr-wind: #4ade80;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--trr-void);
+            color: var(--trr-text);
+            padding: 1.5rem 1rem;
+        }
+        @media (min-width: 768px) { body { padding: 2rem; } }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 50% -10%, rgba(139, 92, 246, 0.22), transparent 55%),
+                radial-gradient(ellipse at 50% 110%, rgba(34, 211, 238, 0.12), transparent 50%),
+                var(--trr-void);
+            z-index: -1;
+        }
+        .container { max-width: 1024px; position: relative; z-index: 1; }
+
+        /* ----- Banner: title and tagline only ----- */
+        .trr-banner {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-height: 220px;
+            margin-bottom: 1.5rem;
+            padding: 2rem 1rem;
+            overflow: hidden;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.75rem;
+            background: radial-gradient(circle at 50% 55%, #1b1433 0%, #0a0814 70%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+        #trr-rift-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+        .trr-banner h1 {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 7vw, 3.25rem);
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            background: linear-gradient(90deg, var(--trr-glow-soft), #ffffff 45%, var(--trr-rift-soft));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+        }
+        .trr-tagline {
+            position: relative;
+            z-index: 1;
+            max-width: 34rem;
+            margin: 0;
+            color: var(--trr-muted);
+            font-size: 0.95rem;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Home button (same as the other deck pages) */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--trr-rift);
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0c0a16 0%, #2a2347 50%, #0c0a16 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .ygo-home-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: var(--trr-glow);
+            box-shadow: 0 8px 25px rgba(34, 211, 238, 0.3);
+        }
+        .ygo-home-button i { font-size: 22px; color: var(--trr-glow-soft); }
+
+        /* ----- Lore Archive ----- */
+        .trr-lore {
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--trr-border);
+            border-left: 4px solid var(--trr-rift);
+            border-radius: 0 0.75rem 0.75rem 0;
+            background: rgba(19, 16, 31, 0.85);
+        }
+        .trr-lore-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .trr-lore-icon {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, var(--trr-glow), var(--trr-rift));
+            color: #0c0a16;
+        }
+        .trr-lore h2 {
+            margin: 0;
+            color: var(--trr-heading);
+            font-family: 'Cinzel', serif;
+            font-size: 1.25rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .trr-lore p { margin: 0.6rem 0 0; color: var(--trr-muted); font-family: Georgia, serif; line-height: 1.7; }
+        .trr-lore blockquote {
+            margin: 0;
+            color: var(--trr-text);
+            font-family: Georgia, serif;
+            font-style: italic;
+            line-height: 1.6;
+        }
+        .trr-lore cite { display: block; margin-top: 0.35rem; color: var(--trr-muted); font-size: 0.8rem; font-style: normal; }
+        .trr-lore p.trr-lore-note { font-size: 0.8rem; line-height: 1.6; }
+        /* The story slideshow (assets/js/lore-reel.js + lore-reel.css), in the rift's violet */
+        .trr-lore .lore-reel {
+            margin-top: 1.25rem;
+            color: var(--trr-text);
+            font-family: Georgia, serif;
+            --reel-ink: var(--trr-rift-soft);
+            --reel-well: #221a3d;
+            --reel-hover: var(--trr-rift);
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            max-width: 100%;
+            margin: 0 0 2rem;
+            padding: 0 0.25rem;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.75rem;
+            background: rgba(10, 9, 18, 0.95);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            --gt-bg: rgba(10, 9, 18, 0.95);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex: 1 1 0;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 48px;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--trr-muted);
+            font-family: 'Cinzel', serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #fff; background-color: var(--trr-rift-wash); }
+        .tab-btn[aria-selected="true"] {
+            border-bottom-color: var(--trr-glow);
+            color: var(--trr-glow-soft);
+            text-shadow: 0 0 10px rgba(34, 211, 238, 0.35);
+        }
+        .tab-panel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .trr-pick:focus-visible,
+        .trr-line-play:focus-visible,
+        .trr-link:focus-visible,
+        .trr-cta:focus-visible {
+            outline: 2px solid var(--trr-glow);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .tab-panel:target:focus-visible { outline: none; }
+        [id^="trr-"] { scroll-margin-top: 4.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn { padding: 0.75rem 0.35rem; font-size: 0.74rem; white-space: normal; text-align: center; }
+        }
+        .trr-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ----- Blocks, headings, text ----- */
+        .trr-block {
+            margin: 0 0 2.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.75rem;
+            background: rgba(19, 16, 31, 0.92);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        }
+        @media (max-width: 639px) { .trr-block { padding: 1.1rem; } }
+        .trr-h2 {
+            margin: 0 0 0.75rem;
+            color: var(--trr-heading);
+            font-family: 'Cinzel', serif;
+            font-size: clamp(1.2rem, 4vw, 1.6rem);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .trr-h3 { margin: 1.5rem 0 0.5rem; color: var(--trr-heading); font-size: 1.05rem; font-weight: 700; }
+        .trr-block p, .trr-block li { line-height: 1.7; }
+        .trr-block p { margin: 0 0 0.85rem; }
+        .trr-lede { color: var(--trr-text); font-size: 1rem; }
+        .trr-muted { color: var(--trr-muted); }
+        .trr-block ul.trr-list { margin: 0 0 1rem; padding-left: 1.2rem; list-style: disc; }
+        .trr-block ul.trr-list li { margin-bottom: 0.4rem; }
+        .trr-block strong { color: var(--trr-heading); }
+        .trr-link { color: var(--trr-glow-soft); text-decoration: underline; text-underline-offset: 2px; }
+        .trr-link:hover { color: #ffffff; }
+        .trr-kicker {
+            margin: 0 0 0.35rem;
+            color: var(--trr-glow);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        /* Release note under the overview heading */
+        .trr-release {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 0 0 1rem;
+            padding: 0;
+            list-style: none;
+        }
+        .trr-release li {
+            padding: 0.25rem 0.7rem;
+            border: 1px solid var(--trr-border-strong);
+            border-radius: 9999px;
+            background: var(--trr-surface-deep);
+            color: var(--trr-text);
+            font-size: 0.8rem;
+        }
+        .trr-release li strong { color: var(--trr-glow-soft); }
+
+        /* Overview: art beside the opening text */
+        .trr-intro { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+        @media (min-width: 768px) { .trr-intro { grid-template-columns: 170px minmax(0, 1fr); } }
+        .trr-intro .trr-art { max-width: 170px; margin: 0 auto; }
+
+        /* Card art slot: holds the card shape until CardLoader swaps the image in */
+        .trr-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--trr-rift-line);
+            border-radius: 0.35rem;
+            background: var(--trr-inset);
+            color: var(--trr-rift-soft);
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .trr-art:has(img) {
+            display: block;
+            aspect-ratio: auto;
+            padding: 0;
+            border-color: transparent;
+            background: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+        }
+        .trr-art img { display: block; width: 100%; height: auto; border-radius: 0.3rem; }
+        .trr-art .card-placeholder {
+            min-height: 0;
+            padding: 0;
+            border: 0;
+            background: none;
+            box-shadow: none;
+            font-size: inherit;
+        }
+
+        /* Callouts */
+        .trr-rules { display: grid; gap: 1rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+        @media (min-width: 768px) { .trr-rules { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .trr-rule {
+            padding: 1rem;
+            border: 1px solid var(--trr-border);
+            border-top: 3px solid var(--trr-glow);
+            border-radius: 0.5rem;
+            background: var(--trr-surface-deep);
+        }
+        .trr-rule h3 { margin: 0 0 0.4rem; color: var(--trr-heading); font-size: 0.98rem; font-weight: 700; }
+        .trr-rule p { margin: 0; color: var(--trr-text); font-size: 0.9rem; }
+        .trr-rule--warn { border-top-color: var(--trr-warn); }
+        .trr-rule--rift { border-top-color: var(--trr-rift); }
+
+        /* Tables: scroll sideways on a phone instead of widening the page */
+        .trr-table-wrap {
+            margin: 0.5rem 0 1rem;
+            overflow-x: auto;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+        .trr-table { width: 100%; min-width: 34rem; border-collapse: collapse; font-size: 0.86rem; }
+        .trr-table caption { padding: 0.6rem 0.75rem; color: var(--trr-muted); font-size: 0.8rem; text-align: left; }
+        .trr-table th, .trr-table td {
+            padding: 0.55rem 0.7rem;
+            border-top: 1px solid var(--trr-border);
+            text-align: left;
+            vertical-align: top;
+        }
+        .trr-table thead th {
+            border-top: 0;
+            background: var(--trr-surface-deep);
+            color: var(--trr-glow-soft);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .trr-table tbody th { color: var(--trr-heading); font-weight: 700; white-space: nowrap; }
+        .trr-table td.trr-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .trr-ladder { min-width: 46rem; }
+        .trr-ladder .trr-lv {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.7rem;
+            height: 1.7rem;
+            border-radius: 9999px;
+            background: var(--trr-rift-wash);
+            border: 1px solid var(--trr-rift-line);
+            color: var(--trr-heading);
+            font-weight: 700;
+        }
+        .trr-attr { font-weight: 700; white-space: nowrap; }
+        .trr-attr--dark { color: var(--trr-dark); }
+        .trr-attr--light { color: var(--trr-light); }
+        .trr-attr--water { color: var(--trr-water); }
+        .trr-attr--fire { color: var(--trr-fire); }
+        .trr-attr--earth { color: var(--trr-earth); }
+        .trr-attr--wind { color: var(--trr-wind); }
+        .trr-yes { color: var(--trr-ok); font-weight: 700; }
+        .trr-no { color: var(--trr-muted); }
+        .trr-lock { color: var(--trr-warn); font-weight: 700; }
+
+        /* Darkness thresholds */
+        .trr-steps { display: grid; gap: 0.6rem; margin: 0.75rem 0 1rem; padding: 0; list-style: none; }
+        @media (min-width: 640px) { .trr-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        .trr-steps li {
+            padding: 0.75rem;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.5rem;
+            background: var(--trr-surface-deep);
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+        .trr-steps b { display: block; margin-bottom: 0.2rem; color: var(--trr-glow-soft); font-size: 1.15rem; }
+
+        /* Small World bridge finder */
+        .trr-finder {
+            margin: 1rem 0 0;
+            padding: 1rem;
+            border: 1px solid var(--trr-glow-line);
+            border-radius: 0.6rem;
+            background: var(--trr-surface-deep);
+        }
+        .trr-finder h3 { margin: 0 0 0.25rem; color: var(--trr-heading); font-size: 1rem; }
+        .trr-finder-grid { display: grid; gap: 0.9rem; margin-top: 0.75rem; }
+        @media (min-width: 768px) { .trr-finder-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .trr-field label, .trr-field .trr-field-label { display: block; margin-bottom: 0.35rem; color: var(--trr-glow-soft); font-size: 0.8rem; font-weight: 700; }
+        .trr-field select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--trr-border-strong);
+            border-radius: 0.4rem;
+            background: var(--trr-inset);
+            color: var(--trr-text);
+            font: inherit;
+        }
+        .trr-finder .chips { --chip-accent: var(--trr-glow); }
+        .trr-result {
+            margin-top: 0.9rem;
+            padding: 0.85rem;
+            border-radius: 0.5rem;
+            background: var(--trr-inset);
+            border: 1px solid var(--trr-border);
+            font-size: 0.9rem;
+        }
+        .trr-result p { margin: 0 0 0.5rem; }
+        .trr-result ul { margin: 0; padding-left: 1.1rem; list-style: disc; }
+        .trr-result li { margin-bottom: 0.25rem; }
+        .trr-result--none { border-color: var(--trr-danger); }
+
+        /* ----- Card picker (The Cards tab) ----- */
+        .trr-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0 0 1.25rem;
+        }
+        .trr-pick {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 40px;
+            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--trr-border-strong);
+            border-radius: 9999px;
+            background: var(--trr-surface-deep);
+            color: var(--trr-text);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .trr-pick:hover { border-color: var(--trr-glow-line); }
+        .trr-pick[aria-selected="true"] { border-color: var(--trr-glow); background: var(--trr-glow-wash); color: #fff; }
+        .trr-pick-lv {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.4rem;
+            height: 1.4rem;
+            padding: 0 0.3rem;
+            border-radius: 9999px;
+            background: var(--trr-rift-wash);
+            color: var(--trr-rift-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .trr-profile {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.75rem;
+            background: var(--trr-surface-deep);
+        }
+        .trr-profile + .trr-profile { margin-top: 1rem; }
+        .trr-profile[hidden] { display: none; }
+        @media (min-width: 768px) { .trr-profile { grid-template-columns: 180px minmax(0, 1fr); } }
+        .trr-profile .trr-art { max-width: 180px; margin: 0 auto; }
+        .trr-profile h3 { margin: 0 0 0.35rem; color: var(--trr-heading); font-family: 'Cinzel', serif; font-size: 1.3rem; }
+        .trr-role-tag {
+            display: inline-block;
+            margin: 0 0 0.5rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 9999px;
+            background: var(--trr-rift-wash);
+            border: 1px solid var(--trr-rift-line);
+            color: var(--trr-rift-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .trr-role { margin: 0 0 0.75rem; color: var(--trr-text); }
+        .trr-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 0.9rem; padding: 0; list-style: none; }
+        .trr-chips li {
+            padding: 0.15rem 0.55rem;
+            border: 1px solid var(--trr-border-strong);
+            border-radius: 0.35rem;
+            color: var(--trr-text);
+            font-size: 0.75rem;
+        }
+        .trr-glance {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+            gap: 0.5rem;
+            margin: 0 0 1rem;
+        }
+        .trr-glance div {
+            padding: 0.55rem 0.65rem;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.45rem;
+            background: var(--trr-inset);
+        }
+        .trr-glance dt { color: var(--trr-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+        .trr-glance dd { margin: 0.15rem 0 0; color: var(--trr-text); font-size: 0.86rem; line-height: 1.45; }
+        .trr-effects { margin: 0 0 0.75rem; padding: 0; list-style: none; counter-reset: trr-effect; }
+        .trr-effects li {
+            position: relative;
+            margin: 0 0 0.55rem;
+            padding: 0.6rem 0.75rem 0.6rem 2.3rem;
+            border-left: 2px solid var(--trr-glow-line);
+            background: rgba(34, 211, 238, 0.04);
+            border-radius: 0 0.4rem 0.4rem 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            counter-increment: trr-effect;
+        }
+        .trr-effects li::before {
+            content: counter(trr-effect);
+            position: absolute;
+            top: 0.6rem;
+            left: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 9999px;
+            background: var(--trr-glow-wash);
+            color: var(--trr-glow-soft);
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .trr-effects .trr-when { display: block; color: var(--trr-glow-soft); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+        .trr-note { margin: 0; color: var(--trr-muted); font-size: 0.88rem; }
+
+        /* Reprints */
+        .trr-reprints { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 768px) { .trr-reprints { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .trr-reprint {
+            display: grid;
+            grid-template-columns: 84px minmax(0, 1fr);
+            gap: 0.9rem;
+            align-items: start;
+            padding: 1rem;
+            border: 1px solid var(--trr-border);
+            border-radius: 0.6rem;
+            background: var(--trr-surface-deep);
+        }
+        .trr-reprint h3 { margin: 0 0 0.25rem; color: var(--trr-heading); font-size: 0.98rem; font-weight: 700; }
+        .trr-reprint p { margin: 0 0 0.5rem; font-size: 0.88rem; line-height: 1.6; }
+        .trr-verdict {
+            display: inline-block;
+            margin: 0 0 0.4rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .trr-verdict--yes { background: var(--trr-ok-wash); color: var(--trr-ok); }
+        .trr-verdict--some { background: var(--trr-warn-wash); color: var(--trr-warn); }
+
+        /* ----- Combo lines ----- */
+        .trr-lines { display: grid; gap: 1rem; }
+        @media (min-width: 900px) { .trr-lines { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        .trr-line {
+            display: flex;
+            flex-direction: column;
+            padding: 1.1rem;
+            border: 1px solid var(--trr-border);
+            border-left: 3px solid var(--trr-glow);
+            border-radius: 0.6rem;
+            background: var(--trr-surface-deep);
+        }
+        .trr-line--second { border-left-color: var(--trr-warn); }
+        .trr-line h3 { margin: 0 0 0.6rem; color: var(--trr-heading); font-size: 1.02rem; font-weight: 700; line-height: 1.35; }
+        .trr-line-facts { display: grid; gap: 0.4rem; margin: 0 0 0.75rem; }
+        .trr-line-facts div { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 0.5rem; font-size: 0.86rem; }
+        @media (max-width: 479px) { .trr-line-facts div { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+        .trr-line-facts dt { color: var(--trr-muted); font-weight: 700; }
+        .trr-line-facts dd { margin: 0; color: var(--trr-text); }
+        .trr-line-rule { margin: 0 0 0.9rem; font-size: 0.88rem; line-height: 1.6; }
+        .trr-line-play {
+            display: inline-flex;
+            align-self: flex-start;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 42px;
+            margin-top: auto;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--trr-glow-line);
+            border-radius: 0.5rem;
+            background: var(--trr-glow-wash);
+            color: var(--trr-glow-soft);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .trr-line-play:hover { background: rgba(34, 211, 238, 0.2); color: #fff; }
+
+        /* Deck button */
+        .trr-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.55rem 1.1rem;
+            border: 1px solid var(--trr-rift);
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.35), rgba(34, 211, 238, 0.2));
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .trr-cta:hover { border-color: var(--trr-glow); }
+
+        /* Combo simulator mount */
+        .trr-lab-mount { min-height: 120px; }
+        .trr-lab-loading { margin: 0; color: var(--trr-muted); font-style: italic; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ygo-home-button, .tab-btn { transition: none; }
+        }
+        @media print {
+            .tab-nav, .trr-picker, .trr-line-play, #trr-lab { display: none !important; }
+            .tab-panel[hidden], .trr-profile[hidden] { display: block !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/synergy-tags.css">
+    <link rel="stylesheet" href="../assets/css/chip-select.css">
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+    <script src="../assets/js/text-utils.js"></script>
+    <script src="../assets/js/deck-dock.js" defer></script>
+    <script src="../assets/js/synergy-tags.js"></script>
+    <script src="../assets/js/page-sections.js"></script>
+    <link rel="stylesheet" href="../assets/css/follow-archetype.css">
+    <script src="../assets/js/follow-archetype.js"></script>
+    <link rel="stylesheet" href="../assets/css/lore-reel.css">
+    <script src="../assets/js/lore-reel-data.js" defer></script>
+    <script src="../assets/js/lore-reel-art.js" defer></script>
+    <script src="../assets/js/lore-reel.js" defer></script>
+</head>
+
+<body>
+    <div id="card-popup"></div>
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        <span class="trr-sr-only">Archetype Nexus home</span>
+    </a>
+
+    <div class="container mx-auto">
+        <header class="trr-banner" data-pcs-skip>
+            <canvas id="trr-rift-canvas" aria-hidden="true"></canvas>
+            <h1>Trirealm Rift</h1>
+            <p class="trr-tagline">Eight Psychic monsters that bank your Deck face-down, then play from the banishment.</p>
+        </header>
+
+        <div id="deck-dock"></div>
+
+        <!-- Lore Archive: first block on the page -->
+        <section class="trr-lore" data-pcs-scope="lore" aria-labelledby="trr-lore-title">
+            <div class="trr-lore-head">
+                <div class="trr-lore-icon" aria-hidden="true"><i class="fas fa-eye"></i></div>
+                <h2 id="trr-lore-title">Lore Archive</h2>
+            </div>
+            <blockquote>
+                &ldquo;The touch of these bizarre creatures defies the laws of physics, banishing cards in your Deck to the reverse side of the universe where only you can see and use them!&rdquo;
+                <cite>Konami, Glorious Victors product page</cite>
+            </blockquote>
+            <p class="trr-lore-note">No Trirealm Rift story has been published yet, so the slideshow follows the cards' own artwork, Level by Level. In the OCG all eight monsters are named after underworlds; the TCG gives them plainer English names.</p>
+            <!-- The story, told by the slideshow (lore-reel.js): one <li> per slide of LoreReelData['trirealm-rift']
+                 in lore-reel-data.js, in the same order. No official story exists yet: each caption says what the
+                 artwork shows (Yugipedia card trivia, checked 2026-11-24) and what the Japanese name means. The old
+                 paragraph here said the Level 8 keeps its name in both regions; in Japanese it is Jahannam. -->
+            <div class="lore-reel" data-lore-reel="trirealm-rift" data-pcs-scope="lore-reel" data-suggest-context="Lore Archive: story slideshow">
+                <ol class="lore-reel-story" data-pcs-skip>
+                    <li>Lightning splits the sky over a valley of mountains and a fiery volcano, and triangle-shaped rifts glow open in the storm: <strong class="text-blue-300">Trirealm Rift Vilvortex</strong>. The theme's Japanese name, 異解△ (<em>Ikai</em>), is 異界, "other world", with its second character swapped for the sound-alike 解, "to unleash".</li>
+                    <li>The smallest to come through is Level 1 <strong class="text-purple-300">Hollows</strong>, a horned little creature with violet eyes. Its Japanese name pairs Gehenna, the place of punishment in Judaism, with 虚, "emptiness".</li>
+                    <li>Level 2 <strong class="text-yellow-300">Heavens</strong> crackles in a cage of golden lightning, a bright core in its chest. In Japanese it pairs Sheol, the land of the dead in Judaism, with 天, "sky".</li>
+                    <li>Level 3 <strong class="text-sky-300">Blizzards</strong> rises in blue over snowy peaks. In Japanese it is Tuonela, the land of the dead in Finnish myth, with 碧, "blue".</li>
+                    <li>Level 4 <strong class="text-red-300">Blaze</strong> burns red above molten rock. In Japanese it is Naraka, the hell realm of the Indian religions, with 緋, "scarlet".</li>
+                    <li>Level 5 <strong class="text-yellow-300">Havocs</strong> spreads huge pale wings in a storm of lightning. It reads as Heavens grown up: both are LIGHT, and both carry 天, "sky", in their Japanese names. Its own is Yomi, the land of the dead in Shinto myth, under 天霆, "heaven's thunder".</li>
+                    <li>Level 6 <strong class="text-indigo-300">Gorging Gorge</strong> bursts out of shattered rock, a white-masked face with a gaping mouth in a mane of dark tendrils. In Japanese it is named after Helheim, the Norse land of the dead, under 葬嶺, "burial peak".</li>
+                    <li>Level 7 <strong class="text-green-300">Savage Storms</strong> tears up out of the ground in green light, a fanged maw ringed by glowing eyes. In Japanese it is the Ploutonion, the ancient Greek sanctuary of Pluto, god of the underworld, under 狂嵐, "mad tempest".</li>
+                    <li>In <strong class="text-green-200">Trirealm Rift Delectation</strong> (異解△福音, "gospel"), Savage Storms' whirlwind tears through a city, buildings and all.</li>
+                    <li>Last comes the Level 8, <strong class="text-fuchsia-300">Darkness</strong>, all wings and pink eyes. Its Japanese name is Jahannam, the hell of Islam, and it reads as Hollows grown up: both are DARK, both carry 虚, "emptiness", and Gehenna is the Jewish counterpart of Jahannam.</li>
+                    <li>In <strong class="text-violet-300">Trirealm Rift Verdict</strong> (異解△審判, "judgment"), Darkness hangs in the middle of the rift, ringed by the triangular portals of all seven others.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ==================== GUIDE TABS ====================
+             How It Works covers the overview, how the deck wins and the Level
+             ladder; The Cards holds every card's role, the Spell/Trap section and
+             the Glorious Victors reprints; Combo Lines holds the four lines the
+             simulator below the tabs plays; Deck & Counters holds the test deck
+             and the weaknesses. -->
+        <div class="tab-nav" role="tablist" aria-label="Trirealm Rift guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-how" aria-controls="tab-how" aria-selected="true">How It Works</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-cards" aria-controls="tab-cards" aria-selected="false" tabindex="-1">The Cards</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-lines" aria-controls="tab-lines" aria-selected="false" tabindex="-1">Combo Lines</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-build" aria-controls="tab-build" aria-selected="false" tabindex="-1">Deck &amp; Counters</button>
+        </div>
+
+        <!-- ==================== TAB 1: HOW IT WORKS ==================== -->
+        <div id="tab-how" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-how" tabindex="0" data-pcs-scope="how">
+
+            <section class="trr-block" id="trr-overview" aria-labelledby="trr-overview-title">
+                <h2 id="trr-overview-title" class="trr-h2">Overview: a second Deck, face-down</h2>
+                <ul class="trr-release" aria-label="Release">
+                    <li><strong>New to the TCG</strong> in Glorious Victors, 3 December 2026</li>
+                    <li><strong>OCG:</strong> Deck-Build Pack: Glorious Victors, 5 September 2026</li>
+                    <li><strong>11 cards:</strong> 8 monsters, a Field Spell, a Continuous Spell, a Continuous Trap</li>
+                </ul>
+                <div class="trr-intro">
+                    <div id="trr-ov-darkness-img-container" class="trr-art">Trirealm Rift Darkness</div>
+                    <div>
+                        <p class="trr-lede">Trirealm Rift is a Main Deck archetype of eight Psychic monsters, one at each Level from 1 to 8, plus three Spells and Traps. It has no Extra Deck monsters of its own.</p>
+                        <p>Every Trirealm Rift monster banishes cards from the top of your Deck face-down when it is Normal or Special Summoned, as many as its Level. Those cards aren't lost: every search and summon in the archetype works <em>from your face-down banished cards</em>. Trirealm Rift Hollows and Heavens add them to your hand, Blizzards, Blaze and Delectation Special Summon the Level 5 and higher ones, Gorging Gorge summons almost any of them, and Havocs and Vilvortex take back any Trirealm Rift card. The banishment works like a second Deck that only you can draw from.</p>
+                        <p>Because none of those effects touches the Deck, Ash Blossom &amp; Joyous Spring and Droll &amp; Lock Bird can't stop them. Ash only reaches the generic cards the deck plays: Small World, Pot of Desires, Emergency Teleport, Terraforming, and Savage Storms' draw. Only face-down banished cards count. A card banished face-up is out of the archetype's reach.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="trr-block" id="trr-rules" aria-labelledby="trr-rules-title">
+                <h2 id="trr-rules-title" class="trr-h2">Three rules before your first combo</h2>
+                <ol class="trr-rules">
+                    <li class="trr-rule">
+                        <h3>The mills are random, the setup isn't</h3>
+                        <p>A monster's summon banishes whatever is on top of your Deck. To put a <em>chosen</em> card face-down, use Small World (the card you reveal and the bridge), Savage Storms (itself and another Trirealm Rift card from your hand), Havocs or Gorging Gorge (each banishes itself), Delectation (a Level 4 or lower monster you control), Eater of Millions, or the 5-card costs of Vilvortex and Delectation paid from your GY.</p>
+                    </li>
+                    <li class="trr-rule trr-rule--warn">
+                        <h3>Five effects lock you in</h3>
+                        <p>After Hollows' add, Heavens' add, Blizzards' or Blaze's summon, or Verdict's effect, you can only activate Trirealm Rift cards and effects for the rest of that turn. Play Small World, Pot of Desires, Emergency Teleport, Terraforming and Gizmek Orochi first. Gorging Gorge, Havocs, Savage Storms, Vilvortex, Delectation and Darkness don't lock you.</p>
+                    </li>
+                    <li class="trr-rule trr-rule--rift">
+                        <h3>Darkness counts both sides</h3>
+                        <p>Trirealm Rift Darkness counts every face-down banished card, yours and your opponent's, Extra Deck cards included. Gizmek Orochi and Eater of Millions banish Extra Deck cards face-down, and those count too.</p>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="trr-block" id="trr-wins" aria-labelledby="trr-wins-title">
+                <h2 id="trr-wins-title" class="trr-h2">How the deck wins</h2>
+                <p>Early on, the deck wins with <strong>Trirealm Rift Darkness</strong>, a 3000 ATK Level 8 whose effects switch on as the face-down pile grows:</p>
+                <ol class="trr-steps" aria-label="Trirealm Rift Darkness thresholds">
+                    <li><b>10+</b>Can't be destroyed by battle.</li>
+                    <li><b>20+</b>Once per turn, as a Quick Effect, target and destroy 1 card on the field.</li>
+                    <li><b>30+</b>Once per turn, in your opponent's End Phase, add 1 of your face-down banished cards (any card) to your hand.</li>
+                    <li><b>40+</b>Both players skip their Draw Phases.</li>
+                </ol>
+                <p>A full turn-one line reaches 20: Lines 1 and 4 in the <a class="trr-link" href="#trr-lines">Combo Lines</a> tab end on 23 and 22 face-down cards with a 40-card Deck. Pot of Desires (10) and Gizmek Orochi (8) push it toward 30. Around Darkness, the other monsters interrupt by Attribute. Havocs negates a monster effect your opponent activates by returning a face-down monster of the same Attribute to your Deck, and Savage Storms shuffles away an opposing monster the same way. Gorging Gorge keeps your opponent's card effects from targeting or destroying your other Trirealm Rift cards.</p>
+                <h3 class="trr-h3">The endgame: an empty Deck</h3>
+                <p>Three cards reward you for having <strong>no cards left in your Deck</strong>:</p>
+                <ul class="trr-list">
+                    <li><strong>Trirealm Rift Vilvortex:</strong> while you control a Level 5 or higher Trirealm Rift monster and your Deck is empty, your opponent can't activate cards or effects during your turn.</li>
+                    <li><strong>Trirealm Rift Verdict:</strong> with your Deck empty, once per battle, a Trirealm Rift monster's opponent in battle has its ATK set to 0 during damage calculation.</li>
+                    <li><strong>Trirealm Rift Darkness at 40+:</strong> nobody draws in the Draw Phase, so an empty Deck can't make you lose there.</li>
+                </ul>
+                <p>The plan is to banish the rest of your Deck during your Main Phase, then attack while your opponent can't respond. Without 40 face-down cards, keep one card to draw: Savage Storms' Quick Effect and Havocs' negate both shuffle a face-down monster back into your Deck. Every summon's banish is mandatory, so plan that card before the last mill, not after.</p>
+            </section>
+
+            <section class="trr-block" id="trr-ladder" aria-labelledby="trr-ladder-title">
+                <h2 id="trr-ladder-title" class="trr-h2">The Level ladder</h2>
+                <p>The eight monsters are all Psychic and fill Levels 1 to 8 exactly once, from Trirealm Rift Hollows up to Trirealm Rift Darkness.</p>
+                <div class="trr-table-wrap">
+                    <table class="trr-table trr-ladder">
+                        <caption>Each monster's Level is the number of cards its summon banishes face-down.</caption>
+                        <thead>
+                            <tr><th scope="col">Lv</th><th scope="col">Monster</th><th scope="col">Attribute</th><th scope="col">ATK / DEF</th><th scope="col">In the hand</th><th scope="col">On the field</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="trr-lv">1</span></td><th scope="row">Hollows</th><td><span class="trr-attr trr-attr--dark">DARK</span></td><td class="trr-num">100 / 1000</td><td>Itself, if you control no monsters</td><td>Adds 2 face-down monsters <span class="trr-lock">(locks)</span></td></tr>
+                            <tr><td><span class="trr-lv">2</span></td><th scope="row">Heavens</th><td><span class="trr-attr trr-attr--light">LIGHT</span></td><td class="trr-num">1200 / 200</td><td>Itself, if you control a Trirealm Rift monster</td><td>Adds 2 face-down Spells/Traps <span class="trr-lock">(locks)</span></td></tr>
+                            <tr><td><span class="trr-lv">3</span></td><th scope="row">Blizzards</th><td><span class="trr-attr trr-attr--water">WATER</span></td><td class="trr-num">300 / 2000</td><td>Itself, if your opponent controls more monsters</td><td>Summons a face-down Level 5+ <span class="trr-lock">(locks)</span></td></tr>
+                            <tr><td><span class="trr-lv">4</span></td><th scope="row">Blaze</th><td><span class="trr-attr trr-attr--fire">FIRE</span></td><td class="trr-num">1700 / 400</td><td>Itself, when your opponent Special Summons</td><td>Their Main Phase: summons a face-down Level 5+ <span class="trr-lock">(locks)</span></td></tr>
+                            <tr><td><span class="trr-lv">5</span></td><th scope="row">Havocs</th><td><span class="trr-attr trr-attr--light">LIGHT</span></td><td class="trr-num">1000 / 2500</td><td>Banishes itself: adds a face-down card (not a Level 5 monster)</td><td>Negates a monster effect by Attribute</td></tr>
+                            <tr><td><span class="trr-lv">6</span></td><th scope="row">Gorging Gorge</th><td><span class="trr-attr trr-attr--earth">EARTH</span></td><td class="trr-num">2400 / 1200</td><td>Banishes itself: summons a face-down monster (not Level 6)</td><td>Protects your other Trirealm Rift cards</td></tr>
+                            <tr><td><span class="trr-lv">7</span></td><th scope="row">Savage Storms</th><td><span class="trr-attr trr-attr--wind">WIND</span></td><td class="trr-num">2100 / 2800</td><td>Banishes itself and 1 other: draws 2</td><td>Shuffles away a monster by Attribute</td></tr>
+                            <tr><td><span class="trr-lv">8</span></td><th scope="row">Darkness</th><td><span class="trr-attr trr-attr--dark">DARK</span></td><td class="trr-num">3000 / 2400</td><td>No hand effect</td><td>The 10 / 20 / 30 / 40 thresholds</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3 class="trr-h3">Do the effects use it?</h3>
+                <p>Yes, in four ways, though no effect adds Levels together and none needs an exact total.</p>
+                <ul class="trr-list">
+                    <li><strong>The banish count matches the Level.</strong> Hollows banishes 1, Heavens 2, and so on up to Darkness's 8. Each card prints its own number rather than saying "equal to its Level", so changing a monster's Level wouldn't change it. Summoning all eight once banishes 36 cards, and the bigger monsters feed Darkness's count fastest.</li>
+                    <li><strong>The low half summons the high half.</strong> Blizzards (3) and Blaze (4) Special Summon Level 5 or higher monsters from the banishment, and Delectation trades a monster whose original Level is 4 or lower for one. Levels 1&ndash;4 are the starters and extenders; Levels 5&ndash;8 are the payoffs, waiting face-down until they're called.</li>
+                    <li><strong>Each middle monster skips its own Level.</strong> Havocs can't add a Level 5 monster and Gorging Gorge can't summon a Level 6. They are the only Level 5 and Level 6 cards, so in practice neither can pick itself. Vilvortex's lock needs a Level 5 or higher Trirealm Rift monster on your field.</li>
+                    <li><strong>It makes the archetype a Small World network.</strong> No two of them share a Level, ATK or DEF, so most pairs share exactly one property, their Type, which is what Small World asks for. The exceptions are the two pairs that also share an Attribute: Hollows and Darkness (both DARK), and Heavens and Havocs (both LIGHT). Those pairs share two properties, so neither card in a pair can be the bridge for the other.</li>
+                </ul>
+                <p>The Attributes matter too. Havocs, Savage Storms and Verdict all match a face-down monster's Attribute to your opponent's monster, and the eight cover six of them: DARK (Hollows, Darkness), LIGHT (Heavens, Havocs), WATER, FIRE, EARTH and WIND. Only DIVINE is missing.</p>
+
+                <div class="trr-finder" id="trr-bridge" data-pcs-skip>
+                    <h3>Small World bridge finder</h3>
+                    <p class="trr-muted">Pick the monster you reveal from your hand and the one you want from your Deck. The finder lists every bridge in the test deck that shares exactly one property with each, which is what Small World requires.</p>
+                    <div class="trr-finder-grid">
+                        <div class="trr-field">
+                            <label for="trr-sw-from">Reveal from your hand</label>
+                            <select id="trr-sw-from" data-chips></select>
+                        </div>
+                        <div class="trr-field">
+                            <label for="trr-sw-to">Add from your Deck</label>
+                            <select id="trr-sw-to" data-chips></select>
+                        </div>
+                    </div>
+                    <div class="trr-result" id="trr-sw-result" aria-live="polite"></div>
+                </div>
+            </section>
+        </div>
+        <!-- END tab-how -->
+
+        <!-- ==================== TAB 2: THE CARDS ==================== -->
+        <div id="tab-cards" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-cards" tabindex="0" hidden data-pcs-scope="cards">
+
+            <section class="trr-block" id="trr-cards" aria-labelledby="trr-cards-title">
+                <h2 id="trr-cards-title" class="trr-h2">Each card's role</h2>
+                <p>All eleven cards, written with their TCG names. Until the card databases catch up with the TCG release, some sites still list them under their OCG translations, shown on each profile. The card text is summarised in our own words; open a card for its full text.</p>
+                <div class="trr-picker" role="tablist" aria-label="Trirealm Rift cards" data-trr-picker>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-hollows" aria-controls="trr-pf-hollows" aria-selected="true"><span class="trr-pick-lv">1</span>Hollows</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-heavens" aria-controls="trr-pf-heavens" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">2</span>Heavens</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-blizzards" aria-controls="trr-pf-blizzards" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">3</span>Blizzards</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-blaze" aria-controls="trr-pf-blaze" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">4</span>Blaze</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-havocs" aria-controls="trr-pf-havocs" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">5</span>Havocs</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-gorge" aria-controls="trr-pf-gorge" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">6</span>Gorging Gorge</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-storms" aria-controls="trr-pf-storms" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">7</span>Savage Storms</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-darkness" aria-controls="trr-pf-darkness" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">8</span>Darkness</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-vilvortex" aria-controls="trr-pf-vilvortex" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">F</span>Vilvortex</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-delectation" aria-controls="trr-pf-delectation" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">S</span>Delectation</button>
+                    <button type="button" class="trr-pick" role="tab" id="trr-pick-verdict" aria-controls="trr-pf-verdict" aria-selected="false" tabindex="-1"><span class="trr-pick-lv">T</span>Verdict</button>
+                </div>
+
+                <article class="trr-profile" id="trr-pf-hollows" role="tabpanel" aria-labelledby="trr-pick-hollows" tabindex="0">
+                    <div id="trr-pf-hollows-img-container" class="trr-art">Trirealm Rift Hollows</div>
+                    <div>
+                        <p class="trr-role-tag">Starter</p>
+                        <h3>Trirealm Rift Hollows</h3>
+                        <p class="trr-role"><strong>Role:</strong> comes out free on an empty field and turns two face-down banished monsters into cards in your hand.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 1</li><li>DARK</li><li>Psychic</li><li>100 / 1000</li><li>OCG: Trirealm Rift of Emptiness Gehenna</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Special Summons itself if you control no monsters</dd></div>
+                            <div><dt>On the field</dt><dd>Adds up to 2 face-down monsters</dd></div>
+                            <div><dt>Banishes</dt><dd>1 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>Yes, after its add</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">When summoned</span>When it is Normal or Special Summoned, the top card of your Deck is banished face-down. This isn't optional.</li>
+                            <li><span class="trr-when">In the hand &middot; once per turn</span>If you control no monsters, you can Special Summon it.</li>
+                            <li><span class="trr-when">Your Main Phase &middot; once per turn</span>Add up to 2 of your face-down banished Trirealm Rift monsters with different names to your hand (not another Hollows). For the rest of the turn you can only activate Trirealm Rift cards and effects.</li>
+                        </ol>
+                        <p class="trr-note">Its add only finds what is already face-down, so it's best after Small World, Savage Storms, Pot of Desires or Vilvortex has filled the banishment. Line 2 uses it to take back the Small World bridge.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-heavens" role="tabpanel" aria-labelledby="trr-pick-heavens" tabindex="0" hidden>
+                    <div id="trr-pf-heavens-img-container" class="trr-art">Trirealm Rift Heavens</div>
+                    <div>
+                        <p class="trr-role-tag">Extender &middot; Spell/Trap recovery</p>
+                        <h3>Trirealm Rift Heavens</h3>
+                        <p class="trr-role"><strong>Role:</strong> joins any Trirealm Rift monster from the hand and brings back two different Trirealm Rift Spells and Traps from the banishment.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 2</li><li>LIGHT</li><li>Psychic</li><li>1200 / 200</li><li>OCG: Trirealm Rift of Sky Sheol</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Special Summons itself while you control a Trirealm Rift monster</dd></div>
+                            <div><dt>On the field</dt><dd>Adds up to 2 face-down Spells/Traps</dd></div>
+                            <div><dt>Banishes</dt><dd>2 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>Yes, after its add</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">When summoned</span>The top 2 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">In the hand &middot; once per turn</span>If you control a Trirealm Rift monster, you can Special Summon it.</li>
+                            <li><span class="trr-when">Your Main Phase &middot; once per turn</span>Add up to 2 of your face-down banished Trirealm Rift Spells/Traps with different names to your hand. For the rest of the turn you can only activate Trirealm Rift cards and effects.</li>
+                        </ol>
+                        <p class="trr-note">The archetype has only three Spells and Traps (Vilvortex, Delectation and Verdict), so Heavens gets at most two of them, and only once they're face-down. It is the deck's only card that gets two of them back at once.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-blizzards" role="tabpanel" aria-labelledby="trr-pick-blizzards" tabindex="0" hidden>
+                    <div id="trr-pf-blizzards-img-container" class="trr-art">Trirealm Rift Blizzards</div>
+                    <div>
+                        <p class="trr-role-tag">Converter</p>
+                        <h3>Trirealm Rift Blizzards</h3>
+                        <p class="trr-role"><strong>Role:</strong> the Normal Summon that turns a face-down Level 5 or higher monster into a monster on the field.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 3</li><li>WATER</li><li>Psychic</li><li>300 / 2000</li><li>OCG: Trirealm Rift of Blue Tuonela</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Special Summons itself if your opponent controls more monsters</dd></div>
+                            <div><dt>On the field</dt><dd>Special Summons a face-down Level 5+</dd></div>
+                            <div><dt>Banishes</dt><dd>3 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>Yes, after its summon</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">When summoned</span>The top 3 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">In the hand &middot; once per turn</span>If your opponent controls more monsters than you, you can Special Summon it.</li>
+                            <li><span class="trr-when">Your Main Phase &middot; once per turn</span>Special Summon 1 of your face-down banished Level 5 or higher Trirealm Rift monsters. For the rest of the turn you can only activate Trirealm Rift cards and effects.</li>
+                        </ol>
+                        <p class="trr-note">All four combo lines run through it. Going second it summons itself, which saves your Normal Summon. Effect Veiler or Infinite Impermanence on it stops the line, unless Gorging Gorge is already on the field to stop the targeting.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-blaze" role="tabpanel" aria-labelledby="trr-pick-blaze" tabindex="0" hidden>
+                    <div id="trr-pf-blaze-img-container" class="trr-art">Trirealm Rift Blaze</div>
+                    <div>
+                        <p class="trr-role-tag">Opponent's-turn extender</p>
+                        <h3>Trirealm Rift Blaze</h3>
+                        <p class="trr-role"><strong>Role:</strong> drops in when your opponent Special Summons, then pulls a Level 5 or higher monster out of the banishment during their Main Phase.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 4</li><li>FIRE</li><li>Psychic</li><li>1700 / 400</li><li>OCG: Trirealm Rift of Scarlet Naraka</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Special Summons itself when your opponent Special Summons</dd></div>
+                            <div><dt>On the field</dt><dd>Their Main Phase (Quick Effect): summons a face-down Level 5+</dd></div>
+                            <div><dt>Banishes</dt><dd>4 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>Yes, after its summon</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">When summoned</span>The top 4 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">In the hand &middot; once per turn</span>If your opponent Special Summons a monster, you can Special Summon it.</li>
+                            <li><span class="trr-when">Your opponent's Main Phase &middot; Quick Effect &middot; once per turn</span>Special Summon 1 of your face-down banished Level 5 or higher Trirealm Rift monsters. For the rest of the turn you can only activate Trirealm Rift cards and effects.</li>
+                        </ol>
+                        <p class="trr-note">Going second, it is the deck's play on your opponent's first turn: their first Special Summon brings Blaze out, and Blaze can then summon Havocs for a negate or Savage Storms to shuffle away a monster. The lock lasts the rest of that turn, so your hand traps can't follow it.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-havocs" role="tabpanel" aria-labelledby="trr-pick-havocs" tabindex="0" hidden>
+                    <div id="trr-pf-havocs-img-container" class="trr-art">Trirealm Rift Havocs</div>
+                    <div>
+                        <p class="trr-role-tag">Recovery &middot; negate</p>
+                        <h3>Trirealm Rift Havocs</h3>
+                        <p class="trr-role"><strong>Role:</strong> trades itself for any face-down Trirealm Rift card, and negates monster effects once it is on the field.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 5</li><li>LIGHT</li><li>Psychic</li><li>1000 / 2500</li><li>OCG: Sky Thunder Trirealm Rift Yomi</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Banishes itself: adds a face-down card</dd></div>
+                            <div><dt>On the field</dt><dd>Negates a monster effect by Attribute</dd></div>
+                            <div><dt>Banishes</dt><dd>5 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>No</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">In the hand &middot; once per turn</span>Reveal it, banish it face-down, then add 1 of your face-down banished Trirealm Rift cards to your hand. A Level 5 monster can't be the card you add. It can be a Spell or Trap.</li>
+                            <li><span class="trr-when">When summoned</span>The top 5 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">Quick Effect &middot; once per turn</span>When your opponent activates a monster effect, shuffle 1 of your face-down banished Trirealm Rift monsters with the same Attribute as that monster into your Deck, and if you do, negate the activation.</li>
+                        </ol>
+                        <p class="trr-note">The hand effect isn't a Quick Effect, and it needs another eligible card already face-down when you activate it. Once Havocs is face-down itself, Blizzards, Delectation or Gorging Gorge can bring it to the field for the negate.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-gorge" role="tabpanel" aria-labelledby="trr-pick-gorge" tabindex="0" hidden>
+                    <div id="trr-pf-gorge-img-container" class="trr-art">Trirealm Rift Gorging Gorge</div>
+                    <div>
+                        <p class="trr-role-tag">Extender &middot; protection</p>
+                        <h3>Trirealm Rift Gorging Gorge</h3>
+                        <p class="trr-role"><strong>Role:</strong> a Quick-Effect summon from the hand that doesn't lock you, then a shield over every other Trirealm Rift card.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 6</li><li>EARTH</li><li>Psychic</li><li>2400 / 1200</li><li>OCG: Burial Summit Trirealm Rift Helheim</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Main Phase (Quick Effect): banishes itself to summon a face-down monster</dd></div>
+                            <div><dt>On the field</dt><dd>Your other Trirealm Rift cards can't be targeted or destroyed by your opponent's card effects</dd></div>
+                            <div><dt>Banishes</dt><dd>6 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>No</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">In the hand &middot; either player's Main Phase &middot; Quick Effect &middot; once per turn</span>Reveal it, banish it face-down, then Special Summon 1 of your face-down banished Trirealm Rift monsters other than a Level 6.</li>
+                            <li><span class="trr-when">When summoned</span>The top 6 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">Continuous</span>Your opponent's card effects can't destroy or target your other Trirealm Rift cards, including your Spells and Traps.</li>
+                        </ol>
+                        <p class="trr-note">It doesn't protect itself, and it doesn't stop effects that don't target or destroy. Lines 1, 2 and 4 all end with it on the field, summoned from the banishment: in Line 1 it went there as the Small World bridge, in Lines 2 and 4 through its own hand effect.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-storms" role="tabpanel" aria-labelledby="trr-pick-storms" tabindex="0" hidden>
+                    <div id="trr-pf-storms-img-container" class="trr-art">Trirealm Rift Savage Storms</div>
+                    <div>
+                        <p class="trr-role-tag">Draw &middot; spin</p>
+                        <h3>Trirealm Rift Savage Storms</h3>
+                        <p class="trr-role"><strong>Role:</strong> turns two Trirealm Rift cards in hand into two draws and two face-down resources; on the field, it shuffles away a monster by Attribute.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 7</li><li>WIND</li><li>Psychic</li><li>2100 / 2800</li><li>OCG: Mad Tempest Trirealm Rift Ploutonion</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>Quick Effect: banishes itself and 1 other Trirealm Rift card, draws 2</dd></div>
+                            <div><dt>On the field</dt><dd>Quick Effect: shuffles back a face-down monster, then an opposing one of the same Attribute</dd></div>
+                            <div><dt>Banishes</dt><dd>7 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>No</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">In the hand &middot; Quick Effect &middot; once per turn</span>Reveal it and 1 other Trirealm Rift card in your hand, banish both face-down, and if you do, draw 2 cards.</li>
+                            <li><span class="trr-when">When summoned</span>The top 7 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">Quick Effect &middot; once per turn</span>Shuffle 1 of your face-down banished Trirealm Rift monsters into the Deck, then you can shuffle 1 monster your opponent controls with the same Attribute into the Deck.</li>
+                        </ol>
+                        <p class="trr-note">Only the reveal is a cost: if Ash Blossom negates the hand effect, nothing is banished either. The field effect neither targets nor destroys, and it puts a card back in your Deck when you are about to run out (Line 3).</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-darkness" role="tabpanel" aria-labelledby="trr-pick-darkness" tabindex="0" hidden>
+                    <div id="trr-pf-darkness-img-container" class="trr-art">Trirealm Rift Darkness</div>
+                    <div>
+                        <p class="trr-role-tag">Boss</p>
+                        <h3>Trirealm Rift Darkness</h3>
+                        <p class="trr-role"><strong>Role:</strong> the payoff, with four effects that switch on as the face-down pile grows.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Level 8</li><li>DARK</li><li>Psychic</li><li>3000 / 2400</li><li>Same name in the OCG</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>From the hand</dt><dd>No effect; 2 Tributes to Normal Summon</dd></div>
+                            <div><dt>On the field</dt><dd>Battle protection, a destroy, a card back, no draws</dd></div>
+                            <div><dt>Banishes</dt><dd>8 on summon</dd></div>
+                            <div><dt>Locks you in?</dt><dd>No</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">When summoned</span>The top 8 cards of your Deck are banished face-down.</li>
+                            <li><span class="trr-when">10+ face-down banished cards</span>It can't be destroyed by battle.</li>
+                            <li><span class="trr-when">20+ &middot; Quick Effect &middot; once per turn</span>Target 1 card on the field and destroy it.</li>
+                            <li><span class="trr-when">30+ &middot; your opponent's End Phase &middot; once per turn</span>Add 1 of your face-down banished cards (any card, not only Trirealm Rift) to your hand.</li>
+                            <li><span class="trr-when">40+</span>Both players skip their Draw Phases.</li>
+                        </ol>
+                        <p class="trr-note">The count is every face-down banished card on both sides. Darkness has no way to summon itself; Blizzards, Blaze, Gorging Gorge, Delectation or Verdict bring it from the banishment, so drawing it is fine: Small World or Savage Storms can banish it from your hand.</p>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-vilvortex" role="tabpanel" aria-labelledby="trr-pick-vilvortex" tabindex="0" hidden>
+                    <div id="trr-pf-vilvortex-img-container" class="trr-art">Trirealm Rift Vilvortex</div>
+                    <div>
+                        <p class="trr-role-tag">Field Spell</p>
+                        <h3>Trirealm Rift Vilvortex</h3>
+                        <p class="trr-role"><strong>Role:</strong> banishes 5 to come out, then hands you a face-down Trirealm Rift card every turn; locks your opponent out once your Deck is empty.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Field Spell</li><li>OCG: Trirealm Rift Territory - Valvols</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>Cost</dt><dd>Banish 5 face-down from your GY and/or the top of your Deck</dd></div>
+                            <div><dt>Every turn</dt><dd>Adds 1 face-down Trirealm Rift card</dd></div>
+                            <div><dt>Empty Deck</dt><dd>Your opponent can't activate on your turn</dd></div>
+                            <div><dt>Locks you in?</dt><dd>No</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">Activation</span>To activate it, banish 5 cards face-down from your GY and/or the top of your Deck.</li>
+                            <li><span class="trr-when">Your Main Phase &middot; once per turn</span>Add 1 of your face-down banished Trirealm Rift cards to your hand, except Vilvortex.</li>
+                            <li><span class="trr-when">Continuous</span>While you control a Level 5 or higher Trirealm Rift monster and you have no cards in your Deck, your opponent can't activate cards or effects during your turn.</li>
+                        </ol>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-delectation" role="tabpanel" aria-labelledby="trr-pick-delectation" tabindex="0" hidden>
+                    <div id="trr-pf-delectation-img-container" class="trr-art">Trirealm Rift Delectation</div>
+                    <div>
+                        <p class="trr-role-tag">Continuous Spell</p>
+                        <h3>Trirealm Rift Delectation</h3>
+                        <p class="trr-role"><strong>Role:</strong> an extra Normal Summon and a once-per-turn trade: a small Trirealm Rift monster for a big one from the banishment.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Continuous Spell</li><li>OCG: Trirealm Rift Gospel</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>Cost</dt><dd>Banish 5 face-down from your GY and/or the top of your Deck</dd></div>
+                            <div><dt>Every turn</dt><dd>An extra Trirealm Rift Normal Summon, and the trade</dd></div>
+                            <div><dt>Empty Deck</dt><dd>Nothing extra</dd></div>
+                            <div><dt>Locks you in?</dt><dd>No</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">Activation</span>To activate it, banish 5 cards face-down from your GY and/or the top of your Deck.</li>
+                            <li><span class="trr-when">Continuous &middot; once per turn</span>During your Main Phase, you can Normal Summon 1 Trirealm Rift monster in addition to your Normal Summon or Set.</li>
+                            <li><span class="trr-when">Your Main Phase &middot; once per turn</span>Banish face-down 1 Trirealm Rift monster you control whose original Level is 4 or lower, and if you do, Special Summon 1 of your face-down banished Level 5 or higher Trirealm Rift monsters.</li>
+                        </ol>
+                    </div>
+                </article>
+
+                <article class="trr-profile" id="trr-pf-verdict" role="tabpanel" aria-labelledby="trr-pick-verdict" tabindex="0" hidden>
+                    <div id="trr-pf-verdict-img-container" class="trr-art">Trirealm Rift Verdict</div>
+                    <div>
+                        <p class="trr-role-tag">Continuous Trap</p>
+                        <h3>Trirealm Rift Verdict</h3>
+                        <p class="trr-role"><strong>Role:</strong> answers your opponent's summons with a Trirealm Rift monster of the same Attribute, on their turn.</p>
+                        <ul class="trr-chips" aria-label="Stats"><li>Continuous Trap</li><li>OCG: Trirealm Rift Judgment</li></ul>
+                        <dl class="trr-glance">
+                            <div><dt>Trigger</dt><dd>Your opponent Normal or Special Summons</dd></div>
+                            <div><dt>Every turn</dt><dd>Adds or summons a face-down monster per Attribute</dd></div>
+                            <div><dt>Empty Deck</dt><dd>Sets a battling opponent's ATK to 0</dd></div>
+                            <div><dt>Locks you in?</dt><dd>Yes, after it resolves</dd></div>
+                        </dl>
+                        <ol class="trr-effects">
+                            <li><span class="trr-when">When your opponent Normal or Special Summons</span>Target 1 of those monsters, choose 1 of your face-down banished Trirealm Rift monsters with the same Attribute, and add it to your hand or Special Summon it. You can't choose that Attribute again with Verdict this turn, and for the rest of the turn you can only activate Trirealm Rift cards and effects.</li>
+                            <li><span class="trr-when">Damage calculation &middot; once per battle</span>If your Trirealm Rift monster battles an opponent's monster and you have no cards in your Deck, you can make that monster's ATK 0.</li>
+                        </ol>
+                    </div>
+                </article>
+            </section>
+
+            <section class="trr-block" id="trr-spells" aria-labelledby="trr-spells-title">
+                <h2 id="trr-spells-title" class="trr-h2">What Vilvortex, Delectation and Verdict add</h2>
+                <p>The monsters alone can only reach what the mills happen to banish. The three non-monster cards fix that in different ways.</p>
+                <div class="trr-table-wrap">
+                    <table class="trr-table">
+                        <thead>
+                            <tr><th scope="col">Card</th><th scope="col">Pays</th><th scope="col">Gives every turn</th><th scope="col">With an empty Deck</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Vilvortex</th><td>5 face-down (GY and/or Deck)</td><td>1 face-down Trirealm Rift card to your hand</td><td>Your opponent can't activate on your turn (needs a Level 5+ on your field)</td></tr>
+                            <tr><th scope="row">Delectation</th><td>5 face-down (GY and/or Deck)</td><td>An extra Trirealm Rift Normal Summon, and a Level 4-or-lower for Level 5+ trade</td><td>Nothing extra</td></tr>
+                            <tr><th scope="row">Verdict</th><td>Nothing (a Set Trap)</td><td>A same-Attribute answer to each opposing summon</td><td>Opposing ATK becomes 0 in battle</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="trr-list">
+                    <li><strong>Vilvortex is the only search you can repeat every turn.</strong> Its cost adds 5 to Darkness's count, and its add takes any face-down Trirealm Rift card, Spells and Traps included. It works from the banishment, so Ash Blossom can't touch it. With Terraforming it is effectively a fourth or fifth copy. Line 4 uses it to take back the Small World bridge.</li>
+                    <li><strong>Delectation turns a used starter into a payoff.</strong> After Hollows or Blizzards has done its job, Delectation banishes it face-down (where Havocs or Vilvortex can take it back later) and summons a Level 5 or higher monster in its place. The extra Normal Summon gives you a second Level 1&ndash;4 for the same turn. Line 1 uses the trade to swap Blizzards for Gorging Gorge.</li>
+                    <li><strong>Verdict is the opponent's-turn card.</strong> It has no once-per-turn limit beyond "a different Attribute each time", so a turn of several summons can trigger it more than once. It reaches its best late, when your Deck is empty and every battle goes your way. Its lock also stops your hand traps for the rest of that turn.</li>
+                </ul>
+                <p>Paying the 5-card costs from your GY instead of the Deck keeps your Deck from running out early. In Line 1, Delectation's cost takes Small World from the GY and only 4 cards from the Deck.</p>
+            </section>
+
+            <section class="trr-block" id="trr-reprints" aria-labelledby="trr-reprints-title">
+                <h2 id="trr-reprints-title" class="trr-h2">The Glorious Victors reprints</h2>
+                <p>Glorious Victors reprints four older cards next to Trirealm Rift, and all four banish cards face-down. Here is what each does for this deck, going by its card text.</p>
+                <div class="trr-reprints">
+                    <article class="trr-reprint">
+                        <div id="trr-rp-sw-img-container" class="trr-art">Small World</div>
+                        <div>
+                            <span class="trr-verdict trr-verdict--yes">Helps a lot</span>
+                            <h3>Small World</h3>
+                            <p>Reveal a monster in your hand, choose a bridge in your Deck that shares exactly one property with it, and add a monster that shares exactly one with the bridge. The revealed card and the bridge are both banished <em>face-down</em>, so it puts two chosen monsters where Blizzards, Gorging Gorge and Hollows can use them. The ladder makes almost any pair work (see the <a class="trr-link" href="#trr-bridge">bridge finder</a>). Lines 1, 2 and 4 use it; Ash Blossom can stop it.</p>
+                        </div>
+                    </article>
+                    <article class="trr-reprint">
+                        <div id="trr-rp-pot-img-container" class="trr-art">Pot of Desires</div>
+                        <div>
+                            <span class="trr-verdict trr-verdict--yes">Helps a lot</span>
+                            <h3>Pot of Desires</h3>
+                            <p>Its cost banishes the top 10 cards face-down, then you draw 2. In most decks that cost is a price; here it adds 10 to Darkness's count and usually banishes Trirealm Rift cards where Hollows, Heavens, Havocs and Vilvortex can reach them. It's once per turn and not a Trirealm Rift card, so play it before any lock.</p>
+                        </div>
+                    </article>
+                    <article class="trr-reprint">
+                        <div id="trr-rp-orochi-img-container" class="trr-art">Gizmek Orochi, the Serpentron Sky Slasher</div>
+                        <div>
+                            <span class="trr-verdict trr-verdict--yes">Helps</span>
+                            <h3>Gizmek Orochi, the Serpentron Sky Slasher</h3>
+                            <p>A Quick Effect from your hand or GY banishes the top 8 cards face-down to Special Summon it, on either player's turn. That is 8 more for Darkness and a 2450 ATK body. It can instead banish 3 Extra Deck cards face-down to destroy a face-up monster, but only one Orochi effect per turn. For Small World it connects only to Hollows: it shares both DARK and Level 8 with Darkness.</p>
+                        </div>
+                    </article>
+                    <article class="trr-reprint">
+                        <div id="trr-rp-eater-img-container" class="trr-art">Eater of Millions</div>
+                        <div>
+                            <span class="trr-verdict trr-verdict--some">Situational</span>
+                            <h3>Eater of Millions</h3>
+                            <p>It is Special Summoned from the hand by banishing 5 or more of your cards face-down from your hand, field and/or Extra Deck. That summon isn't an activation, so it still works after a Trirealm Rift lock. Trirealm Rift monsters banished this way become face-down resources, and Extra Deck cards banished this way count for Darkness. It gains 100 ATK and DEF per face-down banished card, but it can't be Tributed or used for a Fusion, Synchro or Xyz Summon. For Small World it links to Darkness (DARK is all they share).</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+        <!-- END tab-cards -->
+
+        <!-- ==================== TAB 3: COMBO LINES ==================== -->
+        <div id="tab-lines" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-lines" tabindex="0" hidden data-pcs-scope="lines">
+
+            <section class="trr-block" id="trr-lines" aria-labelledby="trr-lines-title">
+                <h2 id="trr-lines-title" class="trr-h2">Combo lines</h2>
+                <p class="trr-lede">Four lines, each played step by step in the ocgcore duel engine with the cards' own scripts and a 40-card Deck. They only use cards you choose to put face-down; whatever the top-of-Deck banishes hit is a bonus on top. Each one plays in the <a class="trr-link" href="#trr-lab">combo simulator</a> below the tabs.</p>
+                <div class="trr-lines">
+                    <article class="trr-line" aria-labelledby="trr-line-1">
+                        <p class="trr-kicker">Line 1 &middot; Going first</p>
+                        <h3 id="trr-line-1">Small World into Darkness: Delectation swaps in Gorging Gorge</h3>
+                        <dl class="trr-line-facts">
+                            <div><dt>Hand</dt><dd>Small World, Trirealm Rift Darkness, Trirealm Rift Delectation</dd></div>
+                            <div><dt>Needs in the Deck</dt><dd>Trirealm Rift Blizzards, Trirealm Rift Gorging Gorge</dd></div>
+                            <div><dt>End board</dt><dd>Darkness, Gorging Gorge, Delectation (extra Normal Summon unused)</dd></div>
+                            <div><dt>Face-down</dt><dd>23 banished cards: Darkness can destroy a card each turn</dd></div>
+                        </dl>
+                        <p class="trr-line-rule"><strong>Why it works:</strong> Small World bridges Darkness to Blizzards through Gorging Gorge, and both of the first two land face-down. Blizzards summons Darkness, then Delectation trades the spent Blizzards for Gorging Gorge, which shields Darkness and Delectation. <strong>Watch for:</strong> Ash Blossom on Small World, and Effect Veiler or Infinite Impermanence on Blizzards before Gorging Gorge arrives.</p>
+                        <button type="button" class="trr-line-play" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i> Play Line 1</button>
+                    </article>
+                    <article class="trr-line" aria-labelledby="trr-line-2">
+                        <p class="trr-kicker">Line 2 &middot; Going first &middot; two cards</p>
+                        <h3 id="trr-line-2">Small World + Hollows: three monsters from two cards</h3>
+                        <dl class="trr-line-facts">
+                            <div><dt>Hand</dt><dd>Small World, Trirealm Rift Hollows</dd></div>
+                            <div><dt>Needs in the Deck</dt><dd>Trirealm Rift Blizzards, Trirealm Rift Gorging Gorge</dd></div>
+                            <div><dt>End board</dt><dd>Hollows, Blizzards, Gorging Gorge</dd></div>
+                            <div><dt>Face-down</dt><dd>10 banished cards</dd></div>
+                        </dl>
+                        <p class="trr-line-rule"><strong>Why it works:</strong> Gorging Gorge's hand effect doesn't lock you and brings Hollows back from the banishment. Hollows then takes back the bridge, Blizzards, and Blizzards summons Gorging Gorge, so every card goes face-down and comes back. <strong>Watch for:</strong> Ash Blossom on Small World. Hollows' add locks you in, so play every other card before it.</p>
+                        <button type="button" class="trr-line-play" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i> Play Line 2</button>
+                    </article>
+                    <article class="trr-line trr-line--second" aria-labelledby="trr-line-3">
+                        <p class="trr-kicker">Line 3 &middot; Going second</p>
+                        <h3 id="trr-line-3">Blizzards and Savage Storms shuffle away a DARK monster</h3>
+                        <dl class="trr-line-facts">
+                            <div><dt>Hand</dt><dd>Trirealm Rift Blizzards, Trirealm Rift Savage Storms, Trirealm Rift Hollows</dd></div>
+                            <div><dt>Opponent</dt><dd>Controls a DARK monster</dd></div>
+                            <div><dt>Result</dt><dd>Their monster shuffled into the Deck; Blizzards and Savage Storms on the field; 2 cards drawn; Normal Summon unused</dd></div>
+                            <div><dt>Face-down</dt><dd>10 banished cards</dd></div>
+                        </dl>
+                        <p class="trr-line-rule"><strong>Why it works:</strong> Blizzards summons itself because your opponent has more monsters. Savage Storms' draw banishes Hollows face-down, which supplies the DARK monster its field effect needs. The shuffle neither targets nor destroys. <strong>Watch for:</strong> Ash Blossom on Savage Storms' draw, which also stops the banish. Against another Attribute, banish a monster of that Attribute with Savage Storms instead.</p>
+                        <button type="button" class="trr-line-play" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play Line 3</button>
+                    </article>
+                    <article class="trr-line" aria-labelledby="trr-line-4">
+                        <p class="trr-kicker">Line 4 &middot; Going first</p>
+                        <h3 id="trr-line-4">Vilvortex takes back the bridge: Darkness, Blizzards and Gorging Gorge</h3>
+                        <dl class="trr-line-facts">
+                            <div><dt>Hand</dt><dd>Trirealm Rift Vilvortex, Small World, Trirealm Rift Darkness</dd></div>
+                            <div><dt>Needs in the Deck</dt><dd>Trirealm Rift Blizzards, Trirealm Rift Gorging Gorge</dd></div>
+                            <div><dt>End board</dt><dd>Darkness, Blizzards, Gorging Gorge, Vilvortex</dd></div>
+                            <div><dt>Face-down</dt><dd>22 banished cards: Darkness can destroy a card each turn</dd></div>
+                        </dl>
+                        <p class="trr-line-rule"><strong>Why it works:</strong> Vilvortex's add takes the Small World bridge, Gorging Gorge, back to your hand. Gorging Gorge banishes itself to summon Darkness, and Blizzards summons Gorging Gorge again. <strong>Watch for:</strong> Ash Blossom on Small World, and Spell/Trap removal on Vilvortex before Gorging Gorge is on the field.</p>
+                        <button type="button" class="trr-line-play" data-combo-open="4"><i class="fas fa-play" aria-hidden="true"></i> Play Line 4</button>
+                    </article>
+                </div>
+            </section>
+
+            <section class="trr-block" id="trr-odds" aria-labelledby="trr-odds-title">
+                <h2 id="trr-odds-title" class="trr-h2">What the mills usually add</h2>
+                <p>The lines above leave out luck, but most real turns also get something from the random banishes. The table assumes the test deck with a typical opening: two Trirealm Rift monsters in your hand, one of them Level 5 or higher, which leaves 18 Trirealm Rift monsters (9 of them Level 5+) in the 35-card Deck.</p>
+                <div class="trr-table-wrap">
+                    <table class="trr-table">
+                        <thead>
+                            <tr><th scope="col">Banish from the top</th><th scope="col">Cards</th><th scope="col">Finds a Trirealm Rift monster</th><th scope="col">Finds a Level 5+ for Blizzards</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th scope="row">Hollows' summon</th><td class="trr-num">1</td><td class="trr-num">51%</td><td class="trr-num">26%</td></tr>
+                            <tr><th scope="row">Blizzards' summon</th><td class="trr-num">3</td><td class="trr-num">90%</td><td class="trr-num">60%</td></tr>
+                            <tr><th scope="row">Vilvortex or Delectation cost</th><td class="trr-num">5</td><td class="trr-num">98%</td><td class="trr-num">80%</td></tr>
+                            <tr><th scope="row">Gizmek Orochi, or Darkness's summon</th><td class="trr-num">8</td><td class="trr-num">&gt;99%</td><td class="trr-num">93%</td></tr>
+                            <tr><th scope="row">Pot of Desires' cost</th><td class="trr-num">10</td><td class="trr-num">&gt;99%</td><td class="trr-num">97%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>So Vilvortex on its own nearly always has a card to add, and Pot of Desires almost always sets up Blizzards. Hollows by itself is a coin flip: it wants something face-down before it arrives. The simulator can't play these lines, because the engine can't predict a shuffled Deck.</p>
+            </section>
+        </div>
+        <!-- END tab-lines -->
+
+        <!-- ==================== TAB 4: DECK & COUNTERS ==================== -->
+        <div id="tab-build" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-build" tabindex="0" hidden data-pcs-scope="build">
+
+            <section class="trr-block" id="trr-deck" aria-labelledby="trr-deck-title">
+                <h2 id="trr-deck-title" class="trr-h2">The test deck</h2>
+                <p>A 40-card list built from the card text and the four tested lines. The deck relies on its mills, and a 40-card Deck makes each one more likely to hit the engine. Its Extra Deck holds generic Link Monsters; Trirealm Rift has none of its own, and Eater of Millions and Gizmek Orochi can banish spare Extra Deck cards face-down.</p>
+                <p><button type="button" class="trr-cta" data-decklist-open="Trirealm Rift"><i class="fas fa-layer-group" aria-hidden="true"></i> Open the test deck</button></p>
+                <div class="trr-table-wrap">
+                    <table class="trr-table">
+                        <thead><tr><th scope="col">Card</th><th scope="col">Copies</th><th scope="col">Why</th></tr></thead>
+                        <tbody>
+                            <tr><th scope="row">Trirealm Rift Hollows</th><td class="trr-num">3</td><td>The free summon on an empty field, and the monster add.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Heavens</th><td class="trr-num">2</td><td>Gets back two of the three Spells/Traps; needs a monster already out.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Blizzards</th><td class="trr-num">3</td><td>Every line's converter; summons itself going second.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Blaze</th><td class="trr-num">2</td><td>Opponent's-turn play; dead when they don't Special Summon.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Havocs</th><td class="trr-num">2</td><td>Recovery from the hand, a negate on the field.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Gorging Gorge</th><td class="trr-num">3</td><td>The lock-free Quick summon, and the board's protection.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Savage Storms</th><td class="trr-num">3</td><td>Turns spare Trirealm Rift cards into draws and resources.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Darkness</th><td class="trr-num">2</td><td>The boss; two, so one can stay face-down while the other is out.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Vilvortex</th><td class="trr-num">3</td><td>The repeatable add, plus 5 face-down.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Delectation</th><td class="trr-num">3</td><td>The extra Normal Summon and the trade, plus 5 face-down.</td></tr>
+                            <tr><th scope="row">Trirealm Rift Verdict</th><td class="trr-num">1</td><td>Heavens, Havocs and Vilvortex can take it back from the banishment; one is enough.</td></tr>
+                            <tr><th scope="row">Small World</th><td class="trr-num">3</td><td>Two chosen monsters face-down and a third to hand.</td></tr>
+                            <tr><th scope="row">Pot of Desires</th><td class="trr-num">2</td><td>10 face-down and 2 cards.</td></tr>
+                            <tr><th scope="row">Gizmek Orochi, the Serpentron Sky Slasher</th><td class="trr-num">2</td><td>8 face-down and a body on either turn.</td></tr>
+                            <tr><th scope="row">Emergency Teleport</th><td class="trr-num">2</td><td>Summons Hollows, Heavens or Blizzards (Level 3 or lower Psychics) from your Deck.</td></tr>
+                            <tr><th scope="row">Eater of Millions</th><td class="trr-num">1</td><td>A free summon that feeds the banishment.</td></tr>
+                            <tr><th scope="row">Terraforming</th><td class="trr-num">1</td><td>A fourth Vilvortex (Limited).</td></tr>
+                            <tr><th scope="row">Hand traps</th><td class="trr-num">2</td><td>Topped up from the site's shared staples.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="trr-muted">Emergency Teleport banishes its monster face-up in the End Phase, which keeps it out of the archetype's reach. Use that monster up first, or trade it away with Delectation, which banishes it face-down.</p>
+            </section>
+
+            <section class="trr-block" id="trr-weak" aria-labelledby="trr-weak-title">
+                <h2 id="trr-weak-title" class="trr-h2">Weaknesses and counters</h2>
+                <ul class="trr-list">
+                    <li><strong>Anything that stops banishing.</strong> Imperial Iron Wall (neither player can banish) shuts off every summon's mill, every hand effect, and the costs of Small World, Pot of Desires, Vilvortex and Delectation. Artifact Lancea does the same for one of your turns. Keep Spell/Trap removal in the Side Deck, and play around a Set Lancea where you can.</li>
+                    <li><strong>The locks.</strong> After Hollows, Heavens, Blizzards, Blaze or Verdict, only Trirealm Rift cards can be activated for the rest of that turn, hand traps included. Using Blaze or Verdict on your opponent's turn turns off your own hand traps for the rest of it.</li>
+                    <li><strong>Monster-effect negation before the shield.</strong> Effect Veiler or Infinite Impermanence on Blizzards or Hollows stops a line. Once Gorging Gorge is on the field it can't be targeted for this, but Gorging Gorge itself can.</li>
+                    <li><strong>Removal that neither targets nor destroys.</strong> Gorging Gorge stops targeting and destruction only. Effects that banish, send to the GY, shuffle or negate without targeting still work, and nothing protects Gorging Gorge.</li>
+                    <li><strong>Decking out.</strong> Every summon's banish is mandatory, so a long turn can empty your Deck before you're ready. Without Darkness at 40+, keep a way to put a card back (Savage Storms or Havocs), or you lose at your next draw.</li>
+                    <li><strong>Hand traps on the generic cards.</strong> Ash Blossom can negate Small World, Pot of Desires, Emergency Teleport, Terraforming and Savage Storms' draw. Droll &amp; Lock Bird after one of them stops further draws and Deck adds, but not the adds from the banishment. Mulcharmy Purulia draws whenever you summon from the hand, and Hollows, Heavens, Blizzards and Blaze all do. Mulcharmy Fuwalos only counts summons from the Deck or Extra Deck, so it misses everything from the banishment.</li>
+                </ul>
+            </section>
+        </div>
+        <!-- END tab-build -->
+
+        <!-- ==================== COMBO SIMULATOR ====================
+             Below the tabs, so "Play Line" buttons can open it. It plays the four
+             lines from assets/data/combos/trirealm-rift-combos.json and mounts the
+             first time it nears the viewport or a line is played. -->
+        <section class="trr-block" id="trr-lab" data-pcs-scope="lab" aria-labelledby="trr-lab-title">
+            <h2 id="trr-lab-title" class="trr-h2">Combo Simulator</h2>
+            <p class="trr-lede">Lines 1&ndash;4 from the Combo Lines tab. The cards are new to the TCG in Glorious Victors, legal from 3 December 2026.</p>
+            <div id="trr-combo-lab" class="trr-lab-mount">
+                <p class="trr-lab-loading">Loading the interactive combo lines&hellip;</p>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status: the live renderer adds its own heading -->
+        <section class="mb-10">
+            <div id="banlist-status"></div>
+        </section>
+
+        <!-- Deck resources -->
+        <section>
+            <div id="deck-resources-compact"></div>
+            <div id="archetype-cards-browser"></div>
+        </section>
+
+        <!-- Community Combo Guides -->
+        <section class="mb-12">
+            <div id="community-combos-wrapper"></div>
+        </section>
+    </div>
+
+    <!-- Banner: points of light drawn into the rift. One still frame when
+         reduced motion is on. -->
+    <script>
+        (function () {
+            'use strict';
+            const canvas = document.getElementById('trr-rift-canvas');
+            if (!canvas || !canvas.getContext) return;
+            const ctx = canvas.getContext('2d');
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const COLORS = ['#c084fc', '#fde047', '#60a5fa', '#fb923c', '#d6a35c', '#4ade80', '#a5f3fc'];
+            let w = 0, h = 0, motes = [];
+
+            function resize() {
+                w = canvas.width = canvas.offsetWidth;
+                h = canvas.height = canvas.offsetHeight;
+                motes = Array.from({ length: 70 }, spawn);
+            }
+            function spawn() {
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.max(w, h) * (0.35 + Math.random() * 0.5);
+                return { angle, r, speed: 0.15 + Math.random() * 0.5, size: 0.6 + Math.random() * 1.6, color: COLORS[Math.floor(Math.random() * COLORS.length)] };
+            }
+            function rift() {
+                const cx = w / 2, cy = h / 2, s = Math.min(w, h) * 0.42;
+                const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, s);
+                g.addColorStop(0, 'rgba(34, 211, 238, 0.28)');
+                g.addColorStop(0.5, 'rgba(139, 92, 246, 0.14)');
+                g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, w, h);
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - s * 0.75);
+                ctx.lineTo(cx + s * 0.65, cy + s * 0.45);
+                ctx.lineTo(cx - s * 0.65, cy + s * 0.45);
+                ctx.closePath();
+                ctx.strokeStyle = 'rgba(165, 243, 252, 0.35)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+            function frame() {
+                ctx.clearRect(0, 0, w, h);
+                rift();
+                const cx = w / 2, cy = h / 2;
+                for (const m of motes) {
+                    m.r -= m.speed;
+                    m.angle += 0.002;
+                    if (m.r < 6) Object.assign(m, spawn());
+                    ctx.globalAlpha = Math.min(1, m.r / 120);
+                    ctx.fillStyle = m.color;
+                    ctx.beginPath();
+                    ctx.arc(cx + Math.cos(m.angle) * m.r, cy + Math.sin(m.angle) * m.r * 0.55, m.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                if (!reduce.matches && !document.hidden) requestAnimationFrame(frame);
+            }
+            resize();
+            frame();
+            window.addEventListener('resize', () => { resize(); if (reduce.matches) frame(); });
+            document.addEventListener('visibilitychange', () => { if (!document.hidden && !reduce.matches) requestAnimationFrame(frame); });
+        })();
+    </script>
+
+    <!-- The Cards tab: one profile at a time (ARIA tabs, arrow keys). Without
+         JavaScript every profile shows. -->
+    <script>
+        (function () {
+            'use strict';
+            const list = document.querySelector('[data-trr-picker]');
+            if (!list) return;
+            const tabs = Array.from(list.querySelectorAll('[role="tab"]'));
+            const panelOf = tab => document.getElementById(tab.getAttribute('aria-controls'));
+            function select(tab, focus) {
+                tabs.forEach(t => {
+                    const on = t === tab;
+                    t.setAttribute('aria-selected', String(on));
+                    t.tabIndex = on ? 0 : -1;
+                    panelOf(t).hidden = !on;
+                });
+                if (focus) tab.focus();
+            }
+            tabs.forEach((tab, i) => {
+                tab.addEventListener('click', () => select(tab, false));
+                tab.addEventListener('keydown', e => {
+                    let next = null;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = tabs[(i + 1) % tabs.length];
+                    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = tabs[(i - 1 + tabs.length) % tabs.length];
+                    else if (e.key === 'Home') next = tabs[0];
+                    else if (e.key === 'End') next = tabs[tabs.length - 1];
+                    if (next) { e.preventDefault(); select(next, true); }
+                });
+            });
+            // A link to a profile (#trr-pf-...) opens it
+            window.TrrPicker = {
+                openFor(target) {
+                    const panel = target && target.closest('.trr-profile');
+                    const tab = panel && tabs.find(t => t.getAttribute('aria-controls') === panel.id);
+                    if (tab) select(tab, false);
+                }
+            };
+        })();
+    </script>
+
+    <!-- Small World bridge finder. Card data from the card text: every
+         Trirealm Rift monster is a Psychic, and no two share a Level, ATK or DEF.
+         Eater of Millions' ATK/DEF are "?", which never match a number. -->
+    <script>
+        (function () {
+            'use strict';
+            const MONSTERS = [
+                { name: 'Trirealm Rift Hollows', lv: 1, attr: 'DARK', type: 'Psychic', atk: 100, def: 1000 },
+                { name: 'Trirealm Rift Heavens', lv: 2, attr: 'LIGHT', type: 'Psychic', atk: 1200, def: 200 },
+                { name: 'Trirealm Rift Blizzards', lv: 3, attr: 'WATER', type: 'Psychic', atk: 300, def: 2000 },
+                { name: 'Trirealm Rift Blaze', lv: 4, attr: 'FIRE', type: 'Psychic', atk: 1700, def: 400 },
+                { name: 'Trirealm Rift Havocs', lv: 5, attr: 'LIGHT', type: 'Psychic', atk: 1000, def: 2500 },
+                { name: 'Trirealm Rift Gorging Gorge', lv: 6, attr: 'EARTH', type: 'Psychic', atk: 2400, def: 1200 },
+                { name: 'Trirealm Rift Savage Storms', lv: 7, attr: 'WIND', type: 'Psychic', atk: 2100, def: 2800 },
+                { name: 'Trirealm Rift Darkness', lv: 8, attr: 'DARK', type: 'Psychic', atk: 3000, def: 2400 },
+                { name: 'Gizmek Orochi, the Serpentron Sky Slasher', lv: 8, attr: 'DARK', type: 'Machine', atk: 2450, def: 2450 },
+                { name: 'Eater of Millions', lv: 1, attr: 'DARK', type: 'Fiend', atk: null, def: null }
+            ];
+            const from = document.getElementById('trr-sw-from');
+            const to = document.getElementById('trr-sw-to');
+            const out = document.getElementById('trr-sw-result');
+            if (!from || !to || !out) return;
+            const short = n => n.replace(/^Trirealm Rift /, '');
+            MONSTERS.forEach((m, i) => {
+                from.add(new Option(short(m.name), String(i)));
+                to.add(new Option(short(m.name), String(i)));
+            });
+            from.value = '7';   // Darkness, a card you'd rather not draw
+            to.value = '2';     // Blizzards
+            // The properties two monsters share (Small World needs exactly one)
+            function shared(a, b) {
+                const s = [];
+                if (a.type === b.type) s.push(a.type);
+                if (a.attr === b.attr) s.push(a.attr);
+                if (a.lv === b.lv) s.push('Level ' + a.lv);
+                if (a.atk !== null && a.atk === b.atk) s.push(a.atk + ' ATK');
+                if (a.def !== null && a.def === b.def) s.push(b.def + ' DEF');
+                return s;
+            }
+            const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            function render() {
+                const a = MONSTERS[Number(from.value)];
+                const c = MONSTERS[Number(to.value)];
+                const bridges = MONSTERS.filter(b => b !== a && b !== c && shared(a, b).length === 1 && shared(b, c).length === 1);
+                const copy = a === c ? '<p>You add another copy of the card you revealed, so you need one left in your Deck.</p>' : '';
+                if (!bridges.length) {
+                    out.className = 'trr-result trr-result--none';
+                    out.innerHTML = '<p><strong>No bridge.</strong> No monster in the test deck shares exactly one property with both ' + esc(short(a.name)) + ' and ' + esc(short(c.name)) + '.</p>';
+                    return;
+                }
+                out.className = 'trr-result';
+                out.innerHTML = '<p><strong>' + bridges.length + ' bridge' + (bridges.length === 1 ? '' : 's') + '.</strong> Reveal ' + esc(short(a.name)) + ', choose one of these in your Deck, add ' + esc(short(c.name)) + '. The revealed card and the bridge are banished face-down.</p>' + copy +
+                    '<ul>' + bridges.map(b => '<li>' + esc(short(b.name)) + ' <span class="trr-muted">(shares ' + esc(shared(a, b)[0]) + ' with the revealed card, ' + esc(shared(b, c)[0]) + ' with the added one)</span></li>').join('') + '</ul>';
+            }
+            from.addEventListener('change', render);
+            to.addEventListener('change', render);
+            render();
+        })();
+    </script>
+    <script src="../assets/js/chip-select.js"></script>
+
+    <!-- Card art, banlist, deck resources, synergy tags, page sections -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (typeof initSynergyTags === 'function') initSynergyTags('Trirealm Rift');
+            if (typeof initPageSections === 'function') initPageSections('Trirealm Rift');
+            if (typeof initCommunityCombos === 'function') initCommunityCombos('community-combos-wrapper', 'Trirealm Rift');
+            if (!window.CardLoader) return;
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Trirealm Rift', {
+                archetypeName: 'Trirealm Rift',
+                relatedCards: ['Small World', 'Pot of Desires', 'Gizmek Orochi, the Serpentron Sky Slasher', 'Eater of Millions', 'Emergency Teleport', 'Terraforming'],
+                archetypeTraits: {
+                    coreMechanic: 'searching and summoning from face-down banished cards',
+                    supportReliance: 'needs chosen cards face-down first: Small World, Savage Storms, Delectation',
+                    adaptability: 'Attribute-matched negates and spins from the banishment',
+                    resilience: 'weak to Imperial Iron Wall, Artifact Lancea and its own Trirealm Rift-only locks'
+                }
+            });
+            CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Trirealm Rift');
+            CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Trirealm Rift', {
+                compact: true,
+                buttonColor: 'from-purple-600 to-cyan-600',
+                buttonHoverColor: 'from-purple-700 to-cyan-600'
+            });
+        });
+    </script>
+
+    <!-- Guide tabs (shared assets/js/guide-tabs.js). Each tab's art loads the
+         first time it opens; the combo simulator below the tabs mounts when it
+         nears the viewport or a "Play Line" button is pressed. -->
+    <script>
+        (function () {
+            'use strict';
+            const COMBO_MOUNT_ID = 'trr-combo-lab';
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let comboReady = null;
+
+            function mountComboLab() {
+                if (comboReady) return comboReady;
+                const mount = document.getElementById(COMBO_MOUNT_ID);
+                // combo-system.js declares ComboLoader as a top-level class: a
+                // global binding, but not a property of window.
+                if (!mount || typeof ComboLoader === 'undefined') {
+                    if (mount) mount.innerHTML = '<p class="trr-lab-loading">The interactive combo lines could not load. The line summaries in the Combo Lines tab still list every hand, requirement and end board.</p>';
+                    comboReady = Promise.resolve(null);
+                    return comboReady;
+                }
+                comboReady = Promise.resolve(ComboLoader.renderComboSystem(COMBO_MOUNT_ID, 'trirealm-rift')).catch(() => null);
+                return comboReady;
+            }
+
+            // The first panel is open without a tab click, and GuideTabs only loads
+            // a panel's art when it activates one: load the overview art directly.
+            if (window.CardLoader) CardLoader.loadCards({ 'trr-ov-darkness-img-container': 'Trirealm Rift Darkness' });
+
+            GuideTabs.init({
+                panelArt: {
+                    'tab-cards': [
+                        {
+                            'trr-pf-hollows-img-container': 'Trirealm Rift Hollows',
+                            'trr-pf-heavens-img-container': 'Trirealm Rift Heavens',
+                            'trr-pf-blizzards-img-container': 'Trirealm Rift Blizzards',
+                            'trr-pf-blaze-img-container': 'Trirealm Rift Blaze',
+                            'trr-pf-havocs-img-container': 'Trirealm Rift Havocs',
+                            'trr-pf-gorge-img-container': 'Trirealm Rift Gorging Gorge',
+                            'trr-pf-storms-img-container': 'Trirealm Rift Savage Storms',
+                            'trr-pf-darkness-img-container': 'Trirealm Rift Darkness',
+                            'trr-pf-vilvortex-img-container': 'Trirealm Rift Vilvortex',
+                            'trr-pf-delectation-img-container': 'Trirealm Rift Delectation',
+                            'trr-pf-verdict-img-container': 'Trirealm Rift Verdict'
+                        },
+                        {
+                            'trr-rp-sw-img-container': 'Small World',
+                            'trr-rp-pot-img-container': 'Pot of Desires',
+                            'trr-rp-orochi-img-container': 'Gizmek Orochi, the Serpentron Sky Slasher',
+                            'trr-rp-eater-img-container': 'Eater of Millions'
+                        }
+                    ]
+                }
+            });
+
+            const labMount = document.getElementById(COMBO_MOUNT_ID);
+            if (labMount && 'IntersectionObserver' in window) {
+                const labObserver = new IntersectionObserver(entries => {
+                    if (!entries.some(entry => entry.isIntersecting)) return;
+                    labObserver.disconnect();
+                    mountComboLab();
+                }, { rootMargin: '400px 0px' });
+                labObserver.observe(labMount);
+            } else {
+                mountComboLab();
+            }
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            const tabFor = panelId => tablist && tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // An in-page link opens the tab (and card profile) holding its target
+            // before the browser scrolls there. guide-tabs.js reacts to hashchange,
+            // which doesn't fire when the same link is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; }
+                const panel = target && target.closest('.tab-panel');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+                if (window.TrrPicker) window.TrrPicker.openFor(target);
+            });
+
+            // "Play Line N" selects that line in the combo simulator.
+            document.querySelectorAll('[data-combo-open]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const num = btn.dataset.comboOpen;
+                    mountComboLab().then(() => {
+                        const option = document.querySelector('#' + COMBO_MOUNT_ID + ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        const mount = document.getElementById(COMBO_MOUNT_ID);
+                        if (mount) mount.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    });
+                });
+            });
+        })();
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+
+</html>

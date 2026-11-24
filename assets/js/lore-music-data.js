@@ -342,7 +342,24 @@
             'butterspy': { palette: 'playful' },
             'mirror-force': { palette: 'fantasy' },
             'doriado': { palette: 'fantasy' },
-            'shinobird': { palette: 'japanese' }
+            'shinobird': { palette: 'japanese' },
+            'raise-moon': {
+                palette: 'playful',
+                moods: ['wonder', 'ceremony', 'mystic', 'hope', 'battle', 'chaos', 'wonder',
+                    'calm', 'vision', 'hope', 'triumph']
+            },
+            'trirealm-rift': {
+                palette: 'horror',
+                moods: ['dread',
+                    'mystic', 'wonder', 'calm', 'battle', 'vision', 'chaos', 'chaos', 'chaos',
+                    'dread', 'triumph']
+            },
+            'zenet': {
+                palette: 'tribal',
+                moods: ['wonder', 'calm',
+                    'mystic', 'ceremony', 'triumph',
+                    'battle', 'mystic', 'dread', 'ceremony', 'chaos', 'hope']
+            }
         }
     };
 })();

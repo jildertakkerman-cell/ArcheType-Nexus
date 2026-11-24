@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Zenet deck guide: the Glorious Victors Ritual deck that discards its Ritual Monsters for value, Ritual Summons them back from the GY with Normal Monsters from the Deck, and turns Blue-Eyes Ultimate Dragon into a Normal Monster Card.">
+    <link rel="canonical" href="https://archetypesnexus.com/pages/Zenet%20Deck%20Analysis.html">
+    <meta name="combos-verified" content="true">
+    <title>Zenet Deck Guide: Rituals Raised from the GY</title>
+    <script src="../assets/js/google-analytics.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/supabase-config.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/card-loader.js"></script>
+    <script src="../assets/js/community-combos.js"></script>
+    <script src="../assets/js/guide-tabs.js"></script>
+    <script src="../assets/js/combo-system.js"></script>
+    <script src="../assets/js/combo-sounds.js"></script>
+    <script src="../assets/js/combo-switch.js" defer></script>
+    <link rel="stylesheet" href="../assets/css/Visualizer_Styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;600;700&family=Silkscreen&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="../output.css" rel="stylesheet">
+    <style>
+        /* ===== Zenet page styles =====
+           Scoped zn-* classes rather than Tailwind utilities: output.css is
+           precompiled, so utilities not already in it would need a rebuild.
+           Every colour comes from the --zn-* tokens: tomb gold for the Zenet
+           cards and calls to action, lapis for the Normal Monsters and Fusions
+           they carry, turquoise for the Traps. */
+        :root {
+            --zn-gold: #e6b84a;
+            --zn-gold-soft: #f6dc8f;
+            --zn-gold-line: rgba(230, 184, 74, 0.45);
+            --zn-gold-wash: rgba(230, 184, 74, 0.1);
+            --zn-lapis: #4f7fe0;
+            --zn-lapis-soft: #b2c8ff;
+            --zn-lapis-line: rgba(79, 127, 224, 0.5);
+            --zn-lapis-wash: rgba(79, 127, 224, 0.14);
+            --zn-teal: #2dd4bf;
+            --zn-teal-wash: rgba(45, 212, 191, 0.12);
+            --zn-ok: #4ade80;
+            --zn-ok-wash: rgba(74, 222, 128, 0.12);
+            --zn-warn: #fbbf24;
+            --zn-danger: #f87171;
+            --zn-danger-wash: rgba(248, 113, 113, 0.12);
+            --zn-surface: #161821;
+            --zn-surface-deep: #0e1017;
+            --zn-inset: #08090d;
+            --zn-border: #313748;
+            --zn-text: #e5e7eb;
+            --zn-muted: #a8afbf;
+            --zn-heading: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090a10;
+            color: var(--zn-text);
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(ellipse at 50% -10%, rgba(230, 184, 74, 0.16) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 110%, rgba(79, 127, 224, 0.14) 0%, transparent 60%),
+                #090a10;
+        }
+        .container { max-width: 1024px; position: relative; z-index: 1; }
+
+        /* ----- Home button (same placement as every deck page) ----- */
+        .ygo-home-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--zn-gold);
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0e1017 0%, #232838 50%, #0e1017 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .ygo-home-button:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 8px 25px rgba(230, 184, 74, 0.3); border-color: var(--zn-gold-soft); }
+        .ygo-home-button i { position: relative; z-index: 2; color: var(--zn-gold); font-size: 22px; }
+
+        /* ----- Banner: the title and one line only ----- */
+        .zn-banner {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 230px;
+            overflow: hidden;
+            border: 1px solid var(--zn-gold-line);
+            border-radius: 0.75rem;
+            background: linear-gradient(180deg, #11131c 0%, #1a1712 70%, #2a2114 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            text-align: center;
+        }
+        .zn-banner-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .zn-banner h1 {
+            position: relative;
+            z-index: 2;
+            margin: 0;
+            padding: 0 1rem;
+            background: linear-gradient(180deg, #fff7dc 0%, var(--zn-gold) 60%, #a8781f 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.9));
+        }
+        .zn-banner-tagline {
+            position: relative;
+            z-index: 2;
+            max-width: 34rem;
+            margin: 0.4rem 1rem 0;
+            color: var(--zn-gold-soft);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+        }
+
+        /* ----- Lore Archive ----- */
+        .zn-lore {
+            max-width: 56rem;
+            margin: 0 auto 2.5rem;
+            padding: 1.4rem 1.5rem;
+            border: 1px solid var(--zn-border);
+            border-left: 4px solid var(--zn-gold);
+            border-radius: 0 0.75rem 0.75rem 0;
+            background: rgba(17, 19, 28, 0.85);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        .zn-lore-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .zn-lore-icon {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, var(--zn-gold), var(--zn-lapis));
+            color: #0b0c11;
+        }
+        .zn-lore h2 { color: #e5e7eb; font-family: 'Cinzel', serif; font-size: 1.35rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+        .zn-lore-quote { color: var(--zn-muted); font-family: Georgia, serif; font-size: 0.95rem; font-style: italic; line-height: 1.6; }
+        .zn-lore-body { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--zn-border); color: #b9bfcc; font-family: Georgia, serif; font-size: 0.9rem; line-height: 1.7; }
+        .zn-lore-body strong { color: var(--zn-gold-soft); }
+        .zn-lore-note { margin-top: 0.4rem; color: var(--zn-muted); font-family: Georgia, serif; font-size: 0.8rem; line-height: 1.6; }
+        /* The story slideshow (assets/js/lore-reel.js + lore-reel.css), in tomb gold */
+        .zn-lore .lore-reel {
+            margin-top: 1.25rem;
+            color: var(--zn-text);
+            font-family: Georgia, serif;
+            --reel-ink: var(--zn-gold-soft);
+            --reel-well: #2a2412;
+            --reel-hover: #b8892a;
+        }
+
+        /* ----- Tabs (driven by assets/js/guide-tabs.js) ----- */
+        .tab-nav {
+            display: flex;
+            max-width: 100%;
+            margin: 0 0 2rem;
+            padding: 0 0.25rem;
+            border: 1px solid var(--zn-border);
+            border-radius: 0.75rem;
+            background: rgba(9, 10, 16, 0.94);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        }
+        .tab-btn {
+            display: inline-flex;
+            flex: 1 1 auto;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            min-height: 48px;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-bottom: 3px solid transparent;
+            background: transparent;
+            color: var(--zn-muted);
+            font-family: 'Cinzel', serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+        }
+        .tab-btn:hover { color: #fff; background-color: var(--zn-gold-wash); }
+        .tab-btn[aria-selected="true"] { border-bottom-color: var(--zn-gold); color: var(--zn-gold-soft); text-shadow: 0 0 10px rgba(230, 184, 74, 0.4); }
+        .tab-btn i { color: var(--zn-gold); font-size: 0.8rem; }
+        .tab-panel[hidden] { display: none !important; }
+        .tab-btn:focus-visible,
+        .tab-panel:focus-visible,
+        .zn-tag:focus-visible,
+        .zn-cta:focus-visible,
+        .zn-filter:focus-visible,
+        .zn-tile:focus-visible,
+        .zn-link:focus-visible,
+        .zn-line-play:focus-visible {
+            outline: 2px solid var(--zn-gold);
+            outline-offset: 3px;
+            border-radius: 0.375rem;
+        }
+        .tab-panel:target:focus-visible { outline: none; }
+        [id^="zn-"], [id^="card-"] { scroll-margin-top: 4.5rem; }
+        @media (max-width: 639px) {
+            .tab-btn { flex: 1 1 0; padding: 0.7rem 0.3rem; font-size: 0.72rem; white-space: normal; text-align: center; }
+            .tab-btn i { display: none; }
+        }
+        .zn-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+        /* ----- Card art slot: holds the card shape until CardLoader swaps the image in ----- */
+        .zn-art {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            aspect-ratio: 59 / 86;
+            padding: 0.4rem;
+            overflow: hidden;
+            border: 2px dashed var(--zn-gold-line);
+            border-radius: 0.35rem;
+            background: var(--zn-inset);
+            color: var(--zn-gold-soft);
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.3;
+            text-align: center;
+            cursor: pointer;
+        }
+        .zn-art:has(img) { display: block; aspect-ratio: auto; padding: 0; border-color: transparent; background: none; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6); }
+        .zn-art .card-placeholder { min-height: 0; padding: 0; border: 0; background: none; box-shadow: none; font-size: inherit; }
+
+        /* ----- Spotlight strip above the tabs ----- */
+        .zn-spot {
+            display: grid;
+            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-areas: "art head" "body body";
+            gap: 1rem 1.1rem;
+            align-items: start;
+            max-width: 56rem;
+            margin: 0 auto 2rem;
+            padding: 1.25rem;
+            border: 1px solid var(--zn-gold-line);
+            border-radius: 1rem;
+            background:
+                radial-gradient(ellipse at 8% 0%, var(--zn-gold-wash) 0%, transparent 55%),
+                radial-gradient(ellipse at 100% 100%, var(--zn-lapis-wash) 0%, transparent 60%),
+                linear-gradient(135deg, var(--zn-surface) 0%, var(--zn-surface-deep) 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+        }
+        .zn-spot-art { grid-area: art; }
+        .zn-spot-head { grid-area: head; min-width: 0; }
+        .zn-spot-body { grid-area: body; min-width: 0; }
+        .zn-badge {
+            padding: 1px 7px;
+            border-radius: 9999px;
+            background: var(--zn-gold);
+            color: #111;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1.5;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .zn-spot-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.4rem; color: var(--zn-gold-soft); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+        .zn-spot-title { color: var(--zn-heading); font-family: 'Cinzel', serif; font-size: 1.25rem; font-weight: 700; line-height: 1.25; }
+        .zn-spot-stats { margin-top: 0.35rem; color: var(--zn-lapis-soft); font-size: 0.8rem; font-weight: 700; }
+        .zn-spot-hook { color: var(--zn-text); font-size: 0.95rem; line-height: 1.6; }
+        .zn-spot-hook strong { color: var(--zn-heading); }
+        .zn-label { margin: 1rem 0 0.5rem; color: var(--zn-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+        .zn-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .zn-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 36px;
+            padding: 0.35rem 0.8rem;
+            border: 1px solid var(--zn-border);
+            border-radius: 9999px;
+            background: var(--zn-inset);
+            color: #f1f5f9;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: border-color 0.15s, background-color 0.15s;
+        }
+        .zn-tag i { color: var(--zn-gold); }
+        .zn-tag:hover { border-color: var(--zn-gold); background: var(--zn-gold-wash); }
+        .zn-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.25rem; margin-top: 1.1rem; }
+        .zn-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 0.6rem 1.2rem;
+            border: 1px solid var(--zn-gold);
+            border-radius: 9999px;
+            background: var(--zn-gold-wash);
+            color: #fff;
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.15s, box-shadow 0.15s;
+        }
+        .zn-cta:hover { background: rgba(230, 184, 74, 0.22); box-shadow: 0 0 16px rgba(230, 184, 74, 0.3); }
+
+        /* ----- Section panels ----- */
+        .zn-block {
+            margin: 0 0 2.5rem;
+            padding: 1.25rem;
+            border: 1px solid var(--zn-border);
+            border-radius: 1rem;
+            background: linear-gradient(160deg, var(--zn-surface), var(--zn-surface-deep));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            color: var(--zn-text);
+        }
+        .zn-h2 { margin-bottom: 1rem; color: var(--zn-heading); font-family: 'Cinzel', serif; font-size: 1.45rem; font-weight: 700; line-height: 1.25; text-align: center; }
+        .zn-h3 { margin: 2rem 0 0.75rem; color: var(--zn-gold-soft); font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+        .zn-h3:first-child { margin-top: 0.25rem; }
+        .zn-lede { max-width: 46rem; margin: 0 auto 1.75rem; color: var(--zn-text); line-height: 1.65; text-align: center; }
+        .zn-lede strong, .zn-prose strong { color: var(--zn-heading); }
+        .zn-prose { color: var(--zn-text); font-size: 0.925rem; line-height: 1.65; }
+        .zn-prose + .zn-prose { margin-top: 0.75rem; }
+        .zn-release { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+        .zn-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--zn-border);
+            border-radius: 9999px;
+            background: var(--zn-surface-deep);
+            color: var(--zn-text);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .zn-chip i { color: var(--zn-lapis-soft); }
+        .zn-chip--tcg { border-color: var(--zn-gold-line); }
+        .zn-chip--tcg i { color: var(--zn-gold); }
+        .zn-pillars { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .zn-pillar { padding: 1.1rem; border: 1px solid var(--zn-border); border-radius: 0.85rem; background: var(--zn-inset); text-align: center; }
+        .zn-pillar h3 { margin-bottom: 0.45rem; color: var(--zn-gold-soft); font-weight: 700; }
+        .zn-pillar p { color: var(--zn-text); font-size: 0.875rem; line-height: 1.6; }
+        .zn-pillar-icon { margin-bottom: 0.6rem; color: var(--zn-lapis-soft); font-size: 1.4rem; }
+        .zn-callout {
+            margin-top: 1.25rem;
+            padding: 1rem 1.2rem;
+            border: 1px solid var(--zn-border);
+            border-left: 4px solid var(--zn-gold);
+            border-radius: 0.5rem;
+            background: var(--zn-inset);
+            color: var(--zn-text);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .zn-callout--lapis { border-left-color: var(--zn-lapis); }
+        .zn-callout strong { color: var(--zn-heading); }
+        .zn-callout-title { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; color: var(--zn-gold-soft); font-weight: 700; }
+        .zn-callout--lapis .zn-callout-title { color: var(--zn-lapis-soft); }
+        .zn-names { display: grid; grid-template-columns: 1fr; gap: 0.3rem 1.5rem; margin: 0.6rem 0 0; padding: 0; list-style: none; font-size: 0.84rem; }
+        .zn-names li { color: var(--zn-muted); }
+        .zn-names strong { color: var(--zn-heading); }
+        .zn-toc { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 2rem; padding: 0; list-style: none; }
+        .zn-link { color: var(--zn-gold-soft); font-weight: 700; text-decoration: underline dotted; text-underline-offset: 3px; }
+        .zn-link:hover { color: #fff; }
+
+        /* ----- How the deck wins: a numbered pipeline ----- */
+        .zn-flow { display: grid; margin: 0; padding: 0; list-style: none; }
+        .zn-flow-stage { position: relative; display: grid; grid-template-columns: 2.25rem minmax(0, 1fr); column-gap: 0.85rem; padding-bottom: 1.4rem; }
+        .zn-flow-stage::after {
+            content: '';
+            position: absolute;
+            top: 2.5rem;
+            bottom: 0.25rem;
+            left: calc(1.125rem - 1px);
+            width: 2px;
+            background: linear-gradient(var(--zn-gold-line), var(--zn-lapis-line));
+        }
+        .zn-flow-stage:last-child { padding-bottom: 0; }
+        .zn-flow-stage:last-child::after { display: none; }
+        .zn-flow-num { display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: var(--zn-gold); color: #111; font-weight: 800; }
+        .zn-flow-stage--opp .zn-flow-num { background: var(--zn-teal); }
+        .zn-flow-title { color: var(--zn-heading); font-weight: 700; line-height: 2.25rem; }
+        .zn-flow-body { color: var(--zn-text); font-size: 0.875rem; line-height: 1.6; }
+        .zn-flow-body strong { color: var(--zn-heading); }
+
+        /* ----- Tables stack into labelled cards below 640px ----- */
+        .zn-table-wrap { border: 1px solid var(--zn-border); border-radius: 0.5rem; background: var(--zn-inset); }
+        .zn-table { width: 100%; border-collapse: collapse; }
+        .zn-table caption { padding: 0.7rem 0.85rem 0; color: var(--zn-muted); font-size: 0.78rem; text-align: left; }
+        .zn-table th, .zn-table td { padding: 0.7rem 0.85rem; border-bottom: 1px solid rgba(49, 55, 72, 0.8); font-size: 0.85rem; line-height: 1.5; text-align: left; vertical-align: top; }
+        .zn-table thead th { border-bottom: 2px solid var(--zn-gold); background: var(--zn-surface); color: var(--zn-gold-soft); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; }
+        .zn-table tbody th { color: var(--zn-heading); font-weight: 700; }
+        .zn-table td { color: var(--zn-text); }
+        .zn-table tbody tr:last-child > * { border-bottom: none; }
+        .zn-table td strong { color: var(--zn-heading); }
+        @media (max-width: 639px) {
+            .zn-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+            .zn-table, .zn-table tbody, .zn-table tr, .zn-table th, .zn-table td { display: block; width: 100%; }
+            .zn-table tr { padding: 0.5rem 0; border-bottom: 1px solid var(--zn-border); }
+            .zn-table tbody tr:last-child { border-bottom: none; }
+            .zn-table th, .zn-table td { padding: 0.35rem 0.85rem; border-bottom: none; }
+            .zn-table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 0.15rem; color: var(--zn-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        }
+        .zn-note { margin-top: 0.75rem; color: var(--zn-muted); font-size: 0.82rem; line-height: 1.55; }
+        .zn-note strong { color: var(--zn-text); }
+
+        /* ----- Support cards from the same set ----- */
+        .zn-support { display: grid; grid-template-columns: 1fr; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
+        .zn-support > li { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 0.85rem; align-items: start; padding: 0.85rem; border: 1px solid var(--zn-border); border-left: 4px solid var(--zn-lapis); border-radius: 0.6rem; background: var(--zn-inset); }
+        .zn-support h4 { color: var(--zn-heading); font-size: 0.92rem; font-weight: 700; line-height: 1.3; }
+        .zn-support-type { margin-top: 0.1rem; color: var(--zn-lapis-soft); font-size: 0.72rem; font-weight: 700; }
+        .zn-support p { margin-top: 0.35rem; color: var(--zn-text); font-size: 0.84rem; line-height: 1.55; }
+
+        /* ----- Card gallery: filter chips + tiles + one profile at a time.
+           Without JavaScript the filters stay hidden, every profile shows and
+           the tiles are plain jump links. ----- */
+        .zn-filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0 0 0.75rem; }
+        .zn-filters[hidden] { display: none !important; }
+        .zn-filter {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 40px;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid var(--zn-border);
+            border-radius: 9999px;
+            background: var(--zn-inset);
+            color: var(--zn-muted);
+            font: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+        }
+        .zn-filter:hover { border-color: var(--zn-gold-soft); color: #fff; }
+        .zn-filter[aria-pressed="true"] { border-color: var(--zn-gold); background: var(--zn-gold-wash); color: #fff; }
+        .zn-filter-count { min-width: 1.4rem; padding: 0 0.35rem; border-radius: 9999px; background: var(--zn-surface-deep); color: var(--zn-gold); font-size: 0.72rem; line-height: 1.5; text-align: center; }
+        .zn-gallery-status { min-height: 1.25rem; margin: 0 0 1rem; color: var(--zn-muted); font-size: 0.8rem; text-align: center; }
+        .zn-tiles {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 96px;
+            gap: 0.6rem;
+            margin: 0 0 1.5rem;
+            padding: 0.25rem 0.25rem 0.75rem;
+            list-style: none;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x proximity;
+            scrollbar-width: thin;
+            scrollbar-color: var(--zn-border) transparent;
+        }
+        .zn-tiles > li { scroll-snap-align: start; }
+        .zn-tiles > li[hidden] { display: none; }
+        .zn-tile {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            height: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--zn-border);
+            border-radius: 0.6rem;
+            background: var(--zn-inset);
+            color: var(--zn-text);
+            text-decoration: none;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .zn-tile:hover { border-color: var(--zn-gold-soft); transform: translateY(-2px); }
+        .zn-tile[aria-current="true"] { border-color: var(--zn-gold); box-shadow: 0 0 0 1px var(--zn-gold), 0 6px 20px rgba(230, 184, 74, 0.2); }
+        .zn-tile-art { position: relative; display: block; aspect-ratio: 59 / 86; overflow: hidden; border-radius: 0.3rem; background: var(--zn-surface-deep); box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.8); }
+        .zn-tile-art img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .zn-tile-fallback { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 0.35rem; color: var(--zn-muted); font-size: 0.55rem; font-weight: 700; line-height: 1.3; text-align: center; text-transform: uppercase; }
+        .zn-tile-art img + .zn-tile-fallback { display: none; }
+        .zn-tile-badge {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: rgba(8, 9, 13, 0.9);
+            color: var(--zn-teal);
+            font-size: 0.62rem;
+            box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.5);
+        }
+        .zn-tile-name { color: var(--zn-heading); font-size: 0.72rem; font-weight: 700; line-height: 1.25; }
+        .zn-tile-type { color: var(--zn-muted); font-size: 0.66rem; line-height: 1.25; }
+        .zn-profile { padding: 1.1rem; border: 1px solid var(--zn-gold-line); border-radius: 0.75rem; background: var(--zn-inset); box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5); }
+        .zn-profile + .zn-profile { margin-top: 1.25rem; }
+        .zn-profile[hidden] { display: none; }
+        .zn-profile-layout { display: grid; grid-template-columns: 96px minmax(0, 1fr); grid-template-areas: "art head" "body body"; gap: 1rem; align-items: start; }
+        .zn-profile-art { grid-area: art; }
+        .zn-profile-head { grid-area: head; min-width: 0; }
+        .zn-profile-body { grid-area: body; min-width: 0; }
+        .zn-kicker { color: var(--zn-gold-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+        .zn-card-name { margin-top: 0.2rem; color: var(--zn-heading); font-size: 1.2rem; font-weight: 800; line-height: 1.3; }
+        .zn-summary { margin-top: 0.45rem; color: var(--zn-text); font-size: 0.86rem; line-height: 1.5; }
+        .zn-summary strong { color: var(--zn-gold-soft); }
+        .zn-stats { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.6rem 0 0; padding: 0; list-style: none; }
+        .zn-stats li { padding: 0.15rem 0.55rem; border: 1px solid var(--zn-border); border-radius: 9999px; background: var(--zn-surface-deep); color: #e5e7eb; font-size: 0.72rem; font-weight: 600; }
+        .zn-effects { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; counter-reset: zn-effect; }
+        .zn-effects > li { position: relative; padding-left: 2rem; color: var(--zn-text); font-size: 0.9rem; line-height: 1.55; counter-increment: zn-effect; }
+        .zn-effects > li::before {
+            content: counter(zn-effect);
+            content: counter(zn-effect) / "";
+            position: absolute;
+            top: 0.1rem;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 9999px;
+            background: var(--zn-gold);
+            color: #111;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .zn-effect-tag { display: inline-block; margin-right: 0.4rem; padding: 0 0.45rem; border: 1px solid var(--zn-border); border-radius: 0.3rem; color: var(--zn-lapis-soft); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: 0.1em; }
+        .zn-opt { margin-top: 0.6rem; color: var(--zn-muted); font-size: 0.8rem; line-height: 1.5; }
+        .zn-opt i { margin-right: 0.35rem; color: var(--zn-gold); }
+        .zn-role { margin-top: 1rem; padding: 0.75rem 1rem; border-left: 3px solid var(--zn-lapis); border-radius: 0 0.5rem 0.5rem 0; background: var(--zn-lapis-wash); color: #e5e7eb; font-size: 0.875rem; line-height: 1.6; }
+        .zn-role p + p { margin-top: 0.5rem; }
+        .zn-role strong { color: var(--zn-lapis-soft); }
+        .zn-glance { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 1.25rem 0 0; }
+        .zn-glance > div { padding: 0.7rem; border: 1px solid var(--zn-border); border-radius: 0.5rem; background: var(--zn-surface-deep); }
+        .zn-glance dt { color: var(--zn-muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .zn-glance dd { margin: 0.25rem 0 0; color: var(--zn-gold-soft); font-size: 0.86rem; font-weight: 700; line-height: 1.3; }
+        .zn-profile .kq-note { margin-top: 0.9rem; color: var(--zn-muted); }
+
+        /* ----- Combo line summaries + the interactive combo lab ----- */
+        .zn-lines { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        .zn-line { display: flex; flex-direction: column; gap: 0.75rem; padding: 1.1rem; border: 1px solid var(--zn-border); border-top: 3px solid var(--zn-gold); border-radius: 0.75rem; background: var(--zn-inset); }
+        .zn-line--second { border-top-color: var(--zn-teal); }
+        .zn-line-kicker { color: var(--zn-gold-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+        .zn-line h3 { color: var(--zn-heading); font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+        .zn-line-facts { display: grid; gap: 0.6rem; margin: 0; }
+        .zn-line-facts dt { color: var(--zn-muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .zn-line-facts dd { margin: 0.15rem 0 0; color: var(--zn-text); font-size: 0.86rem; line-height: 1.55; }
+        .zn-moves { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.2rem; color: var(--zn-text); font-size: 0.86rem; line-height: 1.5; }
+        .zn-moves strong { color: var(--zn-heading); }
+        .zn-line-rule { padding-top: 0.75rem; border-top: 1px dashed var(--zn-border); color: var(--zn-muted); font-size: 0.8rem; line-height: 1.5; }
+        .zn-line-rule strong { color: var(--zn-gold-soft); }
+        .zn-line-play {
+            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-height: 40px;
+            padding: 0.45rem 0.9rem;
+            border: 1px solid var(--zn-gold);
+            border-radius: 9999px;
+            background: var(--zn-gold-wash);
+            color: #fff;
+            font: inherit;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .zn-line-play:hover { background: rgba(230, 184, 74, 0.22); }
+        .zn-tested { display: flex; gap: 0.75rem; align-items: flex-start; margin: 0 0 1.5rem; padding: 0.9rem 1rem; border: 1px solid rgba(74, 222, 128, 0.35); border-radius: 0.6rem; background: var(--zn-ok-wash); color: var(--zn-text); font-size: 0.86rem; line-height: 1.55; }
+        .zn-tested i { margin-top: 0.2rem; color: var(--zn-ok); }
+        .zn-lab-mount { min-height: 12rem; }
+        .zn-lab-loading { padding: 2rem 1rem; color: var(--zn-muted); font-size: 0.9rem; text-align: center; }
+
+        /* ----- Defence cards and weaknesses ----- */
+        .zn-guards { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+        .zn-guard { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 0.9rem; align-items: start; padding: 1rem; border: 1px solid var(--zn-border); border-top: 3px solid var(--zn-teal); border-radius: 0.6rem; background: var(--zn-inset); }
+        .zn-guard h3 { color: var(--zn-heading); font-size: 0.98rem; font-weight: 700; line-height: 1.3; }
+        .zn-guard-type { color: var(--zn-teal); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .zn-guard dl { display: grid; gap: 0.45rem; margin: 0.55rem 0 0; }
+        .zn-guard dt { color: var(--zn-muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .zn-guard dd { margin: 0.1rem 0 0; color: var(--zn-text); font-size: 0.84rem; line-height: 1.5; }
+        .zn-guard .kq-note { margin: 0.6rem 0 0; color: var(--zn-muted); }
+        .zn-risks { display: grid; gap: 0.85rem; margin: 0; padding: 0; list-style: none; }
+        .zn-risks > li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.85rem; padding: 0.9rem 1.1rem; border: 1px solid var(--zn-border); border-left: 4px solid var(--zn-danger); border-radius: 0.5rem; background: var(--zn-inset); }
+        .zn-risks i { margin-top: 0.2rem; color: var(--zn-danger); }
+        .zn-risks h3 { margin-bottom: 0.25rem; color: var(--zn-heading); font-weight: 700; }
+        .zn-risks p { color: var(--zn-text); font-size: 0.875rem; line-height: 1.55; }
+
+        /* ----- Test deck ratios ----- */
+        .zn-build { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .zn-build-card { padding: 1.1rem; border: 1px solid var(--zn-border); border-radius: 0.75rem; background: var(--zn-inset); }
+        .zn-build-card h3 { margin-bottom: 0.25rem; color: var(--zn-heading); font-weight: 700; }
+        .zn-build-sub { margin-bottom: 0.9rem; color: var(--zn-muted); font-size: 0.8rem; line-height: 1.5; }
+        .zn-ratio { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+        .zn-ratio > li { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr); gap: 0.6rem; align-items: baseline; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(49, 55, 72, 0.7); }
+        .zn-ratio > li:last-child { padding-bottom: 0; border-bottom: 0; }
+        .zn-ratio-count { color: var(--zn-gold); font-size: 0.95rem; font-weight: 800; text-align: right; }
+        .zn-ratio-name { color: var(--zn-heading); font-size: 0.875rem; font-weight: 700; }
+        .zn-ratio-role { display: block; color: var(--zn-text); font-size: 0.8rem; font-weight: 400; line-height: 1.45; }
+        .zn-ratio-group { margin: 1rem 0 0.5rem; color: var(--zn-lapis-soft); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .zn-ratio-group:first-of-type { margin-top: 0; }
+
+        @media (min-width: 640px) {
+            .zn-tiles { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.85rem; overflow: visible; padding: 0; }
+            .zn-names { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .zn-support { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .zn-guards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 768px) {
+            .zn-banner h1 { font-size: 3.6rem; }
+            .zn-spot { grid-template-columns: 140px minmax(0, 1fr); grid-template-areas: "art head" "art body"; column-gap: 1.5rem; padding: 1.5rem; }
+            .zn-spot-title { font-size: 1.5rem; }
+            .zn-block { padding: 2rem; }
+            .zn-h2 { font-size: 1.8rem; }
+            .zn-pillars { grid-template-columns: repeat(3, 1fr); }
+            .zn-profile { padding: 1.6rem; }
+            .zn-profile-layout { grid-template-columns: 180px minmax(0, 1fr); grid-template-areas: "art head" "art body"; column-gap: 1.75rem; row-gap: 0.75rem; }
+            .zn-card-name { font-size: 1.4rem; }
+            .zn-glance { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .zn-build { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+        }
+        @media (min-width: 1024px) {
+            .zn-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tab-btn, .zn-tag, .zn-cta, .zn-filter, .zn-tile { transition: none; }
+            .zn-tile:hover { transform: none; }
+        }
+        /* Printing the guide should include every tab and every card profile. */
+        @media print {
+            .tab-nav, .zn-filters, .zn-tiles, .zn-line-play, .zn-lab-mount, .zn-actions { display: none !important; }
+            .tab-panel[hidden], .zn-profile[hidden] { display: block !important; }
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/css/synergy-tags.css">
+    <link rel="stylesheet" href="../assets/css/cookie-consent.css">
+    <script src="../assets/js/text-utils.js"></script>
+    <script src="../assets/js/deck-dock.js" defer></script>
+    <script src="../assets/js/synergy-tags.js"></script>
+    <script src="../assets/js/page-sections.js"></script>
+    <link rel="stylesheet" href="../assets/css/follow-archetype.css">
+    <script src="../assets/js/follow-archetype.js"></script>
+    <link rel="stylesheet" href="../assets/css/konami-refs.css">
+    <link rel="stylesheet" href="../assets/css/lore-reel.css">
+    <script src="../assets/js/lore-reel-data.js" defer></script>
+    <script src="../assets/js/lore-reel-art.js" defer></script>
+    <script src="../assets/js/lore-reel.js" defer></script>
+</head>
+
+<body class="p-6 md:p-8">
+    <div id="card-popup"></div>
+    <a href="../index.html" class="ygo-home-button" title="Return to Archetype Nexus">
+        <i class="fas fa-home"></i>
+    </a>
+
+    <div class="container mx-auto">
+        <!-- Title -->
+        <header class="zn-banner mb-6 md:mb-8">
+            <svg class="zn-banner-art" viewBox="0 0 1000 230" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
+                <defs>
+                    <radialGradient id="zn-banner-sun" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#fff4cf" stop-opacity="0.9"/>
+                        <stop offset="45%" stop-color="#e6b84a" stop-opacity="0.45"/>
+                        <stop offset="100%" stop-color="#e6b84a" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="zn-banner-pyramid" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#3a2f1c"/>
+                        <stop offset="50%" stop-color="#6b5226"/>
+                        <stop offset="100%" stop-color="#2a2215"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="500" cy="150" r="150" fill="url(#zn-banner-sun)"/>
+                <path d="M120 230 L260 120 L400 230 Z" fill="url(#zn-banner-pyramid)" opacity="0.55"/>
+                <path d="M600 230 L760 100 L920 230 Z" fill="url(#zn-banner-pyramid)" opacity="0.55"/>
+                <path d="M0 200 L1000 200" stroke="#e6b84a" stroke-opacity="0.35" stroke-width="1.5"/>
+                <g fill="#e6b84a" fill-opacity="0.35">
+                    <rect x="40" y="206" width="14" height="14"/><rect x="70" y="206" width="14" height="14"/><rect x="100" y="206" width="14" height="14"/>
+                    <rect x="886" y="206" width="14" height="14"/><rect x="916" y="206" width="14" height="14"/><rect x="946" y="206" width="14" height="14"/>
+                </g>
+            </svg>
+            <h1>Zenet</h1>
+            <p class="zn-banner-tagline">Ritual Monsters that climb back out of the GY, carried by Normal Monsters.</p>
+        </header>
+
+        <div id="deck-dock"></div>
+
+        <!-- Lore Archive -->
+        <section class="zn-lore" aria-labelledby="zn-lore-title">
+            <div class="zn-lore-head">
+                <div class="zn-lore-icon" aria-hidden="true"><i class="fas fa-ankh"></i></div>
+                <h2 id="zn-lore-title">Lore Archive</h2>
+            </div>
+            <p class="zn-lore-quote">&ldquo;When the mortal world and the underworld meet, a journey to decide the king begins!&rdquo;</p>
+            <p class="zn-lore-note">Konami's tagline for Zenet (Deck-Build Pack: Glorious Victors product page, translated). Zenet is senet, the ancient Egyptian board game that came to stand for the soul's passage through the afterlife. No Zenet story has been published yet, so the slideshow follows the cards' own artwork.</p>
+            <!-- The story, told by the slideshow (lore-reel.js): one <li> per slide of LoreReelData['zenet'] in
+                 lore-reel-data.js, in the same order. No official story exists yet: each caption says what the
+                 artwork shows (Yugipedia card trivia, checked 2026-11-24) and where the name comes from. The
+                 "Who's who" portraits come from the reel's cast. -->
+            <div class="lore-reel" data-lore-reel="zenet" data-pcs-scope="lore-reel" data-suggest-context="Lore Archive: story slideshow">
+                <ol class="lore-reel-story" data-pcs-skip>
+                    <li>Two Revelators open the game. <strong class="text-emerald-300">Nefertari</strong>, named after the queen of Ramesses II, wears jackal ears and holds a jackal-shaped senet piece, while a senet board shines out of the device on her arm.</li>
+                    <li><strong class="text-sky-300">Amenhotep</strong>, the other Revelator, carries a name several pharaohs bore, the most famous being Amenhotep III. His crown is a blue-and-gold cobra hood.</li>
+                    <li>In a temple hall among burning braziers, Nefertari calls up a ghostly dragon, most likely Twin-Headed Thunder Dragon, reprinted in the same pack: <strong class="text-amber-300">Pere-Zenet Em Heru</strong>. The name echoes <em>peret em heru</em>, "coming forth by day", the Egyptian title of the Book of the Dead.</li>
+                    <li><strong class="text-yellow-200">Zenet Per Aarkh</strong> sets Nefertari between the Sphinx and a close-up of her own smiling face. <em>Per akh</em> seems to mean "house of the glorified soul", a house being a square on the board; the Japanese name is a pledge to return to the light.</li>
+                    <li><strong class="text-teal-300">Zenet-Nakhte Sphinx</strong> is a giant in gold and jade armour with a jackal's head, modelled on Anubis rather than the lion-bodied sphinx of legend. Its 5000 ATK ties for the highest original ATK of any legal monster.</li>
+                    <li>At <strong class="text-cyan-300">Zenet Cataract</strong>, Amenhotep stands in a crashing torrent with Adjat's serpent coils around him.</li>
+                    <li><strong class="text-teal-300">Adjat</strong> (Tau-Zenet Adjat) comes from Wadjet, the cobra goddess who guarded Lower Egypt: a jade figure in white and gold with a cobra rising over her head, wreathed in coils.</li>
+                    <li><strong class="text-lime-300">Amduat Zenet</strong> shows Nekhbet in a storm of pale feathers. The Amduat is the Egyptian text that follows the sun through the twelve hours of the night.</li>
+                    <li><strong class="text-emerald-300">Nekhbet</strong> (Zenet-Mose Nekhbet) comes from Nekhbet, the vulture goddess who guarded Upper Egypt. With Wadjet she was one of the "Two Ladies" who protected the king, the vulture and the cobra on the royal brow.</li>
+                    <li><strong class="text-green-300">Zenet Thunder Fall</strong> brings the ghostly dragon back, its head breaking out of a storm of green lightning.</li>
+                    <li>In <strong class="text-yellow-200">Return Journey to the Light "Zenet"</strong>, Nefertari and the Sphinx stand on a golden board laid out like a maze, a pyramid shining at the far end. Its Japanese name is 光帰の旅, "the journey back to the light".</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- ==================== GLORIOUS VICTORS SPOTLIGHT ====================
+             Always visible above the guide tabs: the release and where to start. -->
+        <aside class="zn-spot" data-pcs-scope="spot" aria-labelledby="zn-spot-title">
+            <div class="zn-spot-art">
+                <div id="zn-spot-img-container" class="zn-art">Zenet-Nakhte Sphinx</div>
+            </div>
+            <div class="zn-spot-head">
+                <p class="zn-spot-kicker"><span class="zn-badge">11 new cards</span> Glorious Victors &middot; TCG 3 Dec 2026</p>
+                <h2 id="zn-spot-title" class="zn-spot-title">Zenet Arrives in the TCG</h2>
+                <p class="zn-spot-stats">3 Ritual Monsters &middot; 4 combo lines replayed in the duel engine</p>
+            </div>
+            <div class="zn-spot-body">
+                <p class="zn-spot-hook">Every Zenet Ritual Monster can discard itself from your hand for value and then be <strong>Ritual Summoned straight back from the GY</strong>, with Normal Monsters from your Deck as the material. Any one of Zenet Revelator Nefertari, Zenet-Nakhte Sphinx or Return Journey to the Light "Zenet" builds a full board: in the Nefertari line, a 5000-ATK Sphinx that ignores your opponent's activated effects, a 4500-ATK Blue-Eyes Ultimate Dragon treated as a Normal Monster Card, and two Set Traps.</p>
+                <p id="zn-spot-tags-label" class="zn-label">Jump to</p>
+                <ul class="zn-tags" aria-labelledby="zn-spot-tags-label">
+                    <li><a class="zn-tag" href="#zn-win"><i class="fas fa-trophy" aria-hidden="true"></i> How it wins</a></li>
+                    <li><a class="zn-tag" href="#zn-ritual"><i class="fas fa-ankh" aria-hidden="true"></i> Ritual engine</a></li>
+                    <li><a class="zn-tag" href="#zn-cards"><i class="fas fa-th-large" aria-hidden="true"></i> Card review</a></li>
+                    <li><a class="zn-tag" href="#zn-combos"><i class="fas fa-play" aria-hidden="true"></i> Combo lines</a></li>
+                    <li><a class="zn-tag" href="#zn-defence"><i class="fas fa-shield-alt" aria-hidden="true"></i> Defence</a></li>
+                    <li><a class="zn-tag" href="#zn-deck"><i class="fas fa-layer-group" aria-hidden="true"></i> Test deck</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- ==================== GUIDE TABS ====================
+             Five panels; the combo simulator and the banlist stay below all of them. -->
+        <div class="tab-nav" role="tablist" aria-label="Zenet guide" data-guide-tabs>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-overview" aria-controls="tab-overview" aria-selected="true"><i class="fas fa-ankh" aria-hidden="true"></i> Overview</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-cards" aria-controls="tab-cards" aria-selected="false" tabindex="-1"><i class="fas fa-th-large" aria-hidden="true"></i> Cards</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-combos" aria-controls="tab-combos" aria-selected="false" tabindex="-1"><i class="fas fa-play" aria-hidden="true"></i> Combos</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-defence" aria-controls="tab-defence" aria-selected="false" tabindex="-1"><i class="fas fa-shield-alt" aria-hidden="true"></i> Defence</button>
+            <button type="button" class="tab-btn" role="tab" id="tab-btn-deck" aria-controls="tab-deck" aria-selected="false" tabindex="-1"><i class="fas fa-layer-group" aria-hidden="true"></i> Test Deck</button>
+        </div>
+
+        <!-- ==================== TAB 1: OVERVIEW ==================== -->
+        <div id="tab-overview" data-pcs-scope="overview" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-overview" tabindex="0">
+
+            <section class="zn-block" id="zn-intro" aria-labelledby="zn-intro-title">
+                <h2 id="zn-intro-title" class="zn-h2">Zenet: Overview</h2>
+                <ul class="zn-release" aria-label="Release">
+                    <li class="zn-chip zn-chip--tcg"><i class="fas fa-calendar-alt" aria-hidden="true"></i> TCG &middot; Glorious Victors &middot; <time datetime="2026-12-03">3 Dec 2026</time></li>
+                    <li class="zn-chip"><i class="fas fa-globe-asia" aria-hidden="true"></i> OCG &middot; Deck-Build Pack: Glorious Victors &middot; <time datetime="2026-09-05">5 Sep 2026</time></li>
+                    <li class="zn-chip"><i class="fas fa-layer-group" aria-hidden="true"></i> 11 cards &middot; 3 Ritual Monsters</li>
+                </ul>
+                <p class="zn-lede">Zenet is a Ritual deck that runs on <strong>Normal Monsters</strong>. Its three Ritual Monsters, all DARK Zombies, can be Ritual Summoned from the hand <strong>or the GY</strong>, and the material is Normal Monster Cards with different names sent from your hand, Deck or face-up field. Two Level 4 Revelators Set the archetype's Spells and Traps straight from the Deck, two Spells bring out non-Effect Fusion Monsters such as Blue-Eyes Ultimate Dragon as Normal Monster Cards, and three Traps defend the board. The cards are new to the TCG in <strong>Glorious Victors</strong> on 3 December 2026; the OCG has had them since Deck-Build Pack: Glorious Victors on 5 September 2026.</p>
+                <div class="zn-pillars">
+                    <div class="zn-pillar">
+                        <div class="zn-pillar-icon" aria-hidden="true"><i class="fas fa-redo"></i></div>
+                        <h3>Discard, Then Rise</h3>
+                        <p>Each Ritual Monster discards itself for a search, a send or a recovery. That puts it in the GY, which is exactly where Pere-Zenet Em Heru can Ritual Summon it from.</p>
+                    </div>
+                    <div class="zn-pillar">
+                        <div class="zn-pillar-icon" aria-hidden="true"><i class="fas fa-shield-alt"></i></div>
+                        <h3>Normal Monsters as Armour</h3>
+                        <p>The Ritual cards equip a Normal Monster from the GY to the monster they summon, and an equipped Zenet Ritual Monster gains protection: immunity, no destruction by effects, or no destruction by battle.</p>
+                    </div>
+                    <div class="zn-pillar">
+                        <div class="zn-pillar-icon" aria-hidden="true"><i class="fas fa-dragon"></i></div>
+                        <h3>Fusions That Count as Normal</h3>
+                        <p>Zenet Per Aarkh and Return Journey summon non-Effect Fusion Monsters from the Extra Deck as Normal Monster Cards. Those count for every Zenet card that looks for Normal Monsters, and they trigger Em Heru's draw.</p>
+                    </div>
+                </div>
+                <div class="zn-callout">
+                    <p class="zn-callout-title"><i class="fas fa-language" aria-hidden="true"></i> Official TCG names</p>
+                    <p>Most card databases still list these cards under their OCG translations. This page uses the Glorious Victors names throughout:</p>
+                    <ul class="zn-names">
+                        <li><strong>Zenet Revelator Nefertari</strong> (Zenet Prophet - Nefertari)</li>
+                        <li><strong>Zenet Revelator Amenhotep</strong> (Zenet Prophet - Amenhotep)</li>
+                        <li><strong>Zenet-Nakhte Sphinx</strong> (Zenetnakht Sphinx)</li>
+                        <li><strong>Tau-Zenet Adjat</strong> (Tauzenet Wadjet)</li>
+                        <li><strong>Zenet-Mose Nekhbet</strong> (Zenetmes Nekhbet)</li>
+                        <li><strong>Zenet Per Aarkh</strong> (Zenet Per Akh)</li>
+                        <li><strong>Return Journey to the Light "Zenet"</strong> (A Journey Back to the Light - "Zenet")</li>
+                        <li><strong>Amduat Zenet</strong> (Am Duazenet)</li>
+                        <li><strong>Zenet Thunder Fall</strong> (Zenet Thunderfall)</li>
+                        <li><strong>Pere-Zenet Em Heru</strong> and <strong>Zenet Cataract</strong> (unchanged)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <nav aria-label="In this tab">
+                <ul class="zn-toc">
+                    <li><a class="zn-tag" href="#zn-win"><i class="fas fa-trophy" aria-hidden="true"></i> How the deck wins</a></li>
+                    <li><a class="zn-tag" href="#zn-ritual"><i class="fas fa-ankh" aria-hidden="true"></i> The Ritual engine</a></li>
+                    <li><a class="zn-tag" href="#zn-support"><i class="fas fa-dragon" aria-hidden="true"></i> Support in the same set</a></li>
+                </ul>
+            </nav>
+
+            <!-- How the deck wins -->
+            <section class="zn-block" id="zn-win" aria-labelledby="zn-win-title">
+                <h2 id="zn-win-title" class="zn-h2">How the Deck Wins</h2>
+                <p class="zn-lede">Going first, Zenet builds one protected Ritual Monster, a big Normal Monster Card beside it and two Set Traps, then plays a slow game from behind them. Going second, the Ritual Monsters' Quick Effects clear the way for attacks.</p>
+                <ol class="zn-flow">
+                    <li class="zn-flow-stage">
+                        <span class="zn-flow-num" aria-hidden="true">1</span>
+                        <div>
+                            <p class="zn-flow-title">Open with any starter</p>
+                            <p class="zn-flow-body"><strong>Zenet Revelator Nefertari</strong>, <strong>Zenet-Nakhte Sphinx</strong>, <strong>Zenet Per Aarkh</strong> and <strong>Return Journey to the Light "Zenet"</strong> each reach the others. The usual first goal is Nefertari's on-summon effect, which Sets <strong>Pere-Zenet Em Heru</strong> and Per Aarkh from the Deck. Nefertari pays its cost by sending itself to the GY, so Effect Veiler or Infinite Impermanence on it does nothing.</p>
+                        </div>
+                    </li>
+                    <li class="zn-flow-stage">
+                        <span class="zn-flow-num" aria-hidden="true">2</span>
+                        <div>
+                            <p class="zn-flow-title">Discard a Ritual Monster, gain a Fusion</p>
+                            <p class="zn-flow-body">Per Aarkh adds a Ritual Monster; that monster discards itself for its own effect. With Per Aarkh in the GY, the discard lets it banish itself to Special Summon a non-Effect Fusion Monster with ATK no higher than the discarded monster's, treated as a Normal Monster Card: <strong>Blue-Eyes Ultimate Dragon</strong> for Sphinx, <strong>Black Skull Dragon</strong> for Tau-Zenet Adjat. Em Heru draws you a card for that summon.</p>
+                        </div>
+                    </li>
+                    <li class="zn-flow-stage">
+                        <span class="zn-flow-num" aria-hidden="true">3</span>
+                        <div>
+                            <p class="zn-flow-title">Ritual Summon from the GY and equip</p>
+                            <p class="zn-flow-body">Em Heru Ritual Summons the discarded monster back from the GY by sending Normal Monsters from the Deck, then equips one of them to it. Sphinx with an Equip Card is unaffected by your opponent's activated effects.</p>
+                        </div>
+                    </li>
+                    <li class="zn-flow-stage">
+                        <span class="zn-flow-num" aria-hidden="true">4</span>
+                        <div>
+                            <p class="zn-flow-title">Set the Traps</p>
+                            <p class="zn-flow-body">Return Journey summons <strong>Zenet Revelator Amenhotep</strong> from the Deck (or you Normal Summon it), and Amenhotep Sets two of <strong>Zenet Cataract</strong>, <strong>Zenet Thunder Fall</strong> and <strong>Amduat Zenet</strong>. Once your Normal Monster Cards total more than 3000 ATK, Cataract and Thunder Fall each have a second use from the GY.</p>
+                        </div>
+                    </li>
+                    <li class="zn-flow-stage zn-flow-stage--opp">
+                        <span class="zn-flow-num" aria-hidden="true">5</span>
+                        <div>
+                            <p class="zn-flow-title">Interrupt, then attack</p>
+                            <p class="zn-flow-body">On your opponent's turn, Sphinx flips their monsters face-down, Cataract negates monster effects zone by zone, Thunder Fall negates a Spell or Trap, and Amduat Zenet rebuilds a Ritual Monster if the first one falls. Each Special Summon of a Normal Monster gives Em Heru another chance to draw, once per turn on each turn. Going second, Tau-Zenet Adjat returns blockers to the hand and Return Journey adds a Fusion that can attack directly; Line 4 in the Combos tab reaches 8850 damage that way.</p>
+                        </div>
+                    </li>
+                </ol>
+            </section>
+
+            <!-- The Ritual engine -->
+            <section class="zn-block" id="zn-ritual" aria-labelledby="zn-ritual-title">
+                <h2 id="zn-ritual-title" class="zn-h2">The Ritual Engine</h2>
+                <p class="zn-lede">Nothing is Tributed in the usual way. <strong>Pere-Zenet Em Heru</strong> (once per turn, on your turn) and <strong>Amduat Zenet</strong> (a Trap, so also on your opponent's turn) send Normal Monster Cards to the GY as the material. Each must have a different name, they can come from your hand, your Deck or your face-up field, and their Levels must add up to at least the Ritual Monster's. The Ritual Monster comes from your hand or your GY, and afterwards you can equip a Normal Monster from your GY to it.</p>
+
+                <h3 class="zn-h3">What covers each Level</h3>
+                <div class="zn-table-wrap">
+                    <table class="zn-table">
+                        <caption>Material that covers each Zenet Ritual Monster with the test deck's cards</caption>
+                        <thead>
+                            <tr><th scope="col">Ritual Monster</th><th scope="col">Material</th><th scope="col">While equipped</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Zenet-Nakhte Sphinx &middot; Level 12</th>
+                                <td data-label="Material">Tri-Horned Dragon + Blue-Eyes White Dragon (8 + 8), either of them + Labradorite Dragon (8 + 6), or Blue-Eyes Ultimate Dragon alone while it is a Level 12 Normal Monster Card on your field</td>
+                                <td data-label="While equipped">Unaffected by your opponent's activated effects</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Tau-Zenet Adjat &middot; Level 8</th>
+                                <td data-label="Material">Tri-Horned Dragon or Blue-Eyes White Dragon alone, or Black Skull Dragon (Level 9) on your field</td>
+                                <td data-label="While equipped">Can't be destroyed by card effects</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Zenet-Mose Nekhbet &middot; Level 6</th>
+                                <td data-label="Material">Labradorite Dragon alone, or any of the Level 8 Normal Monsters</td>
+                                <td data-label="While equipped">Can't be destroyed by battle</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="zn-note">Konami's notes on Em Heru add two details: a Normal Monster Card equipped in your Spell &amp; Trap Zone can be used as material too, and the material goes to the GY before the Ritual Monster is summoned, not at the same time. A summoned Fusion counts as a Normal Monster Card only while it is face-up in the Monster Zone, so from the GY it can't be equipped or summoned as a Normal Monster.</p>
+
+                <h3 class="zn-h3">Reaching the three Ritual Monsters</h3>
+                <p class="zn-prose"><strong>Zenet Per Aarkh</strong> adds any Zenet monster from the Deck, and <strong>Zenet-Nakhte Sphinx</strong>'s discard adds any other Zenet card, so either one can fetch Tau-Zenet Adjat or Zenet-Mose Nekhbet. Once a Ritual Monster has discarded itself, it is already in the GY for Em Heru or Amduat Zenet. Return Journey can't summon one from the Deck: a Ritual Monster has to be Ritual Summoned first.</p>
+                <p class="zn-prose">Which one to raise depends on the turn. <strong>Sphinx</strong> is the default going first: 5000 ATK, immune while equipped, and its Quick Effect flips every monster your opponent controls face-down. <strong>Adjat</strong> is the going-second choice, because its Quick Effect returns up to three of their cards to the hand. <strong>Nekhbet</strong> is mostly a discard: it brings back a used Zenet card from the GY (a Return Journey, or the Thunder Fall that a GY effect used), and on the field its Quick Effect turns the equipped Normal Monster back into a monster with 2500 more ATK.</p>
+
+                <h3 class="zn-h3">Zenet Per Aarkh's Fusion for each discard</h3>
+                <div class="zn-table-wrap">
+                    <table class="zn-table">
+                        <caption>Per Aarkh summons a non-Effect Fusion with ATK no higher than the discarded Zenet Ritual Monster's</caption>
+                        <thead>
+                            <tr><th scope="col">Discarded</th><th scope="col">Best target in the test deck</th><th scope="col">Why</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">Zenet-Nakhte Sphinx (5000)</th>
+                                <td data-label="Best target">Blue-Eyes Ultimate Dragon (4500)</td>
+                                <td data-label="Why">The biggest body, and a Level 12 Normal Monster Card that can be Sphinx's material on its own</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Tau-Zenet Adjat (3200)</th>
+                                <td data-label="Best target">Black Skull Dragon (3200)</td>
+                                <td data-label="Why">Alone it puts your Normal Monster Cards over 3000 ATK, which Cataract's and Thunder Fall's GY effects need</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Zenet-Mose Nekhbet (2800)</th>
+                                <td data-label="Best target">Twin-Headed Thunder Dragon (2800)</td>
+                                <td data-label="Why">The highest ATK that fits under Nekhbet's</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="zn-note">The Fusion can't attack directly that turn, and after Per Aarkh's GY effect resolves you can't activate the effects of monsters other than Zombies for the rest of the turn. Every Zenet monster is a Zombie, and Konami's notes say the restriction applies even if you already used another monster's effect earlier that turn.</p>
+            </section>
+
+            <!-- Support from the same set -->
+            <section class="zn-block" id="zn-support" aria-labelledby="zn-support-title">
+                <h2 id="zn-support-title" class="zn-h2">Support in the Same Set</h2>
+                <p class="zn-lede">Glorious Victors reprints four older cards next to the Zenet cards, and the Zenet text has a use for each.</p>
+                <ul class="zn-support">
+                    <li>
+                        <div id="sup-tri-img-container" class="zn-art">Tri-Horned Dragon</div>
+                        <div>
+                            <h4>Tri-Horned Dragon</h4>
+                            <p class="zn-support-type">Normal Monster &middot; Level 8 DARK Dragon &middot; 2850 ATK</p>
+                            <p>A Level 8 Normal Monster covers Tau-Zenet Adjat on its own and, with a second Level 8 of another name, Zenet-Nakhte Sphinx. It is also the card every combo line equips to its Ritual Monster.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div id="sup-bsd-img-container" class="zn-art">Black Skull Dragon</div>
+                        <div>
+                            <h4>Black Skull Dragon</h4>
+                            <p class="zn-support-type">non-Effect Fusion &middot; Level 9 &middot; 3200 ATK</p>
+                            <p>Zenet Per Aarkh's target when Tau-Zenet Adjat (3200) or Sphinx is discarded. At Level 9 it is above Return Journey's Level 8 limit. On the field it covers Adjat as Amduat Zenet material, and its 3200 ATK alone switches on Cataract's and Thunder Fall's GY effects.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div id="sup-thtd-img-container" class="zn-art">Twin-Headed Thunder Dragon</div>
+                        <div>
+                            <h4>Twin-Headed Thunder Dragon</h4>
+                            <p class="zn-support-type">non-Effect Fusion &middot; Level 7 &middot; 2800 ATK</p>
+                            <p>Return Journey's two-card option summons it, and nothing then stops it attacking directly. Per Aarkh can summon it for any discarded Zenet Ritual Monster, Nekhbet included.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <div id="sup-theseus-img-container" class="zn-art">Sea Monster of Theseus</div>
+                        <div>
+                            <h4>Sea Monster of Theseus</h4>
+                            <p class="zn-support-type">non-Effect Fusion Tuner &middot; Level 5 &middot; 2200 ATK</p>
+                            <p>The lowest target for both Return Journey and Per Aarkh: a Level 5 Normal Monster Card that is also a Tuner, for an Extra Deck that wants one.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- ==================== TAB 2: CARD REVIEW ==================== -->
+        <div id="tab-cards" data-pcs-scope="cards" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-cards" tabindex="0" hidden>
+            <section class="zn-block" id="zn-cards" aria-labelledby="zn-cards-title" data-gallery>
+                <h2 id="zn-cards-title" class="zn-h2">Every Card's Role</h2>
+                <p class="zn-lede">Pick a card for what it does, in our own words from the official text, and the job it has in the deck. Copy counts match the <a class="zn-link" href="#zn-deck">test deck</a>. Each profile links to Konami's notes and Q&amp;A for that card.</p>
+
+                <div class="zn-filters" role="group" aria-label="Filter the eleven cards" data-gallery-filters hidden>
+                    <button type="button" class="zn-filter" data-filter="all" aria-pressed="true">All <span class="zn-filter-count">11</span></button>
+                    <button type="button" class="zn-filter" data-filter="ritual" aria-pressed="false"><i class="fas fa-crown" aria-hidden="true"></i> Ritual Monsters <span class="zn-filter-count">3</span></button>
+                    <button type="button" class="zn-filter" data-filter="monster" aria-pressed="false">Revelators <span class="zn-filter-count">2</span></button>
+                    <button type="button" class="zn-filter" data-filter="spell" aria-pressed="false">Spells <span class="zn-filter-count">3</span></button>
+                    <button type="button" class="zn-filter" data-filter="trap" aria-pressed="false">Traps <span class="zn-filter-count">3</span></button>
+                    <button type="button" class="zn-filter" data-filter="offturn" aria-pressed="false"><i class="fas fa-moon" aria-hidden="true"></i> Works on their turn <span class="zn-filter-count">7</span></button>
+                </div>
+                <p class="zn-gallery-status" role="status" data-gallery-status></p>
+
+                <ul class="zn-tiles" role="list" aria-label="Card gallery">
+                    <li><a class="zn-tile" href="#card-sphinx" data-kinds="ritual offturn" data-card="Zenet-Nakhte Sphinx">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet-Nakhte Sphinx</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Zenet-Nakhte Sphinx</span>
+                        <span class="zn-tile-type">Ritual &middot; Level 12</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-adjat" data-kinds="ritual offturn" data-card="Tau-Zenet Adjat">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Tau-Zenet Adjat</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Tau-Zenet Adjat</span>
+                        <span class="zn-tile-type">Ritual &middot; Level 8</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-nekhbet" data-kinds="ritual offturn" data-card="Zenet-Mose Nekhbet">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet-Mose Nekhbet</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Zenet-Mose Nekhbet</span>
+                        <span class="zn-tile-type">Ritual &middot; Level 6</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-nefertari" data-kinds="monster offturn" data-card="Zenet Revelator Nefertari">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet Revelator Nefertari</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Zenet Revelator Nefertari</span>
+                        <span class="zn-tile-type">Level 4 &middot; starter</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-amenhotep" data-kinds="monster" data-card="Zenet Revelator Amenhotep">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet Revelator Amenhotep</span></span>
+                        <span class="zn-tile-name">Zenet Revelator Amenhotep</span>
+                        <span class="zn-tile-type">Level 4 &middot; Trap setter</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-em-heru" data-kinds="spell" data-card="Pere-Zenet Em Heru">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Pere-Zenet Em Heru</span></span>
+                        <span class="zn-tile-name">Pere-Zenet Em Heru</span>
+                        <span class="zn-tile-type">Field Spell</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-per-aarkh" data-kinds="spell" data-card="Zenet Per Aarkh">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet Per Aarkh</span></span>
+                        <span class="zn-tile-name">Zenet Per Aarkh</span>
+                        <span class="zn-tile-type">Normal Spell</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-journey" data-kinds="spell" data-card="Return Journey to the Light &quot;Zenet&quot;">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Return Journey to the Light "Zenet"</span></span>
+                        <span class="zn-tile-name">Return Journey to the Light "Zenet"</span>
+                        <span class="zn-tile-type">Normal Spell</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-amduat" data-kinds="trap offturn" data-card="Amduat Zenet">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Amduat Zenet</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Amduat Zenet</span>
+                        <span class="zn-tile-type">Normal Trap</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-cataract" data-kinds="trap offturn" data-card="Zenet Cataract">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet Cataract</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Zenet Cataract</span>
+                        <span class="zn-tile-type">Normal Trap</span>
+                    </a></li>
+                    <li><a class="zn-tile" href="#card-thunder-fall" data-kinds="trap offturn" data-card="Zenet Thunder Fall">
+                        <span class="zn-tile-art"><span class="zn-tile-fallback">Zenet Thunder Fall</span><span class="zn-tile-badge"><i class="fas fa-moon" aria-hidden="true"></i><span class="zn-sr-only">Works on your opponent's turn</span></span></span>
+                        <span class="zn-tile-name">Zenet Thunder Fall</span>
+                        <span class="zn-tile-type">Counter Trap</span>
+                    </a></li>
+                </ul>
+
+                <div class="zn-viewer" data-gallery-viewer>
+
+                    <!-- 1. Zenet-Nakhte Sphinx -->
+                    <article class="zn-profile" id="card-sphinx" aria-labelledby="pf-sphinx-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-sphinx-img-container" class="zn-art">Zenet-Nakhte Sphinx</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Ritual boss &middot; starter</p>
+                                <h3 id="pf-sphinx-name" class="zn-card-name">Zenet-Nakhte Sphinx</h3>
+                                <p class="zn-summary"><strong>Role:</strong> the deck's boss and one of its best starters; it searches from the hand, then returns from the GY.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Ritual / Effect</li><li>Level 12</li><li>DARK Zombie</li><li>5000 / 2500</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Ritual</span>Any Zenet card can Ritual Summon it.</li>
+                                    <li><span class="zn-effect-tag">Protection</span>While it has an Equip Card, your opponent's activated effects don't affect it.</li>
+                                    <li><span class="zn-effect-tag">Hand</span>Discard it to add any other Zenet card from your Deck to your hand.</li>
+                                    <li><span class="zn-effect-tag">Quick Effect</span>Send a face-up Normal Monster Card you control to the GY to turn every monster your opponent controls face-down in Defense Position; then you may Special Summon a Normal Monster from your GY.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>The search and the Quick Effect are each once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>A starter that comes back as the boss.</strong> Its search takes any Zenet card, so it can open a combo by itself: Return Journey from the Deck, or Amenhotep when your Normal Summon is free. With Zenet Per Aarkh already in the GY, the discard also brings out Blue-Eyes Ultimate Dragon.</p>
+                                    <p>The Quick Effect's cost can be the Equip Card itself, but then Sphinx loses its immunity; pay with a Fusion on the field if you have one. Flipping face-down stops face-up effects and attacks for the turn, and the Normal Monster you revive can trigger Em Heru's draw on your opponent's turn.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>3 copies</dd></div>
+                                    <div><dt>Searched by</dt><dd>Zenet Per Aarkh</dd></div>
+                                    <div><dt>Interaction</dt><dd>Flips their board</dd></div>
+                                    <div><dt>Weak to</dt><dd>Equip removal</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23534&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>: the cost can come from your Monster Zone or your Spell &amp; Trap Zone, and the revive only happens if at least one monster was turned face-down.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 2. Tau-Zenet Adjat -->
+                    <article class="zn-profile" id="card-adjat" aria-labelledby="pf-adjat-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-adjat-img-container" class="zn-art">Tau-Zenet Adjat</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Ritual &middot; removal</p>
+                                <h3 id="pf-adjat-name" class="zn-card-name">Tau-Zenet Adjat</h3>
+                                <p class="zn-summary"><strong>Role:</strong> the going-second Ritual Monster: it returns up to three of your opponent's cards to the hand.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Ritual / Effect</li><li>Level 8</li><li>DARK Zombie</li><li>3200 / 2500</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Ritual</span>Any Zenet card can Ritual Summon it.</li>
+                                    <li><span class="zn-effect-tag">Protection</span>While it has an Equip Card, card effects can't destroy it.</li>
+                                    <li><span class="zn-effect-tag">Hand</span>Discard it to send any other Zenet card from your Deck to the GY.</li>
+                                    <li><span class="zn-effect-tag">Quick Effect</span>Send up to three face-up Normal Monster Cards you control to the GY, then target that many cards your opponent controls and return them to the hand; then you may Special Summon a Normal Monster from your GY.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>The send and the Quick Effect are each once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>Bounce that pays for itself.</strong> The Normal Monster Cards it sends can include an Equip Card and the Fusion beside it, and one of them can come straight back from the GY as the revive. In Line 4 that clears two monsters and leaves three attackers.</p>
+                                    <p>The discard is a setup tool: sending Zenet Thunder Fall or Zenet Cataract to the GY readies their GY effects, and with Per Aarkh in the GY it also calls Black Skull Dragon (3200 ATK, the same as Adjat's). Unlike Sphinx it has no immunity, so Infinite Impermanence and Effect Veiler work on it.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>2 copies</dd></div>
+                                    <div><dt>Searched by</dt><dd>Per Aarkh, Sphinx</dd></div>
+                                    <div><dt>Interaction</dt><dd>Bounce, up to 3</dd></div>
+                                    <div><dt>Weak to</dt><dd>Negation</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23535&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>, the official rulings in Konami's Japanese card database.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 3. Zenet-Mose Nekhbet -->
+                    <article class="zn-profile" id="card-nekhbet" aria-labelledby="pf-nekhbet-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-nekhbet-img-container" class="zn-art">Zenet-Mose Nekhbet</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Ritual &middot; recovery</p>
+                                <h3 id="pf-nekhbet-name" class="zn-card-name">Zenet-Mose Nekhbet</h3>
+                                <p class="zn-summary"><strong>Role:</strong> a discard that recovers a used Zenet card, and a damage boost on the field.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Ritual / Effect</li><li>Level 6</li><li>DARK Zombie</li><li>2800 / 1500</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Ritual</span>Any Zenet card can Ritual Summon it.</li>
+                                    <li><span class="zn-effect-tag">Protection</span>While it has an Equip Card, it can't be destroyed by battle.</li>
+                                    <li><span class="zn-effect-tag">Hand</span>Discard it to add any other Zenet card from your GY to your hand.</li>
+                                    <li><span class="zn-effect-tag">Quick Effect</span>Special Summon a face-up Normal Monster Card from your Spell &amp; Trap Zone, then equip Nekhbet itself to that monster as an Equip Spell that gives it 2500 ATK.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>The recovery and the Quick Effect are each once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>The late-game Ritual Monster.</strong> Its discard brings back whatever the turn used up: a spent Return Journey, a Nefertari for next turn, or the Zenet card a GY effect needs. With Per Aarkh in the GY the discard also calls Twin-Headed Thunder Dragon (2800 ATK, the same as Nekhbet's).</p>
+                                    <p>On the field it swaps places with its own Equip Card: an equipped Tri-Horned Dragon comes back as a 5350-ATK monster, and the summon can trigger Em Heru's draw. The swap is a Quick Effect, so it also dodges removal aimed at Nekhbet.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>1 copy</dd></div>
+                                    <div><dt>Searched by</dt><dd>Per Aarkh, Sphinx</dd></div>
+                                    <div><dt>Material</dt><dd>One Level 6+ Normal</dd></div>
+                                    <div><dt>Weak to</dt><dd>Effect removal</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23536&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>, the official rulings in Konami's Japanese card database.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 4. Zenet Revelator Nefertari -->
+                    <article class="zn-profile" id="card-nefertari" aria-labelledby="pf-nefertari-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-nefertari-img-container" class="zn-art">Zenet Revelator Nefertari</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Starter &middot; Spell setter</p>
+                                <h3 id="pf-nefertari-name" class="zn-card-name">Zenet Revelator Nefertari</h3>
+                                <p class="zn-summary"><strong>Role:</strong> the most reliable one-card start: it Sets Em Heru and Per Aarkh from the Deck.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Effect</li><li>Level 4</li><li>LIGHT Zombie</li><li>0 / 1000</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Summoned</span>When it is Normal or Special Summoned, send it to the GY to show up to two Normal Monster Cards from your hand, Deck, face-up field or GY, then Set that many Zenet Spells from your Deck.</li>
+                                    <li><span class="zn-effect-tag">GY &middot; their turn</span>Banish it from your GY to equip a Normal Monster from your GY to a Ritual Monster you control as an Equip Spell.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>Each effect is once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>Two Spells for one Normal Summon.</strong> Show two Normal Monsters from the Deck and Set Pere-Zenet Em Heru (in the Field Zone) and Zenet Per Aarkh; both can be activated that turn. Sending itself is the cost, so negating Nefertari doesn't stop the Sets, and Ash Blossom has nothing to hit.</p>
+                                    <p>Its GY effect is the insurance policy: if your opponent destroys or banishes the Equip Card, Nefertari puts a new one on the Ritual Monster during their turn and switches its protection back on.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>3 copies</dd></div>
+                                    <div><dt>Searched by</dt><dd>Per Aarkh, Sphinx</dd></div>
+                                    <div><dt>Also summoned by</dt><dd>Return Journey</dd></div>
+                                    <div><dt>Weak to</dt><dd>Nothing on summon</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23532&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>: the on-summon effect can be activated in the Damage Step, and Normal Monster Cards in your Spell &amp; Trap Zone can be shown too.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 5. Zenet Revelator Amenhotep -->
+                    <article class="zn-profile" id="card-amenhotep" aria-labelledby="pf-amenhotep-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-amenhotep-img-container" class="zn-art">Zenet Revelator Amenhotep</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Extender &middot; Trap setter</p>
+                                <h3 id="pf-amenhotep-name" class="zn-card-name">Zenet Revelator Amenhotep</h3>
+                                <p class="zn-summary"><strong>Role:</strong> the last step of a combo: it Sets two Zenet Traps straight from the Deck.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Effect</li><li>Level 4</li><li>LIGHT Zombie</li><li>0 / 1500</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Summoned</span>When it is Normal or Special Summoned, send it to the GY to show up to two Normal Monster Cards from your hand, Deck, face-up field or GY, then Set that many Zenet Traps from your Deck.</li>
+                                    <li><span class="zn-effect-tag">GY</span>Banish it from your GY, then target up to three Normal Monsters in your GY and shuffle them into the Deck.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>Each effect is once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>Your defence, from the Deck.</strong> Pick the two Traps for the matchup: Zenet Thunder Fall against Spell-heavy decks, Zenet Cataract against monster effects, Amduat Zenet when your board might get broken. Return Journey can summon it from the Deck, so it rarely needs your Normal Summon.</p>
+                                    <p>The GY effect refills the Deck with Normal Monsters for the next Em Heru or Amduat Ritual Summon, since every Ritual Summon sends different names. It is a Main Phase effect, so use it before your turn ends.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>2 copies</dd></div>
+                                    <div><dt>Summoned by</dt><dd>Return Journey</dd></div>
+                                    <div><dt>Searched by</dt><dd>Per Aarkh, Sphinx</dd></div>
+                                    <div><dt>Weak to</dt><dd>Nothing on summon</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23533&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>, the official rulings in Konami's Japanese card database.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 6. Pere-Zenet Em Heru -->
+                    <article class="zn-profile" id="card-em-heru" aria-labelledby="pf-em-heru-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-em-heru-img-container" class="zn-art">Pere-Zenet Em Heru</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Ritual card &middot; draw engine</p>
+                                <h3 id="pf-em-heru-name" class="zn-card-name">Pere-Zenet Em Heru</h3>
+                                <p class="zn-summary"><strong>Role:</strong> the deck's only on-turn way to Ritual Summon, and a card of draw on each turn.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Field Spell</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Ritual</span>Once per turn, Ritual Summon a Zenet Ritual Monster from your hand or GY by sending Normal Monster Cards with different names from your hand, Deck or face-up field to the GY, with Levels adding up to at least its Level. Then you may equip a Normal Monster from your GY to it as an Equip Spell.</li>
+                                    <li><span class="zn-effect-tag">Draw</span>When you Special Summon a Normal Monster that isn't a Token, draw a card.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>The draw is once per turn; the Ritual Summon is once per turn for each copy.</p>
+                                <div class="zn-role">
+                                    <p><strong>The heart of the deck.</strong> Materials from the Deck mean the Ritual costs no cards from your hand, and summoning from the GY means the Ritual Monster has already paid you with its discard. Nefertari Sets it from the Deck, so the deck rarely needs to draw it.</p>
+                                    <p>The draw triggers on Per Aarkh's or Return Journey's Fusion, on a Normal Monster revived by Sphinx or Adjat, and on Nekhbet's swap; that's one card on your turn and another on theirs.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>2 copies</dd></div>
+                                    <div><dt>Set by</dt><dd>Nefertari, Thunder Fall</dd></div>
+                                    <div><dt>Materials from</dt><dd>Hand, Deck, field</dd></div>
+                                    <div><dt>Weak to</dt><dd>Ash, Field removal</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23537&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>: material can come from your Spell &amp; Trap Zone too, and the material, the summon and the equip happen one after another, not at the same time.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 7. Zenet Per Aarkh -->
+                    <article class="zn-profile" id="card-per-aarkh" aria-labelledby="pf-per-aarkh-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-per-aarkh-img-container" class="zn-art">Zenet Per Aarkh</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Searcher &middot; Fusion caller</p>
+                                <h3 id="pf-per-aarkh-name" class="zn-card-name">Zenet Per Aarkh</h3>
+                                <p class="zn-summary"><strong>Role:</strong> a search now, and a free Fusion body the moment you discard a Ritual Monster.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Normal Spell</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Search</span>Add a Zenet monster from your Deck to your hand.</li>
+                                    <li><span class="zn-effect-tag">GY</span>If you discard a Zenet Ritual Monster while it is in your GY, banish it to Special Summon a non-Effect Fusion Monster from your Extra Deck with ATK no higher than the discarded monster's. It is treated as a Normal Monster Card and can't attack directly that turn, and you can't activate the effects of monsters other than Zombies for the rest of the turn.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>Each effect is once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>The engine's best card.</strong> Search a Ritual Monster, discard it for its own effect, and Per Aarkh is already in the GY waiting for exactly that discard. The order matters: activate Per Aarkh's search first, then discard.</p>
+                                    <p>The Zombie restriction rarely bites inside the engine, but play non-Zombie extenders and hand traps you need on your own turn before this effect. The Fusion stays a Normal Monster Card while it is face-up in the Monster Zone, so it can be Ritual material, a Sphinx or Adjat cost, and the ATK behind Cataract's and Thunder Fall's GY effects.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>3 copies</dd></div>
+                                    <div><dt>Set by</dt><dd>Nefertari, Thunder Fall</dd></div>
+                                    <div><dt>Searched by</dt><dd>Sphinx</dd></div>
+                                    <div><dt>Weak to</dt><dd>Ash, GY banish</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23538&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>: the summoned monster is still a Fusion Monster as well, the GY effect can't be used in the Damage Step, and the restriction applies even if the summon fails.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 8. Return Journey to the Light "Zenet" -->
+                    <article class="zn-profile" id="card-journey" aria-labelledby="pf-journey-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-journey-img-container" class="zn-art">Return Journey to the Light "Zenet"</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Starter &middot; summoner</p>
+                                <h3 id="pf-journey-name" class="zn-card-name">Return Journey to the Light "Zenet"</h3>
+                                <p class="zn-summary"><strong>Role:</strong> a one-card start that also turns a Normal Monster stuck in your hand into a draw.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Normal Spell</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Show 2</span>Show two Normal Monster Cards from your hand, Deck, face-up field or GY to Special Summon a Level 8 or lower non-Effect Fusion Monster from your Extra Deck, treated as a Normal Monster Card.</li>
+                                    <li><span class="zn-effect-tag">Show 3</span>Show three to Special Summon a Zenet monster from your Deck or a Normal Monster from your GY instead.</li>
+                                    <li><span class="zn-effect-tag">Draw</span>If you showed a card from your hand, you may draw a card afterwards.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only activate one Return Journey to the Light "Zenet" per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>Three cards shown, one Revelator summoned.</strong> Going first it calls Nefertari (who Sets Em Heru and Per Aarkh) or, later in the turn, Amenhotep. Shown cards can sit anywhere, including the Deck, so it works even with no Normal Monster in hand.</p>
+                                    <p>The two-card option is the attacking mode: a Fusion from Return Journey has no direct-attack restriction, unlike Per Aarkh's. Showing a Normal Monster from your hand turns a dead draw into a fresh card.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>3 copies</dd></div>
+                                    <div><dt>Searched by</dt><dd>Sphinx</dd></div>
+                                    <div><dt>Summons</dt><dd>Revelators, Fusions</dd></div>
+                                    <div><dt>Weak to</dt><dd>Ash (Deck summon)</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23539&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>: the draw needs a shown hand card and a successful summon, and the Fusion counts as a Normal Monster Card only while it is face-up in the Monster Zone.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 9. Amduat Zenet -->
+                    <article class="zn-profile" id="card-amduat" aria-labelledby="pf-amduat-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-amduat-img-container" class="zn-art">Amduat Zenet</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Ritual Trap &middot; rebuild</p>
+                                <h3 id="pf-amduat-name" class="zn-card-name">Amduat Zenet</h3>
+                                <p class="zn-summary"><strong>Role:</strong> Ritual Summons on your opponent's turn, so a broken board comes back.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Normal Trap</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Ritual</span>Ritual Summon a Zenet Ritual Monster from your hand or GY the same way Em Heru does (Normal Monster Cards with different names from your hand, Deck or face-up field), then you may equip a Normal Monster from your GY to it.</li>
+                                    <li><span class="zn-effect-tag">GY</span>If a Normal Monster Card you control would be destroyed by battle or a card effect, you can banish this card from your GY instead.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>You can only activate one Amduat Zenet per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>The answer to a board wipe.</strong> If your opponent clears the field, Amduat brings a Ritual Monster back from the GY at Trap speed, and Sphinx or Adjat can then use its Quick Effect in the same turn. Line 2 Sets it with Thunder Fall's GY effect.</p>
+                                    <p>Once used, it keeps working from the GY: it saves an equipped Normal Monster or a Fusion treated as a Normal Monster Card from destruction, so it also protects the Equip Card that keeps your Ritual Monster safe.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>1 copy</dd></div>
+                                    <div><dt>Set by</dt><dd>Amenhotep, Thunder Fall</dd></div>
+                                    <div><dt>Speed</dt><dd>Trap (their turn)</dd></div>
+                                    <div><dt>Weak to</dt><dd>Spell/Trap negation</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23540&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>, the official rulings in Konami's Japanese card database.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 10. Zenet Cataract -->
+                    <article class="zn-profile" id="card-cataract" aria-labelledby="pf-cataract-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-cataract-img-container" class="zn-art">Zenet Cataract</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Trap &middot; monster negation</p>
+                                <h3 id="pf-cataract-name" class="zn-card-name">Zenet Cataract</h3>
+                                <p class="zn-summary"><strong>Role:</strong> negates monster effects zone by zone, then sends a monster to the GY from your GY.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Normal Trap</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Negate</span>Choose as many of your opponent's Main Monster Zones as you control Normal Monsters and Zenet Ritual Monsters; this turn, the first monster effect activated in each chosen zone is negated when it resolves.</li>
+                                    <li><span class="zn-effect-tag">GY</span>If the face-up Normal Monster Cards you control total more than 3000 ATK, banish this card from your GY and target a monster your opponent controls to send it to the GY.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>Each effect is once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>Two interruptions from one Trap.</strong> Activate it early in your opponent's turn to cover the zones their starters will land in. It doesn't target and needs no monster in the zone yet; with Sphinx and Blue-Eyes Ultimate Dragon on the field you choose two zones.</p>
+                                    <p>Once it is in the GY, Blue-Eyes Ultimate Dragon or Black Skull Dragon alone clears the 3000-ATK bar, and the GY effect sends a monster to the GY at Quick-Effect speed without destroying it.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>1 copy</dd></div>
+                                    <div><dt>Set by</dt><dd>Amenhotep, Thunder Fall</dd></div>
+                                    <div><dt>Counts</dt><dd>Monster Zone only</dd></div>
+                                    <div><dt>Misses</dt><dd>Extra Monster Zone</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23541&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>: Normal Monster Cards in your Spell &amp; Trap Zone don't add zones, but they do count toward the 3000 ATK; the negation isn't a chain, so it also stops monsters that are unaffected by activated effects (not ones unaffected by Traps).</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 11. Zenet Thunder Fall -->
+                    <article class="zn-profile" id="card-thunder-fall" aria-labelledby="pf-thunder-fall-name">
+                        <div class="zn-profile-layout">
+                            <div class="zn-profile-art"><div id="pf-thunder-fall-img-container" class="zn-art">Zenet Thunder Fall</div></div>
+                            <div class="zn-profile-head">
+                                <p class="zn-kicker">Counter Trap &middot; Spell/Trap negation</p>
+                                <h3 id="pf-thunder-fall-name" class="zn-card-name">Zenet Thunder Fall</h3>
+                                <p class="zn-summary"><strong>Role:</strong> negates a Spell or Trap, then Sets the next Zenet card from your GY.</p>
+                                <ul class="zn-stats" aria-label="Card stats">
+                                    <li>Counter Trap</li>
+                                </ul>
+                            </div>
+                            <div class="zn-profile-body">
+                                <p class="zn-label">What it does</p>
+                                <ol class="zn-effects" role="list">
+                                    <li><span class="zn-effect-tag">Negate</span>When your opponent activates a Spell or Trap Card while you control a Normal Monster or a Zenet Ritual Monster, negate the activation and destroy it.</li>
+                                    <li><span class="zn-effect-tag">GY</span>If the face-up Normal Monster Cards you control total more than 3000 ATK, banish this card from your GY to Set another Zenet Spell or Trap from your Deck or GY.</li>
+                                </ol>
+                                <p class="zn-opt"><i class="fas fa-lock" aria-hidden="true"></i>Each effect is once per turn.</p>
+                                <div class="zn-role">
+                                    <p><strong>A negate that refills the back row.</strong> It answers board breakers like Dark Ruler No More or Evenly Matched, and as a Counter Trap only other Counter Traps can respond to it.</p>
+                                    <p>Its GY effect is a toolbox: Set Amduat Zenet for a Ritual Summon next turn (Line 2), a second Pere-Zenet Em Heru if the first one gets negated, or Cataract. Tau-Zenet Adjat can send it from the Deck to the GY just to use this.</p>
+                                </div>
+                                <dl class="zn-glance">
+                                    <div><dt>Test deck</dt><dd>2 copies</dd></div>
+                                    <div><dt>Set by</dt><dd>Amenhotep</dd></div>
+                                    <div><dt>Sent by</dt><dd>Tau-Zenet Adjat</dd></div>
+                                    <div><dt>Misses</dt><dd>Monster effects</dd></div>
+                                </dl>
+                                <p class="kq-note">Based on the card text and <a class="kq-link" href="https://www.db.yugioh-card.com/yugiohdb/faq_search.action?ope=4&amp;cid=23542&amp;request_locale=ja" target="_blank" rel="noopener" title="Konami's notes and Q&amp;A on this card, in its official card database (Japanese)">Konami's notes and Q&amp;A on this card</a>, the official rulings in Konami's Japanese card database.</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== TAB 3: COMBO LINES ==================== -->
+        <div id="tab-combos" data-pcs-scope="combos" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-combos" tabindex="0" hidden>
+            <section class="zn-block" id="zn-combos" aria-labelledby="zn-combos-title">
+                <h2 id="zn-combos-title" class="zn-h2">Combo Lines</h2>
+                <p class="zn-lede">Three one-card openings and one going-second turn. Each summary lists the hand, what the Deck needs and the end board; "Play Line" walks through it step by step in the simulator below the tabs.</p>
+                <p class="zn-tested"><i class="fas fa-check-circle" aria-hidden="true"></i><span>All four lines were replayed card by card in the ocgcore duel engine with the pre-release scripts for every Zenet card. Every step matched a legal action, and every card ended where the line says. The engine doesn't play the Battle Phase, so Line 4's damage is our arithmetic.</span></p>
+
+                <div class="zn-lines" data-combo-switch data-combo-switch-label="Zenet combo lines" style="--cs-accent: var(--zn-gold)">
+                    <article class="zn-line" id="zn-line-1" aria-labelledby="zn-line-1-title" data-combo-switch-panel data-combo-switch-tag="Line 1 · going first" data-combo-switch-title="Nefertari alone">
+                        <p class="zn-line-kicker">Line 1 &middot; Going first</p>
+                        <h3 id="zn-line-1-title">Zenet Revelator Nefertari Alone</h3>
+                        <dl class="zn-line-facts">
+                            <div><dt>Hand</dt><dd>Zenet Revelator Nefertari</dd></div>
+                            <div><dt>Needs</dt><dd>Pere-Zenet Em Heru, Zenet Per Aarkh, Zenet-Nakhte Sphinx, Return Journey to the Light "Zenet", Zenet Revelator Amenhotep, Zenet Cataract, Zenet Thunder Fall, Tri-Horned Dragon and Blue-Eyes White Dragon in the Deck; Blue-Eyes Ultimate Dragon in the Extra Deck</dd></div>
+                            <div><dt>Key moves</dt><dd>
+                                <ol class="zn-moves">
+                                    <li>Nefertari Sets Em Heru and Per Aarkh; Per Aarkh adds Sphinx.</li>
+                                    <li>Sphinx discards itself for Return Journey; Per Aarkh calls Blue-Eyes Ultimate Dragon from the GY, and Em Heru draws.</li>
+                                    <li>Em Heru Ritual Summons Sphinx from the GY with Tri-Horned Dragon and Blue-Eyes White Dragon from the Deck, and equips Tri-Horned Dragon.</li>
+                                    <li>Return Journey shows three cards to summon Amenhotep, which Sets Cataract and Thunder Fall.</li>
+                                </ol>
+                            </dd></div>
+                            <div><dt>End board</dt><dd>Zenet-Nakhte Sphinx (5000, equipped), Blue-Eyes Ultimate Dragon (4500), Pere-Zenet Em Heru, a Set Zenet Cataract and Zenet Thunder Fall, plus one drawn card</dd></div>
+                        </dl>
+                        <p class="zn-line-rule"><strong>Hand traps:</strong> Ash Blossom can stop Per Aarkh's search, Sphinx's search, Em Heru's Ritual Summon (it sends from the Deck) or Return Journey's summon from the Deck. Nefertari's and Amenhotep's Sets are out of its reach. The line summons four times, one short of Nibiru.</p>
+                        <button type="button" class="zn-line-play" data-combo-open="1"><i class="fas fa-play" aria-hidden="true"></i> Play Line 1</button>
+                    </article>
+
+                    <article class="zn-line" id="zn-line-2" aria-labelledby="zn-line-2-title" data-combo-switch-panel data-combo-switch-tag="Line 2 · going first" data-combo-switch-title="Sphinx alone">
+                        <p class="zn-line-kicker">Line 2 &middot; Going first</p>
+                        <h3 id="zn-line-2-title">Zenet-Nakhte Sphinx Alone, through Tau-Zenet Adjat</h3>
+                        <dl class="zn-line-facts">
+                            <div><dt>Hand</dt><dd>Zenet-Nakhte Sphinx</dd></div>
+                            <div><dt>Needs</dt><dd>Return Journey to the Light "Zenet", Zenet Revelator Nefertari, Pere-Zenet Em Heru, Zenet Per Aarkh, Tau-Zenet Adjat, Zenet Thunder Fall, Amduat Zenet, Tri-Horned Dragon, Blue-Eyes White Dragon and Labradorite Dragon in the Deck; Black Skull Dragon in the Extra Deck</dd></div>
+                            <div><dt>Key moves</dt><dd>
+                                <ol class="zn-moves">
+                                    <li>Sphinx discards itself for Return Journey, which shows three Normal Monsters from the Deck to summon Nefertari.</li>
+                                    <li>Nefertari Sets Em Heru and Per Aarkh; Per Aarkh adds Adjat, and Adjat discards itself to send Thunder Fall to the GY.</li>
+                                    <li>Per Aarkh calls Black Skull Dragon; Em Heru draws, then Ritual Summons Sphinx from the GY and equips Blue-Eyes White Dragon.</li>
+                                    <li>Black Skull Dragon's 3200 ATK lets Thunder Fall banish itself from the GY to Set Amduat Zenet.</li>
+                                </ol>
+                            </dd></div>
+                            <div><dt>End board</dt><dd>Zenet-Nakhte Sphinx (5000, equipped), Black Skull Dragon (3200), Pere-Zenet Em Heru and a Set Amduat Zenet, plus one drawn card, and your Normal Summon is still free</dd></div>
+                        </dl>
+                        <p class="zn-line-rule"><strong>Next turn:</strong> by card text, Amduat Zenet can Ritual Summon Tau-Zenet Adjat from the GY during your opponent's turn by sending Black Skull Dragon (Level 9), then equip Tri-Horned Dragon. That follow-up isn't part of the simulated line.</p>
+                        <button type="button" class="zn-line-play" data-combo-open="2"><i class="fas fa-play" aria-hidden="true"></i> Play Line 2</button>
+                    </article>
+
+                    <article class="zn-line" id="zn-line-3" aria-labelledby="zn-line-3-title" data-combo-switch-panel data-combo-switch-tag="Line 3 · going first" data-combo-switch-title="Return Journey alone">
+                        <p class="zn-line-kicker">Line 3 &middot; Going first</p>
+                        <h3 id="zn-line-3-title">Return Journey to the Light "Zenet" Alone</h3>
+                        <dl class="zn-line-facts">
+                            <div><dt>Hand</dt><dd>Return Journey to the Light "Zenet"</dd></div>
+                            <div><dt>Needs</dt><dd>Zenet Revelator Nefertari, Pere-Zenet Em Heru, Zenet Per Aarkh, Zenet-Nakhte Sphinx, Zenet Revelator Amenhotep, Amduat Zenet, Zenet Thunder Fall, Tri-Horned Dragon, Blue-Eyes White Dragon and Labradorite Dragon in the Deck; Blue-Eyes Ultimate Dragon in the Extra Deck</dd></div>
+                            <div><dt>Key moves</dt><dd>
+                                <ol class="zn-moves">
+                                    <li>Return Journey shows three Normal Monsters from the Deck to summon Nefertari, which Sets Em Heru and Per Aarkh.</li>
+                                    <li>Per Aarkh adds Sphinx; Sphinx discards itself for Amenhotep, and Per Aarkh calls Blue-Eyes Ultimate Dragon. Em Heru draws.</li>
+                                    <li>Em Heru Ritual Summons Sphinx from the GY and equips Tri-Horned Dragon.</li>
+                                    <li>Normal Summon Amenhotep, which Sets Amduat Zenet and Thunder Fall.</li>
+                                </ol>
+                            </dd></div>
+                            <div><dt>End board</dt><dd>Zenet-Nakhte Sphinx (5000, equipped), Blue-Eyes Ultimate Dragon (4500), Pere-Zenet Em Heru, a Set Amduat Zenet and Zenet Thunder Fall, plus one drawn card</dd></div>
+                        </dl>
+                        <p class="zn-line-rule"><strong>Why Amduat here:</strong> with Amduat Zenet Set instead of Cataract, a board that gets broken can Ritual Summon again during your opponent's turn.</p>
+                        <button type="button" class="zn-line-play" data-combo-open="3"><i class="fas fa-play" aria-hidden="true"></i> Play Line 3</button>
+                    </article>
+
+                    <article class="zn-line zn-line--second" id="zn-line-4" aria-labelledby="zn-line-4-title" data-combo-switch-panel data-combo-switch-tag="Line 4 · going second" data-combo-switch-title="Adjat clears two monsters">
+                        <p class="zn-line-kicker">Line 4 &middot; Going second</p>
+                        <h3 id="zn-line-4-title">Nefertari + Tau-Zenet Adjat Clear Two Monsters</h3>
+                        <dl class="zn-line-facts">
+                            <div><dt>Hand</dt><dd>Zenet Revelator Nefertari, Tau-Zenet Adjat; your opponent controls two monsters</dd></div>
+                            <div><dt>Needs</dt><dd>Pere-Zenet Em Heru, Zenet Per Aarkh, Zenet-Nakhte Sphinx, Return Journey to the Light "Zenet", Tri-Horned Dragon and Blue-Eyes White Dragon in the Deck; Blue-Eyes Ultimate Dragon and Twin-Headed Thunder Dragon in the Extra Deck</dd></div>
+                            <div><dt>Key moves</dt><dd>
+                                <ol class="zn-moves">
+                                    <li>Nefertari Sets Em Heru and Per Aarkh; Per Aarkh adds Sphinx, and Sphinx discards itself for Return Journey.</li>
+                                    <li>Per Aarkh calls Blue-Eyes Ultimate Dragon and Em Heru draws; Em Heru then Ritual Summons Adjat from your hand with Tri-Horned Dragon from the Deck and equips Tri-Horned Dragon.</li>
+                                    <li>Adjat sends Blue-Eyes Ultimate Dragon and the equipped Tri-Horned Dragon to return both opposing monsters to the hand, then revives Tri-Horned Dragon.</li>
+                                    <li>Return Journey shows two cards to summon Twin-Headed Thunder Dragon.</li>
+                                </ol>
+                            </dd></div>
+                            <div><dt>End board</dt><dd>Tau-Zenet Adjat (3200), Tri-Horned Dragon (2850) and Twin-Headed Thunder Dragon (2800) against an empty field: 8850 damage if nothing stops the attacks</dd></div>
+                        </dl>
+                        <p class="zn-line-rule"><strong>Watch for:</strong> Per Aarkh's no-direct-attack clause covered only Blue-Eyes Ultimate Dragon, which is gone. Twin-Headed Thunder Dragon is the fifth summon of the turn, so a Nibiru in their hand can still stop the attack.</p>
+                        <button type="button" class="zn-line-play" data-combo-open="4"><i class="fas fa-play" aria-hidden="true"></i> Play Line 4</button>
+                    </article>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== TAB 4: DEFENCE & WEAKNESSES ==================== -->
+        <div id="tab-defence" data-pcs-scope="defence" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-defence" tabindex="0" hidden>
+            <section class="zn-block" id="zn-defence" aria-labelledby="zn-defence-title">
+                <h2 id="zn-defence-title" class="zn-h2">How the Traps Protect the Board</h2>
+                <p class="zn-lede">A Zenet board is one protected Ritual Monster and the Traps behind it. Each Trap has a job on your opponent's turn and a second use once it is in the GY.</p>
+                <ul class="zn-guards">
+                    <li class="zn-guard">
+                        <div id="def-amduat-img-container" class="zn-art">Amduat Zenet</div>
+                        <div>
+                            <p class="zn-guard-type">Normal Trap &middot; rebuild</p>
+                            <h3>Amduat Zenet</h3>
+                            <dl>
+                                <div><dt>On their turn</dt><dd>Ritual Summons a Zenet Ritual Monster from your hand or GY and equips it. After a board wipe, that puts Sphinx (immune again) or Adjat (with its bounce) back in time to use their Quick Effects.</dd></div>
+                                <div><dt>From the GY</dt><dd>Banish it instead of losing a Normal Monster Card to battle or a card effect. That includes the Equip Card, so destroying the equip to strip Sphinx's immunity fails once.</dd></div>
+                            </dl>
+                        </div>
+                    </li>
+                    <li class="zn-guard">
+                        <div id="def-cataract-img-container" class="zn-art">Zenet Cataract</div>
+                        <div>
+                            <p class="zn-guard-type">Normal Trap &middot; monster negation</p>
+                            <h3>Zenet Cataract</h3>
+                            <dl>
+                                <div><dt>On their turn</dt><dd>Covers one opposing Main Monster Zone for each Normal Monster and Zenet Ritual Monster you control: the first monster effect activated there is negated. It doesn't target, and Konami's notes say it even stops monsters that are unaffected by activated effects.</dd></div>
+                                <div><dt>From the GY</dt><dd>With more than 3000 ATK of Normal Monster Cards on your field, banish it to target one of their monsters and send it to the GY. It doesn't destroy, so protection from destruction doesn't save that monster.</dd></div>
+                            </dl>
+                        </div>
+                    </li>
+                    <li class="zn-guard">
+                        <div id="def-thunder-img-container" class="zn-art">Zenet Thunder Fall</div>
+                        <div>
+                            <p class="zn-guard-type">Counter Trap &middot; Spell/Trap negation</p>
+                            <h3>Zenet Thunder Fall</h3>
+                            <dl>
+                                <div><dt>On their turn</dt><dd>Negates and destroys a Spell or Trap Card your opponent activates while you control a Normal Monster or a Zenet Ritual Monster: Dark Ruler No More, Evenly Matched, Harpie's Feather Duster.</dd></div>
+                                <div><dt>From the GY</dt><dd>With more than 3000 ATK of Normal Monster Cards, banish it to Set another Zenet Spell or Trap from the Deck or GY: Amduat Zenet, Cataract, or a fresh Em Heru.</dd></div>
+                            </dl>
+                        </div>
+                    </li>
+                    <li class="zn-guard">
+                        <div id="def-sphinx-img-container" class="zn-art">Zenet-Nakhte Sphinx</div>
+                        <div>
+                            <p class="zn-guard-type">The monsters behind them</p>
+                            <h3>Sphinx, Adjat, Nekhbet and Nefertari</h3>
+                            <dl>
+                                <div><dt>Quick Effects</dt><dd>Sphinx flips their monsters face-down, Tau-Zenet Adjat returns up to three cards to the hand, and Zenet-Mose Nekhbet trades places with its Equip Card. Each Ritual Monster's protection only works while it has an Equip Card.</dd></div>
+                                <div><dt>From the GY</dt><dd>Zenet Revelator Nefertari banishes itself during their turn to equip a new Normal Monster to your Ritual Monster, putting that protection back.</dd></div>
+                            </dl>
+                        </div>
+                    </li>
+                </ul>
+                <p class="zn-note"><strong>The 3000-ATK line:</strong> both GY effects add up the ATK of the face-up Normal Monster Cards you control, Equip Cards included. Blue-Eyes Ultimate Dragon or Black Skull Dragon clears it alone; a Ritual Monster doesn't count, because it isn't a Normal Monster Card.</p>
+            </section>
+
+            <section class="zn-block" id="zn-weak" aria-labelledby="zn-weak-title">
+                <h2 id="zn-weak-title" class="zn-h2">Weaknesses</h2>
+                <p class="zn-lede">The engine is consistent and hard to stop with monster negation, but the board it builds is only as strong as its Equip Card and its GY.</p>
+                <ul class="zn-risks">
+                    <li>
+                        <i class="fas fa-skull-crossbones" aria-hidden="true"></i>
+                        <div>
+                            <h3>GY banishment</h3>
+                            <p>Every Ritual Monster comes back from the GY, and Per Aarkh's Fusion needs Per Aarkh in the GY when the discard happens. Banishing either one (D.D. Crow, a Bystial on a DARK Ritual Monster) cuts the line, and Ghost Belle &amp; Haunted Mansion stops Nekhbet's recovery from the GY.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-unlink" aria-hidden="true"></i>
+                        <div>
+                            <h3>Protection lives on the Equip Card</h3>
+                            <p>Sphinx is immune only while it has an Equip Card. Spell/Trap removal such as Harpie's Feather Duster, or a chain to Sphinx's own Quick Effect after it sent its Equip Card, leaves it open; Nefertari's GY effect and Amduat Zenet are the only fixes.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <div>
+                            <h3>Ash Blossom and Droll &amp; Lock Bird</h3>
+                            <p>Per Aarkh's search, Sphinx's search, Em Heru's Ritual Summon and Return Journey's summon from the Deck are all Ash targets, and Droll &amp; Lock Bird after the first search stops the second. Ash on Em Heru is the worst: it is your only Ritual Summon on your own turn, because a Trap can't be activated the turn it is Set.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-dice" aria-hidden="true"></i>
+                        <div>
+                            <h3>Normal Monsters in the opening hand</h3>
+                            <p>The deck needs Normal Monsters in the Deck, and drawing them is dead weight. Return Journey turns a Normal Monster in hand into a draw, and Em Heru and Amduat can still use it as material, but a hand of two Normal Monsters and no starter does nothing.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        <div>
+                            <h3>Per Aarkh's Zombie-only turn</h3>
+                            <p>After its GY effect, you can't activate non-Zombie monster effects for the rest of your turn. Non-Zombie extenders, and hand traps against your opponent's own interruptions, have to come before it.</p>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-th" aria-hidden="true"></i>
+                        <div>
+                            <h3>Gaps in the interruption</h3>
+                            <p>Cataract covers only Main Monster Zones, so a monster in the Extra Monster Zone gets through, and it counts only the monsters in your Monster Zone. Thunder Fall stops Spell and Trap Cards, not monster effects. A deck with several monster effects can play through one Sphinx flip and one Cataract.</p>
+                        </div>
+                    </li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- ==================== TAB 5: TEST DECK ==================== -->
+        <div id="tab-deck" data-pcs-scope="deck" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-deck" tabindex="0" hidden>
+            <section class="zn-block" id="zn-deck" aria-labelledby="zn-deck-title">
+                <h2 id="zn-deck-title" class="zn-h2">The Test Deck</h2>
+                <p class="zn-lede">A pure Zenet list built to play the combo lines on this page: all eleven Zenet cards, three Normal Monsters with different names and Levels that cover every Ritual Monster, and the four non-Effect Fusion Monsters the Spells call. The pop-up fills the rest of the Main Deck with hand traps and staple Spells, and the Extra Deck up to 15 from generic packages.</p>
+                <div class="zn-build">
+                    <div class="zn-build-card">
+                        <h3>Core: 26 cards</h3>
+                        <p class="zn-build-sub">Copies chosen so every starter can find the others.</p>
+                        <p class="zn-ratio-group">Zenet monsters</p>
+                        <ul class="zn-ratio">
+                            <li><span class="zn-ratio-count">3</span><span class="zn-ratio-name">Zenet Revelator Nefertari<span class="zn-ratio-role">The best one-card start; Sets Em Heru and Per Aarkh.</span></span></li>
+                            <li><span class="zn-ratio-count">3</span><span class="zn-ratio-name">Zenet-Nakhte Sphinx<span class="zn-ratio-role">Starter in the hand, boss on the field.</span></span></li>
+                            <li><span class="zn-ratio-count">2</span><span class="zn-ratio-name">Zenet Revelator Amenhotep<span class="zn-ratio-role">Sets two Traps; Return Journey summons it from the Deck.</span></span></li>
+                            <li><span class="zn-ratio-count">2</span><span class="zn-ratio-name">Tau-Zenet Adjat<span class="zn-ratio-role">Bounce going second; sends Thunder Fall to the GY.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Zenet-Mose Nekhbet<span class="zn-ratio-role">Recovers a used Zenet card.</span></span></li>
+                        </ul>
+                        <p class="zn-ratio-group">Normal Monsters</p>
+                        <ul class="zn-ratio">
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Tri-Horned Dragon<span class="zn-ratio-role">Level 8: covers Adjat alone.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Blue-Eyes White Dragon<span class="zn-ratio-role">A second Level 8 name for Sphinx.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Labradorite Dragon<span class="zn-ratio-role">Level 6: covers Nekhbet; the third card to show.</span></span></li>
+                        </ul>
+                        <p class="zn-ratio-group">Spells and Traps</p>
+                        <ul class="zn-ratio">
+                            <li><span class="zn-ratio-count">3</span><span class="zn-ratio-name">Zenet Per Aarkh<span class="zn-ratio-role">Search, then a free Fusion.</span></span></li>
+                            <li><span class="zn-ratio-count">3</span><span class="zn-ratio-name">Return Journey to the Light "Zenet"<span class="zn-ratio-role">Starter; turns a hand Normal Monster into a draw.</span></span></li>
+                            <li><span class="zn-ratio-count">2</span><span class="zn-ratio-name">Pere-Zenet Em Heru<span class="zn-ratio-role">Usually Set by Nefertari; the second copy is a spare.</span></span></li>
+                            <li><span class="zn-ratio-count">2</span><span class="zn-ratio-name">Zenet Thunder Fall<span class="zn-ratio-role">Negate, then Set the next Zenet card.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Zenet Cataract<span class="zn-ratio-role">Monster negation; Set from the Deck.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Amduat Zenet<span class="zn-ratio-role">Ritual Summon on their turn.</span></span></li>
+                        </ul>
+                    </div>
+                    <div class="zn-build-card">
+                        <h3>Extra Deck: 4 own cards</h3>
+                        <p class="zn-build-sub">The rest is filled automatically from the Main Deck's Levels and Types.</p>
+                        <ul class="zn-ratio">
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Blue-Eyes Ultimate Dragon<span class="zn-ratio-role">4500 ATK, for a discarded Sphinx.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Black Skull Dragon<span class="zn-ratio-role">3200 ATK, for a discarded Adjat.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Twin-Headed Thunder Dragon<span class="zn-ratio-role">Return Journey's attacker.</span></span></li>
+                            <li><span class="zn-ratio-count">1</span><span class="zn-ratio-name">Sea Monster of Theseus<span class="zn-ratio-role">The lowest Fusion target.</span></span></li>
+                        </ul>
+                        <div class="zn-callout zn-callout--lapis">
+                            <p class="zn-callout-title"><i class="fas fa-calendar-alt" aria-hidden="true"></i> Release</p>
+                            <p>The Zenet cards are legal in the TCG from <strong>3 December 2026</strong>, when Glorious Victors comes out. Until then the list checker marks them as not yet released.</p>
+                        </div>
+                        <div class="zn-actions">
+                            <a class="zn-cta" href="#test-deck" data-decklist-open="Zenet"><i class="fas fa-layer-group" aria-hidden="true"></i> Open the test deck</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== COMBO SIMULATOR ====================
+             Below the tabs, so the Combos tab's "Play Line" buttons can open it.
+             It plays Lines 1-4 from assets/data/combos/zenet-combos.json and mounts
+             the first time it nears the viewport or a line is played. -->
+        <section class="zn-block" id="zn-lab" data-pcs-scope="lab" aria-labelledby="zn-lab-title">
+            <h2 id="zn-lab-title" class="zn-h2">Combo Simulator</h2>
+            <p class="zn-lede">Lines 1&ndash;4 from the Combos tab, step by step. The Zenet cards are legal in the TCG from 3 December 2026.</p>
+            <div id="zn-combo-lab" class="zn-lab-mount">
+                <p class="zn-lab-loading">Loading the interactive combo lines&hellip;</p>
+            </div>
+        </section>
+
+        <!-- TCG Banlist Status Section -->
+        <section class="mb-10 md:mb-16">
+            <!-- the live renderer adds its own heading -->
+            <div id="banlist-status">
+                <!-- Banlist content will be dynamically generated here -->
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!window.CardLoader) return;
+            // Render Banlist Section
+            await CardLoader.renderBanlistSectionByArchetype('banlist-status', 'Zenet', {
+                archetypeName: 'Zenet',
+                relatedCards: ['Tri-Horned Dragon', 'Blue-Eyes White Dragon', 'Labradorite Dragon', 'Blue-Eyes Ultimate Dragon', 'Black Skull Dragon', 'Twin-Headed Thunder Dragon', 'Sea Monster of Theseus'],
+                archetypeTraits: {
+                    coreMechanic: 'Ritual Summons from the GY using Normal Monsters from the Deck',
+                    supportReliance: 'needs Normal Monsters and non-Effect Fusion Monsters',
+                    adaptability: 'four one-card starters that search each other',
+                    resilience: 'weak to GY banishment and Equip Card removal'
+                }
+            });
+
+            // Render compact deck resources in the dock
+            await CardLoader.renderDeckResourcesCompact('deck-resources-compact', 'Zenet');
+
+            // Render archetype cards browser
+            await CardLoader.renderArchetypeCardsBrowser('archetype-cards-browser', 'Zenet', {
+                compact: true,
+                buttonColor: 'from-yellow-500 to-purple-600',
+                buttonHoverColor: 'from-yellow-600 to-purple-700'
+            });
+        });
+    </script>
+    <script>document.addEventListener('DOMContentLoaded', function () {
+        if (typeof initSynergyTags === 'function') initSynergyTags('Zenet');
+        if (typeof initPageSections === 'function') initPageSections('Zenet');
+    });</script>
+
+    <!-- Card gallery (Cards tab). Without JavaScript every profile shows and the
+         tiles are jump links. With it, one profile shows at a time, the filters
+         work, and a #card-... link opens that card. Runs before GuideTabs.init so
+         a deep-linked profile is already visible when the tab scrolls to it. -->
+    <script>
+        const ZnGallery = (function () {
+            'use strict';
+            const root = document.querySelector('[data-gallery]');
+            if (!root) return null;
+            const filterBar = root.querySelector('[data-gallery-filters]');
+            const filterBtns = Array.from(filterBar.querySelectorAll('[data-filter]'));
+            const status = root.querySelector('[data-gallery-status]');
+            const viewer = root.querySelector('[data-gallery-viewer]');
+            const tiles = Array.from(root.querySelectorAll('.zn-tile'));
+            const idOf = tile => tile.getAttribute('href').slice(1);
+            const profiles = tiles.map(tile => document.getElementById(idOf(tile)));
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let current = idOf(tiles[0]);
+
+            // On phones the tiles are a swipe strip; bring the chosen tile into view.
+            function revealTile(tile) {
+                requestAnimationFrame(() => {
+                    const strip = tile.closest('.zn-tiles');
+                    if (strip.scrollWidth <= strip.clientWidth) return;
+                    const sr = strip.getBoundingClientRect();
+                    const tr = tile.getBoundingClientRect();
+                    if (tr.left < sr.left || tr.right > sr.right) {
+                        strip.scrollTo({ left: strip.scrollLeft + tr.left - sr.left - 8, behavior: reduce.matches ? 'auto' : 'smooth' });
+                    }
+                });
+            }
+
+            function select(id, { reveal = false } = {}) {
+                current = id;
+                tiles.forEach(tile => {
+                    if (idOf(tile) === id) { tile.setAttribute('aria-current', 'true'); revealTile(tile); }
+                    else tile.removeAttribute('aria-current');
+                });
+                profiles.forEach(p => { p.hidden = p.id !== id; });
+                if (reveal) {
+                    const top = viewer.getBoundingClientRect().top;
+                    if (top < 0 || top > window.innerHeight * 0.7) {
+                        viewer.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    }
+                }
+            }
+
+            function applyFilter(kind) {
+                filterBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === kind)));
+                let shown = 0;
+                let first = null;
+                tiles.forEach(tile => {
+                    const match = kind === 'all' || tile.dataset.kinds.split(' ').includes(kind);
+                    tile.parentElement.hidden = !match;
+                    if (match) { shown++; if (!first) first = tile; }
+                });
+                status.textContent = 'Showing ' + shown + ' of ' + tiles.length + ' cards';
+                const active = tiles.find(t => idOf(t) === current);
+                if (active && active.parentElement.hidden && first) select(idOf(first));
+            }
+
+            // Shows the profile that holds `target`, clearing a filter that hides its tile.
+            function openFor(target) {
+                const profile = target && profiles.find(p => p.contains(target));
+                if (!profile) return false;
+                const tile = tiles.find(t => idOf(t) === profile.id);
+                if (tile && tile.parentElement.hidden) applyFilter('all');
+                select(profile.id);
+                return true;
+            }
+
+            filterBar.hidden = false;
+            filterBar.addEventListener('click', e => {
+                const btn = e.target.closest('[data-filter]');
+                if (btn) applyFilter(btn.dataset.filter);
+            });
+            root.addEventListener('click', e => {
+                const tile = e.target.closest('.zn-tile');
+                if (!tile) return;
+                e.preventDefault();
+                select(idOf(tile), { reveal: true });
+                history.replaceState(history.state, '', '#' + idOf(tile));
+            });
+
+            function openFromHash() {
+                let target = null;
+                try { target = document.getElementById(decodeURIComponent(location.hash.slice(1))); } catch (err) { /* malformed hash */ }
+                openFor(target);
+            }
+            // Registered before GuideTabs so the profile is visible when it scrolls.
+            window.addEventListener('hashchange', openFromHash);
+
+            select(current);
+            applyFilter('all');
+            openFromHash();
+
+            // Tile thumbnails: plain <img> tags from the CardLoader URL, so a tap on a
+            // tile selects the card instead of opening the card popup.
+            let artLoaded = false;
+            function loadTileArt() {
+                if (artLoaded || !window.CardLoader || typeof CardLoader.getCardImageUrl !== 'function') return;
+                artLoaded = true;
+                tiles.forEach(tile => {
+                    const slot = tile.querySelector('.zn-tile-art');
+                    CardLoader.getCardImageUrl(tile.dataset.card).then(url => {
+                        if (!url) return;
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        img.decoding = 'async';
+                        slot.prepend(img);
+                    }).catch(() => { /* keep the text fallback */ });
+                });
+            }
+            return { loadTileArt, openFor };
+        })();
+    </script>
+
+    <!-- Guide tabs (shared assets/js/guide-tabs.js), card art and the combo
+         simulator. Each tab's art loads the first time that tab opens; the
+         simulator below the tabs mounts when it nears the viewport. -->
+    <script>
+        (function () {
+            'use strict';
+            const COMBO_MOUNT_ID = 'zn-combo-lab';
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let comboReady = null;
+
+            function mountComboLab() {
+                if (comboReady) return comboReady;
+                const mount = document.getElementById(COMBO_MOUNT_ID);
+                // combo-system.js declares ComboLoader as a top-level class, which is a
+                // global binding but not a property of window.
+                if (!mount || typeof ComboLoader === 'undefined') {
+                    if (mount) mount.innerHTML = '<p class="zn-lab-loading">The interactive combo lines could not load. The summaries in the Combos tab still list every hand, requirement and end board.</p>';
+                    comboReady = Promise.resolve(null);
+                    return comboReady;
+                }
+                comboReady = Promise.resolve(ComboLoader.renderComboSystem(COMBO_MOUNT_ID, 'zenet')).catch(() => null);
+                return comboReady;
+            }
+
+            GuideTabs.init({
+                panelArt: {
+                    'tab-cards': [
+                        {
+                            'pf-sphinx-img-container': 'Zenet-Nakhte Sphinx',
+                            'pf-adjat-img-container': 'Tau-Zenet Adjat',
+                            'pf-nekhbet-img-container': 'Zenet-Mose Nekhbet',
+                            'pf-nefertari-img-container': 'Zenet Revelator Nefertari',
+                            'pf-amenhotep-img-container': 'Zenet Revelator Amenhotep',
+                            'pf-em-heru-img-container': 'Pere-Zenet Em Heru'
+                        },
+                        {
+                            'pf-per-aarkh-img-container': 'Zenet Per Aarkh',
+                            'pf-journey-img-container': 'Return Journey to the Light "Zenet"',
+                            'pf-amduat-img-container': 'Amduat Zenet',
+                            'pf-cataract-img-container': 'Zenet Cataract',
+                            'pf-thunder-fall-img-container': 'Zenet Thunder Fall'
+                        }
+                    ],
+                    'tab-defence': [
+                        {
+                            'def-amduat-img-container': 'Amduat Zenet',
+                            'def-cataract-img-container': 'Zenet Cataract',
+                            'def-thunder-img-container': 'Zenet Thunder Fall',
+                            'def-sphinx-img-container': 'Zenet-Nakhte Sphinx'
+                        }
+                    ]
+                },
+                panelInit: {
+                    'tab-cards': function () {
+                        if (ZnGallery) ZnGallery.loadTileArt();
+                    }
+                }
+            });
+
+            // The spotlight and the Overview tab are on screen first, so their art loads with the page.
+            if (window.CardLoader) {
+                CardLoader.loadCards({
+                    'zn-spot-img-container': 'Zenet-Nakhte Sphinx',
+                    'sup-tri-img-container': 'Tri-Horned Dragon',
+                    'sup-bsd-img-container': 'Black Skull Dragon',
+                    'sup-thtd-img-container': 'Twin-Headed Thunder Dragon',
+                    'sup-theseus-img-container': 'Sea Monster of Theseus'
+                });
+            }
+
+            // The combo simulator sits below the tabs: mount it the first time it comes
+            // near the viewport (a "Play Line" button mounts it sooner).
+            const labMount = document.getElementById(COMBO_MOUNT_ID);
+            if (labMount && 'IntersectionObserver' in window) {
+                const labObserver = new IntersectionObserver(entries => {
+                    if (!entries.some(entry => entry.isIntersecting)) return;
+                    labObserver.disconnect();
+                    mountComboLab();
+                }, { rootMargin: '400px 0px' });
+                labObserver.observe(labMount);
+            } else {
+                mountComboLab();
+            }
+
+            const tablist = document.querySelector('[data-guide-tabs]');
+            if (!tablist) return;
+            const tabFor = panelId => tablist.querySelector('[role="tab"][aria-controls="' + panelId + '"]');
+
+            // Open the panel (and gallery profile) holding an in-page link's target before
+            // the browser scrolls to it. guide-tabs.js reacts to hashchange, which doesn't
+            // fire when the same link is clicked twice.
+            document.addEventListener('click', e => {
+                const link = e.target.closest('a[href^="#"]');
+                if (!link || link.hash.length < 2 || link.hasAttribute('data-decklist-open')) return;
+                let target = null;
+                try {
+                    target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+                } catch (err) { return; /* malformed hash: let the browser handle it */ }
+                const panel = target && target.closest('.tab-panel');
+                const tab = panel && panel.hidden && tabFor(panel.id);
+                if (tab) tab.click();
+                if (ZnGallery) ZnGallery.openFor(target);
+            });
+
+            // "Play Line N" selects that line in the combo simulator.
+            document.querySelectorAll('[data-combo-open]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const num = btn.dataset.comboOpen;
+                    mountComboLab().then(() => {
+                        const option = document.querySelector('#' + COMBO_MOUNT_ID + ' .combo-selector-option[data-value="' + num + '"]');
+                        if (option) option.click();
+                        const mount = document.getElementById(COMBO_MOUNT_ID);
+                        if (mount) mount.scrollIntoView({ block: 'start', behavior: reduce.matches ? 'auto' : 'smooth' });
+                    });
+                });
+            });
+        })();
+    </script>
+
+    <!-- Cookie Consent Banner -->
+    <script src="../assets/js/cookie-consent.js"></script>
+    <script src="../assets/js/cookie-consent-config.js"></script>
+</body>
+</html>

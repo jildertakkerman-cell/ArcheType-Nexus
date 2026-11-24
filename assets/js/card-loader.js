@@ -51,6 +51,7 @@ window.CardLoader = (function () {
     const GENESYS_JSON_URL = resolveAssetUrl('../data/genesys_points.json', '../assets/data/genesys_points.json');
     const DISCORD_LINKS_URL = resolveAssetUrl('../data/discord_links.json', '/assets/data/discord_links.json');
     const DECKLIST_INDEX_URL = resolveAssetUrl('../data/decklists/index.json', '../assets/data/decklists/index.json');
+    const TCG_NAMES_URL = resolveAssetUrl('../data/tcg-card-names.json', '../assets/data/tcg-card-names.json');
     const DECKLIST_SCRIPT_URL = resolveAssetUrl('decklist.js', '../assets/js/decklist.js');
 
     // Banlist format display names and icons
@@ -156,89 +157,115 @@ window.CardLoader = (function () {
     };
 
     /**
-     * Mapping of specific tags to broad categories
+     * Category of every gameplay tag: a copy of the Supabase `tags` table
+     * (all 67 tags, see docs/supabase-tags.md). Wherever the database category
+     * comes with the tag, that wins; this map is the fallback for callers that
+     * only have a tag name (the replay analyzer's hand breakdown). A tag that is
+     * missing here lands under "Default" in those places, so add new tags too.
      */
     const KNOWN_TAG_CATEGORIES = {
         // Combat
-        "ATK/DEF Modification": "combat",
-        "Battle Phase Control": "combat",
-        "Burn": "combat",
-        "Direct Attack": "combat",
-        "Multiple Attacks": "combat",
-        "Control Change": "combat",
-        "Flip Control": "combat",
-        "Self-Burn": "combat", // Assigned from null, fits burn logic or mechanics
+        'ATK/DEF Modification': 'combat',
+        'Battle Phase Control': 'combat',
+        'Burn': 'combat',
+        'Control Change': 'combat',
+        'Direct Attack': 'combat',
+        'Flip Control': 'combat',
+        'LP Gain': 'combat',
+        'Multiple Attacks': 'combat',
+        'Self-Burn': 'combat',
 
         // Consistency
-        "Draw Power": "consistency",
-        "Extender": "consistency",
-        "Miller": "consistency",
-        "Recur": "consistency",
-        "Searcher": "consistency",
-
-        // Disruption
-        "Discard": "disruption",
-        "Floodgate": "disruption",
-        "Hand Activation": "disruption",
-        "Negate": "disruption",
-
-        // Mechanics
-        "Pendulum Support": "mechanics",
-        "Quick Effect": "mechanics", // User moved this from Timing
-        "Tribute Effects": "mechanics",
-        "Xyz Support": "mechanics",
-        "LP Gain": "mechanics", // Assigned from null
-
-        // Protection
-        "Battle Protection": "protection",
-        "Cannot Be Banished": "protection",
-        "Cannot Be Tributed": "protection",
-        "Destruction Protection": "protection",
-        "Effect Protection": "protection",
-        "Targeting Protection": "protection",
-        "Damage Protection": "protection", // Assigned from null
-
-        // Removal
-        "Banishment": "removal",
-        "Bounce": "removal",
-        "Destruction": "removal",
-        "Send to GY": "removal",
-        "Spin": "removal",
-        "Monster Destruction": "removal",
-        "Spell Destruction": "removal",
-        "Trap Destruction": "removal",
+        'Draw Power': 'consistency',
+        'Extender': 'consistency',
+        'Miller': 'consistency',
+        'Recur': 'consistency',
+        'Searcher': 'consistency',
 
         // Cost
-        "Discard Cost": "cost",
-        "Discard for Cost": "cost",
-        "Banish for Cost": "cost",
-        "LP for Cost": "cost",
+        'Discard for Cost': 'cost',
+        'LP for Cost': 'cost',
+
+        // Disruption
+        'Discard': 'disruption',
+        'Floodgate': 'disruption',
+        'Hand Activation': 'disruption',
+        'Hand Trap': 'disruption',
+        'Negate': 'disruption',
+        'Prevent Draw': 'disruption',
+        'Prevent Search': 'disruption',
 
         // Economy
-        "Foolish": "economy",
+        'Foolish': 'economy',
 
         // Interaction
-        "Banish": "interaction",
-        "Removal": "interaction",
+        'Removal': 'interaction',
 
-        // Mechanics Updates
-        "Activation Condition": "mechanics",
-        "Activation Requirement": "mechanics",
-        "Battle Trigger": "mechanics",
-        "Cost": "mechanics",
-        "Counter": "mechanics",
-        "Effect Trigger": "mechanics",
-        "Equip": "mechanics",
-        "Graveyard Trigger": "mechanics",
-        "Hand Trigger": "mechanics",
-        "Material Trigger": "mechanics",
-        "Position Change": "mechanics",
-        "Special Summon": "mechanics",
-        "Stacking": "mechanics",
-        "Summoning Trigger": "mechanics",
-        "Trap interaction": "mechanics",
-        "Tribute": "mechanics"
+        // Mechanics
+        'Activation Condition': 'mechanics',
+        'Activation Requirement': 'mechanics',
+        'Activation Trigger': 'mechanics',
+        'Banishment Cost': 'mechanics',
+        'Battle Trigger': 'mechanics',
+        'Copy Effect': 'mechanics',
+        'Counter': 'mechanics',
+        'Effect Trigger': 'mechanics',
+        'Equip': 'mechanics',
+        'Fusion Support': 'mechanics',
+        'Graveyard Trigger': 'mechanics',
+        'Hand Trigger': 'mechanics',
+        'Level Modulation': 'mechanics',
+        'Link Support': 'mechanics',
+        'Material Trigger': 'mechanics',
+        'Non-Respondable': 'mechanics',
+        'Pendulum Support': 'mechanics',
+        'Position Change': 'mechanics',
+        'Quick Effect': 'mechanics',
+        'Special Summon': 'mechanics',
+        'Stacking': 'mechanics',
+        'Summoning Restriction': 'mechanics',
+        'Synchro Support': 'mechanics',
+        'Trap interaction': 'mechanics',
+        'Tribute': 'mechanics',
+        'Tribute Effects': 'mechanics',
+        'Xyz Support': 'mechanics',
+
+        // Protection
+        'Battle Protection': 'protection',
+        'Cannot Be Banished': 'protection',
+        'Cannot Be Tributed': 'protection',
+        'Damage Protection': 'protection',
+        'Destruction Protection': 'protection',
+        'Effect Protection': 'protection',
+        'Targeting Protection': 'protection',
+
+        // Removal
+        'Banishment': 'removal',
+        'Bounce': 'removal',
+        'Destruction': 'removal',
+        'Monster Destruction': 'removal',
+        'Send to GY': 'removal',
+        'Spell Destruction': 'removal',
+        'Spin': 'removal',
+        'Trap Destruction': 'removal'
     };
+
+    /**
+     * Category key for a tag: the database category when the caller has it,
+     * else the copy above, else 'default'.
+     */
+    function tagCategoryKey(tagName, dbCategory) {
+        const key = dbCategory || KNOWN_TAG_CATEGORIES[tagName] || 'default';
+        return String(key).toLowerCase();
+    }
+
+    /**
+     * A few action names still carry Yugipedia's URL escapes ("face-2Ddown",
+     * "S-2FT Zone"): -2D is "-" and -2F is "/".
+     */
+    function decodeActionName(name) {
+        return String(name == null ? '' : name).replace(/-2D/g, '-').replace(/-2F/g, '/');
+    }
 
     /**
      * Priority order for sorting categories
@@ -316,9 +343,7 @@ window.CardLoader = (function () {
         const groups = {};
 
         tags.forEach(tag => {
-            // First check KNOWN_TAG_CATEGORIES, then fallback to database category, then default
-            const categoryKey = KNOWN_TAG_CATEGORIES[tag.tag_name] ||
-                (tag.tag_category ? tag.tag_category.toLowerCase() : 'default');
+            const categoryKey = tagCategoryKey(tag.tag_name, tag.tag_category);
 
             // Normalize category name for display (capitalize first letter)
             const displayCategory = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
@@ -418,7 +443,7 @@ window.CardLoader = (function () {
                 return [];
             }
 
-            return (data || []).map(row => row.action_name);
+            return (data || []).map(row => decodeActionName(row.action_name));
         } catch (error) {
             console.error('[CardLoader] Failed to fetch tag actions:', error);
             return [];
@@ -434,8 +459,9 @@ window.CardLoader = (function () {
      * @param {number} passcode - Card passcode
      * @param {string} tagName - Tag name
      * @param {Element} [anchor] - Element to position against; defaults to event.target
+     * @param {string} [category] - The tag's category key, for the header colour
      */
-    async function showTagActionsPopup(event, passcode, tagName, anchor) {
+    async function showTagActionsPopup(event, passcode, tagName, anchor, category) {
         event.stopPropagation();
         const anchorEl = anchor || event.target;
 
@@ -480,9 +506,8 @@ window.CardLoader = (function () {
         // Fetch actions
         const actions = await fetchActionsForTag(passcode, tagName);
 
-        // Get tag category color
-        const category = (KNOWN_TAG_CATEGORIES[tagName] || 'default').toLowerCase();
-        const colors = TAG_CATEGORY_COLORS[category] || TAG_CATEGORY_COLORS.default;
+        // Same colour as the pill that was clicked
+        const colors = TAG_CATEGORY_COLORS[tagCategoryKey(tagName, category)] || TAG_CATEGORY_COLORS.default;
 
         if (actions.length === 0) {
             tagActionsPopup.innerHTML = `
@@ -549,7 +574,7 @@ window.CardLoader = (function () {
 
         const trigger = target && target.closest('.tag-action-trigger');
         if (trigger) {
-            showTagActionsPopup(e, trigger.dataset.tagPasscode, trigger.dataset.tagName, trigger);
+            showTagActionsPopup(e, trigger.dataset.tagPasscode, trigger.dataset.tagName, trigger, trigger.dataset.tagCategory);
             return;
         }
 
@@ -564,30 +589,20 @@ window.CardLoader = (function () {
     /**
      * Format tags section HTML for card popup
      * @param {Array} tags - Array of {tag_name, tag_category} objects
-     * @param {string} cardType - Optional card type string to check for Extra Deck exclusion
      * @param {number} passcode - Optional card passcode for action lookups
      * @param {Object} [options]
      * @param {boolean} [options.bare=false] - true omits the divider and heading,
      *        for callers that already render their own (the popup's Details tab).
      * @returns {string} HTML string for tags section
      */
-    function formatTagsSection(tags, cardType = '', passcode = null, cardName = '', hasDiscardAction = false, options = {}) {
+    function formatTagsSection(tags, passcode = null, options = {}) {
         if (!tags || tags.length === 0) return '';
         const bare = options.bare === true;
 
-        // Extract tag names for hand trap detection
-        const tagNames = tags.map(t => t.tag_name);
-
-        // Extra Deck monster types that should never be hand traps
-        const extraDeckTypes = ['Fusion', 'Synchro', 'Xyz', 'Link', 'Pendulum'];
-        const isExtraDeck = extraDeckTypes.some(type => cardType.includes(type));
-
-        // Detect true hand traps: Hand Activation + Discard Cost (Action verification)
-        // BUT exclude Extra Deck monsters
-        // ALSO include Mulcharmy cards (draw-based hand traps with Hand Activation)
-        const isMulcharmy = cardName.toLowerCase().startsWith('mulcharmy');
-        const isHandTrap = !isExtraDeck && tagNames.includes('Hand Activation') &&
-            (hasDiscardAction || isMulcharmy);
+        // The database's own "Hand Trap" tag. Monster hand traps carry it as a
+        // card-level tag (cardtags), trap hand traps through their actions;
+        // get_tags_by_passcode returns both.
+        const isHandTrap = tags.some(t => t.tag_name === 'Hand Trap');
 
         // Group tags by category
         const groups = groupTagsByCategory(tags);
@@ -620,6 +635,7 @@ window.CardLoader = (function () {
                             style="--tag-fg:${colors.fg};"
                             data-tag-passcode="${esc(passcode)}"
                             data-tag-name="${tagHtml}"
+                            data-tag-category="${esc(group.key)}"
                             title="Click to view actions for ${tagHtml}"
                         >${tagHtml}<i class="fas fa-search"></i></button>`;
                 }
@@ -1945,6 +1961,36 @@ window.CardLoader = (function () {
         return enrichPromises[key];
     }
 
+    // assets/data/tcg-card-names.json: TCG names of cards the API and Supabase still list under another name
+    // ({ name, ocgName, passcode, prerelease }). Fetched once, and only when a card name isn't found anywhere.
+    let tcgNamesPromise = null;
+    function loadTcgNames() {
+        if (!tcgNamesPromise) {
+            tcgNamesPromise = fetch(TCG_NAMES_URL)
+                .then(response => (response.ok ? response.json() : null))
+                .then(data => (data && Array.isArray(data.cards) ? data.cards.filter(e => e && e.name) : []))
+                .catch(() => []);
+        }
+        return tcgNamesPromise;
+    }
+
+    async function findTcgNameEntry(cardName) {
+        const key = String(cardName || '').trim().toLowerCase();
+        if (!key) return null;
+        const entries = await loadTcgNames();
+        return entries.find(e => [e.name, e.ocgName].some(n => n && n.toLowerCase() === key)) || null;
+    }
+
+    // The record under the TCG name, with the OCG names quoted in its text swapped for TCG names too
+    async function withTcgName(record, entry) {
+        let desc = record.desc || '';
+        (await loadTcgNames())
+            .filter(e => e.ocgName && e.ocgName !== e.name)
+            .sort((a, b) => b.ocgName.length - a.ocgName.length)
+            .forEach(e => { desc = desc.split(e.ocgName).join(e.name); });
+        return Object.assign({}, record, { name: entry.name, desc });
+    }
+
     async function fetchCardDataUncached(cardName) {
         // Fallback name mapping to handle YGO API discrepancies seamlessly
         const nameFallbacks = {
@@ -2012,6 +2058,21 @@ window.CardLoader = (function () {
         if (!result && nameFallbacks[cardName]) {
             console.log(`[CardLoader] Card "${cardName}" not found. Trying fallback name: "${nameFallbacks[cardName]}"`);
             result = await attemptFetch(nameFallbacks[cardName]);
+        }
+
+        // A new set's TCG name that the API and the Supabase table still list under the OCG translation:
+        // tcg-card-names.json gives the other name and the passcode. The passcode keeps working after the
+        // API renames the card, and once it does, the first lookup above finds it and this never runs.
+        if (!result) {
+            const entry = await findTcgNameEntry(cardName);
+            if (entry) {
+                const otherName = entry.name.toLowerCase() === cardName.toLowerCase() ? entry.ocgName : entry.name;
+                if (otherName && otherName.toLowerCase() !== cardName.toLowerCase()) result = await attemptFetch(otherName);
+                if (!result && entry.passcode) {
+                    result = await fetchCardDataByIdUncached(entry.passcode).catch(() => null);
+                }
+                if (result) result = await withTcgName(result, entry);
+            }
         }
 
         if (!result) {
@@ -3339,27 +3400,15 @@ window.CardLoader = (function () {
 
         // Fetch and display tags asynchronously
         if (cardPasscode && getSupabaseClient()) {
-            fetchCardTags(cardPasscode).then(async tags => {
+            fetchCardTags(cardPasscode).then(tags => {
                 const tagsContainer = popup.querySelector('#card-tags-container');
                 if (tagsContainer) {
                     if (tags.length > 0) {
-                        // Check for specific discard actions if Hand Activation is present
-                        let hasDiscardAction = false;
-                        if (tags.some(t => t.tag_name === 'Hand Activation')) {
-                            // Using the internal fetchActionsForTag function
-                            const actions = await fetchActionsForTag(cardPasscode, 'Hand Activation');
-                            hasDiscardAction = actions.some(a =>
-                                /discard this card|send this card from your hand to the gy/i.test(a)
-                            );
-                        }
-
                         // The container already supplies the divider and heading, so
                         // ask for the bare groups. This used to be done by regex-
                         // matching the helper's exact class strings, which broke
                         // silently whenever those classes changed.
-                        tagsContainer.innerHTML = formatTagsSection(
-                            tags, cardInfo.type || '', cardPasscode, cardInfo.name || '', hasDiscardAction, { bare: true }
-                        );
+                        tagsContainer.innerHTML = formatTagsSection(tags, cardPasscode, { bare: true });
                     } else {
                         tagsContainer.innerHTML = '<p class="cp-note">No tags found for this card.</p>';
                     }
@@ -4258,6 +4307,7 @@ window.CardLoader = (function () {
 
         // Deduplicate cards that share the same passcode (e.g. pre-release translations vs official TCG names)
         const byPasscode = new Map();
+        const tcgRowCodes = new Set();
         const withoutPasscode = [];
 
         for (const row of rows) {
@@ -4267,15 +4317,29 @@ window.CardLoader = (function () {
                 withoutPasscode.push(row.cardname);
                 continue;
             }
+            const isTcgRow = /tcg/i.test(row.format || '');
             if (!byPasscode.has(code)) {
                 byPasscode.set(code, row.cardname);
             } else {
                 const existing = byPasscode.get(code);
-                // Prefer the official name containing angle brackets '<'
-                if (!existing.includes('<') && row.cardname.includes('<')) {
+                // Prefer the official TCG row ("Zenet-Nakhte Sphinx" over "Zenetnakht Sphinx"), then the
+                // name containing angle brackets '<'
+                if ((isTcgRow && !tcgRowCodes.has(code)) || (!existing.includes('<') && row.cardname.includes('<'))) {
                     byPasscode.set(code, row.cardname);
                 }
             }
+            if (isTcgRow) tcgRowCodes.add(code);
+        }
+
+        // A card with only an OCG row may already have a TCG name the table doesn't hold yet
+        // (tcg-card-names.json): list it under that name, as the page's own text does
+        const ocgOnly = [...byPasscode.keys()].filter(code => !tcgRowCodes.has(code));
+        if (ocgOnly.length) {
+            const entries = await loadTcgNames();
+            ocgOnly.forEach(code => {
+                const entry = entries.find(e => String(e.passcode) === code);
+                if (entry) byPasscode.set(code, entry.name);
+            });
         }
 
         const cardNames = [...new Set([...byPasscode.values(), ...withoutPasscode])];
@@ -5251,7 +5315,9 @@ window.CardLoader = (function () {
             TAG_CATEGORY_COLORS,
             KNOWN_TAG_CATEGORIES,
             CATEGORY_PRIORITY,
-            CONFIG
+            CONFIG,
+            tagCategoryKey,
+            decodeActionName
         }),
         showLargeImageByName: showLargeImageModal,
         showLargeImageByUrl,

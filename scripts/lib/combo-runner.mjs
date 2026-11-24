@@ -816,8 +816,11 @@ export async function runComboReplay(combo, options = {}) {
             });
         }
 
-        // Pad main deck with generic dummy cards so excavation/draw/mill effects (requiring >= 5 cards) function deterministically
-        const MIN_DECK_SIZE = 20;
+        // Pad main deck with generic dummy cards so excavation/draw/mill effects (requiring >= 5 cards) function deterministically.
+        // A combo can set its Deck's size (`deckSize`: 35 is a 40-card Deck after a 5-card opening hand): a line that
+        // counts its banished or milled cards (Trirealm Rift Darkness's "10+ / 20+ / 30+ face-down banished cards")
+        // comes up short against the default 20.
+        const MIN_DECK_SIZE = Number.isInteger(combo.deckSize) && combo.deckSize > 0 ? combo.deckSize : 20;
         const dummyPadCount = Math.max(0, MIN_DECK_SIZE - deckCards.length);
         for (let i = 0; i < dummyPadCount; i++) {
             lib.duelNewCard(duel, {
@@ -4092,18 +4095,30 @@ export async function runComboReplay(combo, options = {}) {
                                     // A later step describing another effect of the same card ("Power Patron's effect adds
                                     // Varnish", its GY trigger) doesn't claim the one offered now (its Fusion Summon Quick
                                     // Effect): the actions have to overlap
+                                    const actionsOf = (t) => new Set([
+                                        /\bfusion summon/i.test(t) && 'fusion', /\b(?:adds?|search)/i.test(t) && 'add',
+                                        /\b(?:special summons?|summons?|reviv)/i.test(t) && !/\bfusion summon/i.test(t) && 'summon',
+                                        /\bsends?\b/i.test(t) && 'send', /\bdestroy/i.test(t) && 'destroy', /\bbanish/i.test(t) && 'banish',
+                                        /\bdraws?\b/i.test(t) && 'draw', /\b(?:sets?|places?)\b/i.test(t) && 'set'
+                                    ].filter(Boolean));
+                                    // ("Increase ATK", Twistcobra's Quick Effect, names no action of its own)
+                                    const genericDesc = /^\s*(?:activate|effect|use|apply|choose|select)\b/i.test(bestDesc);
                                     if (s > stepIdx && bestDesc && !m.forced) {
-                                        const actionsOf = (t) => new Set([
-                                            /\bfusion summon/i.test(t) && 'fusion', /\b(?:adds?|search)/i.test(t) && 'add',
-                                            /\b(?:special summons?|summons?|reviv)/i.test(t) && !/\bfusion summon/i.test(t) && 'summon',
-                                            /\bsends?\b/i.test(t) && 'send', /\bdestroy/i.test(t) && 'destroy', /\bbanish/i.test(t) && 'banish',
-                                            /\bdraws?\b/i.test(t) && 'draw', /\b(?:sets?|places?)\b/i.test(t) && 'set'
-                                        ].filter(Boolean));
                                         const stepActions = actionsOf((/'s\s+(?:[\w-]+\s+)?effect\s+(.*)$/i.exec(cleanCardName(stText)) || [])[1] || '');
                                         const descActions = actionsOf(bestDesc);
-                                        // ("Increase ATK", Twistcobra's Quick Effect, names no action of its own)
-                                        const genericDesc = /^\s*(?:activate|effect|use|apply|choose|select)\b/i.test(bestDesc);
                                         if (stepActions.size > 0 && !genericDesc && ![...stepActions].some(a => descActions.has(a))) continue;
+                                    }
+                                    // The current step narrating the card's own Summon trigger ("Activate effect: Trirealm Rift
+                                    // Savage Storms was Special Summoned, so it banishes the top 7 cards") isn't claimed by another
+                                    // effect of that card offered in the window after the trigger resolved (its Quick Effect, which
+                                    // shuffles): the trigger was forced, so the step is done once it resolves, and the Quick
+                                    // Effect belongs to the step that activates it
+                                    if (s === stepIdx && bestDesc && !m.forced && !genericDesc &&
+                                        /\bwas\s+(?:normal\s+|special\s+|tribute\s+|flip\s+)?summoned\b/i.test(stText)) {
+                                        const trigText = (/\bsummoned\b[^,.;]*?(?:,\s*so\s+|:\s*)(.*)$/i.exec(cleanCardName(firstSentence)) || [])[1] || '';
+                                        const trigActions = actionsOf(trigText);
+                                        const descActions = actionsOf(bestDesc);
+                                        if (trigActions.size > 0 && ![...trigActions].some(a => descActions.has(a))) continue;
                                     }
 
                                     chainIdx = found;

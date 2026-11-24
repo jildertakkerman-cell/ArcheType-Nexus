@@ -295,6 +295,20 @@
  * Batch 33 (2026-10-12): art trails Rokket, Valkyrie, Ragnaraika, Zera, Tistina, Regenesis, Butterspy, mirror-force,
  * Doriado and Shinobird
  * (Yugipedia card trivia).
+ * Glorious Victors (2026-11-24): slideshows raise-moon, trirealm-rift and zenet. The three themes
+ * (OCG Deck-Build Pack: Glorious Victors, 2026-09-05; TCG Glorious Victors, December 2026) have no
+ * official storyline yet, so each reel reads its own cards' artwork in order, under the tagline
+ * Konami's product pages give the theme. What each artwork shows comes from Yugipedia card trivia
+ * (checked 2026-11-24): Stars of Raise Moon shows Cielo, Sharna, Carol, Kulshe and Lapi; The Bright
+ * Lights shows Squeeze - JACKPOT! and Lapi; the Night Sky and the Full Moon are the Xyz upgrades of
+ * the Veil and the New Moon; Cielo owns the casino (Yugipedia's design notes). Trirealm Rift Verdict
+ * shows Darkness and the portals of the other seven monsters, Delectation shows Savage Storms, and
+ * Darkness and Havocs read as Hollows and Heavens grown up (same Attribute, and the same "emptiness"
+ * and "sky" kanji in their Japanese names). Zenet Per Aarkh and Return Journey show Nefertari with
+ * the Sphinx, Pere-Zenet Em Heru shows Nefertari, Zenet Cataract shows Amenhotep with Adjat, Amduat
+ * Zenet shows Nekhbet, and Pere-Zenet and Thunder Fall show an apparition of (most likely)
+ * Twin-Headed Thunder Dragon. The slide order (one night at Raise Moon, the Rift's Levels 1 to 8,
+ * Zenet's rite and the return to the light) is the pages' reading of the art.
  * Sources (checked September 2026, via Yugipedia): K9, The Valuable Book EX 6 No. 9
  * (the personnel files); Ghostrick, Master Guide 4 File No. 07 (where each ghost
  * lives); Mikanko, The Valuable Book EX 3 No. 07 (the three families; each girl's
@@ -7259,6 +7273,106 @@
             { card: 'Shinobaron Peacock', title: 'Shinobaron', color: '#38bdf8', face: [0.5, 0.15], pan: [0.07, 0.3] },
             { card: 'Shinobaroness Peacock', title: 'Shino\u00ADbaroness', color: '#f0abfc', face: [0.5, 0.15], pan: [0.07, 0.3] },
             { card: 'Shinobird Salvation', title: 'Salvation', color: '#fef9c3', face: [0.4, 0.3], pan: [0.22, 0.45] }
+        ]
+    };
+
+    // Glorious Victors (2026-11-24): no official story yet; each reel reads its cards' art in order (see the header).
+    window.LoreReelData['raise-moon'] = {
+        label: 'One night at Raise Moon, in card art',
+        slides: [
+            { card: 'Raise Moon - The City that Never Sleeps', title: 'The city', color: '#fbbf24', pan: [0.55, 0.25] },
+            { card: 'Cielo, the Veil of Raise Moon', title: 'The Veil', color: '#c084fc', pan: [0.42, 0.2] },
+            { card: 'Carol, the Elegance of Raise Moon', title: 'Elegance', color: '#93c5fd', pan: [0.42, 0.2] },
+            { card: 'Lapi, the Wings of Raise Moon', title: 'Wings', color: '#fcd34d', pan: [0.42, 0.22] },
+            { card: 'Sharna, the Blade of Raise Moon', title: 'Blade', color: '#5eead4', pan: [0.42, 0.2] },
+            { card: 'Kulshe, the Beacon of Raise Moon', title: 'Beacon', color: '#fca5a5', pan: [0.42, 0.2] },
+            { card: 'Squeeze, the New Moon of Raise Moon', title: 'New Moon', color: '#fb923c', pan: [0.5, 0.32] },
+            '|',
+            { card: 'Stars of Raise Moon', title: 'The stars', color: '#e9d5ff', pan: [0.6, 0.38], on: ['Cielo', 'Carol', 'Lapi', 'Sharna', 'Kulshe'] },
+            { card: 'Cielo, the Night Sky of Raise Moon - No More Bets!', title: 'No More Bets!', color: '#a78bfa', pan: [0.62, 0.25] },
+            { card: 'The Bright Lights of Raise Moon', title: 'Bright lights', color: '#facc15', pan: [0.58, 0.2] },
+            { card: 'Squeeze, the Full Moon of Raise Moon - JACKPOT!', title: 'JACKPOT!', color: '#fde047', pan: [0.5, 0.3] }
+        ],
+        cast: [
+            {
+                name: 'Cielo', color: '#c084fc', forms: [
+                    { from: 0, card: 'Cielo, the Veil of Raise Moon', as: 'the Veil', face: [0.42, 0.2] },
+                    { from: 8, card: 'Cielo, the Night Sky of Raise Moon - No More Bets!', as: 'the Night Sky', face: [0.42, 0.22] }
+                ]
+            },
+            { name: 'Carol', color: '#93c5fd', forms: [{ from: 0, card: 'Carol, the Elegance of Raise Moon', face: [0.48, 0.17] }] },
+            { name: 'Lapi', color: '#fcd34d', forms: [{ from: 0, card: 'Lapi, the Wings of Raise Moon', face: [0.61, 0.2] }] },
+            { name: 'Sharna', color: '#5eead4', forms: [{ from: 0, card: 'Sharna, the Blade of Raise Moon', face: [0.46, 0.17] }] },
+            { name: 'Kulshe', color: '#fca5a5', forms: [{ from: 0, card: 'Kulshe, the Beacon of Raise Moon', face: [0.5, 0.17] }] },
+            {
+                name: 'Squeeze', color: '#fb923c', forms: [
+                    { from: 0, card: 'Squeeze, the New Moon of Raise Moon', as: 'the New Moon', face: [0.52, 0.3] },
+                    { from: 9, card: 'Squeeze, the Full Moon of Raise Moon - JACKPOT!', as: 'JACKPOT!', face: [0.8, 0.28] }
+                ]
+            }
+        ]
+    };
+
+    window.LoreReelData['trirealm-rift'] = {
+        label: 'What comes through the Trirealm Rift, in card art',
+        slides: [
+            { card: 'Trirealm Rift Vilvortex', title: 'The rift', color: '#60a5fa', pan: [0.3, 0.58] },
+            '|',
+            { card: 'Trirealm Rift Hollows', title: 'Hollows', color: '#c084fc', pan: [0.55, 0.4] },
+            { card: 'Trirealm Rift Heavens', title: 'Heavens', color: '#fde047', pan: [0.5, 0.25] },
+            { card: 'Trirealm Rift Blizzards', title: 'Blizzards', color: '#38bdf8', pan: [0.45, 0.2] },
+            { card: 'Trirealm Rift Blaze', title: 'Blaze', color: '#f87171', pan: [0.55, 0.3] },
+            { card: 'Trirealm Rift Havocs', title: 'Havocs', color: '#facc15', pan: [0.45, 0.22] },
+            { card: 'Trirealm Rift Gorging Gorge', title: 'Gorging Gorge', color: '#a5b4fc', pan: [0.3, 0.48] },
+            { card: 'Trirealm Rift Savage Storms', title: 'Savage Storms', color: '#4ade80', pan: [0.6, 0.42] },
+            { card: 'Trirealm Rift Delectation', title: 'The tempest', color: '#86efac', pan: [0.3, 0.75] },
+            '|',
+            { card: 'Trirealm Rift Darkness', title: 'Darkness', color: '#e879f9', pan: [0.6, 0.32] },
+            { card: 'Trirealm Rift Verdict', title: 'The verdict', color: '#a78bfa', pan: [0.3, 0.6], on: ['Emptiness', 'Sky', 'Blizzards', 'Blaze', 'Gorging Gorge', 'Savage Storms'] }
+        ],
+        cast: [
+            {
+                name: 'Emptiness', color: '#c084fc', names: ['Hollows', 'Darkness'], forms: [
+                    { from: 0, card: 'Trirealm Rift Hollows', as: 'Hollows', face: [0.66, 0.42] },
+                    { from: 9, card: 'Trirealm Rift Darkness', as: 'Darkness', face: [0.52, 0.3] }
+                ]
+            },
+            {
+                name: 'Sky', color: '#fde047', names: ['Heavens', 'Havocs'], forms: [
+                    { from: 0, card: 'Trirealm Rift Heavens', as: 'Heavens', face: [0.6, 0.25] },
+                    { from: 5, card: 'Trirealm Rift Havocs', as: 'Havocs', face: [0.55, 0.16] }
+                ]
+            },
+            { name: 'Blizzards', color: '#38bdf8', forms: [{ from: 0, card: 'Trirealm Rift Blizzards', face: [0.46, 0.12] }] },
+            { name: 'Blaze', color: '#f87171', forms: [{ from: 0, card: 'Trirealm Rift Blaze', face: [0.55, 0.28] }] },
+            { name: 'Gorging Gorge', color: '#a5b4fc', forms: [{ from: 0, card: 'Trirealm Rift Gorging Gorge', face: [0.42, 0.48] }] },
+            { name: 'Savage Storms', color: '#4ade80', forms: [{ from: 0, card: 'Trirealm Rift Savage Storms', face: [0.45, 0.42] }] }
+        ]
+    };
+
+    window.LoreReelData['zenet'] = {
+        label: 'The Zenet journey, in card art',
+        slides: [
+            { card: 'Zenet Revelator Nefertari', title: 'Nefertari', color: '#34d399', pan: [0.45, 0.22] },
+            { card: 'Zenet Revelator Amenhotep', title: 'Amenhotep', color: '#7dd3fc', pan: [0.42, 0.2] },
+            '|',
+            { card: 'Pere-Zenet Em Heru', title: 'Coming forth', color: '#fbbf24', pan: [0.62, 0.38], on: ['Nefertari'] },
+            { card: 'Zenet Per Aarkh', title: 'The pledge', color: '#fde68a', pan: [0.3, 0.62] },
+            { card: 'Zenet-Nakhte Sphinx', title: 'The Sphinx', color: '#2dd4bf', pan: [0.45, 0.2] },
+            '|',
+            { card: 'Zenet Cataract', title: 'The cataract', color: '#22d3ee', pan: [0.5, 0.3] },
+            { card: 'Tau-Zenet Adjat', title: 'Adjat', color: '#5eead4', pan: [0.5, 0.25] },
+            { card: 'Amduat Zenet', title: 'Amduat', color: '#a3e635', pan: [0.5, 0.35] },
+            { card: 'Zenet-Mose Nekhbet', title: 'Nekhbet', color: '#6ee7b7', pan: [0.45, 0.2] },
+            { card: 'Zenet Thunder Fall', title: 'Thunder Fall', color: '#86efac', pan: [0.32, 0.58] },
+            { card: 'Return Journey to the Light "Zenet"', title: 'Back to the light', color: '#fef08a', pan: [0.25, 0.58] }
+        ],
+        cast: [
+            { name: 'Nefertari', color: '#34d399', forms: [{ from: 0, card: 'Zenet Revelator Nefertari', face: [0.4, 0.22] }] },
+            { name: 'Amenhotep', color: '#7dd3fc', forms: [{ from: 0, card: 'Zenet Revelator Amenhotep', face: [0.52, 0.2] }] },
+            { name: 'Sphinx', color: '#2dd4bf', forms: [{ from: 0, card: 'Zenet-Nakhte Sphinx', face: [0.6, 0.11] }] },
+            { name: 'Adjat', color: '#5eead4', forms: [{ from: 0, card: 'Tau-Zenet Adjat', face: [0.46, 0.23] }] },
+            { name: 'Nekhbet', color: '#6ee7b7', forms: [{ from: 0, card: 'Zenet-Mose Nekhbet', face: [0.43, 0.09] }] }
         ]
     };
 })();

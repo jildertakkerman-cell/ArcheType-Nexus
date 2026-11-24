@@ -13,6 +13,9 @@
  *   - gameplay tags and the actions behind them: one embedded REST query per
  *     30 cards (cardactions -> actions -> actiontags -> tags), instead of one
  *     get_tags_by_passcode call per card. Falls back to that RPC if it fails.
+ *     Card-level tags (cardtags -> tags; the monster hand traps) come from a
+ *     second query per 30 cards. Tag names and categories:
+ *     docs/supabase-tags.md.
  *   - banlists: CardLoader.fetchBanlistData for each format.
  *   - YGOProDeck, only for cards with no release date and for passcodes that
  *     appear twice under different names (it supplies the official name).
@@ -45,7 +48,7 @@ window.CardBrowser = (function () {
 
     // What a card does for you, most telling first. Tiles show the first two.
     const TILE_ROLES = [
-        'Searcher', 'Draw Power', 'Negate', 'Floodgate', 'Hand Activation', 'Discard', 'Recur', 'Foolish',
+        'Hand Trap', 'Searcher', 'Draw Power', 'Negate', 'Floodgate', 'Hand Activation', 'Discard', 'Recur', 'Foolish',
         'Miller', 'Control Change', 'Destruction', 'Monster Destruction', 'Spell Destruction', 'Trap Destruction',
         'Banishment', 'Bounce', 'Spin', 'Send to GY', 'Multiple Attacks', 'Burn', 'Direct Attack', 'Extender',
         'Fusion Support', 'Synchro Support', 'Xyz Support', 'Link Support', 'Pendulum Support',
@@ -54,7 +57,7 @@ window.CardBrowser = (function () {
 
     // Quick filter chips in the toolbar; the rest live under "All tags".
     const QUICK_ROLES = [
-        'Searcher', 'Extender', 'Negate', 'Hand Activation', 'Floodgate', 'Recur', 'Miller', 'Destruction',
+        'Searcher', 'Extender', 'Negate', 'Hand Trap', 'Hand Activation', 'Floodgate', 'Recur', 'Miller', 'Destruction',
         'Banishment', 'Fusion Support', 'Synchro Support', 'Xyz Support', 'Link Support', 'Pendulum Support',
         'Draw Power', 'Foolish', 'Bounce', 'Burn', 'Control Change', 'Spin'
     ];
@@ -379,14 +382,26 @@ window.CardBrowser = (function () {
             try {
                 const byCardId = new Map(withIds.map(c => [c.cardid, c]));
                 const groups = chunk(withIds.map(c => c.cardid), TAG_CHUNK);
-                const results = await Promise.all(groups.map(ids => fetchActionRows(cfg, ids)));
+                const [results, cardTagResults] = await Promise.all([
+                    Promise.all(groups.map(ids => fetchActionRows(cfg, ids))),
+                    // Card-level tags only add to what the actions give, so a
+                    // failure here leaves the action tags standing.
+                    Promise.all(groups.map(ids => fetchCardTagRows(cfg, ids))).catch(err => {
+                        console.warn('[CardBrowser] Card-level tag query failed; showing action tags only.', err);
+                        return [];
+                    })
+                ]);
                 results.forEach(rows => rows.forEach(row => {
                     const c = byCardId.get(row.cardid);
                     const action = row.actions;
                     if (!c || !action) return;
                     const tags = (action.actiontags || []).map(at => at && at.tags).filter(Boolean);
-                    c.actions.push({ name: action.actionname, tags: tags.map(t => t.tagname).filter(n => !NOT_GAMEPLAY.has(n)) });
+                    c.actions.push({ name: decodeActionName(action.actionname), tags: tags.map(t => t.tagname).filter(n => !NOT_GAMEPLAY.has(n)) });
                     tags.forEach(t => addTag(c, t.tagname, t.tagcategory));
+                }));
+                cardTagResults.forEach(rows => rows.forEach(row => {
+                    const c = byCardId.get(row.cardid);
+                    if (c && row.tags) addTag(c, row.tags.tagname, row.tags.tagcategory);
                 }));
                 loaded = true;
             } catch (err) {
@@ -417,10 +432,27 @@ window.CardBrowser = (function () {
         return resp.json();
     }
 
+    /** Tags set on the card itself rather than by an action (cardtags). */
+    async function fetchCardTagRows(cfg, cardIds) {
+        const select = 'cardid,tags(tagname,tagcategory)';
+        const url = `${cfg.url}/rest/v1/cardtags?select=${encodeURIComponent(select)}&cardid=in.(${cardIds.join(',')})&limit=5000`;
+        const headers = { apikey: cfg.anonKey };
+        if (/^eyJ/.test(cfg.anonKey)) headers.Authorization = `Bearer ${cfg.anonKey}`;
+        const resp = await fetch(url, { headers });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        return resp.json();
+    }
+
+    function decodeActionName(name) {
+        return utils.decodeActionName ? utils.decodeActionName(name)
+            : String(name == null ? '' : name).replace(/-2D/g, '-').replace(/-2F/g, '/');
+    }
+
+    /** The database category wins; CardLoader's copy of the tags table is the fallback. */
     function addTag(c, name, category) {
         if (!name || NOT_GAMEPLAY.has(name)) return;
-        const known = utils.KNOWN_TAG_CATEGORIES || {};
-        const cat = String(known[name] || category || 'default').toLowerCase();
+        const cat = utils.tagCategoryKey ? utils.tagCategoryKey(name, category)
+            : String(category || (utils.KNOWN_TAG_CATEGORIES || {})[name] || 'default').toLowerCase();
         if (!c.tagMap.has(name)) c.tagMap.set(name, cat);
     }
 

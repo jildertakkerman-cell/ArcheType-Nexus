@@ -26550,6 +26550,64 @@ const archetypes = [
 
     },
     {
+        name: 'Raise Moon',
+        description: 'A Glorious Victors casino theme of six Level 7 monsters with different Attributes that Special Summon themselves when drawn, stacking the top of the Deck instead of searching to reach the Rank 7 bosses No More Bets! and JACKPOT!.',
+        filepath: 'pages/Raise Moon Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <radialGradient id="ai-raise-moon-bg" cx="50%" cy="32%" r="68%">
+            <stop offset="0%" stop-color="#3b1d6e"/>
+            <stop offset="60%" stop-color="#1a0b3d"/>
+            <stop offset="100%" stop-color="#07031a"/>
+        </radialGradient>
+        <clipPath id="ai-raise-moon-clip">
+            <circle cx="50" cy="50" r="45"/>
+        </clipPath>
+        <radialGradient id="ai-raise-moon-moon" cx="62%" cy="38%" r="70%">
+            <stop offset="0%" stop-color="#fffbeb"/>
+            <stop offset="55%" stop-color="#fde68a"/>
+            <stop offset="100%" stop-color="#d97706"/>
+        </radialGradient>
+        <linearGradient id="ai-raise-moon-city" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4c1d95"/>
+            <stop offset="100%" stop-color="#12062b"/>
+        </linearGradient>
+        <filter id="ai-raise-moon-glow" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+            <feGaussianBlur stdDeviation="1.6" result="b"/>
+            <feMerge>
+                <feMergeNode in="b"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <circle cx="50" cy="50" r="46" fill="url(#ai-raise-moon-bg)"/>
+    <g clip-path="url(#ai-raise-moon-clip)">
+        <circle cx="20" cy="26" r="1.1" fill="#fef3c7"/>
+        <circle cx="30" cy="16" r=".8" fill="#fef3c7"/>
+        <circle cx="16" cy="44" r=".7" fill="#fef3c7"/>
+        <circle cx="84" cy="22" r=".9" fill="#fef3c7"/>
+        <path d="M26 33 Q26 35 28 35 Q26 35 26 37 Q26 35 24 35 Q26 35 26 33 Z" fill="#fff"/>
+        <circle cx="55" cy="40" r="25" fill="none" stroke="#fbbf24" stroke-width="2.4"/>
+        <circle cx="55" cy="40" r="25" fill="none" stroke="#be123c" stroke-width="2.4" stroke-dasharray="3.27 3.27"/>
+        <circle cx="55" cy="40" r="22" fill="none" stroke="#fde68a" stroke-width=".7" opacity=".7"/>
+        <path d="M54.75 21 A19 19 0 1 1 37.81 48.1 A16 16 0 1 0 54.75 21 Z" fill="url(#ai-raise-moon-moon)" filter="url(#ai-raise-moon-glow)"/>
+        <path d="M4 100 L4 74 L12 74 L12 66 L20 66 L20 78 L27 78 L27 60 L31 56 L35 60 L35 80 L42 80 L42 70 L50 70 L50 76 L57 76 L57 58 L65 58 L65 72 L71 72 L71 64 L79 64 L79 78 L86 78 L86 68 L96 68 L96 100 Z" fill="url(#ai-raise-moon-city)" stroke="#a78bfa" stroke-width=".8"/>
+        <rect x="14.5" y="69" width="2" height="2.4" fill="#f472b6"/>
+        <rect x="14.5" y="74" width="2" height="2.4" fill="#67e8f9"/>
+        <rect x="29.5" y="63" width="2" height="2.4" fill="#fde68a"/>
+        <rect x="29.5" y="68" width="2" height="2.4" fill="#f472b6"/>
+        <rect x="45" y="73" width="2" height="2.4" fill="#67e8f9"/>
+        <rect x="60" y="61" width="2" height="2.4" fill="#f472b6"/>
+        <rect x="60" y="66" width="2" height="2.4" fill="#fde68a"/>
+        <rect x="74" y="67" width="2" height="2.4" fill="#67e8f9"/>
+        <rect x="89" y="71" width="2" height="2.4" fill="#f472b6"/>
+    </g>
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#fde68a" stroke-width="2.5"/>
+</svg>`,
+        firstReleaseDate: '2026-09-05',
+        latestReleaseDate: '2026-09-05'
+    },
+    {
         name: 'Reactor',
         description: 'A Machine archetype that harnesses reactor power for explosive summons and field control.',
         filepath: 'pages/Reactor Deck Analysis.html',
@@ -30716,6 +30774,61 @@ const archetypes = [
 </svg>`
     },
     {
+        name: 'Trirealm Rift',
+        description: 'Eight Psychic monsters, one at each Level from 1 to 8, that banish your Deck face-down when summoned and then search and summon from that face-down banishment to reach Trirealm Rift Darkness.',
+        filepath: 'pages/Trirealm Rift Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <radialGradient id="ai-trirealm-rift-bg" cx="50%" cy="45%" r="62%">
+            <stop offset="0%" stop-color="#2e1065"/>
+            <stop offset="100%" stop-color="#05030f"/>
+        </radialGradient>
+        <clipPath id="ai-trirealm-rift-clip">
+            <circle cx="50" cy="50" r="45"/>
+        </clipPath>
+        <radialGradient id="ai-trirealm-rift-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.7"/>
+            <stop offset="60%" stop-color="#8b5cf6" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="ai-trirealm-rift-void" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1e1b4b"/>
+            <stop offset="100%" stop-color="#020108"/>
+        </linearGradient>
+        <linearGradient id="ai-trirealm-rift-crack" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="55%" stop-color="#a5f3fc"/>
+            <stop offset="100%" stop-color="#c084fc"/>
+        </linearGradient>
+        <filter id="ai-trirealm-rift-g" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+            <feGaussianBlur stdDeviation="1.6" result="b"/>
+            <feMerge>
+                <feMergeNode in="b"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <circle cx="50" cy="50" r="46" fill="url(#ai-trirealm-rift-bg)"/>
+    <g clip-path="url(#ai-trirealm-rift-clip)">
+        <circle cx="50" cy="56" r="38" fill="url(#ai-trirealm-rift-glow)"/>
+        <ellipse cx="50" cy="56" rx="40" ry="13" fill="none" stroke="#c4b5fd" stroke-width=".8" stroke-dasharray="1.4 3" opacity=".7"/>
+        <path d="M50 18 L83 75 L17 75 Z" fill="url(#ai-trirealm-rift-void)" stroke="#a5f3fc" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M50 31 L71.7 68.5 L28.3 68.5 Z" fill="none" stroke="#8b5cf6" stroke-width="1" opacity=".8"/>
+        <path d="M50 25 L54 37 L48 45 L55 54 L49 63 L51 72 L45 62 L51 54 L44 45 L50 37 Z" fill="url(#ai-trirealm-rift-crack)" filter="url(#ai-trirealm-rift-g)"/>
+        <circle cx="50" cy="18" r="3.4" fill="#fde047" stroke="#05030f" stroke-width=".8"/>
+        <circle cx="83" cy="75" r="3.4" fill="#22d3ee" stroke="#05030f" stroke-width=".8"/>
+        <circle cx="17" cy="75" r="3.4" fill="#c084fc" stroke="#05030f" stroke-width=".8"/>
+        <circle cx="12" cy="52" r="1.3" fill="#4ade80"/>
+        <circle cx="88" cy="50" r="1.3" fill="#fb923c"/>
+        <circle cx="30" cy="88" r="1.1" fill="#60a5fa"/>
+        <circle cx="72" cy="89" r="1.1" fill="#d6a35c"/>
+    </g>
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#a5f3fc" stroke-width="2.5"/>
+</svg>`,
+        firstReleaseDate: '2026-09-05',
+        latestReleaseDate: '2026-09-05'
+    },
+    {
         name: "True Draco",
         description: "A deck featuring dragon monsters that banish themselves to summon powerful True King monsters, combining draconic might with royal authority.",
         filepath: "pages/True King True Draco Deck Analysis.html",
@@ -32606,6 +32719,75 @@ const archetypes = [
     </g>
     <circle cx="50" cy="50" r="46" fill="none" stroke="#e0f2fe" stroke-width="2.5"/>
 </svg>`
+    },
+    {
+        name: 'Zenet',
+        description: 'A Glorious Victors Ritual deck whose Zombie Ritual Monsters discard themselves for value and are Ritual Summoned back from the GY with Normal Monsters from the Deck, beside non-Effect Fusions treated as Normal Monster Cards.',
+        filepath: 'pages/Zenet Deck Analysis.html',
+        icon: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <radialGradient id="ai-zenet-bg" cx="50%" cy="35%" r="70%">
+            <stop offset="0%" stop-color="#1e3a8a"/>
+            <stop offset="65%" stop-color="#0b1330"/>
+            <stop offset="100%" stop-color="#05070f"/>
+        </radialGradient>
+        <clipPath id="ai-zenet-clip">
+            <circle cx="50" cy="50" r="45"/>
+        </clipPath>
+        <radialGradient id="ai-zenet-sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff7d6"/>
+            <stop offset="55%" stop-color="#f6c453"/>
+            <stop offset="100%" stop-color="#c98a1c"/>
+        </radialGradient>
+        <linearGradient id="ai-zenet-lit" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#f6dc8f"/>
+            <stop offset="100%" stop-color="#b9862a"/>
+        </linearGradient>
+        <linearGradient id="ai-zenet-shade" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#8a6420"/>
+            <stop offset="100%" stop-color="#4a3410"/>
+        </linearGradient>
+        <linearGradient id="ai-zenet-sand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a2a10"/>
+            <stop offset="100%" stop-color="#140e05"/>
+        </linearGradient>
+        <filter id="ai-zenet-glow" filterUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+            <feGaussianBlur stdDeviation="2.2" result="b"/>
+            <feMerge>
+                <feMergeNode in="b"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    <circle cx="50" cy="50" r="46" fill="url(#ai-zenet-bg)"/>
+    <g clip-path="url(#ai-zenet-clip)">
+        <circle cx="24" cy="27" r="1" fill="#dbeafe" opacity=".8"/>
+        <circle cx="77" cy="23" r="1.2" fill="#dbeafe" opacity=".8"/>
+        <circle cx="83" cy="41" r=".8" fill="#dbeafe" opacity=".6"/>
+        <circle cx="16" cy="45" r=".8" fill="#dbeafe" opacity=".6"/>
+        <path d="M50 17 L50 12" stroke="#f6c453" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M36.6 21.6 L33.1 18.1" stroke="#f6c453" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M63.4 21.6 L66.9 18.1" stroke="#f6c453" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M31 34 L26 34" stroke="#f6c453" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M69 34 L74 34" stroke="#f6c453" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="50" cy="34" r="12" fill="url(#ai-zenet-sun)" filter="url(#ai-zenet-glow)"/>
+        <rect x="0" y="76" width="100" height="24" fill="url(#ai-zenet-sand)"/>
+        <path d="M50 38 L20 76 L50 76 Z" fill="url(#ai-zenet-lit)"/>
+        <path d="M50 38 L80 76 L50 76 Z" fill="url(#ai-zenet-shade)"/>
+        <path d="M38.2 53 L61.8 53" stroke="#2a1d08" stroke-width=".9" opacity=".6"/>
+        <path d="M28.7 65 L71.3 65" stroke="#2a1d08" stroke-width=".9" opacity=".6"/>
+        <path d="M50 38 L50 76" stroke="#2a1d08" stroke-width=".7" opacity=".45"/>
+        <rect x="30" y="80" width="8" height="8" fill="#e6b84a"/>
+        <rect x="38" y="80" width="8" height="8" fill="#5b4318"/>
+        <rect x="46" y="80" width="8" height="8" fill="#e6b84a"/>
+        <rect x="54" y="80" width="8" height="8" fill="#5b4318"/>
+        <rect x="62" y="80" width="8" height="8" fill="#e6b84a"/>
+        <circle cx="50" cy="84" r="1.8" fill="#1e3a8a"/>
+    </g>
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#e6b84a" stroke-width="2.5"/>
+</svg>`,
+        firstReleaseDate: '2026-09-05',
+        latestReleaseDate: '2026-09-05'
     },
     {
         name: "Zubaba",

@@ -392,7 +392,7 @@ async function displayAnalysis(data) {
 
                     // Render tag breakdown with CATEGORIES
                     const p1TagBreakdown = player1Hand.tagBreakdown || {};
-                    renderCategorizedTags('p1TagBreakdown', p1TagBreakdown, p1CardsByTag, 'p1');
+                    renderCategorizedTags('p1TagBreakdown', p1TagBreakdown, p1CardsByTag, 'p1', player1Hand.tagCategories);
                 } else {
                     document.getElementById('p1TagsContainer').style.display = 'none';
                     document.getElementById('p1TagsUnavailable').style.display = 'block';
@@ -452,7 +452,7 @@ async function displayAnalysis(data) {
 
                     // Render tag breakdown with CATEGORIES
                     const p2TagBreakdown = player2Hand.tagBreakdown || {};
-                    renderCategorizedTags('p2TagBreakdown', p2TagBreakdown, p2CardsByTag, 'p2');
+                    renderCategorizedTags('p2TagBreakdown', p2TagBreakdown, p2CardsByTag, 'p2', player2Hand.tagCategories);
                 } else {
                     document.getElementById('p2TagsContainer').style.display = 'none';
                     document.getElementById('p2TagsUnavailable').style.display = 'block';
@@ -1077,27 +1077,16 @@ function bindTagHighlight(elementId, containerId, cardIds) {
     el.onmouseleave = () => resetHandCards(containerId);
 }
 
+// The cards behind one hand stat. The hand analyzer puts each stat's cards
+// under the same key it counts them by: database tags ("Extender",
+// "Searcher") or the roles it works out itself ("Starter", "Board Breaker"),
+// so the highlight always matches the number shown.
 function getCardsForCategory(category, cardsByTag) {
-    let ids = new Set();
-
-    // Mapping of UI Category -> Backend Tags
-    const mappings = {
-        'Starter': ['Starter'],
-        'Extender': ['Extender'],
-        'Searcher': ['Searcher', 'Search'],
-        'Board Breaker': ['Board Breaker', 'Destruction', 'Removal', 'Banish', 'Kaiju', 'Lava Golem']
-    };
-
-    const targetTags = mappings[category] || [category];
-
-    targetTags.forEach(tag => {
-        if (cardsByTag[tag]) {
-            cardsByTag[tag].forEach(id => ids.add(id));
-        }
-    });
-
-    return Array.from(ids);
+    return Array.from(new Set(cardsByTag[category] || []));
 }
+
+// Roles the hand analyzer works out itself; they are not database tags.
+const DERIVED_ROLE_CATEGORIES = { 'Starter': 'consistency', 'Board Breaker': 'removal' };
 
 async function renderHandCards(containerId, cardCodes) {
     const container = document.getElementById(containerId);
@@ -1167,8 +1156,10 @@ async function renderHandCards(containerId, cardCodes) {
     });
 }
 
-// Render categorized tags with collapsible support
-function renderCategorizedTags(containerId, tagBreakdown, cardsByTag, prefix) {
+// Render categorized tags with collapsible support. `tagCategories` (tag ->
+// database category) comes with newer hand analyses; without it the tags are
+// grouped by CardLoader's copy of the tags table.
+function renderCategorizedTags(containerId, tagBreakdown, cardsByTag, prefix, tagCategories) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
@@ -1190,8 +1181,9 @@ function renderCategorizedTags(containerId, tagBreakdown, cardsByTag, prefix) {
 
     // Group tags
     const grouped = {};
+    const dbCategories = tagCategories || {};
     Object.entries(tagBreakdown).forEach(([tag, count]) => {
-        const cat = KNOWN_CATEGORIES[tag] || 'default';
+        const cat = String(dbCategories[tag] || KNOWN_CATEGORIES[tag] || DERIVED_ROLE_CATEGORIES[tag] || 'default').toLowerCase();
         if (!grouped[cat]) grouped[cat] = [];
         grouped[cat].push({ tag, count });
     });

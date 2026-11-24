@@ -60,6 +60,23 @@ const store = card => {
     });
 };
 
+// Official TCG names YGOProDeck doesn't list yet (assets/data/tcg-card-names.json: a new set's cards
+// stay under their OCG translation there until the TCG release catches up). A list writes the TCG name;
+// the card is looked up by its passcode and filed under that name.
+const tcgNames = (() => {
+    try {
+        return (readJson(path.join(DATA_DIR, 'tcg-card-names.json')).cards || []).filter(e => e && e.name && e.passcode);
+    } catch (e) {
+        return [];
+    }
+})();
+const tcgByName = new Map(tcgNames.map(e => [e.name.toLowerCase(), e]));
+const tcgByOtherName = new Map(tcgNames.filter(e => e.ocgName).map(e => [e.ocgName.toLowerCase(), e]));
+const storeAsTcg = (card, entry) => {
+    store(card);
+    cardInfo.set(entry.name.toLowerCase(), Object.assign({}, cardInfo.get(card.name.toLowerCase()), { name: entry.name }));
+};
+
 async function lookupNames(names) {
     const todo = [...new Set(names)].filter(n => !cardInfo.has(n.toLowerCase()));
     if (todo.length > 0) {
@@ -71,13 +88,31 @@ async function lookupNames(names) {
         data.forEach(store);
         await sleep(120);
     }
+    // TCG names YGOProDeck doesn't know yet: by passcode
+    const byPasscode = todo.filter(n => !cardInfo.has(n.toLowerCase()) && tcgByName.has(n.toLowerCase()));
+    for (let i = 0; i < byPasscode.length; i += 40) {
+        const entries = byPasscode.slice(i, i + 40).map(n => tcgByName.get(n.toLowerCase()));
+        const { data = [] } = await fetchJson(`${API}?misc=yes&id=${entries.map(e => e.passcode).join(',')}`);
+        data.forEach(card => {
+            const entry = entries.find(e => Number(e.passcode) === Number(card.id));
+            if (entry) storeAsTcg(card, entry);
+        });
+        await sleep(120);
+    }
 }
 
+// (an OCG translation YGOProDeck still lists is reported under its TCG name, so "new since the
+// last review" doesn't flag a card the list already runs under that name)
 async function lookupArchetype(pattern) {
     const { data = [] } = await fetchJson(`${API}?misc=yes&fname=${encodeURIComponent(pattern)}`);
     data.forEach(store);
     await sleep(120);
-    return data.map(card => card.name);
+    return data.map(card => {
+        const entry = tcgByOtherName.get(card.name.toLowerCase());
+        if (!entry || entry.name === card.name) return card.name;
+        storeAsTcg(card, entry);
+        return entry.name;
+    });
 }
 
 // Opponent cards (p2-…), tokens and placeholders aren't deck cards.
