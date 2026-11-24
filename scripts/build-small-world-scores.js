@@ -14,23 +14,18 @@
 //                   per-card numbers from these)
 // No timestamps, so a weekly run only changes the files when a result changes.
 //
-// Starters come from the Supabase gameplay data (docs/supabase-tags.md), from the action names behind
-// the tags. A card counts when it
-//   - takes a card from the Deck: an action in DECK_ACCESS (a monster also by banishing from the top
-//     of the Deck or by drawing; on a Spell, Deck banishes and sends for cost are costs, as on Pot of
-//     Desires),
-//   - can do that on its own: a monster that triggers on its Normal Summon at Level 4 or lower,
-//     activates from the hand or summons itself from the hand, or a Level 4 or lower monster with no
-//     "only from the GY / as material / when destroyed" trigger (an Ignition effect). A Spell counts as
-//     it is; a Trap doesn't (it can't be used the turn it's Set),
-//   - and isn't a Hand Trap or in NOT_STARTERS (shared staples with a condition, like Triple Tactics Thrust).
-// Terraforming counts only when a Field Spell in the list is a starter. Actions belong to the card, not
-// to one effect, so a card can count whose Deck action is in another effect (ROM Cloudia: the Normal
-// Summon effect adds from the GY, the Deck summon happens when it's destroyed). A test deck corrects
-// that with
-//   "smallWorld": { "starters": { "add": ["Card"], "remove": ["Card"], "addMatching": ["name fragment"] }, "note": "why" }
-// "addMatching" counts every card in the list whose name holds the fragment, in any case ("lswarm" takes
-// in every Evilswarm card), for decks that open with any two of their monsters rather than a searcher.
+// Starters and hand traps come from the Supabase card tags (docs/supabase-tags.md), read through
+// get_card_tags_by_passcodes:
+//   - "Starter": one of the card's effects takes a card from the Deck on your first turn with nothing
+//     else needed (yugioh-archetype-db sql/create_cardtags_starters.sql works it out per effect);
+//   - "Hand Trap": hand traps are never starters here, and they are what a Small World save can cost.
+// Two things need the deck around the card, so they stay here:
+//   - Terraforming counts only when a Field Spell in the list is a starter;
+//   - a test deck can correct its starters, for decks that open some other way (Lswarm: two Level 4s,
+//     with Evilswarm Castor's extra Normal Summon):
+//     "smallWorld": { "starters": { "add": ["Card"], "remove": ["Card"], "addMatching": ["name fragment"] }, "note": "why" }
+//     "addMatching" counts every card in the list whose name holds the fragment, in any case. A correction
+//     that changes nothing (the tag already agrees) is reported and its note isn't shown.
 //
 // The opening odds: HANDS five-card hands from a seeded shuffle, once with the list as it is (any
 // Small World taken out) and once with three Small World in place of three Spells or Traps that aren't
@@ -38,10 +33,11 @@
 // starter through a bridge still in the Deck. "uplift" is the difference in percentage points.
 // "cost" comes from the same hands: of those holding Small World, the share it rescues, the share that
 // had a starter anyway and the share where it has nothing to do; of its rescues, the share where every
-// monster you could reveal is one of the staple hand traps (HAND_TRAPS), so you give one up to start.
+// monster you could reveal has the Hand Trap tag, so you give one up to start.
 // Small World and the revealed monster leave the hand for one card, so it's always -1 in hand.
 //
-// Needs the network (Supabase). When Supabase can't be reached the files stay as they are (exit 0).
+// Needs the network (Supabase). When Supabase can't be reached, or returns no Starter tags at all, the
+// files stay as they are (exit 0).
 
 'use strict';
 
@@ -63,41 +59,15 @@ const arg = (name, def) => {
 const HANDS = parseInt(arg('hands', '40000'), 10) || 40000;
 const ONLY = arg('only', '') ? arg('only', '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : null;
 
-const METHOD = '2026-11-24';
+const METHOD = '2026-11-24.2'; // Starter and Hand Trap tags from the database
 const SMALL_WORLD = 'Small World';
 const SW_COPIES = 3;
 const HAND_SIZE = 5;
 const EXTRA_DECK = /fusion|synchro|xyz|link/i;
-const DECK_ACCESS = new Set([
-    'Adds from Deck to hand',
-    'Special Summons from your Deck',
-    'Sets from your Deck',
-    'Places cards from Deck in Spell & Trap Zone',
-    'Activates cards from your Deck',
-    'Places from Deck to Pendulum Zone',
-    'Sends from your Deck to your Graveyard',
-    'Sends from Deck to Graveyard',
-    'Sends from Deck to Graveyard for cost',
-    'Sends from your Deck to your Graveyard for cost',
-    'Banishes from your Deck',
-    "Uses cards in the player's Deck as Fusion Materials",
-    "Excavates from the player's Deck"
-]);
-const MONSTER_DECK_ACCESS = new Set(['Banishes from the top of your Deck', 'You draw cards']);
-// On a Spell these are costs (Pot of Desires, Nobleman of Crossout, Gold Sarcophagus, Galaxy Hundred)
-const SPELL_COSTS = new Set(['Banishes from your Deck', 'Sends from Deck to Graveyard for cost', 'Sends from your Deck to your Graveyard for cost']);
-// Shared staples that reach the Deck but can't start a turn on their own
-const NOT_STARTERS = new Map([
-    ['Triple Tactics Thrust', 'needs your opponent to have activated a monster effect this turn']
-]);
-const NORMAL_SUMMON = 'Activates upon Normal Summon';
-const FROM_HAND = new Set(['Activates from your hand', 'Special Summons itself from your hand']);
-const LATER_ONLY = /^(Activates if used as .*Material|Activates from your Graveyard|Activates if sent to the Graveyard|Activates if destroyed|Activates if banished)/;
+const STARTER_TAG = 'Starter';
+const HAND_TRAP_TAG = 'Hand Trap';
+// Searches a Field Spell: a starter only when one of the deck's Field Spells is
 const FIELD_SEARCHERS = new Set(['Terraforming']);
-// For the cost: the staple hand traps the test decks top up with (packages.json "handtraps"), filled in
-// main(). Not Supabase's Hand Trap tag, which misses Nibiru and marks archetype monsters whose hand
-// effect and Quick Effect are separate effects (Trirealm Rift Havocs, Gizmek Orochi).
-let HAND_TRAPS = new Set();
 // Uplift in percentage points -> label
 const BANDS = [
     { min: 12, label: 'Core' },
@@ -184,23 +154,7 @@ async function cardRows(names) {
     return rows;
 }
 
-// cardid -> action names (cardactions -> actions), the card browser's read path
-async function cardActions(cardIds) {
-    const out = new Map();
-    const select = encodeURIComponent('cardid,actions(actionname)');
-    await inChunks(cardIds, 25, async batch => {
-        const rows = await allRows(batch, b => rest(`cardactions?select=${select}&cardid=in.(${b.join(',')})&order=cardid.asc,actionid.asc`));
-        rows.forEach(r => {
-            if (!r.actions) return;
-            const name = String(r.actions.actionname || '').replace(/-2D/g, '-').replace(/-2F/g, '/');
-            if (!out.has(r.cardid)) out.set(r.cardid, new Set());
-            out.get(r.cardid).add(name);
-        });
-    });
-    return out;
-}
-
-// passcode -> tag names (get_card_tags_by_passcodes, which includes the card-level Hand Trap tag)
+// passcode -> tag names (get_card_tags_by_passcodes, which includes the card-level Starter and Hand Trap tags)
 async function cardTags(passcodes) {
     const out = new Map();
     await inChunks(passcodes, 60, async batch => {
@@ -227,11 +181,10 @@ function kindOf(type) {
 }
 
 // One record per card name: stats from the site's card cache (TCG names), Supabase as the fallback
-function cardRecord(name, cache, row, actions, tags) {
+function cardRecord(name, cache, row, tags) {
     const c = cache[name.toLowerCase()];
     const type = (c && c.type) || (row && row.cardtype) || '';
     const kind = kindOf(type);
-    const desc = (c && c.desc) || (row && row.description) || '';
     return {
         name,
         // The card browser matches by passcode: Supabase files a new set's cards under their OCG names
@@ -243,26 +196,13 @@ function cardRecord(name, cache, row, actions, tags) {
         level: stat(c ? c.level : row && row.level),
         atk: stat(c ? c.atk : row && row.atk),
         def: stat(c ? c.def : row && row.def),
-        nsLocked: /cannot be normal summoned/i.test(desc),
-        actions: actions || new Set(),
         tags: tags || new Set(),
         known: !!(c || row)
     };
 }
 
-function ruleStarter(r) {
-    if (r.name === SMALL_WORLD || NOT_STARTERS.has(r.name) || r.tags.has('Hand Trap')) return false;
-    const acts = [...r.actions];
-    const monster = r.kind === 'monster';
-    const access = a => (monster ? DECK_ACCESS.has(a) || MONSTER_DECK_ACCESS.has(a) : DECK_ACCESS.has(a) && !SPELL_COSTS.has(a));
-    if (!acts.some(access)) return false;
-    if (r.kind === 'spell') return true;
-    if (!monster) return false;
-    const low = (r.level || 0) <= 4 && !r.nsLocked;
-    if (low && r.actions.has(NORMAL_SUMMON)) return true;
-    if (acts.some(a => FROM_HAND.has(a))) return true;
-    return low && !acts.some(a => LATER_ONLY.test(a));
-}
+// The database's Starter tag; Small World itself and hand traps never count
+const isStarter = r => r.name !== SMALL_WORLD && r.tags.has(STARTER_TAG) && !r.tags.has(HAND_TRAP_TAG);
 
 // ---------- Small World ----------
 
@@ -348,17 +288,24 @@ function scoreDeck(file, deck, list, records) {
     const cards = entries.map(e => {
         const r = records.get(e.name);
         return Object.assign({}, r, {
-            count: e.count, starter: r ? ruleStarter(r) : false, source: 'rule',
-            handTrap: HAND_TRAPS.has(e.name)
+            count: e.count, starter: r ? isStarter(r) : false, source: 'tag',
+            handTrap: !!(r && r.tags.has(HAND_TRAP_TAG))
         });
     });
     // Terraforming: only as good as the Field Spell it finds
     const fieldStarter = cards.some(c => c.field && c.starter && !FIELD_SEARCHERS.has(c.name));
     cards.forEach(c => { if (FIELD_SEARCHERS.has(c.name) && !fieldStarter) c.starter = false; });
+    // The test deck's corrections; one the tag already agrees with changes nothing and is reported
+    const redundant = [];
     cards.forEach(c => {
-        if (remove.has(c.name)) { c.starter = false; c.source = 'removed'; }
-        if (add.has(c.name) || matches(c.name)) { c.starter = true; c.source = 'added'; }
+        if (remove.has(c.name)) {
+            if (c.starter) { c.starter = false; c.source = 'removed'; } else redundant.push(`remove "${c.name}"`);
+        }
+        if (add.has(c.name) || matches(c.name)) {
+            if (!c.starter) { c.starter = true; c.source = 'added'; } else if (add.has(c.name)) redundant.push(`add "${c.name}"`);
+        }
     });
+    const corrected = cards.some(c => c.source === 'added' || c.source === 'removed');
     const unused = [...add, ...remove].filter(n => !cards.some(c => c.name === n))
         .concat(addMatching.filter(p => !cards.some(c => c.name.toLowerCase().includes(p))).map(p => `addMatching "${p}"`));
 
@@ -436,14 +383,16 @@ function scoreDeck(file, deck, list, records) {
         },
         starters: cards.filter(c => c.starter).map(c => ({ name: c.name, passcode: c.passcode, kind: c.kind, count: c.count, source: c.source })),
         removed: cards.filter(c => c.source === 'removed').map(c => c.name),
-        note: (deck.smallWorld && deck.smallWorld.note) || null,
+        // Shown as "Corrected by hand" only when the correction changed a starter
+        note: corrected ? (deck.smallWorld && deck.smallWorld.note) || null : null,
         pool: pool.map(i => {
             const c = cards[i];
             return { name: c.name, passcode: c.passcode, count: c.count, starter: c.starter, race: c.race, attribute: c.attribute, level: c.level, atk: c.atk, def: c.def };
         }),
         replaced: swaps.length,
         missing: cards.filter(c => !c.known).map(c => c.name),
-        unusedOverrides: unused
+        unusedOverrides: unused,
+        redundantOverrides: redundant
     };
 }
 
@@ -471,7 +420,6 @@ async function main() {
     const profiles = fs.existsSync(path.join(DECK_DIR, 'profiles.json')) ? readJson(path.join(DECK_DIR, 'profiles.json')) : {};
     const banMap = DeckList.banMapFromJson(readJson(path.join(DATA_DIR, 'banlist.json')));
     const packages = Object.assign({}, generated.packages, packagesFile.packages);
-    HAND_TRAPS = new Set(((packagesFile.packages.handtraps || {}).cards || []).map(row => (Array.isArray(row) ? row[0] : row.name)));
     const cache = readJson(path.join(DATA_DIR, 'cards-cache.json'));
 
     const names = {};
@@ -495,21 +443,25 @@ async function main() {
     const allNames = [...new Set([...lists.values()].flatMap(({ list }) => list.main.map(e => e.name)))];
     console.log(`${lists.size} test decks, ${allNames.length} Main Deck cards. Reading Supabase...`);
 
-    let rows, actions, tags;
+    let rows, tags;
     try {
         rows = await cardRows(allNames);
         const all = [...rows.values()].flat();
-        actions = await cardActions([...new Set(all.map(r => r.cardid))]);
         tags = await cardTags([...new Set(all.map(r => Number(r.passcode)))]);
     } catch (err) {
         console.warn(`Supabase could not be read, so the scores stay as they are: ${err.message}`);
         return;
     }
-    // Actions and tags from every row of the name, so an alternate art without them doesn't hide them
+    // A database without Starter tags would turn every deck into "no starters": keep last week's files
+    if (![...tags.values()].some(set => set.has(STARTER_TAG))) {
+        console.warn(`Supabase returned no "${STARTER_TAG}" tags, so the scores stay as they are.`);
+        return;
+    }
+    // Tags from every row of the name, so an alternate art without them doesn't hide them
     const union = (list, map, key) => new Set(list.flatMap(r => [...(map.get(key(r)) || [])]));
     const records = new Map(allNames.map(name => {
         const list = rows.get(name) || [];
-        return [name, cardRecord(name, cache, list[0], union(list, actions, r => r.cardid), union(list, tags, r => Number(r.passcode)))];
+        return [name, cardRecord(name, cache, list[0], union(list, tags, r => Number(r.passcode)))];
     }));
     const noData = allNames.filter(n => !rows.has(n));
     if (noData.length) console.log(`  No Supabase row for ${noData.length} card(s): ${noData.slice(0, 12).join(', ')}${noData.length > 12 ? ', ...' : ''}`);
@@ -539,6 +491,7 @@ async function main() {
         fs.writeFileSync(path.join(OUT_DIR, file), JSON.stringify(body, null, 1) + '\n');
         out.decks[file] = Object.assign({}, result.summary, finder ? { finder } : {});
         if (result.unusedOverrides.length) console.warn(`  ${file}: smallWorld override names not in the list: ${result.unusedOverrides.join(', ')}`);
+        if (result.redundantOverrides.length) console.log(`  ${file}: smallWorld corrections the Starter tag already agrees with: ${result.redundantOverrides.join(', ')}`);
     }
     // Drop decks whose list file is gone
     Object.keys(out.decks).forEach(file => { if (!Object.values(index).includes(file)) delete out.decks[file]; });
