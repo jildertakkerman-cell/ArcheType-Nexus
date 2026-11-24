@@ -20,17 +20,28 @@
  *        data-title="Small World bridge finder"          optional heading
  *        data-note="Text shown under the rule"></div>    optional, plain text
  *
+ * A card intro for readers who don't know Small World yet (its art, type, live TCG status, the three
+ * steps and when it pays off) goes in its own element, usually right under the section heading:
+ *
+ *   <div data-small-world-intro></div>
+ *
+ * When a page has one, the finder drops its own rule text and keeps a one-line reminder.
+ *
  * Needs card-loader.js (CardLoader.preloadCards / getCachedCard / showPopupByName) for card data and
  * art, and assets/css/small-world-finder.css. Colours come from --swf-* custom properties, which a
- * page can set on the element. A finder starts the first time it nears the viewport, so one inside a
- * hidden tab costs nothing until the tab opens. SmallWorldFinder.mount(element) starts one by hand.
+ * page can set on the elements. Both start the first time they near the viewport, so one inside a
+ * hidden tab costs nothing until the tab opens. SmallWorldFinder.mount(element) and
+ * SmallWorldFinder.mountIntro(element) start one by hand.
  */
 (function () {
     'use strict';
 
     const SCRIPT = document.currentScript;
     const DECKLISTS = SCRIPT && SCRIPT.src ? new URL('../data/decklists/', SCRIPT.src).href : '../assets/data/decklists/';
+    const BANLIST = SCRIPT && SCRIPT.src ? new URL('../data/banlist.json', SCRIPT.src).href : '../assets/data/banlist.json';
     const SMALL_IMAGE = id => `https://images.ygoprodeck.com/images/cards_small/${encodeURIComponent(id)}.jpg`;
+    const FULL_IMAGE = id => `https://images.ygoprodeck.com/images/cards/${encodeURIComponent(id)}.jpg`;
+    const SMALL_WORLD = { name: 'Small World', id: 89558743 };
     const EXTRA_DECK = /fusion|synchro|xyz|link|token/i;
     // The five properties Small World compares, in the order its text lists them
     const PROPS = [
@@ -132,6 +143,78 @@
         return `<img class="${cls}" src="${esc(src)}" data-fallback="${esc(SMALL_IMAGE(m.id))}" alt="" loading="lazy" decoding="async">`;
     }
 
+    // Images the bucket doesn't have fall back to YGOProDeck's art
+    function useImageFallback(el) {
+        el.addEventListener('error', e => {
+            const img = e.target;
+            if (img.tagName === 'IMG' && img.dataset.fallback && img.src !== img.dataset.fallback) img.src = img.dataset.fallback;
+        }, true);
+    }
+
+    // ----- Card intro -----
+    // "Unlimited in the TCG" from the site's banlist.json, so the status can't go stale; null if it won't load
+    async function tcgStatus(name) {
+        try {
+            const tcg = (await fetchJson(BANLIST)).tcg || {};
+            const has = list => (list || []).some(entry => (typeof entry === 'string' ? entry : entry && entry.name) === name);
+            if (has(tcg.forbidden)) return { label: 'Forbidden in the TCG', bad: true };
+            if (has(tcg.limited)) return { label: 'Limited to 1 in the TCG' };
+            if (has(tcg.semiLimited)) return { label: 'Semi-Limited to 2 in the TCG' };
+            return { label: 'Unlimited in the TCG' };
+        } catch (err) {
+            return null;
+        }
+    }
+
+    function mountIntro(el) {
+        if (el.dataset.swfMounted) return;
+        el.dataset.swfMounted = 'true';
+        el.classList.add('swf-intro');
+        const uid = 'swf-' + Math.random().toString(36).slice(2, 8);
+        el.setAttribute('aria-labelledby', `${uid}-t`);
+        el.setAttribute('role', 'group');
+        el.innerHTML = `
+            <button type="button" class="swf-intro-art" data-popup="${SMALL_WORLD.name}" aria-label="Small World: show the full card text">
+                <span class="swf-intro-ph" aria-hidden="true">Small World</span>
+            </button>
+            <div class="swf-intro-head">
+                <p class="swf-intro-kicker">Meet the card</p>
+                <h3 class="swf-intro-title" id="${uid}-t">Small World</h3>
+                <p class="swf-tags"><span class="swf-tag">Normal Spell</span><span class="swf-tag">1 per turn</span></p>
+            </div>
+            <p class="swf-intro-lead">Small World swaps a monster in your hand for a different monster in your Deck. It can't jump straight there: it goes through a third monster in your Deck, the <strong>bridge</strong>, which must have exactly one thing in common with each of them.</p>
+            <ol class="swf-intro-steps">
+                <li><span class="swf-step-n" aria-hidden="true">1</span><span><strong>Reveal</strong> a monster in your hand.</span></li>
+                <li><span class="swf-step-n" aria-hidden="true">2</span><span><strong>Pick a bridge</strong> in your Deck that shares exactly one of Type, Attribute, Level, ATK or DEF with it. The revealed card is banished face-down.</span></li>
+                <li><span class="swf-step-n" aria-hidden="true">3</span><span><strong>Add</strong> a monster from your Deck that shares exactly one of them with the bridge. The bridge is banished face-down.</span></li>
+            </ol>
+            <p class="swf-intro-tip">Small World and the revealed card both leave your hand for one new card, so it pays off when the card you reveal is one you can't use, such as a hand trap when you go first, or a second copy of a card you only need once. Select the card for its full text.</p>`;
+        useImageFallback(el);
+
+        const art = el.querySelector('.swf-intro-art');
+        const setArt = record => {
+            const id = (record && record.id) || SMALL_WORLD.id;
+            const src = (record && record.hosted_image_url) || FULL_IMAGE(id);
+            art.innerHTML = `<img class="swf-img" src="${esc(src)}" data-fallback="${esc(FULL_IMAGE(id))}" alt="Small World card art" decoding="async">`;
+        };
+        if (window.CardLoader && CardLoader.preloadCards) {
+            CardLoader.preloadCards([SMALL_WORLD.name])
+                .then(() => setArt(CardLoader.getCachedCard(SMALL_WORLD.name)))
+                .catch(() => setArt(null));
+        } else {
+            setArt(null);
+        }
+        tcgStatus(SMALL_WORLD.name).then(status => {
+            if (!status) return;
+            el.querySelector('.swf-tags').insertAdjacentHTML('beforeend', `<span class="swf-tag${status.bad ? ' swf-tag--bad' : ''}">${esc(status.label)}</span>`);
+        });
+        el.addEventListener('click', e => {
+            if (!e.target.closest('.swf-intro-art') || !window.CardLoader || !CardLoader.showPopupByName) return;
+            e.stopPropagation();
+            CardLoader.showPopupByName(SMALL_WORLD.name, e);
+        });
+    }
+
     // ----- One finder -----
     function mount(el) {
         if (el.dataset.swfMounted) return;
@@ -139,9 +222,13 @@
         el.classList.add('swf');
         const uid = 'swf-' + Math.random().toString(36).slice(2, 8);
         const title = el.dataset.title || 'Small World bridge finder';
+        // With a card intro on the page, a reminder is enough
+        const rule = document.querySelector('[data-small-world-intro]')
+            ? 'Pick the card you reveal (step 1) and the card you want (step 3), and the finder lists every bridge (step 2) in this deck.'
+            : 'Small World reveals a monster in your hand, picks a bridge in your Deck that shares <strong>exactly one</strong> of Type, Attribute, Level, ATK and DEF with it, and adds a monster that shares exactly one with the bridge. The revealed card and the bridge are banished face-down.';
         el.innerHTML = `
             <h3 class="swf-title">${esc(title)}</h3>
-            <p class="swf-rule">Small World reveals a monster in your hand, picks a bridge in your Deck that shares <strong>exactly one</strong> of Type, Attribute, Level, ATK and DEF with it, and adds a monster that shares exactly one with the bridge. The revealed card and the bridge are banished face-down.</p>
+            <p class="swf-rule">${rule}</p>
             ${el.dataset.note ? `<p class="swf-note">${esc(el.dataset.note)}</p>` : ''}
             <p class="swf-loading">Loading the deck's monsters&hellip;</p>`;
 
@@ -268,11 +355,7 @@
                 render();
                 target.focus();
             });
-            // Images the bucket doesn't have fall back to YGOProDeck's small art
-            el.addEventListener('error', e => {
-                const img = e.target;
-                if (img.tagName === 'IMG' && img.dataset.fallback && img.src !== img.dataset.fallback) img.src = img.dataset.fallback;
-            }, true);
+            useImageFallback(el);
             render();
         }).catch(err => {
             console.error('[SmallWorldFinder]', err);
@@ -282,19 +365,20 @@
     }
 
     function mountAll(root) {
-        const els = [...(root || document).querySelectorAll('[data-small-world-finder]')].filter(el => !el.dataset.swfMounted);
-        if (!('IntersectionObserver' in window)) { els.forEach(mount); return; }
+        const els = [...(root || document).querySelectorAll('[data-small-world-finder], [data-small-world-intro]')].filter(el => !el.dataset.swfMounted);
+        const start = el => (el.hasAttribute('data-small-world-intro') ? mountIntro : mount)(el);
+        if (!('IntersectionObserver' in window)) { els.forEach(start); return; }
         const io = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (!entry.isIntersecting) return;
                 io.unobserve(entry.target);
-                mount(entry.target);
+                start(entry.target);
             });
         }, { rootMargin: '300px 0px' });
         els.forEach(el => io.observe(el));
     }
 
-    window.SmallWorldFinder = { mount, mountAll, shared, bridges };
+    window.SmallWorldFinder = { mount, mountIntro, mountAll, shared, bridges };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => mountAll());
     else mountAll();
 })();
