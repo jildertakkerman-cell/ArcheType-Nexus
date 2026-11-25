@@ -1,6 +1,7 @@
 /**
  * admin.js — Moderation panel: Combo guides, Synergy Links, Synergy Reasons, Section Rewrites,
- * plus a read-only Test Decks view of the decklist checker's report.json.
+ * plus a read-only Test Decks view of the decklist checker's report.json, and the Generic Searchers
+ * review (candidates from scripts/find-generic-searchers.js, decisions in Supabase genericsearcherreviews).
  * Requires: supabase-config.js, auth.js, text-utils.js loaded first.
  */
 (function () {
@@ -215,7 +216,7 @@
         if (activeBtn) activeBtn.classList.add('active');
     };
 
-    const MODES = ['combos', 'links', 'reasons', 'sections', 'decks', 'audit'];
+    const MODES = ['combos', 'links', 'reasons', 'sections', 'decks', 'searchers', 'audit'];
 
     // The open mode lives in the URL hash (Admin.html#decks), so a reload or a
     // shared link lands on the same section.
@@ -252,6 +253,7 @@
                 }
             } catch {}
             if (mode === 'decks' && !deckReport.requested) loadDeckReport();
+            if (mode === 'searchers' && !searcherState.requested) loadSearchers();
         }
     };
 
@@ -2032,6 +2034,303 @@
     };
 
     // ------------------------------------------------------------------
+    // Generic Searchers: Spells that fetch by Type, Attribute, Level or kind,
+    // which scripts/find-generic-searchers.js proposes every week
+    // (assets/data/generic-searcher-candidates.json) for
+    // assets/data/generic-searchers.json, the list behind the card browser's
+    // "Generic searchers" strip. Approve stores the (corrected) target rule in
+    // Supabase genericsearcherreviews; the next weekly run copies approved
+    // cards into the JSON and removes rejected ones.
+    // ------------------------------------------------------------------
+    const GS_CANDIDATES_URL = '../assets/data/generic-searcher-candidates.json';
+    const GS_LIST_URL = '../assets/data/generic-searchers.json';
+    const GS_TABLE = 'genericsearcherreviews';
+    const GS_TYPES = ['Aqua', 'Beast', 'Beast-Warrior', 'Cyberse', 'Dinosaur', 'Divine-Beast', 'Dragon', 'Fairy', 'Fiend', 'Fish',
+        'Illusion', 'Insect', 'Machine', 'Plant', 'Psychic', 'Pyro', 'Reptile', 'Rock', 'Sea Serpent', 'Spellcaster', 'Thunder',
+        'Warrior', 'Winged Beast', 'Wyrm', 'Zombie'];
+    const GS_ATTRIBUTES = ['LIGHT', 'DARK', 'EARTH', 'WATER', 'FIRE', 'WIND', 'DIVINE'];
+    const searcherState = { requested: false, candidates: [], listed: [], reviews: [], tableMissing: false };
+    const esc = s => window.escapeHtml(String(s == null ? '' : s));
+
+    // "Adds a Level 4 or lower Warrior from the Deck." (same wording as find-generic-searchers.js)
+    function gsDescribe(verb, target) {
+        let what;
+        if (!target) return '';
+        if (target.spell) what = 'a Field Spell';
+        else {
+            const parts = [];
+            if (target.level !== undefined) parts.push(`Level ${target.level}`);
+            if (target.levelMax !== undefined) parts.push(`Level ${target.levelMax} or lower`);
+            if (target.levelMin !== undefined) parts.push(`Level ${target.levelMin} or higher`);
+            if (target.attribute) parts.push(target.attribute);
+            if (target.race) parts.push(target.race);
+            parts.push(target.frame ? `${target.frame} Monster` : (target.race ? '' : 'monster'));
+            const phrase = parts.filter(Boolean).join(' ');
+            what = `${/^[AEIOU]/i.test(phrase) && !/^Level/.test(phrase) ? 'an' : 'a'} ${phrase}`;
+        }
+        return `${verb === 'summon' ? 'Special Summons' : verb === 'excavate' ? 'Excavates and adds' : 'Adds'} ${what} from the Deck.`;
+    }
+
+    function gsArt(passcode, name) {
+        const fallback = `https://images.ygoprodeck.com/images/cards_small/${passcode}.jpg`;
+        return `<img class="gs-art" src="${GCS_BASE}cards/${passcode}.png" data-fallback="${fallback}" alt="" loading="lazy"
+                     onerror="if (this.src !== this.dataset.fallback) this.src = this.dataset.fallback"
+                     data-name="${esc(name)}" onclick="gsShowCard(this.dataset.name, event)" title="Show ${esc(name)}">`;
+    }
+
+    window.gsShowCard = function (name, e) {
+        if (window.CardLoader && CardLoader.showPopupByName) CardLoader.showPopupByName(name, e);
+    };
+
+    // The card text with the sentence the scanner read highlighted
+    function gsHighlight(text, sentence) {
+        const at = sentence ? text.indexOf(sentence) : -1;
+        if (at < 0) return esc(text);
+        return `${esc(text.slice(0, at))}<mark>${esc(sentence)}</mark>${esc(text.slice(at + sentence.length))}`;
+    }
+
+    async function loadSearchers() {
+        searcherState.requested = true;
+        const pending = document.getElementById('tab-searchers-pending');
+        if (pending) pending.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i>Loading candidates…</div>';
+        try {
+            const [candRes, listRes] = await Promise.all([
+                fetch(GS_CANDIDATES_URL, { cache: 'no-cache' }),
+                fetch(GS_LIST_URL, { cache: 'no-cache' }),
+            ]);
+            if (!candRes.ok) throw new Error(`generic-searcher-candidates.json: ${candRes.status}`);
+            searcherState.candidates = (await candRes.json()).candidates || [];
+            searcherState.listed = listRes.ok ? ((await listRes.json()).searchers || []) : [];
+        } catch (error) {
+            searcherState.requested = false;
+            if (pending) pending.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i>Couldn't load the candidates (${esc(error.message)}).</div>`;
+            return;
+        }
+        await loadSearcherReviews();
+        renderSearchers();
+    }
+
+    async function loadSearcherReviews() {
+        const { data, error } = await client().from(GS_TABLE)
+            .select('passcode, cardname, status, rule, modnotes, reviewedon')
+            .order('reviewedon', { ascending: false });
+        if (error) {
+            searcherState.reviews = [];
+            searcherState.tableMissing = ['PGRST205', '42P01'].includes(error.code) || /does not exist|Could not find/i.test(error.message || '');
+            if (!searcherState.tableMissing) toast(`Couldn't read the decisions: ${error.message}`, true);
+            return;
+        }
+        searcherState.tableMissing = false;
+        searcherState.reviews = data || [];
+    }
+
+    // One editable field of the target rule
+    function gsSelect(id, label, options, value, extra = '') {
+        return `<label class="gs-field">${label}
+                    <select id="${id}" ${extra}>${options.map(([v, t]) => `<option value="${esc(v)}"${String(v) === String(value) ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>
+                </label>`;
+    }
+
+    function gsRuleEditor(c) {
+        const t = c.target || {};
+        const pc = c.passcode;
+        const oninput = `oninput="gsPreview(${pc})" onchange="gsPreview(${pc})"`;
+        const levelMode = t.levelMax !== undefined ? 'max' : t.levelMin !== undefined ? 'min' : t.level !== undefined ? 'eq' : '';
+        const levelValue = t.levelMax ?? t.levelMin ?? t.level ?? '';
+        return `
+            <div class="gs-rule">
+                ${gsSelect(`gs-${pc}-verb`, 'It', [['add', 'Adds'], ['summon', 'Special Summons']], c.verb, oninput)}
+                ${gsSelect(`gs-${pc}-kind`, 'Fetches', [['monster', 'a monster'], ['field', 'a Field Spell']], t.spell ? 'field' : 'monster', oninput)}
+                ${gsSelect(`gs-${pc}-race`, 'Type', [['', 'Any']].concat(GS_TYPES.map(x => [x, x])), t.race || '', oninput)}
+                ${gsSelect(`gs-${pc}-attribute`, 'Attribute', [['', 'Any']].concat(GS_ATTRIBUTES.map(x => [x, x])), t.attribute || '', oninput)}
+                ${gsSelect(`gs-${pc}-levelmode`, 'Level', [['', 'Any'], ['eq', 'Exactly'], ['max', 'Or lower'], ['min', 'Or higher']], levelMode, oninput)}
+                <label class="gs-field">&nbsp;<input type="number" min="1" max="12" id="gs-${pc}-level" value="${esc(levelValue)}" ${oninput} aria-label="Level"></label>
+                ${gsSelect(`gs-${pc}-frame`, 'Frame', [['', 'Any'], ['Normal', 'Normal Monster'], ['Ritual', 'Ritual Monster']], t.frame || '', oninput)}
+                ${gsSelect(`gs-${pc}-cost`, 'Cost', [['', 'None'], ['monster', 'Another monster in hand']], c.cost || '', oninput)}
+                <label class="gs-field gs-field-note">Note for the card browser
+                    <input type="text" id="gs-${pc}-note" value="${esc(c.note || '')}" data-auto="true" oninput="this.dataset.auto = 'false'">
+                </label>
+                <div class="gs-preview" id="gs-${pc}-preview">Saves as: <b>${esc(gsDescribe(c.verb, c.target))}</b></div>
+            </div>`;
+    }
+
+    // The rule as the editor shows it now, or an error message
+    function gsReadRule(pc) {
+        const val = name => (document.getElementById(`gs-${pc}-${name}`) || {}).value || '';
+        const verb = val('verb') === 'summon' ? 'summon' : 'add';
+        let target;
+        if (val('kind') === 'field') target = { spell: 'Field' };
+        else {
+            target = { monster: true };
+            if (val('race')) target.race = val('race');
+            if (val('attribute')) target.attribute = val('attribute');
+            const level = parseInt(val('level'), 10);
+            const mode = val('levelmode');
+            if (mode && !(level >= 1 && level <= 12)) return { error: 'Give the Level a number from 1 to 12.' };
+            if (mode === 'eq') target.level = level;
+            if (mode === 'max') target.levelMax = level;
+            if (mode === 'min') target.levelMin = level;
+            if (val('frame')) target.frame = val('frame');
+            if (Object.keys(target).length === 1) return { error: 'Pick at least a Type, Attribute, Level or frame: "any monster" would fit every deck.' };
+        }
+        const rule = { verb, target, note: val('note').trim() || gsDescribe(verb, target) };
+        if (val('cost')) rule.cost = val('cost');
+        return { rule };
+    }
+
+    window.gsPreview = function (pc) {
+        const { rule, error } = gsReadRule(pc);
+        const preview = document.getElementById(`gs-${pc}-preview`);
+        const note = document.getElementById(`gs-${pc}-note`);
+        if (rule && note && note.dataset.auto === 'true') note.value = gsDescribe(rule.verb, rule.target);
+        if (preview) preview.innerHTML = error ? `<span style="color:#f87171;">${esc(error)}</span>` : `Saves as: <b>${esc(gsDescribe(rule.verb, rule.target))}</b>`;
+    };
+
+    function gsCandidateCard(c) {
+        const reach = c.reaches
+            ? `Reaches a starter in <strong>${c.reaches}</strong> test deck${c.reaches === 1 ? '' : 's'}: ${esc(c.reachesIn.slice(0, 4).join(', '))}${c.reaches > 4 ? ` and ${c.reaches - 4} more` : ''}`
+            : 'Reaches no starter in any test deck yet';
+        const disabled = searcherState.tableMissing ? ' disabled title="Run scripts/sql/013_generic_searcher_reviews.sql first"' : '';
+        return `
+            <div class="combo-admin-card" id="gs-card-${c.passcode}">
+                <div class="gs-card-top">
+                    ${gsArt(c.passcode, c.name)}
+                    <div class="combo-admin-meta">
+                        <div class="combo-admin-title">${esc(c.name)}</div>
+                        <div class="gs-reach">${reach} · fits ${c.fits}</div>
+                        <div class="gs-text">${gsHighlight(c.text || '', c.sentence || '')}</div>
+                    </div>
+                </div>
+                ${gsRuleEditor(c)}
+                <div class="action-row">
+                    <button class="btn-approve" onclick="gsDecide(${c.passcode}, 'approved')"${disabled}><i class="fas fa-check"></i> Approve</button>
+                    <button class="btn-reject" onclick="gsDecide(${c.passcode}, 'rejected')"${disabled}><i class="fas fa-times"></i> Reject</button>
+                </div>
+            </div>`;
+    }
+
+    // A decided or listed card: art, name, its rule and where it stands
+    function gsDecidedCard({ passcode, name, rule, status, actions }) {
+        return `
+            <div class="combo-admin-card" id="gs-card-${passcode}">
+                <div class="gs-card-top">
+                    ${passcode ? gsArt(passcode, name) : ''}
+                    <div class="combo-admin-meta">
+                        <div class="combo-admin-title">${esc(name)}</div>
+                        ${rule ? `<div class="gs-reach">${esc(rule.note || gsDescribe(rule.verb, rule.target))}</div>` : ''}
+                        <div class="gs-reach">${status}</div>
+                    </div>
+                </div>
+                ${actions ? `<div class="action-row">${actions}</div>` : ''}
+            </div>`;
+    }
+
+    function renderSearchers() {
+        const { candidates, listed, reviews, tableMissing } = searcherState;
+        const reviewed = new Map(reviews.map(r => [Number(r.passcode), r]));
+        const pending = candidates.filter(c => !reviewed.has(Number(c.passcode)));
+        const plain = pending.filter(c => !c.conditional);
+        const conditional = pending.filter(c => c.conditional);
+        const notice = tableMissing
+            ? `<div class="gs-notice"><i class="fas fa-database" style="margin-right:0.4rem;"></i>The decisions table doesn't exist yet. Run <code>scripts/sql/013_generic_searcher_reviews.sql</code> once in the Supabase SQL editor; until then you can look through the candidates but not approve or reject them.</div>`
+            : '';
+        const intro = `<p class="gs-intro">Spells that fetch a card by Type, Attribute, Level or kind, found in the card database every week. Check that the rule matches the highlighted text, correct it if needed, then approve: the next weekly run adds it to the card browser's "Generic searchers" strip and scores it in every test deck.</p>`;
+
+        const pendingEl = document.getElementById('tab-searchers-pending');
+        if (pendingEl) {
+            pendingEl.innerHTML = notice + intro + (pending.length ? `
+                ${plain.map(gsCandidateCard).join('') || '<div class="empty-state"><i class="fas fa-inbox"></i>No clean candidates</div>'}
+                ${conditional.length ? `
+                <details class="gs-group">
+                    <summary>${conditional.length} with a condition, cost or limit around the fetch <span>· check the highlighted text before approving</span></summary>
+                    ${conditional.map(gsCandidateCard).join('')}
+                </details>` : ''}`
+                : '<div class="empty-state"><i class="fas fa-inbox"></i>No pending candidates</div>');
+        }
+
+        // Approved: on the list now, or approved and waiting for the weekly run
+        const approvedReviews = reviews.filter(r => r.status === 'approved');
+        const listedNames = new Set(listed.map(s => s.name));
+        const listedCodes = new Set(listed.map(s => Number(s.passcode)));
+        const approvedCards = listed.map(s => {
+            const review = reviewed.get(Number(s.passcode));
+            if (review && review.status === 'rejected') return null; // shown under Rejected until the weekly run removes it
+            const actions = review
+                ? `<button class="btn-unapprove" onclick="gsUndo(${s.passcode})"><i class="fas fa-undo"></i> Move back to pending</button>`
+                : `<button class="btn-reject" data-name="${esc(s.name)}" onclick="gsRemoveListed(${s.passcode}, this.dataset.name)"${tableMissing ? ' disabled' : ''}><i class="fas fa-times"></i> Take off the list</button>`;
+            return gsDecidedCard({ passcode: s.passcode, name: s.name, rule: s, status: '<span class="gs-live"><i class="fas fa-check-circle"></i> On the site</span>', actions });
+        }).filter(Boolean).concat(approvedReviews
+            .filter(r => !listedCodes.has(Number(r.passcode)) && !listedNames.has(r.cardname))
+            .map(r => gsDecidedCard({
+                passcode: r.passcode, name: r.cardname, rule: r.rule,
+                status: '<span class="gs-waiting"><i class="fas fa-clock"></i> Added on the next weekly run</span>',
+                actions: `<button class="btn-unapprove" onclick="gsUndo(${r.passcode})"><i class="fas fa-undo"></i> Move back to pending</button>`
+            })));
+        const approvedEl = document.getElementById('tab-searchers-approved');
+        if (approvedEl) approvedEl.innerHTML = approvedCards.join('') || '<div class="empty-state"><i class="fas fa-inbox"></i>Nothing approved yet</div>';
+
+        const rejectedEl = document.getElementById('tab-searchers-rejected');
+        const rejected = reviews.filter(r => r.status === 'rejected');
+        if (rejectedEl) {
+            rejectedEl.innerHTML = rejected.map(r => gsDecidedCard({
+                passcode: r.passcode, name: r.cardname, rule: null,
+                status: listedCodes.has(Number(r.passcode)) || listedNames.has(r.cardname)
+                    ? '<span class="gs-waiting"><i class="fas fa-clock"></i> Taken off the list on the next weekly run</span>'
+                    : 'Won\'t be suggested again',
+                actions: `<button class="btn-unapprove" onclick="gsUndo(${r.passcode})"><i class="fas fa-undo"></i> Move back to pending</button>`
+            })).join('') || '<div class="empty-state"><i class="fas fa-inbox"></i>Nothing rejected</div>';
+        }
+
+        const countEl = document.getElementById('pending-count-searchers');
+        if (countEl) countEl.textContent = pending.length ? `(${pending.length})` : '';
+        setModeCount('searchers', plain.length, plain.length ? `${plain.length} clean candidate${plain.length === 1 ? '' : 's'} to review (${conditional.length} more to check)` : '');
+    }
+
+    async function gsSave(row) {
+        const { error } = await client().from(GS_TABLE).upsert(row, { onConflict: 'passcode' });
+        if (error) throw error;
+    }
+
+    window.gsDecide = async function (passcode, status) {
+        const c = searcherState.candidates.find(x => Number(x.passcode) === Number(passcode));
+        if (!c) return;
+        let rule = null;
+        if (status === 'approved') {
+            const read = gsReadRule(passcode);
+            if (read.error) { toast(read.error, true); return; }
+            rule = read.rule;
+        }
+        try {
+            await gsSave({ passcode: c.passcode, cardname: c.name, status, rule });
+            await loadSearcherReviews();
+            renderSearchers();
+            toast(status === 'approved' ? `Approved ${c.name}: it joins the card browser after the next weekly run.` : `Rejected ${c.name}: it won't be suggested again.`);
+        } catch (error) {
+            toast(`Couldn't save: ${error.message}`, true);
+        }
+    };
+
+    // A card on the list that nobody reviewed (the hand-made first eleven): a rejection takes it off
+    window.gsRemoveListed = async function (passcode, name) {
+        try {
+            await gsSave({ passcode, cardname: name, status: 'rejected', rule: null });
+            await loadSearcherReviews();
+            renderSearchers();
+            toast(`${name} comes off the list on the next weekly run.`);
+        } catch (error) {
+            toast(`Couldn't save: ${error.message}`, true);
+        }
+    };
+
+    window.gsUndo = async function (passcode) {
+        const { error } = await client().from(GS_TABLE).delete().eq('passcode', passcode);
+        if (error) { toast(`Couldn't undo: ${error.message}`, true); return; }
+        await loadSearcherReviews();
+        renderSearchers();
+        toast('Moved back to pending.');
+    };
+
+    // ------------------------------------------------------------------
     // Bootstrap
     // ------------------------------------------------------------------
     async function init() {
@@ -2059,6 +2358,8 @@
         // shows decks needing attention before the mode is opened.
         if (!deckReport.requested) loadDeckReport();
         if (!auditReport.requested) loadAuditReport();
+        // Small static file plus one small table: load now for the sidebar badge
+        if (!searcherState.requested) loadSearchers();
 
         groups.combos = createModerationTabGroup({
             group: 'combos', table: 'combos', pkColumn: 'comboid',

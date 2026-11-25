@@ -196,6 +196,7 @@
         .mode-icon-reasons     { background: #86efac; }
         .mode-icon-sections    { background: #93c5fd; }
         .mode-icon-decks       { background: #fca5a5; }
+        .mode-icon-searchers   { background: #5eead4; }
         .mode-icon { position: relative; }
         /* Pending count (or decks needing attention) on the sidebar icon. */
         .mode-count {
@@ -788,6 +789,40 @@
         .audit-diag-filter-btn.active {
             background: #2563eb; color: #fff; border-color: #3b82f6;
         }
+
+        /* Generic Searchers: candidates from scripts/find-generic-searchers.js (admin.js renderSearchers) */
+        .gs-intro { font-size: 0.82rem; color: #a3a3a3; line-height: 1.55; margin: 0 0 0.9rem; max-width: 70ch; }
+        .gs-intro code { color: #d4d4d4; }
+        .gs-notice {
+            margin: 0 0 0.9rem; padding: 0.65rem 0.85rem; border-radius: 0.6rem; font-size: 0.8rem; line-height: 1.5;
+            background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d;
+        }
+        .gs-card-top { display: flex; gap: 0.9rem; align-items: flex-start; }
+        .gs-art { width: 62px; flex: none; border-radius: 0.35rem; aspect-ratio: 59 / 86; object-fit: cover; background: #111; cursor: pointer; }
+        .gs-text { font-size: 0.8rem; line-height: 1.55; color: #a3a3a3; margin-top: 0.45rem; }
+        .gs-text mark { background: rgba(94,234,212,0.16); color: #ccfbf1; border-radius: 0.2rem; padding: 0 0.1rem; }
+        .gs-reach { font-size: 0.78rem; color: #a3a3a3; margin-top: 0.3rem; }
+        .gs-reach strong { color: #5eead4; }
+        .gs-rule {
+            display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: flex-end;
+            padding: 0.7rem 0.8rem; border-radius: 0.6rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+        }
+        .gs-field { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.7rem; color: #737373; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; }
+        .gs-field select, .gs-field input {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 0.45rem;
+            color: #f5f5f5; font: inherit; font-size: 0.8rem; font-weight: 500; letter-spacing: 0; text-transform: none; padding: 0.3rem 0.45rem;
+        }
+        .gs-field select option { background: #171717; }
+        .gs-field input[type="number"] { width: 4.2rem; }
+        .gs-field-note { flex: 1 1 260px; }
+        .gs-field-note input { width: 100%; }
+        .gs-preview { flex-basis: 100%; font-size: 0.78rem; color: #d4d4d4; }
+        .gs-preview b { color: #5eead4; }
+        .gs-group { margin: 1.25rem 0 0; }
+        .gs-group > summary { cursor: pointer; font-size: 0.82rem; font-weight: 700; color: #fcd34d; margin-bottom: 0.6rem; }
+        .gs-group > summary span { color: #a3a3a3; font-weight: 500; }
+        .gs-live { color: #4ade80; }
+        .gs-waiting { color: #fcd34d; }
     </style>
     <link rel="stylesheet" href="../assets/css/follow-archetype.css">
     <script src="../assets/js/follow-archetype.js"></script>
@@ -832,6 +867,10 @@
             <button class="mode-btn" data-mode="decks" aria-pressed="false" onclick="switchMode('decks', this)">
                 <span class="mode-icon mode-icon-decks"><i class="fas fa-layer-group"></i><span class="mode-count" id="mode-count-decks" hidden></span></span>
                 <span>Test Decks</span>
+            </button>
+            <button class="mode-btn" data-mode="searchers" aria-pressed="false" onclick="switchMode('searchers', this)">
+                <span class="mode-icon mode-icon-searchers"><i class="fas fa-search-plus"></i><span class="mode-count" id="mode-count-searchers" hidden></span></span>
+                <span>Generic Searchers</span>
             </button>
             <button class="mode-btn" data-mode="audit" aria-pressed="false" onclick="switchMode('audit', this)">
                 <span class="mode-icon mode-icon-audit"><i class="fas fa-microscope"></i><span class="mode-count" id="mode-count-audit" hidden></span></span>
@@ -915,6 +954,27 @@
         <!-- Test Decks: read-only view of assets/data/decklists/report.json (scripts/check-decklists.js). -->
         <div id="mode-decks" style="display:none;">
             <div id="decks-body"></div>
+        </div>
+
+        <!-- Generic Searchers: Spells scripts/find-generic-searchers.js proposes for assets/data/generic-searchers.json.
+             Decisions go to Supabase genericsearcherreviews (scripts/sql/013_generic_searcher_reviews.sql);
+             the weekly run copies approved ones into the JSON. -->
+        <div id="mode-searchers" style="display:none;">
+            <div class="tab-bar">
+                <button class="tab-btn active" data-group="searchers" onclick="switchTab('searchers', 'pending', this)">
+                    <i class="fas fa-clock" style="margin-right:0.35rem;"></i>Pending
+                    <span id="pending-count-searchers" style="margin-left:0.35rem;opacity:0.6;"></span>
+                </button>
+                <button class="tab-btn" data-group="searchers" onclick="switchTab('searchers', 'approved', this)">
+                    <i class="fas fa-check-circle" style="margin-right:0.35rem;"></i>Approved
+                </button>
+                <button class="tab-btn" data-group="searchers" onclick="switchTab('searchers', 'rejected', this)">
+                    <i class="fas fa-times-circle" style="margin-right:0.35rem;"></i>Rejected
+                </button>
+            </div>
+            <div id="tab-searchers-pending"></div>
+            <div id="tab-searchers-approved" style="display:none;"></div>
+            <div id="tab-searchers-rejected" style="display:none;"></div>
         </div>
 
         <!-- Combo Audit: OCGCore Wasm diagnostics + interactive DuelSimulator inspector -->
