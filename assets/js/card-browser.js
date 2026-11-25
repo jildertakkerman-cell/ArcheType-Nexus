@@ -156,6 +156,7 @@ window.CardBrowser = (function () {
     let banMaps = null;
     let guideFile = '';
     let smallWorld = null; // the archetype's test deck in assets/data/small-world-scores/
+    let genericSearchers = []; // assets/data/generic-searchers.json: staples that fetch by Type or Level
     let order = [];
     let detailSignature = '';
     let detailLayoutKey = '';
@@ -665,7 +666,10 @@ window.CardBrowser = (function () {
 
     function renderPage(container) {
         // #cb-sw is filled by loadSmallWorld() when the archetype has a test deck
-        container.innerHTML = newestHtml() + '<section class="cb-wrap cb-sw" id="cb-sw" hidden></section>' + toolbarHtml() + bodyHtml();
+        container.innerHTML = newestHtml()
+            + '<section class="cb-wrap cb-sw" id="cb-sw" hidden></section>'
+            + '<section class="cb-wrap cb-sw cb-gs" id="cb-gs" hidden></section>'
+            + toolbarHtml() + bodyHtml();
     }
 
     function renderHero() {
@@ -1502,6 +1506,7 @@ window.CardBrowser = (function () {
                     </div>`}
                     ${actions}
                     ${smallWorldCardHtml(c)}
+                    ${searcherCardHtml(c)}
                     ${namedByHtml(c)}
                 </div>
             </div>
@@ -1652,6 +1657,8 @@ window.CardBrowser = (function () {
             case 'filter-names': state.names = value; state.zone = 'all'; break;
             case 'full-art': withCard(c => CardLoader.showLargeImageByName && CardLoader.showLargeImageByName(c.name, e)); return;
             case 'more-info': withCard(c => CardLoader.showPopupByName && CardLoader.showPopupByName(c.name, e)); return;
+            // A card outside this archetype (a generic searcher): the shared card popup
+            case 'gs-card': if (CardLoader.showPopupByName) CardLoader.showPopupByName(value, e); return;
             default: return;
         }
         update();
@@ -1943,22 +1950,29 @@ window.CardBrowser = (function () {
     const swPoints = v => `${v > 0 ? '+' : ''}${Number(v).toFixed(1)} points`;
 
     async function loadSmallWorld() {
+        // The generic searchers' target rules hold for any card, test deck or not
+        const defs = fetch('../assets/data/generic-searchers.json')
+            .then(r => (r.ok ? r.json() : null))
+            .then(j => { genericSearchers = (j && j.searchers) || []; })
+            .catch(() => { genericSearchers = []; });
         try {
             const resp = await fetch('../assets/data/decklists/index.json');
-            if (!resp.ok) return;
-            const index = await resp.json();
-            const want = swKey(archetype);
-            const key = Object.keys(index).find(k => k === archetype) || Object.keys(index).find(k => swKey(k) === want);
-            if (!key) return;
-            const data = await fetch(`../assets/data/small-world-scores/${encodeURIComponent(index[key])}`);
-            if (!data.ok) return;
-            smallWorld = Object.assign(await data.json(), { deckKey: key });
+            if (resp.ok) {
+                const index = await resp.json();
+                const want = swKey(archetype);
+                const key = Object.keys(index).find(k => k === archetype) || Object.keys(index).find(k => swKey(k) === want);
+                const data = key ? await fetch(`../assets/data/small-world-scores/${encodeURIComponent(index[key])}`) : null;
+                if (data && data.ok) smallWorld = Object.assign(await data.json(), { deckKey: key });
+            }
         } catch (err) {
             console.warn('[CardBrowser] No Small World score for this archetype:', err);
-            return;
         }
-        renderSmallWorld();
-        if (state.card) {
+        await defs;
+        if (smallWorld) {
+            renderSmallWorld();
+            renderSearchers();
+        }
+        if (state.card && (smallWorld || genericSearchers.length)) {
             detailSignature = '';
             renderDetail({});
         }
@@ -1992,7 +2006,9 @@ window.CardBrowser = (function () {
         };
         const cost = sw.cost || {};
         const line = none
-            ? 'None of the test deck\'s starters is a monster, so Small World can\'t fetch one'
+            ? (sw.starters.length
+                ? 'None of the pure test deck\'s starters is a monster, so Small World can\'t fetch one'
+                : 'The pure test deck has no card that starts a hand on its own, so Small World has nothing to fetch')
             : !sw.starterReach
                 ? 'No monster in the pure test deck can reach a starter through Small World'
                 : `${swPoints(sw.uplift)}: the pure test deck opens a starter in ${swPct(sw.open.with)} of hands instead of ${swPct(sw.open.without)}`
@@ -2131,6 +2147,126 @@ window.CardBrowser = (function () {
                 : `no monster in the deck shares exactly one property with ${names(starters)}: each shares two or more, or none.`;
         }
         return `<p class="cb-sw-text cb-sw-why"><strong>Why it's ${sw.uplift <= 0.5 ? 'zero' : 'low'}:</strong> ${why}</p>`;
+    }
+
+    // ---------- Generic searchers ----------
+    // Staples that fetch by Type or Level (assets/data/generic-searchers.json), tried in the test deck by
+    // scripts/build-small-world-scores.js ("searchers" in the deck's score file).
+
+    // The same target rule as the build script's fitsTarget(), on a browser card
+    function gsFits(target, c) {
+        if (!target) return false;
+        if (target.spell) return c.zone === 'spell' && target.spell === 'Field' && /^Field\b/.test(c.typeLine || '');
+        if (target.monster && c.zone !== 'main') return false;
+        if (target.race && c.race !== target.race) return false;
+        if (target.attribute && c.attr !== target.attribute) return false;
+        const level = swStat(c.levelRaw);
+        if (target.level !== undefined && level !== target.level) return false;
+        if (target.levelMax !== undefined && !(level !== null && level <= target.levelMax)) return false;
+        if (target.levelMin !== undefined && !(level !== null && level >= target.levelMin)) return false;
+        const type = c.rawType || '';
+        if (target.frame === 'Normal' && !(/Normal/i.test(type) && !/Effect/i.test(type))) return false;
+        if (target.frame === 'Ritual' && !/Ritual/i.test(type)) return false;
+        return true;
+    }
+
+    // A staple's small art, opening its card popup (its full text lives there, not in the strip)
+    function gsArtButton(def, name, cls) {
+        const art = def && def.passcode ? imgHtml({ id: def.passcode }) : '';
+        return `<button type="button" class="${cls}" data-action="gs-card" data-value="${esc(name)}" aria-label="${esc(name)}: show the card"${def && def.note ? ` title="${esc(def.note)}"` : ''}>${art}</button>`;
+    }
+
+    // A starter the staple reaches: its art and name; it opens the card here when this archetype lists it
+    function gsTargetChip(name) {
+        const sw = smallWorld;
+        const entry = (sw.starters || []).concat(sw.pool || []).find(m => m.name === name) || { name };
+        const card = swBrowserCard(entry);
+        const id = card ? card.id : entry.passcode;
+        const action = card ? `data-action="open-card" data-id="${esc(card.id)}"` : `data-action="gs-card" data-value="${esc(name)}"`;
+        // On the archetype's own page its name is implied: "Trirealm Rift Hollows" -> "Hollows"
+        const short = name.toLowerCase().startsWith(`${archetype.toLowerCase()} `) ? name.slice(archetype.length + 1) : name;
+        return `<button type="button" class="cb-gs-target" ${action} title="${esc(name)}">${id ? imgHtml({ id }) : ''}<span>${esc(short)}</span></button>`;
+    }
+
+    function renderSearchers() {
+        const box = $('cb-gs');
+        const sw = smallWorld;
+        const list = (sw && sw.searchers) || [];
+        if (!box || !list.length) return;
+        const defs = new Map(genericSearchers.map(d => [d.name, d]));
+        const helping = list.filter(s => s.uplift > 0);
+        const rest = list.filter(s => !(s.uplift > 0));
+        const line = helping.length
+            ? `Most help: ${helping.slice(0, 2).map(s => `${esc(s.name)} ${swPoints(s.uplift).replace(' points', '')}`).join(' and ')} points`
+            : 'None of the staples that fit adds a starter here';
+
+        // A staple that helps: art, name, gain, what it reaches, copies
+        const item = s => {
+            const def = defs.get(s.name) || {};
+            const copies = `${s.copies} cop${s.copies === 1 ? 'y' : 'ies'}${s.status ? ` · ${esc(s.status)}` : ''}${s.inDeck ? ` · the test deck runs ${s.inDeck}` : ''}`;
+            const shown = s.reaches.slice(0, 2);
+            const reach = s.verb === 'excavate'
+                ? '<span class="cb-gs-verb">Digs 6 cards deep for a starter</span>'
+                : `<span class="cb-gs-verb">${s.verb === 'summon' ? 'Summons' : 'Adds'}</span>${shown.map(gsTargetChip).join('')}${s.reaches.length > shown.length ? `<span class="cb-gs-more">+${s.reaches.length - shown.length} more</span>` : ''}`;
+            return `
+                <li class="cb-gs-item">
+                    ${gsArtButton(def, s.name, 'cb-gs-art')}
+                    <div class="cb-gs-body">
+                        <div class="cb-gs-top">
+                            <button type="button" class="cb-gs-name" data-action="gs-card" data-value="${esc(s.name)}">${esc(s.name)}</button>
+                            <span class="cb-gs-up">${swPoints(s.uplift)}</span>
+                        </div>
+                        <div class="cb-gs-reach">${reach}</div>
+                        <p class="cb-gs-meta">${copies}</p>
+                    </div>
+                </li>`;
+        };
+        // One that fits but adds nothing: a chip with the reason
+        const why = s => (s.copies === 0 ? 'Forbidden'
+            : s.inDeck >= s.copies ? 'already at the limit'
+                : s.verb === 'excavate' ? 'no starter to dig for'
+                    : !s.reaches.length ? 'no starter to fetch' : 'no gain');
+        const chip = s => `
+            <li class="cb-gs-chip">
+                ${gsArtButton(defs.get(s.name), s.name, 'cb-gs-chip-art')}
+                <button type="button" class="cb-gs-chip-name" data-action="gs-card" data-value="${esc(s.name)}">${esc(s.name)}</button>
+                <span class="cb-gs-why">${why(s)}</span>
+            </li>`;
+
+        box.innerHTML = `
+            <details class="cb-sw-box">
+                <summary class="cb-sw-summary">
+                    <span class="cb-label">Generic searchers</span>
+                    <span class="cb-sw-line">${line}</span>
+                    <span class="cb-sw-toggle">${icon('down')}<span class="cb-visually-hidden">Show the staples</span></span>
+                </summary>
+                <div class="cb-sw-body">
+                    <p class="cb-sw-text">Staples that fetch by Type or Level, added to the pure test deck. The number is how much more often it opens a starter.</p>
+                    ${helping.length ? `<ul class="cb-gs-list">${helping.map(item).join('')}</ul>` : ''}
+                    ${rest.length ? `
+                    <p class="cb-gs-sub">${helping.length ? 'Also fit, but add nothing here' : 'They fit, but add nothing here'}</p>
+                    <ul class="cb-gs-chips">${rest.map(chip).join('')}</ul>` : ''}
+                    <details class="cb-gs-how">
+                        <summary>How it's worked out</summary>
+                        <p class="cb-sw-text">Each staple is tried at the copies the TCG banlist allows, in place of Spells or Traps that can't start a hand, with the same ${Number(sw.hands).toLocaleString('en')} opening hands as Small World${sw.label !== 'None' ? ` (three Small World add ${swPoints(sw.uplift)})` : ''}. A staple counts when a starter it can fetch is still in the Deck; One for One also needs another monster in hand to send, and Pot of Prosperity counts when a starter is among the 6 cards it excavates. A Special Summon counts as reaching a starter. Select a staple for its card text.</p>
+                    </details>
+                </div>
+            </details>`;
+        box.hidden = false;
+    }
+
+    // Which generic searchers can fetch this card (a Main Deck monster or a Field Spell)
+    function searcherCardHtml(c) {
+        if (!genericSearchers.length || !(c.zone === 'main' || c.zone === 'spell')) return '';
+        const fits = genericSearchers.filter(d => d.target && gsFits(d.target, c));
+        if (!fits.length) return '';
+        return `
+            <div class="cb-detail-block cb-detail-block--flow cb-gs-card">
+                <p class="cb-label">Generic searchers <span class="cb-label-note">· can ${fits.every(d => d.verb === 'summon') ? 'summon' : 'fetch'} this card</span></p>
+                <div class="cb-gs-chips">${fits.map(d => `
+                    <button type="button" class="cb-gs-target" data-action="gs-card" data-value="${esc(d.name)}" title="${esc(d.note || d.name)}">${d.passcode ? imgHtml({ id: d.passcode }) : ''}<span>${esc(d.name)}</span></button>`).join('')}
+                </div>
+            </div>`;
     }
 
     // A Main Deck monster's own reach through Small World, against the test deck's monsters

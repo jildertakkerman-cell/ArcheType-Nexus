@@ -20,7 +20,10 @@
 //     else needed (yugioh-archetype-db sql/create_cardtags_starters.sql works it out per effect);
 //   - "Hand Trap": hand traps are never starters here, and they are what a Small World save can cost.
 // Two things need the deck around the card, so they stay here:
-//   - Terraforming counts only when a Field Spell in the list is a starter;
+//   - generic searchers (assets/data/generic-searchers.json: Reinforcement of the Army, Terraforming,
+//     Pot of Prosperity, ...) are only as good as what they find: one counts in a hand when a starter it
+//     can fetch is still in the Deck (One for One also needs another monster in hand to send), and Pot
+//     of Prosperity when a starter is among the 6 cards it excavates;
 //   - a test deck can correct its starters, for decks that open some other way (Lswarm: two Level 4s,
 //     with Evilswarm Castor's extra Normal Summon):
 //     "smallWorld": { "starters": { "add": ["Card"], "remove": ["Card"], "addMatching": ["name fragment"] }, "note": "why" }
@@ -35,6 +38,11 @@
 // had a starter anyway and the share where it has nothing to do; of its rescues, the share where every
 // monster you could reveal has the Hand Trap tag, so you give one up to start.
 // Small World and the revealed monster leave the hand for one card, so it's always -1 in hand.
+//
+// "searchers": each generic searcher whose target rule takes in a card of the list (Pot of Prosperity:
+// any list with a starter), tried at the copies the TCG banlist allows (more copies of one already in
+// the list, or new ones) in place of cards that can't start a hand, with the same seeded hands as the
+// list without it. Per staple: the uplift, the starters it reaches and the other cards it could fetch.
 //
 // Needs the network (Supabase). When Supabase can't be reached, or returns no Starter tags at all, the
 // files stay as they are (exit 0).
@@ -59,15 +67,14 @@ const arg = (name, def) => {
 const HANDS = parseInt(arg('hands', '40000'), 10) || 40000;
 const ONLY = arg('only', '') ? arg('only', '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : null;
 
-const METHOD = '2026-11-24.2'; // Starter and Hand Trap tags from the database
+const METHOD = '2026-11-24.3'; // Starter and Hand Trap tags; generic searchers
 const SMALL_WORLD = 'Small World';
 const SW_COPIES = 3;
 const HAND_SIZE = 5;
 const EXTRA_DECK = /fusion|synchro|xyz|link/i;
 const STARTER_TAG = 'Starter';
 const HAND_TRAP_TAG = 'Hand Trap';
-// Searches a Field Spell: a starter only when one of the deck's Field Spells is
-const FIELD_SEARCHERS = new Set(['Terraforming']);
+const SEARCHERS_FILE = path.join(DATA_DIR, 'generic-searchers.json');
 // Uplift in percentage points -> label
 const BANDS = [
     { min: 12, label: 'Core' },
@@ -196,6 +203,7 @@ function cardRecord(name, cache, row, tags) {
         level: stat(c ? c.level : row && row.level),
         atk: stat(c ? c.atk : row && row.atk),
         def: stat(c ? c.def : row && row.def),
+        type,
         tags: tags || new Set(),
         known: !!(c || row)
     };
@@ -203,6 +211,26 @@ function cardRecord(name, cache, row, tags) {
 
 // The database's Starter tag; Small World itself and hand traps never count
 const isStarter = r => r.name !== SMALL_WORLD && r.tags.has(STARTER_TAG) && !r.tags.has(HAND_TRAP_TAG);
+
+// ---------- Generic searchers (assets/data/generic-searchers.json) ----------
+
+let SEARCHERS = new Map(); // name -> definition, filled in main()
+
+// Whether a generic searcher's target rule takes in this card (same rule as card-browser.js gsFits()
+// and find-generic-searchers.js fitsTarget())
+function fitsTarget(target, c) {
+    if (!target || !c || !c.known) return false;
+    if (target.spell) return c.kind === 'spell' && target.spell === 'Field' && !!c.field;
+    if (target.monster && c.kind !== 'monster') return false;
+    if (target.race && c.race !== target.race) return false;
+    if (target.attribute && c.attribute !== target.attribute) return false;
+    if (target.level !== undefined && c.level !== target.level) return false;
+    if (target.levelMax !== undefined && !(c.level !== null && c.level <= target.levelMax)) return false;
+    if (target.levelMin !== undefined && !(c.level !== null && c.level >= target.levelMin)) return false;
+    if (target.frame === 'Normal' && !(/Normal/i.test(c.type || '') && !/Effect/i.test(c.type || ''))) return false;
+    if (target.frame === 'Ritual' && !/Ritual/i.test(c.type || '')) return false;
+    return true;
+}
 
 // ---------- Small World ----------
 
@@ -222,7 +250,34 @@ const hashString = s => [...s].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0),
 const BLANK = -1;
 const SW_SLOT = -2;
 
-// Share of hands that hold a starter, or Small World plus a monster that reaches a monster starter.
+// Whether a generic searcher in hand (cards[x].searcher) starts this hand: it can still fetch a starter
+// from the Deck (One for One also needs another monster in hand to send), or, for Pot of Prosperity,
+// a starter is among the cards it excavates. Excavating shuffles the next cards of the Deck, which
+// keeps the draw uniform.
+function searcherStarts(x, deck, n, cards, remaining, rng) {
+    const c = cards[x];
+    if (c.excavate) {
+        const end = Math.min(n, HAND_SIZE + c.excavate);
+        for (let k = HAND_SIZE; k < end; k++) {
+            const j = k + Math.floor(rng() * (n - k));
+            const t = deck[k]; deck[k] = deck[j]; deck[j] = t;
+        }
+        for (let k = HAND_SIZE; k < end; k++) if (deck[k] >= 0 && cards[deck[k]].starter) return true;
+        return false;
+    }
+    if (c.cost === 'monster') {
+        let other = false;
+        for (let i = 0; i < HAND_SIZE && !other; i++) {
+            const y = deck[i];
+            if (y >= 0 && y !== x && cards[y].kind === 'monster') other = true;
+        }
+        if (!other) return false;
+    }
+    return c.targets.some(t => remaining[t] > 0);
+}
+
+// Share of hands that hold a starter (or a generic searcher that finds one), or Small World plus a
+// monster that reaches a monster starter.
 // With `stats`, also sorts every hand that holds Small World: it rescues the hand (no starter without
 // it), the hand had a starter already, or it has nothing to do (dead); and counts the rescues where
 // every monster you could reveal is a hand trap, so starting costs you one.
@@ -230,6 +285,10 @@ function openingOdds(slots, cards, reach, rng, stats) {
     const deck = slots.slice();
     const n = deck.length;
     const remaining = new Int32Array(cards.length);
+    const countRemaining = () => {
+        remaining.fill(0);
+        for (let i = HAND_SIZE; i < n; i++) if (deck[i] >= 0) remaining[deck[i]]++;
+    };
     let ok = 0;
     for (let h = 0; h < HANDS; h++) {
         for (let i = 0; i < HAND_SIZE; i++) {
@@ -238,10 +297,21 @@ function openingOdds(slots, cards, reach, rng, stats) {
         }
         let starter = false;
         let sw = false;
+        let searcher = false;
         for (let i = 0; i < HAND_SIZE; i++) {
             const x = deck[i];
             if (x === SW_SLOT) sw = true;
             else if (x >= 0 && cards[x].starter) starter = true;
+            else if (x >= 0 && cards[x].searcher) searcher = true;
+        }
+        let counted = false;
+        if (!starter && searcher) {
+            countRemaining();
+            counted = true;
+            for (let i = 0; i < HAND_SIZE && !starter; i++) {
+                const x = deck[i];
+                if (x >= 0 && cards[x].searcher && searcherStarts(x, deck, n, cards, remaining, rng)) starter = true;
+            }
         }
         if (sw && stats) stats.drawn++;
         if (starter) {
@@ -250,8 +320,7 @@ function openingOdds(slots, cards, reach, rng, stats) {
             continue;
         }
         if (!sw) continue;
-        remaining.fill(0);
-        for (let i = HAND_SIZE; i < n; i++) if (deck[i] >= 0) remaining[deck[i]]++;
+        if (!counted) countRemaining();
         let hit = false;
         let free = false; // a monster that isn't a hand trap can be the one revealed
         for (let i = 0; i < HAND_SIZE && !free; i++) {
@@ -277,7 +346,7 @@ function openingOdds(slots, cards, reach, rng, stats) {
     return ok / HANDS;
 }
 
-function scoreDeck(file, deck, list, records) {
+function scoreDeck(file, deck, list, records, banMap) {
     const override = (deck.smallWorld && deck.smallWorld.starters) || {};
     const add = new Set(override.add || []);
     const remove = new Set(override.remove || []);
@@ -292,9 +361,6 @@ function scoreDeck(file, deck, list, records) {
             handTrap: !!(r && r.tags.has(HAND_TRAP_TAG))
         });
     });
-    // Terraforming: only as good as the Field Spell it finds
-    const fieldStarter = cards.some(c => c.field && c.starter && !FIELD_SEARCHERS.has(c.name));
-    cards.forEach(c => { if (FIELD_SEARCHERS.has(c.name) && !fieldStarter) c.starter = false; });
     // The test deck's corrections; one the tag already agrees with changes nothing and is reported
     const redundant = [];
     cards.forEach(c => {
@@ -308,6 +374,23 @@ function scoreDeck(file, deck, list, records) {
     const corrected = cards.some(c => c.source === 'added' || c.source === 'removed');
     const unused = [...add, ...remove].filter(n => !cards.some(c => c.name === n))
         .concat(addMatching.filter(p => !cards.some(c => c.name.toLowerCase().includes(p))).map(p => `addMatching "${p}"`));
+
+    // Generic searchers are only as good as what they find: one in the list counts in a hand when a
+    // starter it can fetch is still in the Deck (a test deck's correction still wins)
+    const anyStarter = cards.some(c => c.starter);
+    const starterTargets = def => cards.map((t, i) => (t.starter && !SEARCHERS.has(t.name) && fitsTarget(def.target, t) ? i : -1)).filter(i => i >= 0);
+    cards.forEach(c => {
+        const def = SEARCHERS.get(c.name);
+        if (!def || c.source === 'added' || c.source === 'removed') return;
+        c.starter = false;
+        c.searcher = def;
+        c.cost = def.cost || null;
+        c.excavate = def.excavate || 0;
+        c.targets = def.excavate ? [] : starterTargets(def);
+        c.reaches = def.excavate ? anyStarter : c.targets.length > 0;
+    });
+    // A card a staple or Small World may take the place of: not a starter, and not a searcher that can start
+    const replaceable = c => !c.starter && !(c.searcher && c.reaches);
 
     const pool = cards.map((c, i) => (c.kind === 'monster' && c.known ? i : -1)).filter(i => i >= 0);
     const starterMonsters = pool.filter(i => cards[i].starter);
@@ -343,11 +426,13 @@ function scoreDeck(file, deck, list, records) {
     cards.forEach((c, i) => { for (let k = 0; k < c.count; k++) slots.push(c.known ? i : BLANK); });
     while (slots.length < DeckList.SIZE.main) slots.push(BLANK);
     const withSw = slots.slice();
-    const order = [
-        ...withSw.map((x, i) => (x === BLANK ? i : -1)),
-        ...withSw.map((x, i) => (x >= 0 && cards[x].kind === 'trap' && !cards[x].starter ? i : -1)),
-        ...withSw.map((x, i) => (x >= 0 && cards[x].kind === 'spell' && !cards[x].starter ? i : -1))
+    // Blanks first, then Traps, then Spells that can't start a hand
+    const replaceOrder = (base, keep) => [
+        ...base.map((x, i) => (x === BLANK ? i : -1)),
+        ...base.map((x, i) => (x >= 0 && x !== keep && cards[x].kind === 'trap' && replaceable(cards[x]) ? i : -1)),
+        ...base.map((x, i) => (x >= 0 && x !== keep && cards[x].kind === 'spell' && replaceable(cards[x]) ? i : -1))
     ].filter(i => i >= 0);
+    const order = replaceOrder(withSw, -1);
     const swaps = order.slice(0, SW_COPIES);
     swaps.forEach(i => { withSw[i] = SW_SLOT; });
     for (let k = swaps.length; k < SW_COPIES; k++) withSw.push(SW_SLOT);
@@ -369,6 +454,48 @@ function scoreDeck(file, deck, list, records) {
     };
     const label = starterMonsters.length ? BANDS.find(b => uplift >= b.min).label : 'None';
 
+    // Each generic searcher that takes in a card of this list (Pot of Prosperity: any list with a
+    // starter), tried at the copies the TCG banlist allows in place of cards that can't start a hand
+    const searchers = [];
+    for (const def of SEARCHERS.values()) {
+        const fits = def.excavate ? [] : cards.map((t, i) => (!SEARCHERS.has(t.name) && fitsTarget(def.target, t) ? i : -1)).filter(i => i >= 0);
+        if (def.excavate ? !anyStarter : !fits.length) continue;
+        const copies = DeckList.copyLimit(def.name, banMap);
+        const status = DeckList.banStatus(def.name, banMap) || null;
+        let at = cards.findIndex(c => c.name === def.name);
+        const inDeck = at >= 0 ? cards[at].count : 0;
+        const reachedNames = fits.filter(i => cards[i].starter).map(i => cards[i].name);
+        const entry = {
+            name: def.name, verb: def.verb, copies, status, inDeck,
+            reaches: reachedNames,
+            alsoFetches: fits.filter(i => !cards[i].starter).map(i => cards[i].name),
+            uplift: 0, with: round(without, 3)
+        };
+        const reaches = def.excavate ? anyStarter : reachedNames.length > 0;
+        if (copies > inDeck && reaches) {
+            // The list with the staple at its limit: an existing entry gets more copies, or a new one joins
+            let trialCards = cards;
+            if (at < 0) {
+                trialCards = cards.concat([{
+                    name: def.name, kind: 'spell', known: true, count: 0, starter: false,
+                    searcher: def, cost: def.cost || null, excavate: def.excavate || 0,
+                    targets: def.excavate ? [] : starterTargets(def), reaches: true
+                }]);
+                at = trialCards.length - 1;
+            }
+            const trial = slots.slice();
+            const free = replaceOrder(trial, at).slice(0, copies - inDeck);
+            free.forEach(i => { trial[i] = at; });
+            for (let k = free.length; k < copies - inDeck; k++) trial.push(at);
+            const odds = openingOdds(trial, trialCards, reach.concat(trialCards.length > cards.length ? [null] : []), mulberry32(seed));
+            entry.uplift = round(100 * (odds - without), 1);
+            entry.with = round(odds, 3);
+        }
+        searchers.push(entry);
+    }
+    searchers.sort((a, b) => b.uplift - a.uplift || a.name.localeCompare(b.name));
+    const best = searchers.find(s => s.uplift > 0);
+
     return {
         summary: {
             archetype: deck.archetype,
@@ -379,9 +506,12 @@ function scoreDeck(file, deck, list, records) {
             starterReach: starterPairs ? round(starterReached / starterPairs, 3) : 0,
             cost,
             monsters: pool.reduce((s, i) => s + cards[i].count, 0),
-            monsterStarters: starterMonsters.length
+            monsterStarters: starterMonsters.length,
+            searcherBest: best ? { name: best.name, uplift: best.uplift } : null
         },
-        starters: cards.filter(c => c.starter).map(c => ({ name: c.name, passcode: c.passcode, kind: c.kind, count: c.count, source: c.source })),
+        // Starters, plus generic searchers in the list that can fetch one
+        starters: cards.filter(c => c.starter || (c.searcher && c.reaches)).map(c => ({ name: c.name, passcode: c.passcode, kind: c.kind, count: c.count, source: c.searcher ? 'searcher' : c.source })),
+        searchers,
         removed: cards.filter(c => c.source === 'removed').map(c => c.name),
         // Shown as "Corrected by hand" only when the correction changed a starter
         note: corrected ? (deck.smallWorld && deck.smallWorld.note) || null : null,
@@ -421,6 +551,7 @@ async function main() {
     const banMap = DeckList.banMapFromJson(readJson(path.join(DATA_DIR, 'banlist.json')));
     const packages = Object.assign({}, generated.packages, packagesFile.packages);
     const cache = readJson(path.join(DATA_DIR, 'cards-cache.json'));
+    SEARCHERS = new Map(readJson(SEARCHERS_FILE).searchers.map(def => [def.name, def]));
 
     const names = {};
     Object.entries(index).forEach(([key, file]) => { names[key] = file; });
@@ -476,12 +607,13 @@ async function main() {
     out.names = names;
 
     for (const [file, { deck, list }] of lists) {
-        const result = scoreDeck(file, deck, list, records);
+        const result = scoreDeck(file, deck, list, records, banMap);
         const finderKey = [...finders.keys()].find(k => index[k] === file);
         const finder = finderKey ? finders.get(finderKey) : null;
         const body = Object.assign({ method: METHOD, file, hands: HANDS }, result.summary, {
             finder,
             starters: result.starters,
+            searchers: result.searchers,
             removed: result.removed,
             note: result.note,
             replaced: result.replaced,
